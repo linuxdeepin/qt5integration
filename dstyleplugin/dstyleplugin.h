@@ -7,23 +7,23 @@
  * (at your option) any later version.
  **/
 
-#ifndef DDESTYLEPLUGIN_H
-#define DDESTYLEPLUGIN_H
+#ifndef DStylePlugin_H
+#define DStylePlugin_H
 
 #include <QStylePlugin>
 
 
-class DDEStylePlugin : public QStylePlugin
+class DStylePlugin : public QStylePlugin
 {
     Q_OBJECT
 #if QT_VERSION >= 0x050000
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "ddestyleplugin.json")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "dstyleplugin.json")
 #endif // QT_VERSION >= 0x050000
 
 public:
-    DDEStylePlugin(QObject *parent = 0);
+    DStylePlugin(QObject *parent = 0);
 
     QStyle* create(const QString &key) Q_DECL_OVERRIDE;
 };
 
-#endif // DDESTYLEPLUGIN_H
+#endif // DStylePlugin_H

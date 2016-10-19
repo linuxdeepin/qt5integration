@@ -7,14 +7,14 @@
  * (at your option) any later version.
  **/
 
-#include "darkstyle.h"
+#include "dlightstyle.h"
 
-DarkStyle::DarkStyle()
+DLightStyle::DLightStyle()
 {
 
 }
 
-DarkStyle::~DarkStyle()
+DLightStyle::~DLightStyle()
 {
 
 }

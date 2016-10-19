@@ -7,14 +7,18 @@
  * (at your option) any later version.
  **/
 
-#include "lightstyle.h"
+#ifndef DLIGHTSTYLE_H
+#define DLIGHTSTYLE_H
 
-LightStyle::LightStyle()
+#include <QCommonStyle>
+
+class DLightStyle : public QCommonStyle
 {
+    Q_OBJECT
 
-}
+public:
+    DLightStyle();
+    ~DLightStyle();
+};
 
-LightStyle::~LightStyle()
-{
-
-}
+#endif // DLIGHTSTYLE_H

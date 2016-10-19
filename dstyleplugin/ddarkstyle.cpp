@@ -7,18 +7,14 @@
  * (at your option) any later version.
  **/
 
-#ifndef LIGHTSTYLE_H
-#define LIGHTSTYLE_H
+#include "ddarkstyle.h"
 
-#include <QCommonStyle>
-
-class LightStyle : public QCommonStyle
+DDarkStyle::DDarkStyle()
 {
-    Q_OBJECT
 
-public:
-    LightStyle();
-    ~LightStyle();
-};
+}
 
-#endif // LIGHTSTYLE_H
+DDarkStyle::~DDarkStyle()
+{
+
+}

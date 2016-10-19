@@ -7,17 +7,17 @@
  * (at your option) any later version.
  **/
 
-#ifndef DARKSTYLE_H
-#define DARKSTYLE_H
+#ifndef DDDarkStyle_H
+#define DDDarkStyle_H
 
 #include <QCommonStyle>
 
-class DarkStyle : public QCommonStyle
+class DDarkStyle : public QCommonStyle
 {
     Q_OBJECT
 public:
-    DarkStyle();
-    ~DarkStyle();
+    DDarkStyle();
+    ~DDarkStyle();
 };
 
-#endif // DARKSTYLE_H
+#endif // DDDarkStyle_H

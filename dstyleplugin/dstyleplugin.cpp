@@ -7,27 +7,27 @@
  * (at your option) any later version.
  **/
 
-#include "ddestyleplugin.h"
-#include "darkstyle.h"
-#include "lightstyle.h"
+#include "dstyleplugin.h"
+#include "ddarkstyle.h"
+#include "dlightstyle.h"
 
 
-DDEStylePlugin::DDEStylePlugin(QObject *parent) :
+DStylePlugin::DStylePlugin(QObject *parent) :
     QStylePlugin(parent)
 {
 }
 
-QStyle *DDEStylePlugin::create(const QString &key)
+QStyle *DStylePlugin::create(const QString &key)
 {
     if (key == "ddark") {
-        return new DarkStyle();
+        return new DDarkStyle();
     } else if (key == "dlight") {
-        return new LightStyle();
+        return new DLightStyle();
     }
 
     return nullptr;
 }
 
 #if QT_VERSION < 0x050000
-Q_EXPORT_PLUGIN2(ddestyleplugin, DDEStylePlugin)
+Q_EXPORT_PLUGIN2(DStylePlugin, DStylePlugin)
 #endif // QT_VERSION < 0x050000

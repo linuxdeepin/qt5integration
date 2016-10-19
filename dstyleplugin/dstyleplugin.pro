@@ -6,19 +6,19 @@
 
 QT       += core gui widgets
 
-TARGET = ddestyleplugin
+TARGET = dstyleplugin
 TEMPLATE = lib
 CONFIG += plugin
 
-SOURCES += ddestyleplugin.cpp \
-    darkstyle.cpp \
-    lightstyle.cpp
+SOURCES += dstyleplugin.cpp \
+    ddarkStyle.cpp \
+    dlightstyle.cpp
 
-HEADERS += ddestyleplugin.h \
-    darkstyle.h \
-    lightstyle.h
+HEADERS += dstyleplugin.h \
+    ddarkStyle.h \
+    dlightstyle.h
 
-DISTFILES += ddestyleplugin.json
+DISTFILES += dstyleplugin.json
 
 unix {
     target.path = $$[QT_INSTALL_PLUGINS]/styles/
