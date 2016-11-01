@@ -7,18 +7,25 @@
  * (at your option) any later version.
  **/
 
-#ifndef DLIGHTSTYLE_H
-#define DLIGHTSTYLE_H
+#ifndef STYLE_H
+#define STYLE_H
 
 #include <QCommonStyle>
 
-class DLightStyle : public QCommonStyle
+#include "common.h"
+
+class Style : public QCommonStyle
 {
     Q_OBJECT
-
 public:
-    DLightStyle();
-    ~DLightStyle();
+    explicit Style(dstyle::StyleType type);
+    ~Style();
+
+    void polish(QPalette &p) Q_DECL_OVERRIDE;
+    void polish(QWidget *w) Q_DECL_OVERRIDE;
+
+private:
+    dstyle::StyleType m_type;
 };
 
-#endif // DLIGHTSTYLE_H
+#endif // STYLE_H

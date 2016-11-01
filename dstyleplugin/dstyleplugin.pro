@@ -10,13 +10,12 @@ TARGET = dstyleplugin
 TEMPLATE = lib
 CONFIG += plugin
 
-SOURCES += dstyleplugin.cpp \
-    ddarkStyle.cpp \
-    dlightstyle.cpp
+SOURCES += dstyleplugin.cpp \ 
+    style.cpp 
 
 HEADERS += dstyleplugin.h \
-    ddarkStyle.h \
-    dlightstyle.h
+    style.h \
+    common.h
 
 DISTFILES += dstyleplugin.json
 

@@ -7,14 +7,26 @@
  * (at your option) any later version.
  **/
 
-#include "dlightstyle.h"
+#include "style.h"
 
-DLightStyle::DLightStyle()
+Style::Style(dstyle::StyleType style) :
+    QCommonStyle(),
+    m_type(style)
 {
 
 }
 
-DLightStyle::~DLightStyle()
+Style::~Style()
 {
 
+}
+
+void Style::polish(QPalette &p)
+{
+    Q_UNUSED(p)
+}
+
+void Style::polish(QWidget *w)
+{
+    Q_UNUSED(w)
 }

@@ -7,17 +7,13 @@
  * (at your option) any later version.
  **/
 
-#ifndef DDDarkStyle_H
-#define DDDarkStyle_H
+#ifndef COMMON_H
+#define COMMON_H
 
-#include <QCommonStyle>
+namespace dstyle {
 
-class DDarkStyle : public QCommonStyle
-{
-    Q_OBJECT
-public:
-    DDarkStyle();
-    ~DDarkStyle();
-};
+enum StyleType { StyleDark, StyleLight };
 
-#endif // DDDarkStyle_H
+}
+
+#endif // COMMON_H

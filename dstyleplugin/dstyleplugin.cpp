@@ -8,8 +8,7 @@
  **/
 
 #include "dstyleplugin.h"
-#include "ddarkstyle.h"
-#include "dlightstyle.h"
+#include "style.h"
 
 
 DStylePlugin::DStylePlugin(QObject *parent) :
@@ -20,9 +19,9 @@ DStylePlugin::DStylePlugin(QObject *parent) :
 QStyle *DStylePlugin::create(const QString &key)
 {
     if (key == "ddark") {
-        return new DDarkStyle();
+        return new Style(dstyle::StyleDark);
     } else if (key == "dlight") {
-        return new DLightStyle();
+        return new Style(dstyle::StyleLight);
     }
 
     return nullptr;
