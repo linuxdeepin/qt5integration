@@ -40,7 +40,7 @@ public:
     QRect sliderSubControlRect( const QStyleOptionComplex *opt, SubControl sc, const QWidget *w ) const;
 
 private:
-    dstyle::StyleType m_type;
+    StyleType m_type;
 };
 
 

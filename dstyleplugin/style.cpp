@@ -14,6 +14,7 @@
 #include "sliderhelper.h"
 #include "common.h"
 #include "geometryutils.h"
+#include "paletteextended.h"
 
 namespace dstyle {
 
@@ -21,7 +22,7 @@ Style::Style(StyleType style) :
     QCommonStyle(),
     m_type(style)
 {
-
+    PaletteExtended::instance()->setType(style);
 }
 
 Style::~Style()

@@ -14,14 +14,16 @@ SOURCES += dstyleplugin.cpp \
     style.cpp \ 
     sliderhelper.cpp \
     colorutils.cpp \
-    geometryutils.cpp
+    geometryutils.cpp \
+    paletteextended.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \
     common.h \
     sliderhelper.h \
     colorutils.h \
-    geometryutils.h
+    geometryutils.h \
+    paletteextended.h
 
 DISTFILES += dstyleplugin.json
 
@@ -29,3 +31,6 @@ unix {
     target.path = $$[QT_INSTALL_PLUGINS]/styles/
     INSTALLS += target
 }
+
+RESOURCES += \
+    colorschemes.qrc
