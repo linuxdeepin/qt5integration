@@ -11,11 +11,17 @@ TEMPLATE = lib
 CONFIG += plugin
 
 SOURCES += dstyleplugin.cpp \ 
-    style.cpp 
+    style.cpp \ 
+    sliderhelper.cpp \
+    colorutils.cpp \
+    geometryutils.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \
-    common.h
+    common.h \
+    sliderhelper.h \
+    colorutils.h \
+    geometryutils.h
 
 DISTFILES += dstyleplugin.json
 

@@ -10,7 +10,6 @@
 #include "dstyleplugin.h"
 #include "style.h"
 
-
 DStylePlugin::DStylePlugin(QObject *parent) :
     QStylePlugin(parent)
 {
@@ -19,9 +18,9 @@ DStylePlugin::DStylePlugin(QObject *parent) :
 QStyle *DStylePlugin::create(const QString &key)
 {
     if (key == "ddark") {
-        return new Style(dstyle::StyleDark);
+        return new dstyle::Style(dstyle::StyleDark);
     } else if (key == "dlight") {
-        return new Style(dstyle::StyleLight);
+        return new dstyle::Style(dstyle::StyleLight);
     }
 
     return nullptr;
