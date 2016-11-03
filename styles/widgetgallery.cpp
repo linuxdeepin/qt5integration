@@ -241,6 +241,9 @@ void WidgetGallery::createBottomRightGroupBox()
     dateTimeEdit->setDateTime(QDateTime::currentDateTime());
 
     slider = new QSlider(Qt::Horizontal, bottomRightGroupBox);
+    slider->setRange(0, 100);
+    slider->setTickInterval(10);
+    slider->setTickPosition(QSlider::TicksBelow);
     slider->setValue(40);
 
     scrollBar = new QScrollBar(Qt::Horizontal, bottomRightGroupBox);

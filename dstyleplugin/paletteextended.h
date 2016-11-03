@@ -32,6 +32,7 @@ public:
         Slider_GrooveColor,
         Slider_GrooveHighlightColor,
         Slider_HandleColor,
+        Slider_TickmarkColor,
     };
     Q_ENUM(ColorName)
 

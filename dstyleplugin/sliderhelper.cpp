@@ -70,7 +70,7 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
 
             // colors
             const QColor base( palette.base().color() );
-            const QColor highlight( palette.color( QPalette::Highlight ) );
+            const QColor highlight( PaletteExtended::instance()->color(PaletteExtended::Slider_TickmarkColor) );
 
             while( current <= sliderOption->maximum )
             {
@@ -149,8 +149,8 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
         QRect handleRect( style->subControlRect( QStyle::CC_Slider, sliderOption, QStyle::SC_SliderHandle, widget ) );
 
         // handle state
-        const bool handleActive( sliderOption->activeSubControls & QStyle::SC_SliderHandle );
-        const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken) );
+//        const bool handleActive( sliderOption->activeSubControls & QStyle::SC_SliderHandle );
+//        const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken) );
 
         // define colors
         const QColor background( PaletteExtended::instance()->color(PaletteExtended::Slider_HandleColor) );
