@@ -112,7 +112,7 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
             QRect handleRect( style->subControlRect( QStyle::CC_Slider, sliderOption, QStyle::SC_SliderHandle, widget ) );
 
             // highlight color
-            const QColor highlight( PaletteExtended::instance()->color(PaletteExtended::Slider_GrooveHightlightColor) );
+            const QColor highlight( PaletteExtended::instance()->color(PaletteExtended::Slider_GrooveHighlightColor) );
 
             if( sliderOption->orientation == Qt::Horizontal )
             {

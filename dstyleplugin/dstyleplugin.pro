@@ -27,6 +27,8 @@ HEADERS += dstyleplugin.h \
 
 DISTFILES += dstyleplugin.json
 
+DESTDIR = $$_PRO_FILE_PWD_/../bin/plugins/styles/
+
 unix {
     target.path = $$[QT_INSTALL_PLUGINS]/styles/
     INSTALLS += target
