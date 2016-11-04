@@ -9,12 +9,16 @@
 
 #include <QMenu>
 #include <QLineEdit>
+#include <QDebug>
 
 #include "style.h"
-#include "sliderhelper.h"
 #include "common.h"
 #include "geometryutils.h"
 #include "paletteextended.h"
+
+#include "sliderhelper.h"
+#include "pushbuttonhelper.h"
+#include "framehelper.h"
 
 namespace dstyle {
 
@@ -182,7 +186,7 @@ int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, c
 
 QRect Style::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex *opt, QStyle::SubControl sc, const QWidget *w) const
 {
-//    SubControlRectFunc fn = nullptr;
+    //    SubControlRectFunc fn = nullptr;
 
     switch (cc) {
     case QStyle::CC_Slider: return sliderSubControlRect(opt, sc, w);
@@ -190,14 +194,63 @@ QRect Style::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex
         break;
     }
 
-//    if (fn) {
-//        QRect rect = fn(opt, sc, w);
-//        if (!rect.isEmpty()) {
-//            return rect;
-//        }
-//    }
+    //    if (fn) {
+    //        QRect rect = fn(opt, sc, w);
+    //        if (!rect.isEmpty()) {
+    //            return rect;
+    //        }
+    //    }
 
     return QCommonStyle::subControlRect(cc, opt, sc, w);
+}
+
+void Style::drawControl(QStyle::ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+{
+    DrawControlFunc fcn( nullptr );
+
+    switch( element ) {
+    case CE_PushButtonBevel: fcn = &PushButtonHelper::drawPushButtonBevel; break;
+    case CE_PushButtonLabel: fcn = &PushButtonHelper::drawPushButtonLabel; break;
+        //        case CE_CheckBoxLabel: fcn = &Style::drawCheckBoxLabelControl; break;
+        //        case CE_RadioButtonLabel: fcn = &Style::drawCheckBoxLabelControl; break;
+        //        case CE_ToolButtonLabel: fcn = &Style::drawToolButtonLabelControl; break;
+        //        case CE_ComboBoxLabel: fcn = &Style::drawComboBoxLabelControl; break;
+        //        case CE_MenuBarEmptyArea: fcn = &Style::emptyControl; break;
+        //        case CE_MenuBarItem: fcn = &Style::drawMenuBarItemControl; break;
+        //        case CE_MenuItem: fcn = &Style::drawMenuItemControl; break;
+        //        case CE_ToolBar: fcn = &Style::emptyControl; break;
+        //        case CE_ProgressBar: fcn = &Style::drawProgressBarControl; break;
+        //        case CE_ProgressBarContents: fcn = &Style::drawProgressBarContentsControl; break;
+        //        case CE_ProgressBarGroove: fcn = &Style::drawProgressBarGrooveControl; break;
+        //        case CE_ProgressBarLabel: fcn = &Style::drawProgressBarLabelControl; break;
+        //        case CE_ScrollBarSlider: fcn = &Style::drawScrollBarSliderControl; break;
+        //        case CE_ScrollBarAddLine: fcn = &Style::drawScrollBarAddLineControl; break;
+        //        case CE_ScrollBarSubLine: fcn = &Style::drawScrollBarSubLineControl; break;
+        //        case CE_ScrollBarAddPage: fcn = &Style::emptyControl; break;
+        //        case CE_ScrollBarSubPage: fcn = &Style::emptyControl; break;
+        //        case CE_ShapedFrame: fcn = &Style::drawShapedFrameControl; break;
+        //        case CE_RubberBand: fcn = &Style::drawRubberBandControl; break;
+        //        case CE_SizeGrip: fcn = &Style::emptyControl; break;
+        //        case CE_HeaderSection: fcn = &Style::drawHeaderSectionControl; break;
+        //        case CE_HeaderEmptyArea: fcn = &Style::drawHeaderEmptyAreaControl; break;
+        //        case CE_TabBarTabLabel: fcn = &Style::drawTabBarTabLabelControl; break;
+        //        case CE_TabBarTabShape: fcn = &Style::drawTabBarTabShapeControl; break;
+        //        case CE_ToolBoxTabLabel: fcn = &Style::drawToolBoxTabLabelControl; break;
+        //        case CE_ToolBoxTabShape: fcn = &Style::drawToolBoxTabShapeControl; break;
+        //        case CE_DockWidgetTitle: fcn = &Style::drawDockWidgetTitleControl; break;
+        //        case CE_CapacityBar: fcn = &Style::drawProgressBarControl; break;
+
+        // fallback
+    default: break;
+    }
+
+    painter->save();
+
+    // call function if implemented
+    if( !( fcn && fcn( option, painter, widget ) ) )
+    { QCommonStyle::drawControl( element, option, painter, widget ); }
+
+    painter->restore();
 }
 
 void Style::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const
@@ -217,6 +270,55 @@ void Style::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComp
     return QCommonStyle::drawComplexControl(cc, opt, p, w);
 }
 
+void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+{
+
+    DrawPrimitiveFunc fcn( nullptr );
+    switch( element )
+    {
+//    case PE_PanelButtonCommand: fcn = &Style::drawPanelButtonCommandPrimitive; break;
+//    case PE_PanelButtonTool: fcn = &Style::drawPanelButtonToolPrimitive; break;
+//    case PE_PanelScrollAreaCorner: fcn = &Style::drawPanelScrollAreaCornerPrimitive; break;
+//    case PE_PanelMenu: fcn = &Style::drawPanelMenuPrimitive; break;
+//    case PE_PanelTipLabel: fcn = &Style::drawPanelTipLabelPrimitive; break;
+//    case PE_PanelItemViewItem: fcn = &Style::drawPanelItemViewItemPrimitive; break;
+//    case PE_IndicatorCheckBox: fcn = &Style::drawIndicatorCheckBoxPrimitive; break;
+//    case PE_IndicatorRadioButton: fcn = &Style::drawIndicatorRadioButtonPrimitive; break;
+//    case PE_IndicatorButtonDropDown: fcn = &Style::drawIndicatorButtonDropDownPrimitive; break;
+//    case PE_IndicatorTabClose: fcn = &Style::drawIndicatorTabClosePrimitive; break;
+//    case PE_IndicatorTabTear: fcn = &Style::drawIndicatorTabTearPrimitive; break;
+//    case PE_IndicatorArrowUp: fcn = &Style::drawIndicatorArrowUpPrimitive; break;
+//    case PE_IndicatorArrowDown: fcn = &Style::drawIndicatorArrowDownPrimitive; break;
+//    case PE_IndicatorArrowLeft: fcn = &Style::drawIndicatorArrowLeftPrimitive; break;
+//    case PE_IndicatorArrowRight: fcn = &Style::drawIndicatorArrowRightPrimitive; break;
+//    case PE_IndicatorHeaderArrow: fcn = &Style::drawIndicatorHeaderArrowPrimitive; break;
+//    case PE_IndicatorToolBarHandle: fcn = &Style::drawIndicatorToolBarHandlePrimitive; break;
+//    case PE_IndicatorToolBarSeparator: fcn = &Style::drawIndicatorToolBarSeparatorPrimitive; break;
+//    case PE_IndicatorBranch: fcn = &Style::drawIndicatorBranchPrimitive; break;
+//    case PE_FrameStatusBar: fcn = &Style::emptyPrimitive; break;
+//    case PE_Frame: fcn = &Style::drawFramePrimitive; break;
+//    case PE_FrameLineEdit: fcn = &Style::drawFrameLineEditPrimitive; break;
+//    case PE_FrameMenu: fcn = &Style::drawFrameMenuPrimitive; break;
+//    case PE_FrameGroupBox: fcn = &Style::drawFrameGroupBoxPrimitive; break;
+//    case PE_FrameTabWidget: fcn = &Style::drawFrameTabWidgetPrimitive; break;
+//    case PE_FrameTabBarBase: fcn = &Style::drawFrameTabBarBasePrimitive; break;
+//    case PE_FrameWindow: fcn = &Style::drawFrameWindowPrimitive; break;
+    case PE_FrameFocusRect: fcn = &FrameHelper::drawFrameFocusRectPrimitive; break;
+
+    // fallback
+    default: break;
+
+    }
+
+    painter->save();
+
+    // call function if implemented
+    if( !( fcn && fcn( option, painter, widget ) ) )
+    { QCommonStyle::drawPrimitive( element, option, painter, widget ); }
+
+    painter->restore();
+}
+
 QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, QStyle::SubControl subControl, const QWidget *widget) const
 {
     // cast option and check
@@ -225,28 +327,28 @@ QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, QStyle::Sub
 
     switch( subControl )
     {
-        case SC_SliderGroove:
-        {
+    case SC_SliderGroove:
+    {
 
-            // direction
-            const bool horizontal( sliderOption->orientation == Qt::Horizontal );
+        // direction
+        const bool horizontal( sliderOption->orientation == Qt::Horizontal );
 
-            // get base class rect
-            QRect grooveRect( QCommonStyle::subControlRect( CC_Slider, option, subControl, widget ) );
-            grooveRect = GeometryUtils::insideMargin( grooveRect, pixelMetric( PM_DefaultFrameWidth, option, widget ) );
+        // get base class rect
+        QRect grooveRect( QCommonStyle::subControlRect( CC_Slider, option, subControl, widget ) );
+        grooveRect = GeometryUtils::insideMargin( grooveRect, pixelMetric( PM_DefaultFrameWidth, option, widget ) );
 
-            // centering
-            if( horizontal ) {
-                grooveRect = GeometryUtils::centerRect( grooveRect, grooveRect.width(), Metrics::Slider_GrooveThickness );
-            } else {
-                grooveRect = GeometryUtils::centerRect( grooveRect, Metrics::Slider_GrooveThickness, grooveRect.height() );
-            }
-
-            return grooveRect;
-
+        // centering
+        if( horizontal ) {
+            grooveRect = GeometryUtils::centerRect( grooveRect, grooveRect.width(), Metrics::Slider_GrooveThickness );
+        } else {
+            grooveRect = GeometryUtils::centerRect( grooveRect, Metrics::Slider_GrooveThickness, grooveRect.height() );
         }
 
-        default: return QCommonStyle::subControlRect( CC_Slider, option, subControl, widget );
+        return grooveRect;
+
+    }
+
+    default: return QCommonStyle::subControlRect( CC_Slider, option, subControl, widget );
     }
 }
 

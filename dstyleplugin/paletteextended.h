@@ -33,6 +33,19 @@ public:
         Slider_GrooveHighlightColor,
         Slider_HandleColor,
         Slider_TickmarkColor,
+
+        PushButton_BackgroundDisabledColor,
+        PushButton_BackgroundNormalColor,
+        PushButton_BackgroundHoverColor,
+        PushButton_BackgroundPressedColor,
+        PushButton_TextDisabledColor,
+        PushButton_TextNormalColor,
+        PushButton_TextHoverColor,
+        PushButton_TextPressedColor,
+        PushButton_BorderDisabledColor,
+        PushButton_BorderNormalColor,
+        PushButton_BorderHoverColor,
+        PushButton_BorderPressedColor,
     };
     Q_ENUM(ColorName)
 

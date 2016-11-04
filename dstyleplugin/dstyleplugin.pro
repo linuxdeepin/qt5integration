@@ -15,7 +15,9 @@ SOURCES += dstyleplugin.cpp \
     sliderhelper.cpp \
     colorutils.cpp \
     geometryutils.cpp \
-    paletteextended.cpp
+    paletteextended.cpp \
+    pushbuttonhelper.cpp \
+    framehelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \
@@ -23,7 +25,9 @@ HEADERS += dstyleplugin.h \
     sliderhelper.h \
     colorutils.h \
     geometryutils.h \
-    paletteextended.h
+    paletteextended.h \
+    pushbuttonhelper.h \
+    framehelper.h
 
 DISTFILES += dstyleplugin.json
 

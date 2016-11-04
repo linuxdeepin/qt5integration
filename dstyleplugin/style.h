@@ -30,11 +30,15 @@ public:
 
     QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc, const QWidget *w) const Q_DECL_OVERRIDE;
 
+    void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE;
+    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE;
 
     // some function type alias.
 //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
-    using RenderFunc = bool(*)(const QStyleOptionComplex *opt, QPainter *p, const QWidget *w);
+    using RenderFunc = bool(*)(const QStyleOptionComplex *, QPainter *, const QWidget *);
+    using DrawPrimitiveFunc = bool(*)(const QStyleOption*, QPainter*, const QWidget* );
+    using DrawControlFunc = bool (*)(const QStyleOption*, QPainter*, const QWidget* );
 
     // helper functions
     QRect sliderSubControlRect( const QStyleOptionComplex *opt, SubControl sc, const QWidget *w ) const;

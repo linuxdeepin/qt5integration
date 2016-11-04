@@ -9,6 +9,13 @@
 
 #include "geometryutils.h"
 
+namespace dstyle {
+
+QRect GeometryUtils::centerRect(const QRect &rect, const QSize &size)
+{
+    return centerRect( rect, size.width(), size.height() );
+}
+
 QRect GeometryUtils::centerRect(const QRect &rect, int width, int height)
 {
     return QRect(rect.left() + (rect.width() - width)/2, rect.top() + (rect.height() - height)/2, width, height);
@@ -22,4 +29,6 @@ QRect GeometryUtils::insideMargin(const QRect &r, int margin)
 QRect GeometryUtils::insideMargin(const QRect &r, int marginWidth, int marginHeight)
 {
     return r.adjusted( marginWidth, marginHeight, -marginWidth, -marginHeight );
+}
+
 }

@@ -13,6 +13,7 @@
 #include <QString>
 #include <QColor>
 #include <QMetaEnum>
+#include <QDebug>
 
 namespace dstyle {
 
@@ -32,6 +33,8 @@ QColor PaletteExtended::color(PaletteExtended::ColorName name) const
 
     const QString key = colorName.replace("_", "/");
     const QStringList value = m_colorScheme->value(key).toStringList();
+
+    qDebug() << key << value << parseColor(value);
 
     return parseColor(value);
 }
@@ -63,12 +66,14 @@ QColor PaletteExtended::parseColor(const QStringList &value) const
         const int g = value.at(1).toInt();
         const int b = value.at(2).toInt();
 
+        QColor ret( QColor::fromRgb(r, g, b));
+
         if (value.length() > 3) {
             const float a = value.at(3).toFloat();
-            return QColor::fromRgbF(r, g, b, a);
-        } else {
-            return QColor::fromRgb(r, g, b);
+            ret.setAlphaF(a);
         }
+
+        return ret;
     }
 
     return Qt::black;
