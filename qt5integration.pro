@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS += dstyleplugin
 
-CONFIG(debug) {
+CONFIG(debug, debug|release) {
     SUBDIRS += styles
     styles.depends += dstyleplugin
 }
