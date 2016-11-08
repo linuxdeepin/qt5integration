@@ -12,6 +12,7 @@
 
 #include <QObject>
 #include <QSettings>
+#include <QPalette>
 
 #include "common.h"
 
@@ -24,10 +25,10 @@ public:
     static PaletteExtended *instance();
 
     enum ColorName {
-        QPalette_Background,
+        QPalette_Window,
         QPalette_WindowText,
         QPalette_Highlight,
-        QPalette_HighlightText,
+        QPalette_HighlightedText,
 
         Slider_GrooveColor,
         Slider_GrooveHighlightColor,
@@ -53,6 +54,7 @@ public:
 
     void setType(StyleType type);
 
+    void polish(QPalette &p);
 
 private:
     PaletteExtended();

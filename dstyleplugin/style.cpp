@@ -36,17 +36,13 @@ Style::~Style()
 
 void Style::polish(QPalette &p)
 {
-    Q_UNUSED(p)
     QCommonStyle::polish(p);
 
-    p.setCurrentColorGroup(QPalette::Active);
-    p.setColor(QPalette::WindowText, Qt::white);
-    p.setColor(QPalette::Highlight, QColor("#2ca7f8"));
+    PaletteExtended::instance()->polish(p);
 }
 
 void Style::polish(QWidget *w)
 {
-    Q_UNUSED(w)
     QCommonStyle::polish(w);
 }
 
