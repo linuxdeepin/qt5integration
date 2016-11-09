@@ -34,8 +34,6 @@ QColor PaletteExtended::color(PaletteExtended::ColorName name) const
     const QString key = colorName.replace("_", "/");
     const QStringList value = m_colorScheme->value(key).toStringList();
 
-    qDebug() << key << value << parseColor(value);
-
     return parseColor(value);
 }
 

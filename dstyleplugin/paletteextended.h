@@ -47,6 +47,13 @@ public:
         PushButton_BorderNormalColor,
         PushButton_BorderHoverColor,
         PushButton_BorderPressedColor,
+
+        LineEdit_BorderDisabledColor,
+        LineEdit_BorderNormalColor,
+        LineEdit_BorderFocusedColor,
+        LineEdit_BackgroundDisabledColor,
+        LineEdit_BackgroundNormalColor,
+        LineEdit_BackgroundFocusedColor,
     };
     Q_ENUM(ColorName)
 
