@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
     Q_INIT_RESOURCE(styles);
 
     QApplication app(argc, argv);
-    app.addLibraryPath(app.applicationDirPath() + "/plugins/");
+
+    QStringList paths = QApplication::libraryPaths();
+    paths.prepend(app.applicationDirPath() + "/plugins/");
+    QApplication::setLibraryPaths(paths);
 
     WidgetGallery gallery;
     gallery.show();
