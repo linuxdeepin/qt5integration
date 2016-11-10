@@ -16,18 +16,14 @@
 #include "geometryutils.h"
 #include "paletteextended.h"
 
-#include "sliderhelper.h"
-#include "pushbuttonhelper.h"
-#include "framehelper.h"
-#include "lineedithelper.h"
-
 namespace dstyle {
 
 Style::Style(StyleType style) :
     QCommonStyle(),
-    m_type(style)
+    m_type(style),
+    m_palette(new PaletteExtended(style, this))
 {
-    PaletteExtended::instance()->setType(style);
+
 }
 
 Style::~Style()
@@ -39,7 +35,7 @@ void Style::polish(QPalette &p)
 {
     QCommonStyle::polish(p);
 
-    PaletteExtended::instance()->polish(p);
+    m_palette->polish(p);
 }
 
 void Style::polish(QWidget *w)

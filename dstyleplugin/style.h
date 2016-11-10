@@ -13,6 +13,11 @@
 #include <QCommonStyle>
 
 #include "common.h"
+#include "paletteextended.h"
+#include "sliderhelper.h"
+#include "pushbuttonhelper.h"
+#include "framehelper.h"
+#include "lineedithelper.h"
 
 namespace dstyle {
 
@@ -45,6 +50,12 @@ public:
 
 private:
     StyleType m_type;
+    PaletteExtended *m_palette;
+
+    friend class SliderHelper;
+    friend class PushButtonHelper;
+    friend class LineEditHelper;
+    friend class FrameHelper;
 };
 
 

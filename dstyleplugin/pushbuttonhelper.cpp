@@ -10,7 +10,7 @@
 #include "pushbuttonhelper.h"
 #include "common.h"
 #include "geometryutils.h"
-#include "paletteextended.h"
+#include "style.h"
 
 #include <QDebug>
 #include <QStyleOptionButton>
@@ -19,6 +19,9 @@ namespace dstyle {
 
 bool PushButtonHelper::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, const QWidget *widget)
 {
+    Style *style = qobject_cast<Style*>(widget->style());
+    if (!style) return false;
+
     // cast option and check
     const QStyleOptionButton* buttonOption( qstyleoption_cast< const QStyleOptionButton* >( option ) );
     if( !buttonOption ) return true;
@@ -44,8 +47,8 @@ bool PushButtonHelper::drawPushButtonBevel(const QStyleOption *option, QPainter 
     } else {
         // TODO(hualet): update button color from palette in case button is default
         const QColor shadow( Qt::transparent );
-        const QColor outline( getButtonBorderColor(enabled, mouseOver, hasFocus, sunken) );
-        const QColor background( getButtonColor(enabled, mouseOver, hasFocus, sunken) );
+        const QColor outline( getButtonBorderColor(style->m_palette, enabled, mouseOver, hasFocus, sunken) );
+        const QColor background( getButtonColor(style->m_palette, enabled, mouseOver, hasFocus, sunken) );
 
         // render
         drawPushButtonFrame(painter, rect, background, outline, shadow );
@@ -226,28 +229,28 @@ bool PushButtonHelper::drawPushButtonFrame( QPainter* painter, const QRect& rect
     return true;
 }
 
-QColor PushButtonHelper::getButtonBorderColor(bool enabled, bool mouseOver, bool hasFocus, bool sunken)
+QColor PushButtonHelper::getButtonBorderColor(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken)
 {
-    if (!enabled) return PaletteExtended::instance()->color(PaletteExtended::PushButton_BorderDisabledColor);
-    else if (sunken) return PaletteExtended::instance()->color(PaletteExtended::PushButton_BorderPressedColor);
-    else if (mouseOver) return PaletteExtended::instance()->color(PaletteExtended::PushButton_BorderHoverColor);
-    else return PaletteExtended::instance()->color(PaletteExtended::PushButton_BorderNormalColor);
+    if (!enabled) return plExt->color(PaletteExtended::PushButton_BorderDisabledColor);
+    else if (sunken) return plExt->color(PaletteExtended::PushButton_BorderPressedColor);
+    else if (mouseOver) return plExt->color(PaletteExtended::PushButton_BorderHoverColor);
+    else return plExt->color(PaletteExtended::PushButton_BorderNormalColor);
 }
 
-QColor PushButtonHelper::getButtonColor(bool enabled, bool mouseOver, bool hasFocus, bool sunken)
+QColor PushButtonHelper::getButtonColor(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken)
 {
-    if (!enabled) return PaletteExtended::instance()->color(PaletteExtended::PushButton_BackgroundDisabledColor);
-    else if (sunken) return PaletteExtended::instance()->color(PaletteExtended::PushButton_BackgroundPressedColor);
-    else if (mouseOver) return PaletteExtended::instance()->color(PaletteExtended::PushButton_BackgroundHoverColor);
-    else return PaletteExtended::instance()->color(PaletteExtended::PushButton_BackgroundNormalColor);
+    if (!enabled) return plExt->color(PaletteExtended::PushButton_BackgroundDisabledColor);
+    else if (sunken) return plExt->color(PaletteExtended::PushButton_BackgroundPressedColor);
+    else if (mouseOver) return plExt->color(PaletteExtended::PushButton_BackgroundHoverColor);
+    else return plExt->color(PaletteExtended::PushButton_BackgroundNormalColor);
 }
 
-QColor PushButtonHelper::getButtonTextColor(bool enabled, bool mouseOver, bool hasFocus, bool sunken)
+QColor PushButtonHelper::getButtonTextColor(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken)
 {
-    if (!enabled) return PaletteExtended::instance()->color(PaletteExtended::PushButton_TextDisabledColor);
-    else if (sunken) return PaletteExtended::instance()->color(PaletteExtended::PushButton_TextPressedColor);
-    else if (mouseOver) return PaletteExtended::instance()->color(PaletteExtended::PushButton_TextHoverColor);
-    else return PaletteExtended::instance()->color(PaletteExtended::PushButton_TextNormalColor);
+    if (!enabled) return plExt->color(PaletteExtended::PushButton_TextDisabledColor);
+    else if (sunken) return plExt->color(PaletteExtended::PushButton_TextPressedColor);
+    else if (mouseOver) return plExt->color(PaletteExtended::PushButton_TextHoverColor);
+    else return plExt->color(PaletteExtended::PushButton_TextNormalColor);
 }
 
 }

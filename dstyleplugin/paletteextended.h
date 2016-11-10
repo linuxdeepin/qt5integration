@@ -22,7 +22,7 @@ class PaletteExtended : public QObject
 {
     Q_OBJECT
 public:
-    static PaletteExtended *instance();
+    PaletteExtended(StyleType type, QObject *parent = 0);
 
     enum ColorName {
         //TODO(hualet): Color Group support.
@@ -67,7 +67,6 @@ public:
     void polish(QPalette &p);
 
 private:
-    PaletteExtended();
     QColor parseColor(const QStringList &value) const;
 
     QSettings *m_colorScheme;

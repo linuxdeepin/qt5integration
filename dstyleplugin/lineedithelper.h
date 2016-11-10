@@ -12,6 +12,8 @@
 
 #include <QStyleOptionComplex>
 
+#include "paletteextended.h"
+
 namespace dstyle {
 
 class LineEditHelper
@@ -19,8 +21,8 @@ class LineEditHelper
 public:
     static bool drawFrameLineEditPrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget );
 
-    static QColor getBorderColor( bool enabled, bool hasFocus );
-    static QColor getBackgroundColor( bool enabled, bool hasFocus );
+    static QColor getBorderColor( PaletteExtended *plExt, bool enabled, bool hasFocus );
+    static QColor getBackgroundColor( PaletteExtended *plExt, bool enabled, bool hasFocus );
 };
 
 }

@@ -14,6 +14,8 @@
 #include <QPainter>
 #include <QWidget>
 
+#include "paletteextended.h"
+
 namespace dstyle {
 
 class PushButtonHelper
@@ -24,9 +26,9 @@ public:
     static bool drawFlatButtonFrame(QPainter* painter, const QRect& rect, const QColor& color, bool sunken);
     static bool drawPushButtonFrame(QPainter* painter, const QRect& rect, const QColor& color, const QColor& outline, const QColor& shadow);
 
-    static QColor getButtonBorderColor(bool enabled, bool mouseOver, bool hasFocus, bool sunken);
-    static QColor getButtonColor(bool enabled, bool mouseOver, bool hasFocus, bool sunken);
-    static QColor getButtonTextColor(bool enabled, bool mouseOver, bool hasFocus, bool sunken);
+    static QColor getButtonBorderColor(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken);
+    static QColor getButtonColor(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken);
+    static QColor getButtonTextColor(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken);
 };
 
 }

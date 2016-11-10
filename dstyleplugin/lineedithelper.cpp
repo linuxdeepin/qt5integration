@@ -12,12 +12,15 @@
 #include "lineedithelper.h"
 #include "commonhelper.h"
 #include "common.h"
-#include "paletteextended.h"
+#include "style.h"
 
 namespace dstyle {
 
 bool LineEditHelper::drawFrameLineEditPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget)
 {
+    Style *style = qobject_cast<Style*>(widget->style());
+    if (!style) return false;
+
     const QRect& rect( option->rect );
 
     // copy state
@@ -26,25 +29,25 @@ bool LineEditHelper::drawFrameLineEditPrimitive(const QStyleOption *option, QPai
     const bool hasFocus( enabled && ( state & QStyle::State_HasFocus ) );
 
     // render
-    const QColor background( getBackgroundColor(enabled, hasFocus) );
-    const QColor outline( getBorderColor(enabled, hasFocus) );
+    const QColor background( getBackgroundColor(style->m_palette, enabled, hasFocus) );
+    const QColor outline( getBorderColor(style->m_palette, enabled, hasFocus) );
     CommonHelper::renderFrame( painter, rect, background, outline );
 
     return true;
 }
 
-QColor LineEditHelper::getBorderColor(bool enabled, bool hasFocus)
+QColor LineEditHelper::getBorderColor(PaletteExtended *plExt, bool enabled, bool hasFocus)
 {
-    if (!enabled) return PaletteExtended::instance()->color(PaletteExtended::LineEdit_BorderDisabledColor);
-    else if (hasFocus) return PaletteExtended::instance()->color(PaletteExtended::LineEdit_BorderFocusedColor);
-    else return PaletteExtended::instance()->color(PaletteExtended::LineEdit_BorderNormalColor);
+    if (!enabled) return plExt->color(PaletteExtended::LineEdit_BorderDisabledColor);
+    else if (hasFocus) return plExt->color(PaletteExtended::LineEdit_BorderFocusedColor);
+    else return plExt->color(PaletteExtended::LineEdit_BorderNormalColor);
 }
 
-QColor LineEditHelper::getBackgroundColor(bool enabled, bool hasFocus)
+QColor LineEditHelper::getBackgroundColor(PaletteExtended *plExt, bool enabled, bool hasFocus)
 {
-    if (!enabled) return PaletteExtended::instance()->color(PaletteExtended::LineEdit_BackgroundDisabledColor);
-    else if (hasFocus) return PaletteExtended::instance()->color(PaletteExtended::LineEdit_BackgroundFocusedColor);
-    else return PaletteExtended::instance()->color(PaletteExtended::LineEdit_BackgroundNormalColor);
+    if (!enabled) return plExt->color(PaletteExtended::LineEdit_BackgroundDisabledColor);
+    else if (hasFocus) return plExt->color(PaletteExtended::LineEdit_BackgroundFocusedColor);
+    else return plExt->color(PaletteExtended::LineEdit_BackgroundNormalColor);
 }
 
 }

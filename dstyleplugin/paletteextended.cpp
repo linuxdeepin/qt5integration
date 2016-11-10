@@ -17,13 +17,11 @@
 
 namespace dstyle {
 
-static PaletteExtended *StaticInstance = nullptr;
-
-PaletteExtended::PaletteExtended() :
-    QObject(),
+PaletteExtended::PaletteExtended(StyleType type, QObject *parent) :
+    QObject(parent),
     m_colorScheme(nullptr)
 {
-
+    setType(type);
 }
 
 QColor PaletteExtended::color(PaletteExtended::ColorName name) const
@@ -56,15 +54,6 @@ void PaletteExtended::polish(QPalette &p)
     p.setColor(QPalette::WindowText, color(QPalette_WindowText));
     p.setColor(QPalette::Highlight, color(QPalette_Highlight));
     p.setColor(QPalette::HighlightedText, color(QPalette_HighlightedText));
-}
-
-PaletteExtended *PaletteExtended::instance()
-{
-    if (!StaticInstance) {
-        StaticInstance = new PaletteExtended;
-    }
-
-    return StaticInstance;
 }
 
 /*

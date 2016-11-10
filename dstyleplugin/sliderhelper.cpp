@@ -12,6 +12,7 @@
 #include "colorutils.h"
 #include "geometryutils.h"
 #include "paletteextended.h"
+#include "style.h"
 
 #include <QStyleOptionSlider>
 
@@ -19,12 +20,14 @@ namespace dstyle {
 
 bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget)
 {
-    QStyle *style = widget->style();
+    Style *style = qobject_cast<Style*>(widget->style());
     if ( !style ) return true;
 
     // cast option and check
     const QStyleOptionSlider *sliderOption( qstyleoption_cast<const QStyleOptionSlider*>( option ) );
     if( !sliderOption ) return true;
+
+    const PaletteExtended *plExt = style->m_palette;
 
     // copy rect and palette
     const QRect& rect( option->rect );
@@ -70,7 +73,7 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
 
             // colors
             const QColor base( palette.base().color() );
-            const QColor highlight( PaletteExtended::instance()->color(PaletteExtended::Slider_TickmarkColor) );
+            const QColor highlight( plExt->color(PaletteExtended::Slider_TickmarkColor) );
 
             while( current <= sliderOption->maximum )
             {
@@ -101,7 +104,7 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
         QRect grooveRect( style->subControlRect( QStyle::CC_Slider, sliderOption, QStyle::SC_SliderGroove, widget ) );
 
         // base color
-        const QColor grooveColor( PaletteExtended::instance()->color(PaletteExtended::Slider_GrooveColor) );
+        const QColor grooveColor( plExt->color(PaletteExtended::Slider_GrooveColor) );
 
         if( !enabled ) renderSliderGroove( painter, grooveRect, grooveColor );
         else {
@@ -112,7 +115,7 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
             QRect handleRect( style->subControlRect( QStyle::CC_Slider, sliderOption, QStyle::SC_SliderHandle, widget ) );
 
             // highlight color
-            const QColor highlight( PaletteExtended::instance()->color(PaletteExtended::Slider_GrooveHighlightColor) );
+            const QColor highlight( plExt->color(PaletteExtended::Slider_GrooveHighlightColor) );
 
             if( sliderOption->orientation == Qt::Horizontal )
             {
@@ -153,7 +156,7 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
 //        const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken) );
 
         // define colors
-        const QColor background( PaletteExtended::instance()->color(PaletteExtended::Slider_HandleColor) );
+        const QColor background( plExt->color(PaletteExtended::Slider_HandleColor) );
 
         // TODO: calculate outline shadow with some sort of algorithm.
         //        const QColor outline( _helper->sliderOutlineColor( palette, handleActive && mouseOver, hasFocus, opacity, mode ) );
