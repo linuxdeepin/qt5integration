@@ -65,6 +65,13 @@ PaletteExtended *PaletteExtended::instance()
     return StaticInstance;
 }
 
+/*
+ * r(0-255) g(0-255) b(0-255) a(0-1) hex(#000000-#ffffff)
+ * rgb
+ * rgba
+ * hex
+ * hexa
+ */
 QColor PaletteExtended::parseColor(const QStringList &value) const
 {
     if (value.length() >= 3) {
@@ -77,6 +84,14 @@ QColor PaletteExtended::parseColor(const QStringList &value) const
         if (value.length() > 3) {
             const float a = value.at(3).toFloat();
             ret.setAlphaF(a);
+        }
+
+        return ret;
+    } else {
+        QColor ret( value.at(0) );
+
+        if (value.length() == 2) {
+            ret.setAlphaF(value.at(1).toFloat());
         }
 
         return ret;
