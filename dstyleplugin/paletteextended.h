@@ -25,6 +25,9 @@ public:
     static PaletteExtended *instance();
 
     enum ColorName {
+        //TODO(hualet): Color Group support.
+        QPalette_Base,
+        QPalette_Text,
         QPalette_Window,
         QPalette_WindowText,
         QPalette_Highlight,

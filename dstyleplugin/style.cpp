@@ -294,8 +294,8 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
 //    case PE_IndicatorBranch: fcn = &Style::drawIndicatorBranchPrimitive; break;
 //    case PE_FrameStatusBar: fcn = &Style::emptyPrimitive; break;
 //    case PE_Frame: fcn = &Style::drawFramePrimitive; break;
-    case PE_FrameLineEdit: fcn = &LineEditHelper::drawFrameLineEditPrimitive; break;
 //    case PE_FrameMenu: fcn = &Style::drawFrameMenuPrimitive; break;
+    case PE_FrameLineEdit: fcn = &LineEditHelper::drawFrameLineEditPrimitive; break;
 //    case PE_FrameGroupBox: fcn = &Style::drawFrameGroupBoxPrimitive; break;
 //    case PE_FrameTabWidget: fcn = &Style::drawFrameTabWidgetPrimitive; break;
 //    case PE_FrameTabBarBase: fcn = &Style::drawFrameTabBarBasePrimitive; break;

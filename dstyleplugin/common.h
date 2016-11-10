@@ -27,7 +27,7 @@ enum Metrics
     Layout_DefaultSpacing = 6,
 
     // line editors
-    LineEdit_FrameWidth = 6,
+    LineEdit_FrameWidth = 4,
 
     // menu items
     Menu_FrameWidth = 0,

@@ -50,6 +50,8 @@ void PaletteExtended::setType(StyleType type)
 
 void PaletteExtended::polish(QPalette &p)
 {
+    p.setColor(QPalette::Base, color(QPalette_Base));
+    p.setColor(QPalette::Text, color(QPalette_Text));
     p.setColor(QPalette::Window, color(QPalette_Window));
     p.setColor(QPalette::WindowText, color(QPalette_WindowText));
     p.setColor(QPalette::Highlight, color(QPalette_Highlight));
