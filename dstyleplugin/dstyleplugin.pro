@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets
+QT       += core gui widgets widgets-private
 
 TARGET = dstyleplugin
 TEMPLATE = lib

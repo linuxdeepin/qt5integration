@@ -18,7 +18,7 @@ namespace dstyle {
 
 bool LineEditHelper::drawFrameLineEditPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget)
 {
-    Style *style = qobject_cast<Style*>(widget->style());
+    Style *style = CommonHelper::widgetStyle(widget);
     if (!style) return false;
 
     const QRect& rect( option->rect );

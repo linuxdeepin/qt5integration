@@ -7,6 +7,11 @@
  * (at your option) any later version.
  **/
 
+#include <QWidget>
+
+#include <private/qstylesheetstyle_p.h>
+
+#include "style.h"
 #include "commonhelper.h"
 #include "geometryutils.h"
 
@@ -37,5 +42,19 @@ void CommonHelper::renderFrame(QPainter *painter, const QRect &rect, const QColo
     painter->drawRoundedRect( frameRect, radius, radius );
 }
 
+Style *CommonHelper::widgetStyle(const QWidget *widget)
+{
+    Style *style (Q_NULLPTR);
+    style = qobject_cast<Style*>(widget->style());
+    if (!style) {
+        // FIXME(hualet): why qobject_cast won't work and cause the whole plugin
+        // to stop loading.
+        QStyleSheetStyle * sstyle = static_cast<QStyleSheetStyle*>(widget->style());
+        if (!sstyle) return Q_NULLPTR;
+
+        style = qobject_cast<Style*>(sstyle->base);
+    }
+    return style;
+}
 
 }

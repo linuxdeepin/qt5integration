@@ -11,6 +11,7 @@
 #include "common.h"
 #include "geometryutils.h"
 #include "style.h"
+#include "commonhelper.h"
 
 #include <QDebug>
 #include <QStyleOptionButton>
@@ -19,7 +20,7 @@ namespace dstyle {
 
 bool PushButtonHelper::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, const QWidget *widget)
 {
-    Style *style = qobject_cast<Style*>(widget->style());
+    Style *style = CommonHelper::widgetStyle(widget);
     if (!style) return false;
 
     // cast option and check

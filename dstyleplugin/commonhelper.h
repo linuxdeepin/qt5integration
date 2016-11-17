@@ -14,10 +14,14 @@
 
 namespace dstyle {
 
+class Style;
+
 class CommonHelper
 {
 public:
     static void renderFrame(QPainter* painter, const QRect& rect, const QColor& color, const QColor& outline);
+
+    static Style *widgetStyle(const QWidget *widget);
 };
 
 }

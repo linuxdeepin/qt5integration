@@ -13,6 +13,7 @@
 #include "geometryutils.h"
 #include "paletteextended.h"
 #include "style.h"
+#include "commonhelper.h"
 
 #include <QStyleOptionSlider>
 
@@ -20,7 +21,7 @@ namespace dstyle {
 
 bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget)
 {
-    Style *style = qobject_cast<Style*>(widget->style());
+    Style *style = CommonHelper::widgetStyle(widget);
     if ( !style ) return true;
 
     // cast option and check
