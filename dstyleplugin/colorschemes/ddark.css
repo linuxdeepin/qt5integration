@@ -1,0 +1,39 @@
+QPalette {
+    Base: rgba(0,0,0,0);
+    Text: rgb(255,255,255);
+    Window: rgb(25,25,25);
+    WindowText: rgb(25,25,25);
+    Highlight: "#61b5f8";
+    HighlightedText: rgb(255,255,255);
+}
+
+Slider {
+    GrooveColor: rgb(0,0,0);
+    GrooveHighlightColor: rgb(255,255,255);
+    HandleColor: rgb(255,255,255);
+    TickmarkColor: rgb(255,255,255);
+}
+
+PushButton {
+    BackgroundDisabledColor: rgba(255,255,255,0.15);
+    BackgroundNormalColor: rgba(255,255,255,0.15);
+    BackgroundHoverColor: rgba(255,255,255,0.3);
+    BackgroundPressedColor: rgba(255,255,255,0.1);
+    TextDisabledColor: rgba(255,255,255,0.3);
+    TextNormalColor: rgba(255,255,255,0.5);
+    TextHoverColor: rgb(255,255,255);
+    TextPressedColor: rgba(0,0,255,0.15);
+    BorderDisabledColor: rgba(0,0,0);
+    BorderNormalColor: rgb(0,0,0);
+    BorderHoverColor: rgb(0,0,0);
+    BorderPressedColor: rgb(0,0,0);
+}
+
+LineEdit {
+    BackgroundDisabledColor: rgba(255,255,255,0.04);
+    BackgroundNormalColor: rgba(255,255,255,0.15);
+    BackgroundFocusedColor: rgba(255,255,255,0.05);
+    BorderDisabledColor: rgb(0,0,0);
+    BorderNormalColor: rgb(0,0,0);
+    BorderFocusedColor: rgba(43,167,248,0.6);
+}

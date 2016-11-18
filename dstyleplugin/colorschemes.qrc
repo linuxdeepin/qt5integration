@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>colorschemes/dlight.ini</file>
-        <file>colorschemes/ddark.ini</file>
+        <file>colorschemes/dlight.css</file>
+        <file>colorschemes/ddark.css</file>
     </qresource>
 </RCC>

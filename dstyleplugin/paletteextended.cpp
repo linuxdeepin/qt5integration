@@ -13,37 +13,75 @@
 #include <QString>
 #include <QColor>
 #include <QMetaEnum>
+#include <QFile>
 #include <QDebug>
+
+#include <private/qcssparser_p.h>
+
+QT_BEGIN_NAMESPACE
+QDebug operator<<(QDebug deg, const QCss::Value &value)
+{
+    deg << value.toString();
+
+    return deg;
+}
+QT_END_NAMESPACE
 
 namespace dstyle {
 
 PaletteExtended::PaletteExtended(StyleType type, QObject *parent) :
     QObject(parent),
-    m_colorScheme(nullptr)
+    m_colorScheme(new QCss::StyleSheet)
 {
     setType(type);
 }
 
+PaletteExtended::~PaletteExtended()
+{
+    delete m_colorScheme;
+}
+
 QColor PaletteExtended::color(PaletteExtended::ColorName name) const
 {
+    if (m_colorCache.contains(name))
+        return m_colorCache.value(name);
+
     QMetaEnum metaEnum = QMetaEnum::fromType<PaletteExtended::ColorName>();
     QString colorName = metaEnum.valueToKey(name);
 
-    const QString key = colorName.replace("_", "/");
-    const QStringList value = m_colorScheme->value(key).toStringList();
+    const QStringList &path = colorName.split("_");
+    const QCss::StyleRule &rule = m_colorScheme->nameIndex.value(path.first());
 
-    return parseColor(value);
+    foreach (const QCss::Declaration &declaration, rule.declarations) {
+        if (declaration.d->property == path.last()) {
+            const QColor &color = declaration.colorValue();
+            m_colorCache[name] = color;
+
+            return color;
+        }
+    }
+
+    m_colorCache[name] = QColor();
+
+    return QColor();
 }
 
 void PaletteExtended::setType(StyleType type)
 {
-    if (m_colorScheme) m_colorScheme->deleteLater();
+    QFile file;
 
     if (type == StyleType::StyleDark) {
-        m_colorScheme = new QSettings(":/colorschemes/ddark.ini", QSettings::IniFormat);
+        file.setFileName(":/colorschemes/ddark.css");
     } else if (type == StyleType::StyleLight) {
-        m_colorScheme = new QSettings(":/colorschemes/dlight.ini", QSettings::IniFormat);
+        file.setFileName(":/colorschemes/dlight.css");
     }
+
+    if (!file.open(QIODevice::ReadOnly))
+        return;
+
+    QCss::Parser parser(QString::fromLocal8Bit(file.readAll()));
+
+    parser.parse(m_colorScheme);
 }
 
 void PaletteExtended::polish(QPalette &p)
@@ -54,41 +92,6 @@ void PaletteExtended::polish(QPalette &p)
     p.setColor(QPalette::WindowText, color(QPalette_WindowText));
     p.setColor(QPalette::Highlight, color(QPalette_Highlight));
     p.setColor(QPalette::HighlightedText, color(QPalette_HighlightedText));
-}
-
-/*
- * r(0-255) g(0-255) b(0-255) a(0-1) hex(#000000-#ffffff)
- * rgb
- * rgba
- * hex
- * hexa
- */
-QColor PaletteExtended::parseColor(const QStringList &value) const
-{
-    if (value.length() >= 3) {
-        const int r = value.at(0).toInt();
-        const int g = value.at(1).toInt();
-        const int b = value.at(2).toInt();
-
-        QColor ret( QColor::fromRgb(r, g, b));
-
-        if (value.length() > 3) {
-            const float a = value.at(3).toFloat();
-            ret.setAlphaF(a);
-        }
-
-        return ret;
-    } else {
-        QColor ret( value.at(0) );
-
-        if (value.length() == 2) {
-            ret.setAlphaF(value.at(1).toFloat());
-        }
-
-        return ret;
-    }
-
-    return Qt::black;
 }
 
 }

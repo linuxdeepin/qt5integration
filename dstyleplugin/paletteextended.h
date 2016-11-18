@@ -13,8 +13,13 @@
 #include <QObject>
 #include <QSettings>
 #include <QPalette>
+#include <QHash>
 
 #include "common.h"
+
+namespace QCss {
+struct StyleSheet;
+}
 
 namespace dstyle {
 
@@ -23,6 +28,7 @@ class PaletteExtended : public QObject
     Q_OBJECT
 public:
     PaletteExtended(StyleType type, QObject *parent = 0);
+    ~PaletteExtended();
 
     enum ColorName {
         //TODO(hualet): Color Group support.
@@ -67,9 +73,8 @@ public:
     void polish(QPalette &p);
 
 private:
-    QColor parseColor(const QStringList &value) const;
-
-    QSettings *m_colorScheme;
+    QCss::StyleSheet *m_colorScheme;
+    mutable QHash<ColorName, QColor> m_colorCache;
 };
 
 }
