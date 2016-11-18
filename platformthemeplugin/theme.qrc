@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>menu.qss</file>
+        <file>images/arrow-light-hover.png</file>
+        <file>images/arrow-light.png</file>
+        <file>images/check_dark_hover.png</file>
+        <file>images/check_light_hover.png</file>
+        <file>images/check_dark_normal.png</file>
+        <file>images/arrow-light-inactive.png</file>
+        <file>images/check_dark_inactive.png</file>
+        <file>images/check_light_normal.png</file>
+        <file>images/check_light_inactive.png</file>
+    </qresource>
+</RCC>
