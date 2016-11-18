@@ -52,7 +52,20 @@ Style *CommonHelper::widgetStyle(const QWidget *widget)
         QStyleSheetStyle * sstyle = static_cast<QStyleSheetStyle*>(widget->style());
         if (!sstyle) return Q_NULLPTR;
 
-        style = qobject_cast<Style*>(sstyle->base);
+        // FIXME(hualet): don't know why QStyleSheetStyle::base can be empty sometime,
+        // and also don't know why QStyleSheetStyle::baseStyle is not exported or something,
+        // causing the program to crash if I use baseStyle() instead of base directly here.
+        // Basically below 9 lines are copied from QStyleSheetStyle::baseStyle implementation.
+        QStyle *base ( Q_NULLPTR );
+        if (sstyle->base) {
+            base = sstyle->base;
+        } else if (QStyleSheetStyle *me = static_cast<QStyleSheetStyle*>(qApp->style())) {
+            base = me->base;
+        } else {
+            base = qApp->style();
+        }
+
+        style = qobject_cast<Style*>(base);
     }
     return style;
 }
