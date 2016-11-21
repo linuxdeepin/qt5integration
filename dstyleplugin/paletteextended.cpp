@@ -25,6 +25,12 @@ QDebug operator<<(QDebug deg, const QCss::Value &value)
 
     return deg;
 }
+QDebug operator<<(QDebug deg, const QCss::Selector &selector)
+{
+    deg << "specificity:" << selector.specificity() << ", pseudoClass:"<< selector.pseudoClass() << ", pseudoElement:" << selector.pseudoElement();
+
+    return deg;
+}
 QT_END_NAMESPACE
 
 namespace dstyle {
@@ -41,27 +47,43 @@ PaletteExtended::~PaletteExtended()
     delete m_brushScheme;
 }
 
-QBrush PaletteExtended::brush(PaletteExtended::BrushName name) const
+QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type) const
 {
-    if (m_brushCache.contains(name))
-        return m_brushCache.value(name);
+    const QPair<BrushName, quint64> &key = qMakePair(name, type);
+
+    if (m_brushCache.contains(key))
+        return m_brushCache.value(key);
 
     QMetaEnum metaEnum = QMetaEnum::fromType<PaletteExtended::BrushName>();
     QString colorName = metaEnum.valueToKey(name);
 
     const QStringList &path = colorName.split("_");
-    const QCss::StyleRule &rule = m_brushScheme->nameIndex.value(path.first());
 
-    foreach (const QCss::Declaration &declaration, rule.declarations) {
-        if (declaration.d->property == path.last()) {
-            const QBrush &brush = declaration.brushValue();
-            m_brushCache[name] = brush;
+    foreach (const QCss::StyleRule &rule, m_brushScheme->nameIndex.values(path.first())) {
+        bool eligible = false;
 
-            return brush;
+        foreach (const QCss::Selector &selector, rule.selectors) {
+            if (selector.pseudoClass() & type) {
+                eligible = true;
+                break;
+            }
+        }
+
+        if (!eligible)
+            continue;
+
+        foreach (const QCss::Declaration &declaration, rule.declarations) {
+
+            if (declaration.d->property == path.last()) {
+                const QBrush &brush = declaration.brushValue();
+                m_brushCache[key] = brush;
+
+                return brush;
+            }
         }
     }
 
-    m_brushCache[name] = Qt::NoBrush;
+    m_brushCache[key] = Qt::NoBrush;
 
     return Qt::NoBrush;
 }
@@ -71,9 +93,9 @@ void PaletteExtended::setType(StyleType type)
     QFile file;
 
     if (type == StyleType::StyleDark) {
-        file.setFileName(":/colorschemes/ddark.css");
+        file.setFileName(":/brushschemes/ddark.css");
     } else if (type == StyleType::StyleLight) {
-        file.setFileName(":/colorschemes/dlight.css");
+        file.setFileName(":/brushschemes/dlight.css");
     }
 
     if (!file.open(QIODevice::ReadOnly))

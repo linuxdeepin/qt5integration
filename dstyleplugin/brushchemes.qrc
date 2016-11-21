@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>brushschemes/dlight.css</file>
+        <file>brushschemes/ddark.css</file>
+    </qresource>
+</RCC>

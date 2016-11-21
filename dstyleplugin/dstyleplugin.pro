@@ -43,4 +43,4 @@ unix {
 }
 
 RESOURCES += \
-    colorschemes.qrc
+    brushchemes.qrc
