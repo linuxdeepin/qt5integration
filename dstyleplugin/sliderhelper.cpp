@@ -72,16 +72,16 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
 
             }
 
-            // colors
-            const QColor base( palette.base().color() );
-            const QColor highlight( plExt->color(PaletteExtended::Slider_TickmarkColor) );
+            // brushs
+            const QBrush base( palette.base().color() );
+            const QBrush highlight( plExt->brush(PaletteExtended::Slider_TickmarkColor) );
 
             while( current <= sliderOption->maximum )
             {
 
-                // adjust color
-                const QColor color( (enabled && current <= sliderOption->sliderPosition) ? highlight:base );
-                painter->setPen( color );
+                // adjust brush
+                const QBrush brush( (enabled && current <= sliderOption->sliderPosition) ? highlight:base );
+                painter->setPen( QPen(brush, Metrics::Painter_PenWidth) );
 
                 // calculate positions and draw lines
                 int position( style->sliderPositionFromValue( sliderOption->minimum, sliderOption->maximum, current, available ) + fudge );
@@ -104,10 +104,10 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
         // retrieve groove rect
         QRect grooveRect( style->subControlRect( QStyle::CC_Slider, sliderOption, QStyle::SC_SliderGroove, widget ) );
 
-        // base color
-        const QColor grooveColor( plExt->color(PaletteExtended::Slider_GrooveColor) );
+        // base brush
+        const QBrush grooveBrush( plExt->brush(PaletteExtended::Slider_GrooveColor) );
 
-        if( !enabled ) renderSliderGroove( painter, grooveRect, grooveColor );
+        if( !enabled ) renderSliderGroove( painter, grooveRect, grooveBrush );
         else {
 
             const bool upsideDown( sliderOption->upsideDown );
@@ -115,29 +115,29 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
             // handle rect
             QRect handleRect( style->subControlRect( QStyle::CC_Slider, sliderOption, QStyle::SC_SliderHandle, widget ) );
 
-            // highlight color
-            const QColor highlight( plExt->color(PaletteExtended::Slider_GrooveHighlightColor) );
+            // highlight brush
+            const QBrush highlight( plExt->brush(PaletteExtended::Slider_GrooveHighlightColor) );
 
             if( sliderOption->orientation == Qt::Horizontal )
             {
 
                 QRect leftRect( grooveRect );
                 leftRect.setRight( handleRect.right() - Metrics::Slider_ControlThickness/2 );
-                renderSliderGroove( painter, leftRect, upsideDown ? grooveColor:highlight );
+                renderSliderGroove( painter, leftRect, upsideDown ? grooveBrush:highlight );
 
                 QRect rightRect( grooveRect );
                 rightRect.setLeft( handleRect.left() + Metrics::Slider_ControlThickness/2 );
-                renderSliderGroove( painter, rightRect, upsideDown ? highlight:grooveColor );
+                renderSliderGroove( painter, rightRect, upsideDown ? highlight:grooveBrush );
 
             } else {
 
                 QRect topRect( grooveRect );
                 topRect.setBottom( handleRect.bottom() - Metrics::Slider_ControlThickness/2 );
-                renderSliderGroove( painter, topRect, upsideDown ? grooveColor:highlight );
+                renderSliderGroove( painter, topRect, upsideDown ? grooveBrush:highlight );
 
                 QRect bottomRect( grooveRect );
                 bottomRect.setTop( handleRect.top() + Metrics::Slider_ControlThickness/2 );
-                renderSliderGroove( painter, bottomRect, upsideDown ? highlight:grooveColor );
+                renderSliderGroove( painter, bottomRect, upsideDown ? highlight:grooveBrush );
 
             }
 
@@ -156,8 +156,8 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
 //        const bool handleActive( sliderOption->activeSubControls & QStyle::SC_SliderHandle );
 //        const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken) );
 
-        // define colors
-        const QColor background( plExt->color(PaletteExtended::Slider_HandleColor) );
+        // define brushs
+        const QBrush background( plExt->brush(PaletteExtended::Slider_HandleColor) );
 
         // TODO: calculate outline shadow with some sort of algorithm.
         //        const QColor outline( _helper->sliderOutlineColor( palette, handleActive && mouseOver, hasFocus, opacity, mode ) );
@@ -171,7 +171,7 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
     return true;
 }
 
-void SliderHelper::renderSliderGroove(QPainter *painter, const QRect &rect, const QColor &color)
+void SliderHelper::renderSliderGroove(QPainter *painter, const QRect &rect, const QBrush &brush)
 {
     // setup painter
     painter->setRenderHint( QPainter::Antialiasing, true );
@@ -180,17 +180,17 @@ void SliderHelper::renderSliderGroove(QPainter *painter, const QRect &rect, cons
     const qreal radius( 0.5*Metrics::Slider_GrooveThickness );
 
     // content
-    if( color.isValid() )
+    if( brush.style() != Qt::NoBrush )
     {
         painter->setPen( Qt::NoPen );
-        painter->setBrush( color );
+        painter->setBrush( brush );
         painter->drawRoundedRect( baseRect, radius, radius );
     }
 
     return;
 }
 
-void SliderHelper::renderSliderHandle( QPainter* painter, const QRect& rect, const QColor& color, const QColor& outline )
+void SliderHelper::renderSliderHandle( QPainter* painter, const QRect& rect, const QBrush& brush, const QColor& outline )
 {
 
     // setup painter
@@ -218,8 +218,7 @@ void SliderHelper::renderSliderHandle( QPainter* painter, const QRect& rect, con
     } else painter->setPen( Qt::NoPen );
 
     // set brush
-    if( color.isValid() ) painter->setBrush( color );
-    else painter->setBrush( Qt::NoBrush );
+    painter->setBrush( brush );
 
     // render
     painter->drawEllipse( frameRect );

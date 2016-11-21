@@ -23,8 +23,8 @@ class SliderHelper
 public:
     static bool render(const QStyleOptionComplex *opt, QPainter *p, const QWidget *w);
 
-    static void renderSliderGroove( QPainter*, const QRect&, const QColor& );
-    static void renderSliderHandle( QPainter* painter, const QRect& rect, const QColor& color, const QColor& outline);
+    static void renderSliderGroove(QPainter*, const QRect&, const QBrush & brush);
+    static void renderSliderHandle(QPainter* painter, const QRect& rect, const QBrush &brush, const QColor& outline);
 };
 
 }

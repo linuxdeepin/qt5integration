@@ -30,7 +30,7 @@ public:
     PaletteExtended(StyleType type, QObject *parent = 0);
     ~PaletteExtended();
 
-    enum ColorName {
+    enum BrushName {
         //TODO(hualet): Color Group support.
         QPalette_Base,
         QPalette_Text,
@@ -64,17 +64,17 @@ public:
         LineEdit_BackgroundNormalColor,
         LineEdit_BackgroundFocusedColor,
     };
-    Q_ENUM(ColorName)
+    Q_ENUM(BrushName)
 
-    QColor color(ColorName name) const;
+    QBrush brush(BrushName name) const;
 
     void setType(StyleType type);
 
     void polish(QPalette &p);
 
 private:
-    QCss::StyleSheet *m_colorScheme;
-    mutable QHash<ColorName, QColor> m_colorCache;
+    QCss::StyleSheet *m_brushScheme;
+    mutable QHash<BrushName, QBrush> m_brushCache;
 };
 
 }

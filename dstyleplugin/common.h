@@ -16,6 +16,8 @@ enum StyleType { StyleDark, StyleLight };
 
 enum Metrics
 {
+    // painter
+    Painter_PenWidth = 1,
 
     // frames
     Frame_FrameWidth = 2,

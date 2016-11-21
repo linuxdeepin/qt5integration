@@ -17,7 +17,7 @@
 
 namespace dstyle {
 
-void CommonHelper::renderFrame(QPainter *painter, const QRect &rect, const QColor &color, const QColor &outline)
+void CommonHelper::renderFrame(QPainter *painter, const QRect &rect, const QBrush &brush, const QColor &outline)
 {
     painter->setRenderHint( QPainter::Antialiasing );
 
@@ -35,8 +35,7 @@ void CommonHelper::renderFrame(QPainter *painter, const QRect &rect, const QColo
     }
 
     // set brush
-    if( color.isValid() ) painter->setBrush( color );
-    else painter->setBrush( Qt::NoBrush );
+    painter->setBrush( brush );
 
     // render
     painter->drawRoundedRect( frameRect, radius, radius );
