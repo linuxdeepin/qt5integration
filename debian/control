@@ -14,6 +14,8 @@ Standards-Version: 3.9.8
 
 Package: dde-qt5integration
 Architecture: any
+Conflicts: libqt5dxcb-plugin, libqt5deepintheme-plugin
+Provides: libqt5dxcb-plugin, libqt5deepintheme-plugin
 Depends: ${shlibs:Depends}, ${misc:Depends}, git
 Description: <insert up to 60 chars description>
  <insert long description, indented with spaces>
