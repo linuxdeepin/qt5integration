@@ -15,25 +15,40 @@ Slider {
 }
 
 PushButton {
-    BackgroundDisabledColor: rgba(255,255,255,0.15);
-    BackgroundNormalColor: rgba(255,255,255,0.15);
-    BackgroundHoverColor: rgba(0,0,255,0.3);
-    BackgroundPressedColor: rgba(0,0,255,0.8);
-    TextDisabledColor: rgba(0,0,0,0.1);
-    TextNormalColor: rgb(0,0,0);
-    TextHoverColor: rgb(255,255,255);
-    TextPressedColor: rgb(255,255,255);
-    BorderDisabledColor: rgba(0,0,0,0.1);
-    BorderNormalColor: rgba(0,0,0,0.1);
-    BorderHoverColor: rgba(0,0,0,0.1);
-    BorderPressedColor: rgba(0,0,0,0.1);
+    BackgroundColor: rgba(255,255,255,0.15);
+    TextColor: rgb(0,0,0);
+    BorderColor: rgba(0,0,0,0.1);
+}
+
+PushButton:disabled {
+    BackgroundColor: rgba(255,255,255,0.15);
+    TextColor: rgba(0,0,0,0.1);
+    BorderColor: rgba(0,0,0,0.1);
+}
+
+PushButton:hover {
+    BackgroundColor: rgba(0,0,255,0.3);
+    TextColor: rgb(255,255,255);
+    BorderColor: rgba(0,0,0,0.1);
+}
+
+PushButton:pressed {
+    BackgroundColor: rgba(0,0,255,0.8);
+    TextColor: rgb(255,255,255);
+    BorderColor: rgba(0,0,0,0.1);
 }
 
 LineEdit {
-    BackgroundDisabledColor: rgb(255,255,255);
-    BackgroundNormalColor: rgb(255,255,255);
-    BackgroundFocusedColor: rgb(255,255,255);
-    BorderDisabledColor: rgba(0,0,0,0.04);
-    BorderNormalColor: rgba(0,0,0,0.1);
-    BorderFocusedColor: rgb(44,167,248);
+    BackgroundColor: rgb(255,255,255);
+    BorderColor: rgba(0,0,0,0.1);
+}
+
+LineEdit:disabled {
+    BackgroundColor: rgb(255,255,255);
+    BorderColor: rgba(0,0,0,0.04);
+}
+
+LineEdit:focus {
+    BackgroundColor: rgb(255,255,255);
+    BorderColor: rgb(44,167,248);
 }

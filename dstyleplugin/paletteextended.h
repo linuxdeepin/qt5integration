@@ -44,25 +44,12 @@ public:
         Slider_HandleColor,
         Slider_TickmarkColor,
 
-        PushButton_BackgroundDisabledColor,
-        PushButton_BackgroundNormalColor,
-        PushButton_BackgroundHoverColor,
-        PushButton_BackgroundPressedColor,
-        PushButton_TextDisabledColor,
-        PushButton_TextNormalColor,
-        PushButton_TextHoverColor,
-        PushButton_TextPressedColor,
-        PushButton_BorderDisabledColor,
-        PushButton_BorderNormalColor,
-        PushButton_BorderHoverColor,
-        PushButton_BorderPressedColor,
+        PushButton_BackgroundColor,
+        PushButton_TextColor,
+        PushButton_BorderColor,
 
-        LineEdit_BorderDisabledColor,
-        LineEdit_BorderNormalColor,
-        LineEdit_BorderFocusedColor,
-        LineEdit_BackgroundDisabledColor,
-        LineEdit_BackgroundNormalColor,
-        LineEdit_BackgroundFocusedColor,
+        LineEdit_BorderColor,
+        LineEdit_BackgroundColor
     };
     Q_ENUM(BrushName)
 
@@ -117,7 +104,7 @@ public:
         PseudoClass_Any              = Q_UINT64_C(0x0000ffffffffffff)
     };
 
-    QBrush brush(BrushName name, quint64 type = PseudoClass_Unspecified) const;
+    QBrush brush(BrushName name, quint64 type = PseudoClass_Unspecified, const QBrush &defaultBrush = Qt::NoBrush) const;
 
     void setType(StyleType type);
 

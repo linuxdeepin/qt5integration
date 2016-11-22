@@ -38,16 +38,22 @@ bool LineEditHelper::drawFrameLineEditPrimitive(const QStyleOption *option, QPai
 
 QColor LineEditHelper::getBorderColor(PaletteExtended *plExt, bool enabled, bool hasFocus)
 {
-    if (!enabled) return plExt->brush(PaletteExtended::LineEdit_BorderDisabledColor).color();
-    else if (hasFocus) return plExt->brush(PaletteExtended::LineEdit_BorderFocusedColor).color();
-    else return plExt->brush(PaletteExtended::LineEdit_BorderNormalColor).color();
+    if (!enabled)
+        return plExt->brush(PaletteExtended::LineEdit_BorderColor, PaletteExtended::PseudoClass_Disabled).color();
+    else if (hasFocus)
+        return plExt->brush(PaletteExtended::LineEdit_BorderColor, PaletteExtended::PseudoClass_Focus).color();
+
+    return plExt->brush(PaletteExtended::LineEdit_BorderColor).color();
 }
 
 QBrush LineEditHelper::getBackgroundColor(PaletteExtended *plExt, bool enabled, bool hasFocus)
 {
-    if (!enabled) return plExt->brush(PaletteExtended::LineEdit_BackgroundDisabledColor);
-    else if (hasFocus) return plExt->brush(PaletteExtended::LineEdit_BackgroundFocusedColor);
-    else return plExt->brush(PaletteExtended::LineEdit_BackgroundNormalColor).color();
+    if (!enabled)
+        return plExt->brush(PaletteExtended::LineEdit_BackgroundColor, PaletteExtended::PseudoClass_Disabled);
+    else if (hasFocus)
+        return plExt->brush(PaletteExtended::LineEdit_BackgroundColor, PaletteExtended::PseudoClass_Focus);
+
+    return plExt->brush(PaletteExtended::LineEdit_BackgroundColor);
 }
 
 }

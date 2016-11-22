@@ -47,7 +47,7 @@ PaletteExtended::~PaletteExtended()
     delete m_brushScheme;
 }
 
-QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type) const
+QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type, const QBrush &defaultBrush) const
 {
     const QPair<BrushName, quint64> &key = qMakePair(name, type);
 
@@ -63,7 +63,7 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type) con
         bool eligible = false;
 
         foreach (const QCss::Selector &selector, rule.selectors) {
-            if (selector.pseudoClass() & type) {
+            if (selector.pseudoClass() == type) {
                 eligible = true;
                 break;
             }
@@ -73,7 +73,6 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type) con
             continue;
 
         foreach (const QCss::Declaration &declaration, rule.declarations) {
-
             if (declaration.d->property == path.last()) {
                 const QBrush &brush = declaration.brushValue();
                 m_brushCache[key] = brush;
@@ -83,9 +82,9 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type) con
         }
     }
 
-    m_brushCache[key] = Qt::NoBrush;
+    m_brushCache[key] = defaultBrush;
 
-    return Qt::NoBrush;
+    return defaultBrush;
 }
 
 void PaletteExtended::setType(StyleType type)
