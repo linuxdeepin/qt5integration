@@ -9,6 +9,8 @@
 
 #include <QMenu>
 #include <QLineEdit>
+#include <QPushButton>
+#include <QComboBox>
 #include <QDebug>
 
 #include "style.h"
@@ -41,6 +43,17 @@ void Style::polish(QPalette &p)
 void Style::polish(QWidget *w)
 {
     QCommonStyle::polish(w);
+
+    if (qobject_cast<QPushButton *>(w)
+            || qobject_cast<QComboBox *>(w))
+        w->setAttribute(Qt::WA_Hover, true);
+}
+
+void Style::unpolish(QWidget *w)
+{
+    if (qobject_cast<QPushButton *>(w)
+            || qobject_cast<QComboBox *>(w))
+        w->setAttribute(Qt::WA_Hover, false);
 }
 
 int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, const QWidget *widget) const

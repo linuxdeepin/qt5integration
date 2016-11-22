@@ -24,11 +24,11 @@ public:
     static bool drawPushButtonBevel(const QStyleOption*, QPainter*, const QWidget*);
     static bool drawPushButtonLabel(const QStyleOption *, QPainter *, const QWidget *);
     static bool drawFlatButtonFrame(QPainter* painter, const QRect& rect, const QBrush &brush, bool sunken);
-    static bool drawPushButtonFrame(QPainter* painter, const QRect& rect, const QBrush &color, const QColor& outline, const QColor& shadow);
+    static bool drawPushButtonFrame(QPainter* painter, const QRect& rect, const QBrush &color, const QBrush &outline, const QColor& shadow);
 
-    static QColor getButtonBorderColor(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken);
+    static QBrush getButtonBorderBrush(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken);
     static QBrush getButtonBackgroundBrush(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken);
-    static QColor getButtonTextColor(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken);
+    static QColor getButtonTextColor(PaletteExtended *plExt, bool flat, bool enabled, bool mouseOver, bool hasFocus, bool sunken);
 };
 
 }

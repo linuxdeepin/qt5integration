@@ -38,6 +38,8 @@ public:
         QPalette_WindowText,
         QPalette_Highlight,
         QPalette_HighlightedText,
+        QPalette_Button,
+        QPalette_ButtonText,
 
         Slider_GrooveColor,
         Slider_GrooveHighlightColor,

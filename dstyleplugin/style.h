@@ -30,6 +30,7 @@ public:
 
     void polish(QPalette &p) Q_DECL_OVERRIDE;
     void polish(QWidget *w) Q_DECL_OVERRIDE;
+    void unpolish(QWidget *w) Q_DECL_OVERRIDE;
 
     int pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const Q_DECL_OVERRIDE;
 

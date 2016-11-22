@@ -75,6 +75,7 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type, con
         foreach (const QCss::Declaration &declaration, rule.declarations) {
             if (declaration.d->property == path.last()) {
                 const QBrush &brush = declaration.brushValue();
+
                 m_brushCache[key] = brush;
 
                 return brush;
@@ -113,6 +114,8 @@ void PaletteExtended::polish(QPalette &p)
     p.setBrush(QPalette::WindowText, brush(QPalette_WindowText));
     p.setBrush(QPalette::Highlight, brush(QPalette_Highlight));
     p.setBrush(QPalette::HighlightedText, brush(QPalette_HighlightedText));
+    p.setBrush(QPalette::Button, brush(QPalette_Button));
+    p.setBrush(QPalette::ButtonText, brush(QPalette_ButtonText));
 }
 
 }

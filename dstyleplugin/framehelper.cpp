@@ -13,6 +13,10 @@ namespace dstyle {
 
 bool FrameHelper::drawFrameFocusRectPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget)
 {
+    Q_UNUSED(option)
+    Q_UNUSED(painter)
+    Q_UNUSED(widget)
+
     // draw nothing
     return true;
 }

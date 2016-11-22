@@ -37,8 +37,8 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
     // copy state
     const QStyle::State& state( option->state );
     const bool enabled( state & QStyle::State_Enabled );
-    const bool mouseOver( enabled && ( state & QStyle::State_MouseOver ) );
-    const bool hasFocus( enabled && ( state & QStyle::State_HasFocus ) );
+//    const bool mouseOver( enabled && ( state & QStyle::State_MouseOver ) );
+//    const bool hasFocus( enabled && ( state & QStyle::State_HasFocus ) );
 
     // direction
     const bool horizontal( sliderOption->orientation == Qt::Horizontal );

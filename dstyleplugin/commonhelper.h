@@ -19,7 +19,7 @@ class Style;
 class CommonHelper
 {
 public:
-    static void renderFrame(QPainter* painter, const QRect& rect, const QBrush &brush, const QColor& outline);
+    static void renderFrame(QPainter* painter, const QRect& rect, const QBrush &brush, const QBrush &outline);
 
     static Style *widgetStyle(const QWidget *widget);
 };

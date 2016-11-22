@@ -17,19 +17,17 @@
 
 namespace dstyle {
 
-void CommonHelper::renderFrame(QPainter *painter, const QRect &rect, const QBrush &brush, const QColor &outline)
+void CommonHelper::renderFrame(QPainter *painter, const QRect &rect, const QBrush &brush, const QBrush &outline)
 {
     painter->setRenderHint( QPainter::Antialiasing );
 
-    QRectF frameRect( rect.adjusted( 1, 1, -1, -1 ) );
+    QRectF frameRect( rect );
     qreal radius( GeometryUtils::frameRadius() );
 
     // set pen
-    if( outline.isValid() )
+    if( outline.style() != Qt::NoBrush )
     {
-        painter->setPen( outline );
-        frameRect.adjust( 0.5, 0.5, -0.5, -0.5 );
-        radius = qMax( radius - 1, qreal( 0.0 ) );
+        painter->setPen( QPen(outline, Metrics::Painter_PenWidth) );
     } else {
         painter->setPen( Qt::NoPen );
     }
