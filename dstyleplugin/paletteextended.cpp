@@ -74,7 +74,14 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type, con
 
         foreach (const QCss::Declaration &declaration, rule.declarations) {
             if (declaration.d->property == path.last()) {
-                const QBrush &brush = declaration.brushValue();
+                QBrush brush = declaration.brushValue();
+
+                if (brush.style() == Qt::NoBrush) {
+                    const QString &uri = declaration.uriValue();
+
+                    if (!uri.isEmpty())
+                        brush.setTexture(QPixmap(uri));
+                }
 
                 m_brushCache[key] = brush;
 

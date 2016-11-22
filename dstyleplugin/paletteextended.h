@@ -43,7 +43,8 @@ public:
 
         Slider_GrooveColor,
         Slider_GrooveHighlightColor,
-        Slider_HandleColor,
+        Slider_HandleBrush,
+        Slider_HandleBorderColor,
         Slider_TickmarkColor,
 
         PushButton_BackgroundColor,

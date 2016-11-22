@@ -43,4 +43,5 @@ unix {
 }
 
 RESOURCES += \
-    brushchemes.qrc
+    brushchemes.qrc \
+    assets.qrc

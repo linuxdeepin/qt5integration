@@ -16,6 +16,7 @@
 #include "commonhelper.h"
 
 #include <QStyleOptionSlider>
+#include <QDebug>
 
 namespace dstyle {
 
@@ -32,13 +33,13 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
 
     // copy rect and palette
     const QRect& rect( option->rect );
-    const QPalette& palette( option->palette );
+//    const QPalette& palette( option->palette );
 
     // copy state
     const QStyle::State& state( option->state );
     const bool enabled( state & QStyle::State_Enabled );
 //    const bool mouseOver( enabled && ( state & QStyle::State_MouseOver ) );
-//    const bool hasFocus( enabled && ( state & QStyle::State_HasFocus ) );
+    const bool hasFocus( enabled && ( state & QStyle::State_HasFocus ) );
 
     // direction
     const bool horizontal( sliderOption->orientation == Qt::Horizontal );
@@ -72,16 +73,11 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
 
             }
 
-            // brushs
-            const QBrush base( palette.base().color() );
-            const QBrush highlight( plExt->brush(PaletteExtended::Slider_TickmarkColor) );
-
             while( current <= sliderOption->maximum )
             {
 
-                // adjust brush
-                const QBrush brush( (enabled && current <= sliderOption->sliderPosition) ? highlight:base );
-                painter->setPen( QPen(brush, Metrics::Painter_PenWidth) );
+                // adjust pen
+                painter->setPen( QPen(plExt->brush(PaletteExtended::Slider_TickmarkColor), Metrics::Painter_PenWidth) );
 
                 // calculate positions and draw lines
                 int position( style->sliderPositionFromValue( sliderOption->minimum, sliderOption->maximum, current, available ) + fudge );
@@ -157,12 +153,14 @@ bool SliderHelper::render(const QStyleOptionComplex *option, QPainter *painter, 
 //        const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken) );
 
         // define brushs
-        const QBrush background( plExt->brush(PaletteExtended::Slider_HandleColor) );
+        const QBrush background( plExt->brush(PaletteExtended::Slider_HandleBrush) );
 
         // TODO: calculate outline shadow with some sort of algorithm.
         //        const QColor outline( _helper->sliderOutlineColor( palette, handleActive && mouseOver, hasFocus, opacity, mode ) );
         //        const QColor shadow( _helper->shadowColor( palette ) );
-        const QColor outline( Qt::lightGray );
+        const QColor &outline = plExt->brush(PaletteExtended::Slider_HandleBorderColor,
+                                             (hasFocus && enabled) ? PaletteExtended::PseudoClass_Focus
+                                                      : PaletteExtended::PseudoClass_Unspecified).color();
 
         // render
         renderSliderHandle( painter, handleRect, background, outline );
@@ -222,7 +220,6 @@ void SliderHelper::renderSliderHandle( QPainter* painter, const QRect& rect, con
 
     // render
     painter->drawEllipse( frameRect );
-
 }
 
 } // end namespace dstyle

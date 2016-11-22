@@ -8,10 +8,22 @@ QPalette {
 }
 
 Slider {
-    GrooveColor: rgb(0,0,0);
-    GrooveHighlightColor: rgb(255,255,255);
-    HandleColor: rgb(255,255,255);
-    TickmarkColor: rgb(255,255,255);
+    GrooveColor: rgba(255, 255, 255, 0.2);
+    GrooveHighlightColor: "#2ca7f8";
+    HandleBrush: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#7f7f7f", stop:1 "#707070");
+    HandleBorderColor: transparent;
+    TickmarkColor: rgba(255,255,255,0.1);
+}
+
+Slider:focus {
+    HandleBorderColor: "#2ca7f8";
+}
+
+Slider:disabled {
+    GrooveColor: rgba(255, 255, 255, 0.08);
+    GrooveHighlightColor: "#0d4265";
+    HandleBrush: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#4e4e4e", stop:1 "#3a3a3a");
+    HandleBorderColor: rgba(0, 0, 0, 0.1);
 }
 
 PushButton {

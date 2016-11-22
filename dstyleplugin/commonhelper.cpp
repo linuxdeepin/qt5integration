@@ -8,6 +8,7 @@
  **/
 
 #include <QWidget>
+#include <QDebug>
 
 #include <private/qstylesheetstyle_p.h>
 
@@ -46,8 +47,10 @@ Style *CommonHelper::widgetStyle(const QWidget *widget)
     if (!style) {
         // FIXME(hualet): why qobject_cast won't work and cause the whole plugin
         // to stop loading.
-        QStyleSheetStyle * sstyle = static_cast<QStyleSheetStyle*>(widget->style());
-        if (!sstyle) return Q_NULLPTR;
+        if (widget->style()->metaObject()->className() != QLatin1String("QStyleSheetStyle"))
+            return Q_NULLPTR;
+
+        QStyleSheetStyle * sstyle =  static_cast<QStyleSheetStyle*>(widget->style());
 
         // FIXME(hualet): don't know why QStyleSheetStyle::base can be empty sometime,
         // and also don't know why QStyleSheetStyle::baseStyle is not exported or something,
@@ -56,8 +59,8 @@ Style *CommonHelper::widgetStyle(const QWidget *widget)
         QStyle *base ( Q_NULLPTR );
         if (sstyle->base) {
             base = sstyle->base;
-        } else if (QStyleSheetStyle *me = static_cast<QStyleSheetStyle*>(qApp->style())) {
-            base = me->base;
+        } else if (qApp->style()->metaObject()->className() == QLatin1String("QStyleSheetStyle")) {
+            base = static_cast<QStyleSheetStyle*>(qApp->style())->base;
         } else {
             base = qApp->style();
         }
