@@ -14,6 +14,7 @@
 #include "paletteextended.h"
 #include "style.h"
 #include "commonhelper.h"
+#include "painterhelper.h"
 
 #include <QStyleOptionSlider>
 #include <QDebug>
@@ -208,18 +209,7 @@ void SliderHelper::renderSliderHandle( QPainter* painter, const QRect& rect, con
 
 //    }
 
-    // set pen
-    if( outline.isValid() )
-    {
-        painter->setPen( outline );
-        frameRect.adjust( 0.5, 0.5, -0.5, -0.5 );
-    } else painter->setPen( Qt::NoPen );
-
-    // set brush
-    painter->setBrush( brush );
-
-    // render
-    painter->drawEllipse( frameRect );
+    PainterHelper::drawEllipse(painter, frameRect, brush, Metrics::Painter_PenWidth, outline);
 }
 
 } // end namespace dstyle

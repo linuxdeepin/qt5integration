@@ -19,7 +19,9 @@ SOURCES += dstyleplugin.cpp \
     pushbuttonhelper.cpp \
     framehelper.cpp \
     lineedithelper.cpp \
-    commonhelper.cpp
+    commonhelper.cpp \
+    scrollbarhelper.cpp \
+    painterhelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \
@@ -31,7 +33,9 @@ HEADERS += dstyleplugin.h \
     pushbuttonhelper.h \
     framehelper.h \
     lineedithelper.h \
-    commonhelper.h
+    commonhelper.h \
+    scrollbarhelper.h \
+    painterhelper.h
 
 DISTFILES += dstyleplugin.json
 

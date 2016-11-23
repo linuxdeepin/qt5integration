@@ -12,6 +12,7 @@
 #include "geometryutils.h"
 #include "style.h"
 #include "commonhelper.h"
+#include "painterhelper.h"
 
 #include <QDebug>
 #include <QStyleOptionButton>
@@ -48,8 +49,8 @@ bool PushButtonHelper::drawPushButtonBevel(const QStyleOption *option, QPainter 
     } else {
         // TODO(hualet): update button color from palette in case button is default
         const QColor shadow( Qt::transparent );
-        const QBrush outline( getButtonBorderBrush(style->m_palette, enabled, mouseOver, hasFocus, sunken) );
-        const QBrush background( getButtonBackgroundBrush(style->m_palette, enabled, mouseOver, hasFocus, sunken) );
+        const QBrush outline(style->m_palette->brush(PaletteExtended::PushButton_BorderBrush, enabled, mouseOver, hasFocus, sunken));
+        const QBrush background(style->m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, enabled, mouseOver, hasFocus, sunken));
 
         // render
         drawPushButtonFrame(painter, rect, background, outline, shadow );
@@ -163,41 +164,8 @@ bool PushButtonHelper::drawPushButtonLabel(const QStyleOption *option, QPainter 
 
     // render text
     if( hasText && textRect.isValid() ) {
-        painter->setPen(getButtonTextColor(style->m_palette, flat, enabled, mouseOver, hasFocus, sunken));
+        painter->setPen(style->m_palette->brush(PaletteExtended::PushButton_TextColor, enabled, mouseOver, hasFocus, sunken, flat).color());
         painter->drawText(textRect, textFlags, buttonOption->text);
-    }
-
-    return true;
-}
-
-bool PushButtonHelper::drawFlatButtonFrame( QPainter* painter, const QRect& rect, const QBrush& brush, bool sunken )
-{
-    // do nothing for invalid color
-    if( brush.style() == Qt::NoBrush ) return false;
-
-    // setup painter
-    painter->setRenderHints( QPainter::Antialiasing );
-
-    const QRectF baseRect( rect );
-
-    if( sunken )
-    {
-        const qreal radius( GeometryUtils::frameRadius() );
-
-        painter->setPen( Qt::NoPen );
-        painter->setBrush( brush );
-
-        const QRectF contentRect( baseRect.adjusted( 1, 1, -1, -1 ) );
-        painter->drawRoundedRect( contentRect, radius, radius );
-
-    } else {
-        const qreal radius( GeometryUtils::frameRadius(-0.5) );
-
-        painter->setPen( QPen(brush, Metrics::Painter_PenWidth) );
-        painter->setBrush( Qt::NoBrush );
-        const QRectF outlineRect( baseRect.adjusted( 1.5, 1.5, -1.5, -1.5 ) );
-        painter->drawRoundedRect( outlineRect, radius, radius );
-
     }
 
     return true;
@@ -210,67 +178,10 @@ bool PushButtonHelper::drawPushButtonFrame( QPainter* painter, const QRect& rect
     // setup painter
     painter->setRenderHint( QPainter::Antialiasing, true );
 
-    // copy rect
-    QRectF frameRect( rect );
     qreal radius( GeometryUtils::frameRadius() );
-
-    painter->setBrush(brush);
-    painter->setPen(QPen(outline, Metrics::Painter_PenWidth));
-
-    // render
-    painter->drawRoundedRect( frameRect, radius, radius );
+    PainterHelper::drawRoundedRect(painter, rect, radius, radius, Qt::AbsoluteSize, brush, Metrics::Painter_PenWidth, outline);
 
     return true;
 }
 
-QBrush PushButtonHelper::getButtonBorderBrush(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken)
-{
-    const QBrush &normal = plExt->brush(PaletteExtended::PushButton_BorderColor);
-
-    if (!enabled)
-        return plExt->brush(PaletteExtended::PushButton_BorderColor, PaletteExtended::PseudoClass_Disabled, normal);
-    else if (sunken)
-        return plExt->brush(PaletteExtended::PushButton_BorderColor, PaletteExtended::PseudoClass_Pressed, normal);
-    else if (mouseOver)
-        return plExt->brush(PaletteExtended::PushButton_BorderColor, PaletteExtended::PseudoClass_Hover, normal);
-    else if (hasFocus)
-        return plExt->brush(PaletteExtended::PushButton_BorderColor, PaletteExtended::PseudoClass_Focus, normal);
-
-    return normal;
-}
-
-QBrush PushButtonHelper::getButtonBackgroundBrush(PaletteExtended *plExt, bool enabled, bool mouseOver, bool hasFocus, bool sunken)
-{
-    const QBrush &normal = plExt->brush(PaletteExtended::PushButton_BackgroundColor);
-
-    if (!enabled)
-        return plExt->brush(PaletteExtended::PushButton_BackgroundColor, PaletteExtended::PseudoClass_Disabled, normal);
-    else if (sunken)
-        return plExt->brush(PaletteExtended::PushButton_BackgroundColor, PaletteExtended::PseudoClass_Pressed, normal);
-    else if (mouseOver)
-            return plExt->brush(PaletteExtended::PushButton_BackgroundColor, PaletteExtended::PseudoClass_Hover, normal);
-    else if (hasFocus)
-        return plExt->brush(PaletteExtended::PushButton_BackgroundColor, PaletteExtended::PseudoClass_Focus, normal);
-
-    return normal;
-}
-
-QColor PushButtonHelper::getButtonTextColor(PaletteExtended *plExt, bool flat, bool enabled, bool mouseOver, bool hasFocus, bool sunken)
-{
-    PaletteExtended::PseudoClassType extraType = flat ? PaletteExtended::PseudoClass_Flat : PaletteExtended::PseudoClass_Unknown;
-    const QBrush &normal = plExt->brush(PaletteExtended::PushButton_TextColor, flat ? extraType : PaletteExtended::PseudoClass_Unspecified,
-                                        plExt->brush(PaletteExtended::PushButton_TextColor));
-
-    if (!enabled)
-        return plExt->brush(PaletteExtended::PushButton_TextColor, PaletteExtended::PseudoClass_Disabled | extraType, normal).color();
-    else if (sunken)
-        return plExt->brush(PaletteExtended::PushButton_TextColor, PaletteExtended::PseudoClass_Pressed | extraType, normal).color();
-    else if (mouseOver)
-        return plExt->brush(PaletteExtended::PushButton_TextColor, PaletteExtended::PseudoClass_Hover | extraType, normal).color();
-    else if (hasFocus)
-        return plExt->brush(PaletteExtended::PushButton_TextColor, PaletteExtended::PseudoClass_Focus | extraType, normal).color();
-
-    return normal.color();
-}
-
-}
+}// end namespace dstyle

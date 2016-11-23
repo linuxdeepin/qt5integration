@@ -42,6 +42,9 @@ void CommonHelper::renderFrame(QPainter *painter, const QRect &rect, const QBrus
 
 Style *CommonHelper::widgetStyle(const QWidget *widget)
 {
+    if (!widget)
+        return Q_NULLPTR;
+
     Style *style (Q_NULLPTR);
     style = qobject_cast<Style*>(widget->style());
     if (!style) {

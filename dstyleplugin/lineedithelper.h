@@ -20,9 +20,6 @@ class LineEditHelper
 {
 public:
     static bool drawFrameLineEditPrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget );
-
-    static QBrush getBorderBrush( PaletteExtended *plExt, bool enabled, bool hasFocus );
-    static QBrush getBackgroundColor( PaletteExtended *plExt, bool enabled, bool hasFocus );
 };
 
 }

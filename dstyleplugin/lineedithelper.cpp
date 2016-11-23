@@ -29,35 +29,10 @@ bool LineEditHelper::drawFrameLineEditPrimitive(const QStyleOption *option, QPai
     const bool hasFocus( state & QStyle::State_HasFocus );
 
     // render
-    const QBrush background( getBackgroundColor(style->m_palette, enabled, hasFocus) );
-    const QBrush outline( getBorderBrush(style->m_palette, enabled, hasFocus) );
+    const QBrush background(style->m_palette->brush(PaletteExtended::LineEdit_BackgroundBrush, enabled, false, hasFocus) );
+    const QBrush outline(style->m_palette->brush(PaletteExtended::LineEdit_BorderBrush, enabled, false, hasFocus) );
     CommonHelper::renderFrame( painter, rect, background, outline );
 
     return true;
 }
-
-QBrush LineEditHelper::getBorderBrush(PaletteExtended *plExt, bool enabled, bool hasFocus)
-{
-    const QBrush &normal = plExt->brush(PaletteExtended::LineEdit_BorderColor);
-
-    if (!enabled)
-        return plExt->brush(PaletteExtended::LineEdit_BorderColor, PaletteExtended::PseudoClass_Disabled, normal);
-    else if (hasFocus)
-        return plExt->brush(PaletteExtended::LineEdit_BorderColor, PaletteExtended::PseudoClass_Focus, normal);
-
-    return normal;
-}
-
-QBrush LineEditHelper::getBackgroundColor(PaletteExtended *plExt, bool enabled, bool hasFocus)
-{
-    const QBrush &normal = plExt->brush(PaletteExtended::LineEdit_BackgroundColor);
-
-    if (!enabled)
-        return plExt->brush(PaletteExtended::LineEdit_BackgroundColor, PaletteExtended::PseudoClass_Disabled, normal);
-    else if (hasFocus)
-        return plExt->brush(PaletteExtended::LineEdit_BackgroundColor, PaletteExtended::PseudoClass_Focus, normal);
-
-    return normal;
-}
-
-}
+}// end namespace dstyle

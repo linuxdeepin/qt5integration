@@ -29,31 +29,31 @@ Slider:disabled {
 }
 
 PushButton {
-    BackgroundColor: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
+    BackgroundBrush: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
     TextColor: "#000";
-    BorderColor: rgba(0,0,0,0.08);
+    BorderBrush: rgba(0,0,0,0.08);
 }
 
 PushButton:disabled {
-    BackgroundColor: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 rgba(255, 255, 255, 0.4), stop:1 rgba(253, 253, 253, 0.4));
+    BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 rgba(255, 255, 255, 0.4), stop:1 rgba(253, 253, 253, 0.4));
     TextColor: rgba(0,0,0,0.02);
-    BorderColor: rgba(0,0,0,0.02);
+    BorderBrush: rgba(0,0,0,0.02);
 }
 
 PushButton:hover {
-    BackgroundColor: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 "#8ccfff", stop:1 "#4bb8ff");
+    BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 "#8ccfff", stop:1 "#4bb8ff");
     TextColor: "#fff";
-    BorderColor: rgba(0, 117, 243, 0.2);
+    BorderBrush: rgba(0, 117, 243, 0.2);
 }
 
 PushButton:pressed {
-    BackgroundColor: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 "#0b8cff", stop:1 "#0aa1ff");
+    BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 "#0b8cff", stop:1 "#0aa1ff");
     TextColor: "#fff";
-    BorderColor: rgba(29, 129, 255, 0.3);
+    BorderBrush: rgba(29, 129, 255, 0.3);
 }
 
 PushButton:focus {
-    BorderColor: "#2ca7f8";
+    BorderBrush: "#2ca7f8";
 }
 
 PushButton:flat {
@@ -69,16 +69,32 @@ PushButton:flat:hover {
 }
 
 LineEdit {
-    BackgroundColor: rgb(255,255,255);
-    BorderColor: rgba(0,0,0,0.1);
+    BackgroundBrush: rgb(255,255,255);
+    BorderBrush: rgba(0,0,0,0.1);
 }
 
 LineEdit:disabled {
-    BackgroundColor: rgb(255,255,255);
-    BorderColor: rgba(0,0,0,0.04);
+    BackgroundBrush: rgb(255,255,255);
+    BorderBrush: rgba(0,0,0,0.04);
 }
 
 LineEdit:focus {
-    BackgroundColor: rgb(255,255,255);
-    BorderColor: rgb(44,167,248);
+    BackgroundBrush: rgb(255,255,255);
+    BorderBrush: rgb(44,167,248);
+}
+
+ScrollBar {
+    HandleBrush: rgba(16, 16, 16, 0.5);
+}
+
+ScrollBar:hover {
+    HandleBrush: rgba(16, 16, 16, 0.7);
+}
+
+ScrollBar:pressed {
+    HandleBrush: rgba(16, 16, 16, 0.8);
+}
+
+ScrollBar:focus {
+    HandleBorderBrush: "#2ca7f8";
 }

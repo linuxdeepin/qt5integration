@@ -13,14 +13,10 @@
 #include <QCommonStyle>
 
 #include "common.h"
-#include "paletteextended.h"
-#include "sliderhelper.h"
-#include "pushbuttonhelper.h"
-#include "framehelper.h"
-#include "lineedithelper.h"
 
 namespace dstyle {
 
+class PaletteExtended;
 class Style : public QCommonStyle
 {
     Q_OBJECT
@@ -40,6 +36,9 @@ public:
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE;
     void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE;
 
+    int styleHint(StyleHint sh, const QStyleOption *opt = Q_NULLPTR, const QWidget *w = Q_NULLPTR,
+                  QStyleHintReturn *shret = Q_NULLPTR) const Q_DECL_OVERRIDE;
+
     // some function type alias.
 //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
     using RenderFunc = bool(*)(const QStyleOptionComplex *, QPainter *, const QWidget *);
@@ -48,6 +47,7 @@ public:
 
     // helper functions
     QRect sliderSubControlRect( const QStyleOptionComplex *opt, SubControl sc, const QWidget *w ) const;
+    QRect scrollbarSubControlRect(const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget ) const;
 
 private:
     StyleType m_type;
@@ -57,6 +57,7 @@ private:
     friend class PushButtonHelper;
     friend class LineEditHelper;
     friend class FrameHelper;
+    friend class ScrollBarHelper;
 };
 
 

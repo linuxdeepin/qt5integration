@@ -41,18 +41,21 @@ public:
         QPalette_Button,
         QPalette_ButtonText,
 
+        ScrollBar_HandleBrush,
+        ScrollBar_HandleBorderBrush,
+
         Slider_GrooveColor,
         Slider_GrooveHighlightColor,
         Slider_HandleBrush,
         Slider_HandleBorderColor,
         Slider_TickmarkColor,
 
-        PushButton_BackgroundColor,
+        PushButton_BackgroundBrush,
         PushButton_TextColor,
-        PushButton_BorderColor,
+        PushButton_BorderBrush,
 
-        LineEdit_BorderColor,
-        LineEdit_BackgroundColor
+        LineEdit_BorderBrush,
+        LineEdit_BackgroundBrush
     };
     Q_ENUM(BrushName)
 
@@ -108,6 +111,8 @@ public:
     };
 
     QBrush brush(BrushName name, quint64 type = PseudoClass_Unspecified, const QBrush &defaultBrush = Qt::NoBrush) const;
+    QBrush brush(BrushName name, bool enabled, bool mouseOver, bool hasFocus = false, bool sunken = false,
+                 bool flat = false, const QBrush &defaultBrush = Qt::NoBrush) const;
 
     void setType(StyleType type);
 

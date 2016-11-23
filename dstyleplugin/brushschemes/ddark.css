@@ -27,31 +27,31 @@ Slider:disabled {
 }
 
 PushButton {
-    BackgroundColor: rgba(255, 255, 255, 0.15);
+    BackgroundBrush: rgba(255, 255, 255, 0.15);
     TextColor: "#dcdcdc";
-    BorderColor: transparent;
+    BorderBrush: transparent;
 }
 
 PushButton:disabled {
-    BackgroundColor: rgba(255, 255, 255, 0.06);
+    BackgroundBrush: rgba(255, 255, 255, 0.06);
     TextColor: "#dcdcdc";
-    BorderColor: transparent;
+    BorderBrush: transparent;
 }
 
 PushButton:hover {
-    BackgroundColor: rgba(255, 255, 255, 0.3);
+    BackgroundBrush: rgba(255, 255, 255, 0.3);
     TextColor: white;
-    BorderColor: transparent;
+    BorderBrush: transparent;
 }
 
 PushButton:pressed {
-    BackgroundColor: rgba(255,255,255,0.1);
+    BackgroundBrush: rgba(255,255,255,0.1);
     TextColor: "#2ca7f8";
-    BorderColor: transparent;
+    BorderBrush: transparent;
 }
 
 PushButton:focus {
-    BorderColor: "#2ca7f8";
+    BorderBrush: "#2ca7f8";
 }
 
 PushButton:flat {
@@ -67,16 +67,34 @@ PushButton:flat:hover {
 }
 
 LineEdit {
-    BackgroundColor: rgba(255,255,255,0.15);
-    BorderColor: rgb(0,0,0);
+    BackgroundBrush: rgba(255,255,255,0.15);
+    BorderBrush: rgb(0,0,0);
 }
 
 LineEdit:disabled {
-    BackgroundColor: rgba(255,255,255,0.04);
-    BorderColor: rgb(0,0,0);
+    BackgroundBrush: rgba(255,255,255,0.04);
+    BorderBrush: rgb(0,0,0);
 }
 
 LineEdit:focus {
-    BackgroundColor: rgba(255,255,255,0.05);
-    BorderColor: rgba(43,167,248,0.6);
+    BackgroundBrush: rgba(255,255,255,0.05);
+    BorderBrush: rgba(43,167,248,0.6);
+}
+
+ScrollBar {
+    HandleBrush: rgba(255, 255, 255, 0.2);
+    HandleBroderBrush: rgba(255, 255, 255, 0.05);
+}
+
+ScrollBar:hover {
+    HandleBrush: rgba(255, 255, 255, 0.4);
+    HandleBroderBrush: rgba(255, 255, 255, 0.1);
+}
+
+ScrollBar:pressed {
+    HandleBrush: rgba(96, 96, 96, 0.3);
+}
+
+ScrollBar:focus {
+    HandleBroderBrush: "#2ca7f8";
 }

@@ -95,6 +95,23 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type, con
     return defaultBrush;
 }
 
+QBrush PaletteExtended::brush(PaletteExtended::BrushName name, bool enabled, bool mouseOver, bool hasFocus, bool sunken, bool flat, const QBrush &defaultBrush) const
+{
+    PaletteExtended::PseudoClassType extraType = flat ? PaletteExtended::PseudoClass_Flat : PaletteExtended::PseudoClass_Unknown;
+    const QBrush &normal = brush(name, flat ? extraType : PaletteExtended::PseudoClass_Unspecified, defaultBrush);
+
+    if (!enabled)
+        return brush(name, PaletteExtended::PseudoClass_Disabled | extraType, normal);
+    else if (sunken)
+        return brush(name, PaletteExtended::PseudoClass_Pressed | extraType, normal);
+    else if (mouseOver)
+        return brush(name, PaletteExtended::PseudoClass_Hover | extraType, normal);
+    else if (hasFocus)
+        return brush(name, PaletteExtended::PseudoClass_Focus | extraType, normal);
+
+    return normal;
+}
+
 void PaletteExtended::setType(StyleType type)
 {
     QFile file;

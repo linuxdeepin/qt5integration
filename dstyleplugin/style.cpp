@@ -11,12 +11,18 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QComboBox>
+#include <QScrollBar>
 #include <QDebug>
 
 #include "style.h"
 #include "common.h"
 #include "geometryutils.h"
 #include "paletteextended.h"
+#include "sliderhelper.h"
+#include "pushbuttonhelper.h"
+#include "framehelper.h"
+#include "lineedithelper.h"
+#include "scrollbarhelper.h"
 
 namespace dstyle {
 
@@ -45,20 +51,29 @@ void Style::polish(QWidget *w)
     QCommonStyle::polish(w);
 
     if (qobject_cast<QPushButton *>(w)
-            || qobject_cast<QComboBox *>(w))
+            || qobject_cast<QComboBox *>(w)
+            || qobject_cast<QScrollBar *>(w))
         w->setAttribute(Qt::WA_Hover, true);
+
+    if (qobject_cast<QScrollBar *>(w)) {
+        w->setAttribute(Qt::WA_OpaquePaintEvent, false);
+    }
 }
 
 void Style::unpolish(QWidget *w)
 {
     if (qobject_cast<QPushButton *>(w)
-            || qobject_cast<QComboBox *>(w))
+            || qobject_cast<QComboBox *>(w)
+            || qobject_cast<QScrollBar *>(w))
         w->setAttribute(Qt::WA_Hover, false);
+
+    if (qobject_cast<QScrollBar *>(w)) {
+        w->setAttribute(Qt::WA_OpaquePaintEvent, true);
+    }
 }
 
 int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
 {
-
     // handle special cases
     switch( metric )
     {
@@ -196,6 +211,7 @@ QRect Style::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex
 
     switch (cc) {
     case QStyle::CC_Slider: return sliderSubControlRect(opt, sc, w);
+    case QStyle::CC_ScrollBar: return scrollbarSubControlRect(opt, sc, w);
     default:
         break;
     }
@@ -229,7 +245,7 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         //        case CE_ProgressBarContents: fcn = &Style::drawProgressBarContentsControl; break;
         //        case CE_ProgressBarGroove: fcn = &Style::drawProgressBarGrooveControl; break;
         //        case CE_ProgressBarLabel: fcn = &Style::drawProgressBarLabelControl; break;
-        //        case CE_ScrollBarSlider: fcn = &Style::drawScrollBarSliderControl; break;
+    case CE_ScrollBarSlider: fcn = &ScrollBarHelper::drawScrollBarSliderControl; break;
         //        case CE_ScrollBarAddLine: fcn = &Style::drawScrollBarAddLineControl; break;
         //        case CE_ScrollBarSubLine: fcn = &Style::drawScrollBarSubLineControl; break;
         //        case CE_ScrollBarAddPage: fcn = &Style::emptyControl; break;
@@ -325,6 +341,18 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     painter->restore();
 }
 
+int Style::styleHint(QStyle::StyleHint sh, const QStyleOption *opt, const QWidget *w, QStyleHintReturn *shret) const
+{
+    switch (sh) {
+    case SH_ScrollBar_Transient:
+        return true;
+    default:
+        break;
+    }
+
+    return QCommonStyle::styleHint(sh, opt, w, shret);
+}
+
 QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, QStyle::SubControl subControl, const QWidget *widget) const
 {
     // cast option and check
@@ -356,6 +384,103 @@ QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, QStyle::Sub
 
     default: return QCommonStyle::subControlRect( CC_Slider, option, subControl, widget );
     }
+}
+
+QRect Style::scrollbarSubControlRect(const QStyleOptionComplex *opt, QStyle::SubControl sc, const QWidget *widget) const
+{
+    QRect ret(0, 0, 0, 0);
+
+    if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+        const bool mouseOver(opt->state & QStyle::State_MouseOver);
+        const QRect scrollBarRect = scrollbar->rect;
+        int sbextent = 0;
+        if (!proxy()->styleHint(SH_ScrollBar_Transient, scrollbar, widget))
+            sbextent = proxy()->pixelMetric(PM_ScrollBarExtent, scrollbar, widget);
+        int maxlen = ((scrollbar->orientation == Qt::Horizontal) ?
+                      scrollBarRect.width() : scrollBarRect.height());
+        int sliderlen;
+
+        // calculate slider length
+        if (scrollbar->maximum != scrollbar->minimum) {
+            uint range = scrollbar->maximum - scrollbar->minimum;
+            sliderlen = (qint64(scrollbar->pageStep) * maxlen) / (range + scrollbar->pageStep);
+
+            int slidermin = proxy()->pixelMetric(PM_ScrollBarSliderMin, scrollbar, widget);
+            if (sliderlen < slidermin || range > INT_MAX / 2)
+                sliderlen = slidermin;
+            if (sliderlen > maxlen)
+                sliderlen = maxlen;
+        } else {
+            sliderlen = maxlen;
+        }
+
+        int sliderstart = sliderPositionFromValue(scrollbar->minimum,
+                                                  scrollbar->maximum,
+                                                  scrollbar->sliderPosition,
+                                                  maxlen - sliderlen,
+                                                  scrollbar->upsideDown);
+
+        switch (sc) {
+        case SC_ScrollBarSubLine:            // top/left button
+            if (scrollbar->orientation == Qt::Horizontal) {
+                int buttonWidth = qMin(scrollBarRect.width() / 2, sbextent);
+                ret.setRect(0, 0, buttonWidth, scrollBarRect.height());
+            } else {
+                int buttonHeight = qMin(scrollBarRect.height() / 2, sbextent);
+                ret.setRect(0, 0, scrollBarRect.width(), buttonHeight);
+            }
+            break;
+        case SC_ScrollBarAddLine:            // bottom/right button
+            if (scrollbar->orientation == Qt::Horizontal) {
+                int buttonWidth = qMin(scrollBarRect.width()/2, sbextent);
+                ret.setRect(scrollBarRect.width() - buttonWidth, 0, buttonWidth, scrollBarRect.height());
+            } else {
+                int buttonHeight = qMin(scrollBarRect.height()/2, sbextent);
+                ret.setRect(0, scrollBarRect.height() - buttonHeight, scrollBarRect.width(), buttonHeight);
+            }
+            break;
+        case SC_ScrollBarSubPage:            // between top/left button and slider
+            if (scrollbar->orientation == Qt::Horizontal)
+                ret.setRect(sbextent, 0, sliderstart - sbextent, scrollBarRect.height());
+            else
+                ret.setRect(0, sbextent, scrollBarRect.width(), sliderstart - sbextent);
+            break;
+        case SC_ScrollBarAddPage:            // between bottom/right button and slider
+            if (scrollbar->orientation == Qt::Horizontal)
+                ret.setRect(sliderstart + sliderlen, 0,
+                            maxlen - sliderstart - sliderlen + sbextent, scrollBarRect.height());
+            else
+                ret.setRect(0, sliderstart + sliderlen, scrollBarRect.width(),
+                            maxlen - sliderstart - sliderlen + sbextent);
+            break;
+        case SC_ScrollBarGroove:
+            if (scrollbar->orientation == Qt::Horizontal)
+                ret.setRect(sbextent, 0, scrollBarRect.width() - sbextent * 2,
+                            scrollBarRect.height());
+            else
+                ret.setRect(0, sbextent, scrollBarRect.width(),
+                            scrollBarRect.height() - sbextent * 2);
+            break;
+        case SC_ScrollBarSlider:
+            if (scrollbar->orientation == Qt::Horizontal) {
+                if (mouseOver)
+                    ret.setRect(sliderstart, 0, sliderlen, scrollBarRect.height());
+                else
+                    ret.setRect(sliderstart, scrollBarRect.height() / 4, sliderlen, scrollBarRect.height() / 2);
+            } else {
+                if (mouseOver)
+                    ret.setRect(0, sliderstart, scrollBarRect.width(), sliderlen);
+                else
+                    ret.setRect(scrollBarRect.width() / 4, sliderstart, scrollBarRect.width() / 2, sliderlen);
+            }
+            break;
+        default:
+            break;
+        }
+        ret = visualRect(scrollbar->direction, scrollBarRect, ret);
+    }
+
+    return ret;
 }
 
 }
