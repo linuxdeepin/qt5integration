@@ -34,7 +34,7 @@ PushButton {
 
 PushButton:disabled {
     BackgroundBrush: rgba(255, 255, 255, 0.06);
-    TextColor: "#dcdcdc";
+    TextColor: "#40dcdcdc";
     BorderBrush: transparent;
 }
 

@@ -36,7 +36,7 @@ PushButton {
 
 PushButton:disabled {
     BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 rgba(255, 255, 255, 0.4), stop:1 rgba(253, 253, 253, 0.4));
-    TextColor: rgba(0,0,0,0.02);
+    TextColor: "#AEAEAE";
     BorderBrush: rgba(0,0,0,0.02);
 }
 
@@ -88,11 +88,11 @@ ScrollBar {
 }
 
 ScrollBar:hover {
-    HandleBrush: rgba(16, 16, 16, 0.7);
+    HandleBrush: rgba(16, 16, 16, 0.5);
 }
 
 ScrollBar:pressed {
-    HandleBrush: rgba(16, 16, 16, 0.8);
+    HandleBrush: rgba(16, 16, 16, 0.55);
 }
 
 ScrollBar:focus {

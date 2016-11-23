@@ -18,7 +18,7 @@ bool dstyle::ScrollBarHelper::drawScrollBarSliderControl(const QStyleOption *opt
     const bool enabled(option->state & QStyle::State_Enabled);
     const bool mouseOver(option->state & QStyle::State_MouseOver);
     const bool hasFocus((option->state & QStyle::State_HasFocus ) && !( widget && widget->focusProxy()));
-    const bool sunken(option->state & (QStyle::State_On|QStyle::State_Sunken));
+    const bool sunken((option->state | QStyle::State_Sunken) == option->state);
 
     painter->setRenderHint(QPainter::Antialiasing);
 

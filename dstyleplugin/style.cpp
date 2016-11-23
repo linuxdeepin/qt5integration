@@ -391,6 +391,7 @@ QRect Style::scrollbarSubControlRect(const QStyleOptionComplex *opt, QStyle::Sub
     QRect ret(0, 0, 0, 0);
 
     if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+        const bool enabled(opt->state & QStyle::State_Enabled);
         const bool mouseOver(opt->state & QStyle::State_MouseOver);
         const QRect scrollBarRect = scrollbar->rect;
         int sbextent = 0;
@@ -463,12 +464,12 @@ QRect Style::scrollbarSubControlRect(const QStyleOptionComplex *opt, QStyle::Sub
             break;
         case SC_ScrollBarSlider:
             if (scrollbar->orientation == Qt::Horizontal) {
-                if (mouseOver)
+                if (mouseOver && enabled)
                     ret.setRect(sliderstart, 0, sliderlen, scrollBarRect.height());
                 else
                     ret.setRect(sliderstart, scrollBarRect.height() / 4, sliderlen, scrollBarRect.height() / 2);
             } else {
-                if (mouseOver)
+                if (mouseOver && enabled)
                     ret.setRect(0, sliderstart, scrollBarRect.width(), sliderlen);
                 else
                     ret.setRect(scrollBarRect.width() / 4, sliderstart, scrollBarRect.width() / 2, sliderlen);
