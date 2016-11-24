@@ -21,6 +21,8 @@
 
 namespace dstyle {
 
+static const char *SliderTickmarkPositionsProp = "tickmarkPositions";
+
 bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
 {
     // cast option and check
@@ -71,6 +73,7 @@ bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, con
 
             }
 
+            QList<QVariant> tickmarkPositions;
             while( current <= sliderOption->maximum )
             {
 
@@ -79,6 +82,8 @@ bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, con
 
                 // calculate positions and draw lines
                 int position( sliderPositionFromValue( sliderOption->minimum, sliderOption->maximum, current, available ) + fudge );
+                tickmarkPositions.append(position);
+
                 foreach( const QLine& tickLine, tickLines )
                 {
                     if( horizontal ) painter->drawLine( tickLine.translated( upsideDown ? (rect.width() - position) : position, 0 ) );
@@ -87,8 +92,12 @@ bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, con
 
                 // go to next position
                 current += interval;
-
             }
+
+            QWidget *volatileWidget = const_cast<QWidget*>(widget);
+            // Tickmark positions are valuable to both drawing annotations and tickmark magnetic,
+            // so we record it here to its properties.
+            volatileWidget->setProperty(SliderTickmarkPositionsProp, tickmarkPositions);
         }
     }
 
@@ -207,6 +216,33 @@ void Style::drawSliderHandle( QPainter* painter, const QRect& rect, const QBrush
 //    }
 
     PainterHelper::drawEllipse(painter, frameRect, brush, Metrics::Painter_PenWidth, outline);
+}
+
+bool Style::drawSliderTickmarkLabels(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+{
+    QRect rect( widget->rect() );
+
+    QVariantList labels = widget->property("tickmarkLabels").toList();
+    if (labels.length() == 0) return false;
+
+    QWidget *parent = widget->parentWidget();
+    if (parent && parent->inherits("dcc::widgets::DCCSliderAnnotated")) {
+        QSlider *slider = parent->findChild<QSlider*>();
+        if (slider) {
+            QList<QVariant> positions = slider->property(SliderTickmarkPositionsProp).toList();
+
+            PaletteExtended *plExt = m_palette;
+            painter->setPen(QPen(plExt->brush(PaletteExtended::Slider_TickmarkColor), Metrics::Painter_PenWidth));
+
+            for (int i = 0; i < positions.length() && i < labels.length(); i++) {
+                QString text = labels.at(i).toString();
+                int rWidth = option->fontMetrics.width(text);
+                QRect r ( rect.x() + positions.at(i).toInt() - rWidth / 2,
+                          rect.y(), rWidth, rect.height() );
+                painter->drawText(r, Qt::AlignTop, text);
+            }
+        }
+    }
 }
 
 } // end namespace dstyle

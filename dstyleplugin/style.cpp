@@ -61,6 +61,12 @@ void Style::polish(QWidget *w)
     if (qobject_cast<QScrollBar *>(w)) {
         w->setAttribute(Qt::WA_OpaquePaintEvent, false);
     }
+
+    if (w->inherits("SliderAnnotation")) {
+        QFont font = w->font();
+        font.setPointSizeF(font.pointSizeF() * 0.7);
+        w->setFont(font);
+    }
 }
 
 void Style::unpolish(QWidget *w)
@@ -72,6 +78,12 @@ void Style::unpolish(QWidget *w)
 
     if (qobject_cast<QScrollBar *>(w)) {
         w->setAttribute(Qt::WA_OpaquePaintEvent, true);
+    }
+
+    if (w->inherits("SliderAnnotation")) {
+        QFont font = w->font();
+        font.setPointSizeF(font.pointSizeF() / 0.7);
+        w->setFont(font);
     }
 }
 
@@ -265,8 +277,13 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         //        case CE_DockWidgetTitle: fcn = &Style::drawDockWidgetTitleControl; break;
         //        case CE_CapacityBar: fcn = &Style::drawProgressBarControl; break;
 
-        // fallback
-    default: break;
+    // fallback
+    default: {
+        // TODO: move this bare number comparison to some more human friendly form.
+        if ((unsigned int)(element) == QStyle::CE_CustomBase + 1024) {
+            fcn = &Style::drawSliderTickmarkLabels;
+        }
+    }
     }
 
     painter->save();

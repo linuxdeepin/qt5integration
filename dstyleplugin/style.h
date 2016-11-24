@@ -65,6 +65,7 @@ private:
     bool drawSlider(const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const;
     void drawSliderGroove(QPainter*, const QRect&, const QBrush & brush) const;
     void drawSliderHandle(QPainter* painter, const QRect& rect, const QBrush &brush, const QColor& outline) const;
+    bool drawSliderTickmarkLabels(const QStyleOption*, QPainter*, const QWidget*) const;
 
     StyleType m_type;
     PaletteExtended *m_palette;
@@ -75,7 +76,6 @@ private:
     friend class FrameHelper;
     friend class ScrollBarHelper;
 };
-
 
 }
 
