@@ -41,7 +41,7 @@ public:
 
     // some function type alias.
 //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
-    using RenderFunc = bool(*)(const QStyleOptionComplex *, QPainter *, const QWidget *);
+    using DrawComplexControlFunc = bool(Style::*)(const QStyleOptionComplex *, QPainter *, const QWidget *) const;
     using DrawPrimitiveFunc = bool(*)(const QStyleOption*, QPainter*, const QWidget* );
     using DrawControlFunc = bool(Style::*)(const QStyleOption*, QPainter*, const QWidget*) const;
 
@@ -60,6 +60,11 @@ private:
 
     // menu bar
     bool drawMenuBarItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+
+    // slider
+    bool drawSlider(const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const;
+    void drawSliderGroove(QPainter*, const QRect&, const QBrush & brush) const;
+    void drawSliderHandle(QPainter* painter, const QRect& rect, const QBrush &brush, const QColor& outline) const;
 
     StyleType m_type;
     PaletteExtended *m_palette;

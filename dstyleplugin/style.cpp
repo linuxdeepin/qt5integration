@@ -18,7 +18,6 @@
 #include "common.h"
 #include "geometryutils.h"
 #include "paletteextended.h"
-#include "sliderhelper.h"
 #include "framehelper.h"
 #include "lineedithelper.h"
 #include "commonhelper.h"
@@ -281,15 +280,15 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
 
 void Style::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const
 {
-    RenderFunc fn = nullptr;
+    DrawComplexControlFunc fn = nullptr;
 
     switch (cc) {
-    case QStyle::CC_Slider: fn = &SliderHelper::render; break;
+    case QStyle::CC_Slider: fn = &Style::drawSlider; break;
     default:
         break;
     }
 
-    if (fn && fn(opt, p, w)) {
+    if (fn && (this->*fn)(opt, p, w)) {
         return;
     }
 

@@ -26,7 +26,6 @@ SOURCES += dstyleplugin.cpp \
 HEADERS += dstyleplugin.h \
     style.h \
     common.h \
-    sliderhelper.h \
     colorutils.h \
     geometryutils.h \
     paletteextended.h \
