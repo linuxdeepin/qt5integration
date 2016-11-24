@@ -19,17 +19,21 @@
 #include "geometryutils.h"
 #include "paletteextended.h"
 #include "sliderhelper.h"
-#include "pushbuttonhelper.h"
 #include "framehelper.h"
 #include "lineedithelper.h"
-#include "scrollbarhelper.h"
+#include "commonhelper.h"
 
 namespace dstyle {
 
-Style::Style(StyleType style) :
-    QCommonStyle(),
-    m_type(style),
-    m_palette(new PaletteExtended(style, this))
+static QWindow *qt_getWindow(const QWidget *widget)
+{
+    return widget ? widget->window()->windowHandle() : 0;
+}
+
+Style::Style(StyleType style)
+    : QCommonStyle()
+    , m_type(style)
+    , m_palette(new PaletteExtended(style, this))
 {
 
 }
@@ -142,7 +146,7 @@ int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, c
     case PM_MenuBarPanelWidth: return 0;
     case PM_MenuBarHMargin: return 0;
     case PM_MenuBarVMargin: return 0;
-    case PM_MenuBarItemSpacing: return 0;
+    case PM_MenuBarItemSpacing: return Metrics::MenuBar_ItemSpacing;
     case PM_MenuDesktopFrameWidth: return 0;
 
         // menu buttons
@@ -228,24 +232,24 @@ QRect Style::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex
 
 void Style::drawControl(QStyle::ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    DrawControlFunc fcn( nullptr );
+    DrawControlFunc fcn(Q_NULLPTR);
 
     switch( element ) {
-    case CE_PushButtonBevel: fcn = &PushButtonHelper::drawPushButtonBevel; break;
-    case CE_PushButtonLabel: fcn = &PushButtonHelper::drawPushButtonLabel; break;
+    case CE_PushButtonBevel: fcn = &Style::drawPushButtonBevel; break;
+    case CE_PushButtonLabel: fcn = &Style::drawPushButtonLabel; break;
         //        case CE_CheckBoxLabel: fcn = &Style::drawCheckBoxLabelControl; break;
         //        case CE_RadioButtonLabel: fcn = &Style::drawCheckBoxLabelControl; break;
         //        case CE_ToolButtonLabel: fcn = &Style::drawToolButtonLabelControl; break;
         //        case CE_ComboBoxLabel: fcn = &Style::drawComboBoxLabelControl; break;
-        //        case CE_MenuBarEmptyArea: fcn = &Style::emptyControl; break;
-        //        case CE_MenuBarItem: fcn = &Style::drawMenuBarItemControl; break;
+    case CE_MenuBarEmptyArea: return;
+    case CE_MenuBarItem: fcn = &Style::drawMenuBarItemControl; break;
         //        case CE_MenuItem: fcn = &Style::drawMenuItemControl; break;
         //        case CE_ToolBar: fcn = &Style::emptyControl; break;
         //        case CE_ProgressBar: fcn = &Style::drawProgressBarControl; break;
         //        case CE_ProgressBarContents: fcn = &Style::drawProgressBarContentsControl; break;
         //        case CE_ProgressBarGroove: fcn = &Style::drawProgressBarGrooveControl; break;
         //        case CE_ProgressBarLabel: fcn = &Style::drawProgressBarLabelControl; break;
-    case CE_ScrollBarSlider: fcn = &ScrollBarHelper::drawScrollBarSliderControl; break;
+    case CE_ScrollBarSlider: fcn = &Style::drawScrollBarSliderControl; break;
         //        case CE_ScrollBarAddLine: fcn = &Style::drawScrollBarAddLineControl; break;
         //        case CE_ScrollBarSubLine: fcn = &Style::drawScrollBarSubLineControl; break;
         //        case CE_ScrollBarAddPage: fcn = &Style::emptyControl; break;
@@ -269,7 +273,7 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
     painter->save();
 
     // call function if implemented
-    if( !( fcn && fcn( option, painter, widget ) ) )
+    if( !( fcn && (this->*fcn)( option, painter, widget ) ) )
     { QCommonStyle::drawControl( element, option, painter, widget ); }
 
     painter->restore();
@@ -482,6 +486,42 @@ QRect Style::scrollbarSubControlRect(const QStyleOptionComplex *opt, QStyle::Sub
     }
 
     return ret;
+}
+
+bool Style::drawMenuBarItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+{
+    Style *style = CommonHelper::widgetStyle(widget);
+    if (!style) return false;
+
+    const bool enabled(option->state & QStyle::State_Enabled);
+    const bool mouseOver(option->state & QStyle::State_MouseOver);
+    const bool hasFocus((option->state & QStyle::State_HasFocus ) && !( widget && widget->focusProxy()));
+    const bool sunken((option->state | QStyle::State_Sunken) == option->state);
+
+    if (mouseOver || sunken) {
+        const QColor shadow( Qt::transparent );
+        const QBrush outline(style->m_palette->brush(PaletteExtended::PushButton_BorderBrush, enabled, mouseOver, hasFocus, sunken));
+        const QBrush background(style->m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, enabled, mouseOver, hasFocus, sunken));
+
+        // render
+        drawPushButtonFrame(painter, option->rect, background, outline, shadow );
+    }
+
+    if (const QStyleOptionMenuItem *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
+        uint alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip
+                        | Qt::TextSingleLine;
+        if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
+            alignment |= Qt::TextHideMnemonic;
+        int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+        QPixmap pix = mbi->icon.pixmap(qt_getWindow(widget), QSize(iconExtent, iconExtent), (enabled) ? (mouseOver ? QIcon::Active : QIcon::Normal) : QIcon::Disabled);
+        if (!pix.isNull())
+            proxy()->drawItemPixmap(painter, mbi->rect, alignment, pix);
+        else
+            proxy()->drawItemText(painter, mbi->rect, alignment, mbi->palette, enabled,
+                         mbi->text, QPalette::ButtonText);
+    }
+
+    return true;
 }
 
 }

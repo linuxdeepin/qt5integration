@@ -5,6 +5,8 @@ QPalette {
     WindowText: rgb(25,25,25);
     Highlight: "#61b5f8";
     HighlightedText: rgb(255,255,255);
+    Button: rgba(255, 255, 255, 0.15);
+    ButtonText: "#dcdcdc";
 }
 
 Slider {

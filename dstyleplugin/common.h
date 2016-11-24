@@ -38,6 +38,9 @@ enum Metrics
     MenuItem_AcceleratorSpace = 16,
     MenuButton_IndicatorWidth = 20,
 
+    // menu bar
+    MenuBar_ItemSpacing = 6,
+
     // combobox
     ComboBox_FrameWidth = 6,
 

@@ -30,11 +30,9 @@ HEADERS += dstyleplugin.h \
     colorutils.h \
     geometryutils.h \
     paletteextended.h \
-    pushbuttonhelper.h \
     framehelper.h \
     lineedithelper.h \
     commonhelper.h \
-    scrollbarhelper.h \
     painterhelper.h
 
 DISTFILES += dstyleplugin.json

@@ -43,13 +43,24 @@ public:
 //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
     using RenderFunc = bool(*)(const QStyleOptionComplex *, QPainter *, const QWidget *);
     using DrawPrimitiveFunc = bool(*)(const QStyleOption*, QPainter*, const QWidget* );
-    using DrawControlFunc = bool (*)(const QStyleOption*, QPainter*, const QWidget* );
+    using DrawControlFunc = bool(Style::*)(const QStyleOption*, QPainter*, const QWidget*) const;
 
+private:
     // helper functions
     QRect sliderSubControlRect( const QStyleOptionComplex *opt, SubControl sc, const QWidget *w ) const;
     QRect scrollbarSubControlRect(const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget ) const;
 
-private:
+    // push button
+    bool drawPushButtonBevel(const QStyleOption*, QPainter*, const QWidget*) const;
+    bool drawPushButtonLabel(const QStyleOption *, QPainter *, const QWidget *) const;
+    bool drawPushButtonFrame(QPainter* painter, const QRect& rect, const QBrush &color, const QBrush &outline, const QColor& shadow) const;
+
+    // scroll bar
+    bool drawScrollBarSliderControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+
+    // menu bar
+    bool drawMenuBarItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+
     StyleType m_type;
     PaletteExtended *m_palette;
 

@@ -1,4 +1,3 @@
-#include "scrollbarhelper.h"
 #include "commonhelper.h"
 #include "paletteextended.h"
 #include "style.h"
@@ -10,7 +9,8 @@
 #include <QScrollBar>
 #include <QDebug>
 
-bool dstyle::ScrollBarHelper::drawScrollBarSliderControl(const QStyleOption *option, QPainter *painter, const QWidget *widget)
+namespace dstyle {
+bool Style::drawScrollBarSliderControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
     Style *style = CommonHelper::widgetStyle(widget);
     if (!style) return false;
@@ -29,3 +29,4 @@ bool dstyle::ScrollBarHelper::drawScrollBarSliderControl(const QStyleOption *opt
 
     return true;
 }
+}// end namespace dstyle

@@ -41,7 +41,7 @@
 #ifndef WIDGETGALLERY_H
 #define WIDGETGALLERY_H
 
-#include <QDialog>
+#include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -63,7 +63,7 @@ class QTextEdit;
 QT_END_NAMESPACE
 
 //! [0]
-class WidgetGallery : public QDialog
+class WidgetGallery : public QMainWindow
 {
     Q_OBJECT
 

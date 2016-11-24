@@ -7,19 +7,19 @@
  * (at your option) any later version.
  **/
 
-#include "pushbuttonhelper.h"
 #include "common.h"
 #include "geometryutils.h"
 #include "style.h"
 #include "commonhelper.h"
 #include "painterhelper.h"
+#include "paletteextended.h"
 
 #include <QDebug>
 #include <QStyleOptionButton>
 
 namespace dstyle {
 
-bool PushButtonHelper::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, const QWidget *widget)
+bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
     Style *style = CommonHelper::widgetStyle(widget);
     if (!style) return false;
@@ -59,7 +59,7 @@ bool PushButtonHelper::drawPushButtonBevel(const QStyleOption *option, QPainter 
     return true;
 }
 
-bool PushButtonHelper::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, const QWidget *widget)
+bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
     Style *style = CommonHelper::widgetStyle(widget);
     if (!style) return false;
@@ -171,7 +171,7 @@ bool PushButtonHelper::drawPushButtonLabel(const QStyleOption *option, QPainter 
     return true;
 }
 
-bool PushButtonHelper::drawPushButtonFrame( QPainter* painter, const QRect& rect, const QBrush& brush, const QBrush& outline, const QColor& shadow )
+bool Style::drawPushButtonFrame( QPainter* painter, const QRect& rect, const QBrush& brush, const QBrush& outline, const QColor& shadow ) const
 {
     Q_UNUSED(shadow)
 

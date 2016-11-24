@@ -45,7 +45,7 @@
 
 //! [0]
 WidgetGallery::WidgetGallery(QWidget *parent)
-    : QDialog(parent)
+    : QMainWindow(parent)
 {
     originalPalette = QApplication::palette();
 
@@ -85,6 +85,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 //! [2]
 
 //! [3]
+    QWidget *mainWidget = new QWidget();
     QHBoxLayout *topLayout = new QHBoxLayout;
 //! [3] //! [4]
     topLayout->addWidget(styleLabel);
@@ -93,7 +94,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     topLayout->addWidget(useStylePaletteCheckBox);
     topLayout->addWidget(disableWidgetsCheckBox);
 
-    QGridLayout *mainLayout = new QGridLayout;
+    QGridLayout *mainLayout = new QGridLayout(mainWidget);
     mainLayout->addLayout(topLayout, 0, 0, 1, 2);
     mainLayout->addWidget(topLeftGroupBox, 1, 0);
     mainLayout->addWidget(topRightGroupBox, 1, 1);
@@ -104,10 +105,19 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     mainLayout->setRowStretch(2, 1);
     mainLayout->setColumnStretch(0, 1);
     mainLayout->setColumnStretch(1, 1);
-    setLayout(mainLayout);
 
     setWindowTitle(tr("Styles"));
     changeStyle("NorwegianWood");
+
+    setCentralWidget(mainWidget);
+
+    menuBar()->addAction("breeze");
+    menuBar()->addAction("dlight");
+    menuBar()->addAction("ddark");
+
+    connect(menuBar(), &QMenuBar::triggered, this, [this](const QAction *action) {
+        changeStyle(action->text());
+    });
 }
 //! [4]
 
