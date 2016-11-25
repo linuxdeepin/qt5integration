@@ -13,6 +13,7 @@
 #include <QComboBox>
 #include <QScrollBar>
 #include <QDebug>
+#include <QApplication>
 
 #include <DApplication>
 #include <dplatformwindowhandle.h>
@@ -62,9 +63,9 @@ void Style::polish(QWidget *w)
         w->setAttribute(Qt::WA_OpaquePaintEvent, false);
     }
 
-    if (w->inherits("SliderAnnotation")) {
+    if (w->inherits("dcc::widgets::SliderAnnotation")) {
         QFont font = w->font();
-        font.setPointSizeF(font.pointSizeF() * 0.7);
+        font.setPointSizeF(qApp->font().pointSizeF() - 1);
         w->setFont(font);
     }
 
@@ -89,10 +90,11 @@ void Style::unpolish(QWidget *w)
         w->setAttribute(Qt::WA_OpaquePaintEvent, true);
     }
 
-    if (w->inherits("SliderAnnotation")) {
+    if (w->inherits("dcc::widgets::SliderAnnotation")) {
         QFont font = w->font();
-        font.setPointSizeF(font.pointSizeF() / 0.7);
+        font.setPointSizeF(qApp->font().pointSizeF());
         w->setFont(font);
+        w->setAttribute(Qt::WA_SetFont, false);
     }
 }
 
