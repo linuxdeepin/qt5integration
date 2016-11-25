@@ -18,10 +18,15 @@
 
 #include <QStyleOptionSlider>
 #include <QDebug>
+#include <QPainterPath>
 
 namespace dstyle {
 
 static const char *SliderTickmarkPositionsProp = "tickmarkPositions";
+
+static const char *SliderHandleTypeNormal = "Normal";
+static const char *SliderHandleTypeVernier = "Vernier";
+static const char *SliderHandleTypeNone = "None";
 
 bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
 {
@@ -170,7 +175,8 @@ bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, con
                                                       : PaletteExtended::PseudoClass_Unspecified).color();
 
         // render
-        drawSliderHandle( painter, handleRect, background, outline );
+        const QString handleType = widget->property("handleType").toString();
+        drawSliderHandle( painter, handleRect, background, outline, handleType);
     }
 
     return true;
@@ -195,7 +201,7 @@ void Style::drawSliderGroove(QPainter *painter, const QRect &rect, const QBrush 
     return;
 }
 
-void Style::drawSliderHandle( QPainter* painter, const QRect& rect, const QBrush& brush, const QColor& outline ) const
+void Style::drawSliderHandle(QPainter* painter, const QRect& rect, const QBrush& brush, const QColor& outline , const QString &type) const
 {
 
     // setup painter
@@ -215,7 +221,23 @@ void Style::drawSliderHandle( QPainter* painter, const QRect& rect, const QBrush
 
 //    }
 
-    PainterHelper::drawEllipse(painter, frameRect, brush, Metrics::Painter_PenWidth, outline);
+    if (type == SliderHandleTypeNone) {
+        return; // draw no handle
+    } else if (type == SliderHandleTypeVernier) {
+        // draw vernier handle
+        QPainterPath path;
+        path.moveTo(frameRect.x(), frameRect.y());
+        path.lineTo(frameRect.x() + frameRect.width(), frameRect.y());
+        path.lineTo(frameRect.x() + frameRect.width(), frameRect.y() + frameRect.height() / 2);
+        path.lineTo(frameRect.x() + frameRect.width() / 2, frameRect.y() + frameRect.height());
+        path.lineTo(frameRect.x(), frameRect.y() + frameRect.height() / 2);
+        path.lineTo(frameRect.x(), frameRect.y());
+
+        PainterHelper::drawPath(painter, path, brush, Metrics::Painter_PenWidth, outline);
+    } else {
+        // draw circle handle
+        PainterHelper::drawEllipse(painter, frameRect, brush, Metrics::Painter_PenWidth, outline);
+    }
 }
 
 bool Style::drawSliderTickmarkLabels(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
