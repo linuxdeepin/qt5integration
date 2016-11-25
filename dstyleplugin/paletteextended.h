@@ -55,7 +55,11 @@ public:
         PushButton_BorderBrush,
 
         LineEdit_BorderBrush,
-        LineEdit_BackgroundBrush
+        LineEdit_BackgroundBrush,
+
+        Menu_SeparatorColor,
+        Menu_BorderColor,
+        Menu_BackgroundBrush
     };
     Q_ENUM(BrushName)
 
@@ -111,7 +115,7 @@ public:
     };
 
     QBrush brush(BrushName name, quint64 type = PseudoClass_Unspecified, const QBrush &defaultBrush = Qt::NoBrush) const;
-    QBrush brush(BrushName name, bool enabled, bool mouseOver, bool hasFocus = false, bool sunken = false,
+    QBrush brush(BrushName name, bool enabled, bool mouseOver = false, bool hasFocus = false, bool sunken = false,
                  bool flat = false, const QBrush &defaultBrush = Qt::NoBrush) const;
 
     void setType(StyleType type);

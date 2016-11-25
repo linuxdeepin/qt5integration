@@ -31,16 +31,6 @@ enum Metrics
     // line editors
     LineEdit_FrameWidth = 4,
 
-    // menu items
-    Menu_FrameWidth = 0,
-    MenuItem_MarginWidth = 3,
-    MenuItem_ItemSpacing = 4,
-    MenuItem_AcceleratorSpace = 16,
-    MenuButton_IndicatorWidth = 20,
-
-    // menu bar
-    MenuBar_ItemSpacing = 6,
-
     // combobox
     ComboBox_FrameWidth = 6,
 
@@ -66,7 +56,27 @@ enum Metrics
     CheckBox_FocusMarginWidth = 2,
     CheckBox_ItemSpacing = 4,
 
-    // menubar items
+    // menu
+    Menu_ItemHMargin = 0,
+    Menu_ItemVMargin = 1,
+    Menu_ArrowHMargin = 6,
+    Menu_CheckMarkWidth = 12,
+    Menu_RightBorder = 10,
+    Menu_ItemFrameWidth = 2,
+    Menu_ItemHTextMargin = 3,
+    Menu_ItemVTextMargin = 8,
+    Menu_FrameWidth = 0,
+    Menu_HMargin = 0,
+    Menu_VMargin = 5,
+    Menu_SeparatorItemHMargin = 5,
+    Menu_PanelRightPadding = 10,
+    MenuItem_MarginWidth = 3,
+    MenuItem_ItemSpacing = 4,
+    MenuItem_AcceleratorSpace = 16,
+    MenuButton_IndicatorWidth = 20,
+
+    // menu bar
+    MenuBar_ItemSpacing = 6,
     MenuBarItem_MarginWidth = 10,
     MenuBarItem_MarginHeight = 6,
 
@@ -134,8 +144,10 @@ enum Metrics
     Splitter_SplitterWidth = 1,
 
     // shadow dimensions
-    Shadow_Overlap = 2
+    Shadow_Overlap = 2,
 
+    // group box
+    GroupBox_TopMargin = 3
 };
 
 }

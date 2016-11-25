@@ -140,6 +140,17 @@ void PaletteExtended::polish(QPalette &p)
     p.setBrush(QPalette::HighlightedText, brush(QPalette_HighlightedText));
     p.setBrush(QPalette::Button, brush(QPalette_Button));
     p.setBrush(QPalette::ButtonText, brush(QPalette_ButtonText));
+
+    p.setBrush(QPalette::Disabled, QPalette::Base, brush(QPalette_Base, false));
+    p.setBrush(QPalette::Disabled, QPalette::Text, brush(QPalette_Text, false));
+    p.setBrush(QPalette::Disabled, QPalette::Window, brush(QPalette_Window, false));
+    p.setBrush(QPalette::Disabled, QPalette::WindowText, brush(QPalette_WindowText, false));
+    p.setBrush(QPalette::Disabled, QPalette::Highlight, brush(QPalette_Highlight, false));
+    p.setBrush(QPalette::Disabled, QPalette::HighlightedText, brush(QPalette_HighlightedText, false));
+    p.setBrush(QPalette::Disabled, QPalette::Button, brush(QPalette_Button, false));
+    p.setBrush(QPalette::Disabled, QPalette::ButtonText, brush(QPalette_ButtonText, false));
+
+    qDebug() << p.brush(QPalette::Disabled, QPalette::Text);
 }
 
 }

@@ -3,10 +3,14 @@ QPalette {
     Text: rgb(25,25,25);
     Window: rgb(255,255,255);
     WindowText: rgb(25,25,25);
-    Highlight: "#61b5f8";
+    Highlight: "#2ca7f8";
     HighlightedText: rgb(255,255,255);
     Button: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
     ButtonText: "#000";
+}
+
+QPalette:disabled {
+    Text: "#AEAEAE"
 }
 
 Slider {
@@ -97,4 +101,9 @@ ScrollBar:pressed {
 
 ScrollBar:focus {
     HandleBorderBrush: "#2ca7f8";
+}
+
+Menu {
+    SeparatorColor: rgba(0, 0, 0, 0.1);
+    BorderColor: rgba(0, 0, 0, 0.1);
 }

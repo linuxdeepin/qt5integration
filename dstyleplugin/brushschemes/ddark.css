@@ -9,6 +9,10 @@ QPalette {
     ButtonText: "#dcdcdc";
 }
 
+QPalette:disabled {
+    Text: "#40dcdcdc"
+}
+
 Slider {
     GrooveColor: rgba(255, 255, 255, 0.2);
     GrooveHighlightColor: "#2ca7f8";
@@ -99,4 +103,10 @@ ScrollBar:pressed {
 
 ScrollBar:focus {
     HandleBroderBrush: "#2ca7f8";
+}
+
+Menu {
+    BackgroundBrush: "#313131";
+    SeparatorColor: rgba(255, 255, 255, 0.1);
+    BorderColor: rgba(0, 0, 0, 0.1);
 }

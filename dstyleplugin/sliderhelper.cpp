@@ -24,9 +24,9 @@ namespace dstyle {
 
 static const char *SliderTickmarkPositionsProp = "tickmarkPositions";
 
-static const char *SliderHandleTypeNormal = "Normal";
-static const char *SliderHandleTypeVernier = "Vernier";
-static const char *SliderHandleTypeNone = "None";
+#define SliderHandleTypeNormal "Normal"
+#define SliderHandleTypeVernier "Vernier"
+#define SliderHandleTypeNone "None"
 
 bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
 {
@@ -171,8 +171,8 @@ bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, con
         //        const QColor outline( _helper->sliderOutlineColor( palette, handleActive && mouseOver, hasFocus, opacity, mode ) );
         //        const QColor shadow( _helper->shadowColor( palette ) );
         const QColor &outline = plExt->brush(PaletteExtended::Slider_HandleBorderColor,
-                                             (hasFocus && enabled) ? PaletteExtended::PseudoClass_Focus
-                                                      : PaletteExtended::PseudoClass_Unspecified).color();
+                                             quint64((hasFocus && enabled) ? PaletteExtended::PseudoClass_Focus
+                                                      : PaletteExtended::PseudoClass_Unspecified)).color();
 
         // render
         const QString handleType = widget->property("handleType").toString();
@@ -265,6 +265,8 @@ bool Style::drawSliderTickmarkLabels(const QStyleOption *option, QPainter *paint
             }
         }
     }
+
+    return true;
 }
 
 } // end namespace dstyle

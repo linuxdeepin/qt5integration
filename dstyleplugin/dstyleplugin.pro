@@ -4,7 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets widgets-private
+QT        += core gui widgets widgets-private
+CONFIG    += link_pkgconfig
+PKGCONFIG += dtkbase dtkwidget
 
 TARGET = dstyleplugin
 TEMPLATE = lib
@@ -21,7 +23,8 @@ SOURCES += dstyleplugin.cpp \
     lineedithelper.cpp \
     commonhelper.cpp \
     scrollbarhelper.cpp \
-    painterhelper.cpp
+    painterhelper.cpp \
+    menuhelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \

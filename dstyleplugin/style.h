@@ -28,7 +28,7 @@ public:
     void polish(QWidget *w) Q_DECL_OVERRIDE;
     void unpolish(QWidget *w) Q_DECL_OVERRIDE;
 
-    int pixelMetric(PixelMetric m, const QStyleOption *opt, const QWidget *widget) const Q_DECL_OVERRIDE;
+    int pixelMetric(PixelMetric m, const QStyleOption *opt = Q_NULLPTR, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
 
     QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc, const QWidget *w) const Q_DECL_OVERRIDE;
 
@@ -38,6 +38,9 @@ public:
 
     int styleHint(StyleHint sh, const QStyleOption *opt = Q_NULLPTR, const QWidget *w = Q_NULLPTR,
                   QStyleHintReturn *shret = Q_NULLPTR) const Q_DECL_OVERRIDE;
+
+    QSize sizeFromContents(ContentsType type, const QStyleOption *option,
+                           const QSize &size, const QWidget *widget) const Q_DECL_OVERRIDE;
 
     // some function type alias.
 //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
@@ -57,6 +60,9 @@ private:
 
     // scroll bar
     bool drawScrollBarSliderControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+
+    // menu
+    bool drawMenuItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
 
     // menu bar
     bool drawMenuBarItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;

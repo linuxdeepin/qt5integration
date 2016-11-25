@@ -14,6 +14,9 @@
 #include <QScrollBar>
 #include <QDebug>
 
+#include <DApplication>
+#include <dplatformwindowhandle.h>
+
 #include "style.h"
 #include "common.h"
 #include "geometryutils.h"
@@ -22,12 +25,9 @@
 #include "lineedithelper.h"
 #include "commonhelper.h"
 
-namespace dstyle {
+DWIDGET_USE_NAMESPACE
 
-static QWindow *qt_getWindow(const QWidget *widget)
-{
-    return widget ? widget->window()->windowHandle() : 0;
-}
+namespace dstyle {
 
 Style::Style(StyleType style)
     : QCommonStyle()
@@ -66,6 +66,15 @@ void Style::polish(QWidget *w)
         QFont font = w->font();
         font.setPointSizeF(font.pointSizeF() * 0.7);
         w->setFont(font);
+    }
+
+    if (DApplication::isDXcbPlatform() && qobject_cast<QMenu*>(w)) {
+        DPlatformWindowHandle handle(w);
+
+        const QColor &color = m_palette->brush(PaletteExtended::Menu_BorderColor).color();
+
+        if (color.isValid())
+            handle.setBorderColor(color);
     }
 }
 
@@ -152,6 +161,10 @@ int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, c
     case PM_ButtonDefaultIndicator: return 0;
     case PM_ButtonShiftHorizontal: return 0;
     case PM_ButtonShiftVertical: return 0;
+
+        //menu
+    case PM_MenuHMargin: return Menu_HMargin;
+    case PM_MenuVMargin: return Menu_VMargin;
 
         // menubars
     case PM_MenuBarPanelWidth: return 0;
@@ -254,7 +267,7 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         //        case CE_ComboBoxLabel: fcn = &Style::drawComboBoxLabelControl; break;
     case CE_MenuBarEmptyArea: return;
     case CE_MenuBarItem: fcn = &Style::drawMenuBarItemControl; break;
-        //        case CE_MenuItem: fcn = &Style::drawMenuItemControl; break;
+    case CE_MenuItem: fcn = &Style::drawMenuItemControl; break;
         //        case CE_ToolBar: fcn = &Style::emptyControl; break;
         //        case CE_ProgressBar: fcn = &Style::drawProgressBarControl; break;
         //        case CE_ProgressBarContents: fcn = &Style::drawProgressBarContentsControl; break;
@@ -314,14 +327,17 @@ void Style::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComp
 
 void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-
     DrawPrimitiveFunc fcn( nullptr );
     switch( element )
     {
 //    case PE_PanelButtonCommand: fcn = &Style::drawPanelButtonCommandPrimitive; break;
 //    case PE_PanelButtonTool: fcn = &Style::drawPanelButtonToolPrimitive; break;
 //    case PE_PanelScrollAreaCorner: fcn = &Style::drawPanelScrollAreaCornerPrimitive; break;
-//    case PE_PanelMenu: fcn = &Style::drawPanelMenuPrimitive; break;
+    case PE_PanelMenu: {
+        return painter->fillRect(option->rect, m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
+                                                                PaletteExtended::PseudoClass_Unspecified,
+                                                                option->palette.brush(QPalette::Background)));
+    }
 //    case PE_PanelTipLabel: fcn = &Style::drawPanelTipLabelPrimitive; break;
 //    case PE_PanelItemViewItem: fcn = &Style::drawPanelItemViewItemPrimitive; break;
 //    case PE_IndicatorCheckBox: fcn = &Style::drawIndicatorCheckBoxPrimitive; break;
@@ -364,13 +380,117 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
 int Style::styleHint(QStyle::StyleHint sh, const QStyleOption *opt, const QWidget *w, QStyleHintReturn *shret) const
 {
     switch (sh) {
-    case SH_ScrollBar_Transient:
-        return true;
+    case SH_ScrollBar_Transient: return true;
+    case SH_ComboBox_ListMouseTracking: return true;
+    case SH_MenuBar_MouseTracking: return true;
+    case SH_Menu_MouseTracking: return true;
+    case SH_Menu_SubMenuPopupDelay: return 150;
+    case SH_Menu_SloppySubMenus: return true;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
+    case SH_Widget_Animate: return true;
+#endif
     default:
         break;
     }
 
     return QCommonStyle::styleHint(sh, opt, w, shret);
+}
+
+QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
+{
+    QSize newSize = QCommonStyle::sizeFromContents(type, option, size, widget);
+    switch (type) {
+    case CT_PushButton:
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
+            if (!btn->text.isEmpty() && newSize.width() < 80)
+                newSize.setWidth(80);
+            if (!btn->icon.isNull() && btn->iconSize.height() > 16)
+                newSize -= QSize(0, 2);
+        }
+        break;
+    case CT_GroupBox:
+        if (option) {
+            int topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight), option->fontMetrics.height()) + GroupBox_TopMargin;
+            newSize += QSize(10, topMargin); // Add some space below the groupbox
+        }
+        break;
+    case CT_RadioButton:
+    case CT_CheckBox:
+        newSize += QSize(0, 1);
+        break;
+    case CT_ToolButton:
+        newSize += QSize(2, 2);
+        break;
+    case CT_SpinBox:
+        newSize += QSize(0, -3);
+        break;
+    case CT_ComboBox:
+        newSize += QSize(2, 4);
+        break;
+    case CT_LineEdit:
+        newSize += QSize(0, 4);
+        break;
+    case CT_MenuBarItem:
+        newSize += QSize(8, 5);
+        break;
+    case CT_MenuItem:
+        if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
+            int w = newSize.width();
+            int maxpmw = menuItem->maxIconWidth;
+            int tabSpacing = 20;
+            if (menuItem->text.contains(QLatin1Char('\t')))
+                w += tabSpacing;
+            else if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu)
+                w += 2 * Menu_ArrowHMargin;
+            else if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
+                QFontMetrics fm(menuItem->font);
+                QFont fontBold = menuItem->font;
+                fontBold.setBold(true);
+                QFontMetrics fmBold(fontBold);
+                w += fmBold.width(menuItem->text) - fm.width(menuItem->text);
+            }
+            int checkcol = qMax<int>(maxpmw, Menu_CheckMarkWidth); // Windows always shows a check column
+            w += checkcol;
+            w += Menu_RightBorder + 10;
+            newSize.setWidth(w);
+            if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
+                if (!menuItem->text.isEmpty()) {
+                    newSize.setHeight(menuItem->fontMetrics.height());
+                }
+            }
+            else if (!menuItem->icon.isNull()) {
+                if (const QComboBox *combo = qobject_cast<const QComboBox*>(widget)) {
+                    newSize.setHeight(qMax(combo->iconSize().height() + 2, newSize.height()));
+                }
+            }
+            newSize.setWidth(newSize.width() + 12);
+            newSize.setWidth(qMax(newSize.width(), 120));
+        }
+
+        newSize.setWidth(newSize.width() + Menu_ItemHMargin * 2);
+        newSize.setHeight(newSize.height() + Menu_ItemVMargin * 2);
+        break;
+    case CT_SizeGrip:
+        newSize += QSize(4, 4);
+        break;
+    case CT_MdiControls:
+        if (const QStyleOptionComplex *styleOpt = qstyleoption_cast<const QStyleOptionComplex *>(option)) {
+            int width = 0;
+            if (styleOpt->subControls & SC_MdiMinButton)
+                width += 19 + 1;
+            if (styleOpt->subControls & SC_MdiNormalButton)
+                width += 19 + 1;
+            if (styleOpt->subControls & SC_MdiCloseButton)
+                width += 19 + 1;
+            newSize = QSize(width, 19);
+        } else {
+            newSize = QSize(60, 19);
+        }
+        break;
+    default:
+        break;
+    }
+    return newSize;
 }
 
 QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, QStyle::SubControl subControl, const QWidget *widget) const
@@ -503,41 +623,4 @@ QRect Style::scrollbarSubControlRect(const QStyleOptionComplex *opt, QStyle::Sub
 
     return ret;
 }
-
-bool Style::drawMenuBarItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
-{
-    Style *style = CommonHelper::widgetStyle(widget);
-    if (!style) return false;
-
-    const bool enabled(option->state & QStyle::State_Enabled);
-    const bool mouseOver(option->state & QStyle::State_MouseOver);
-    const bool hasFocus((option->state & QStyle::State_HasFocus ) && !( widget && widget->focusProxy()));
-    const bool sunken((option->state | QStyle::State_Sunken) == option->state);
-
-    if (mouseOver || sunken) {
-        const QColor shadow( Qt::transparent );
-        const QBrush outline(style->m_palette->brush(PaletteExtended::PushButton_BorderBrush, enabled, mouseOver, hasFocus, sunken));
-        const QBrush background(style->m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, enabled, mouseOver, hasFocus, sunken));
-
-        // render
-        drawPushButtonFrame(painter, option->rect, background, outline, shadow );
-    }
-
-    if (const QStyleOptionMenuItem *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-        uint alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip
-                        | Qt::TextSingleLine;
-        if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
-            alignment |= Qt::TextHideMnemonic;
-        int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
-        QPixmap pix = mbi->icon.pixmap(qt_getWindow(widget), QSize(iconExtent, iconExtent), (enabled) ? (mouseOver ? QIcon::Active : QIcon::Normal) : QIcon::Disabled);
-        if (!pix.isNull())
-            proxy()->drawItemPixmap(painter, mbi->rect, alignment, pix);
-        else
-            proxy()->drawItemText(painter, mbi->rect, alignment, mbi->palette, enabled,
-                         mbi->text, QPalette::ButtonText);
-    }
-
-    return true;
-}
-
 }
