@@ -388,6 +388,8 @@ int Style::styleHint(QStyle::StyleHint sh, const QStyleOption *opt, const QWidge
     case SH_Menu_MouseTracking: return true;
     case SH_Menu_SubMenuPopupDelay: return 150;
     case SH_Menu_SloppySubMenus: return true;
+    case SH_Slider_AbsoluteSetButtons: return Qt::LeftButton;
+    case SH_Slider_PageSetButtons: return Qt::MidButton;
 #if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
     case SH_Widget_Animate: return true;
 #endif
