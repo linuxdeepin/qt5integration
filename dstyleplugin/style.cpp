@@ -14,6 +14,7 @@
 #include <QScrollBar>
 #include <QDebug>
 #include <QApplication>
+#include <QWindow>
 
 #include <DApplication>
 #include <dplatformwindowhandle.h>
@@ -347,10 +348,14 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
 //    case PE_IndicatorButtonDropDown: fcn = &Style::drawIndicatorButtonDropDownPrimitive; break;
 //    case PE_IndicatorTabClose: fcn = &Style::drawIndicatorTabClosePrimitive; break;
 //    case PE_IndicatorTabTear: fcn = &Style::drawIndicatorTabTearPrimitive; break;
-//    case PE_IndicatorArrowUp: fcn = &Style::drawIndicatorArrowUpPrimitive; break;
-//    case PE_IndicatorArrowDown: fcn = &Style::drawIndicatorArrowDownPrimitive; break;
-//    case PE_IndicatorArrowLeft: fcn = &Style::drawIndicatorArrowLeftPrimitive; break;
-//    case PE_IndicatorArrowRight: fcn = &Style::drawIndicatorArrowRightPrimitive; break;
+    case PE_IndicatorArrowDown:
+        return drawStandardIcon(QStyle::SP_ArrowDown, option, painter, widget);
+    case PE_IndicatorArrowLeft:
+        return drawStandardIcon(QStyle::SP_ArrowLeft, option, painter, widget);
+    case PE_IndicatorArrowRight:
+        return drawStandardIcon(QStyle::SP_ArrowRight, option, painter, widget);
+    case PE_IndicatorArrowUp:
+        return drawStandardIcon(QStyle::SP_ArrowUp, option, painter, widget);
 //    case PE_IndicatorHeaderArrow: fcn = &Style::drawIndicatorHeaderArrowPrimitive; break;
 //    case PE_IndicatorToolBarHandle: fcn = &Style::drawIndicatorToolBarHandlePrimitive; break;
 //    case PE_IndicatorToolBarSeparator: fcn = &Style::drawIndicatorToolBarSeparatorPrimitive; break;
@@ -497,6 +502,384 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
     return newSize;
 }
 
+QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOption *opt, const QWidget *widget) const
+{
+    QIcon icon;
+    const bool rtl = (opt && opt->direction == Qt::RightToLeft) || (!opt && QApplication::isRightToLeft());
+    QString themeType = m_type == StyleLight ? "light" : "dark";
+
+    if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty() && false) {
+        switch (standardIcon) {
+        case SP_DirHomeIcon:
+                icon = QIcon::fromTheme(QLatin1String("user-home"));
+                break;
+        case SP_MessageBoxInformation:
+                icon = QIcon::fromTheme(QLatin1String("dialog-information"));
+                break;
+        case SP_MessageBoxWarning:
+                icon = QIcon::fromTheme(QLatin1String("dialog-warning"));
+                break;
+        case SP_MessageBoxCritical:
+                icon = QIcon::fromTheme(QLatin1String("dialog-error"));
+                break;
+        case SP_MessageBoxQuestion:
+                icon = QIcon::fromTheme(QLatin1String("dialog-question"));
+                break;
+        case SP_DialogOpenButton:
+        case SP_DirOpenIcon:
+                icon = QIcon::fromTheme(QLatin1String("folder-open"));
+                break;
+        case SP_DialogSaveButton:
+                icon = QIcon::fromTheme(QLatin1String("document-save"));
+                break;
+        case SP_DialogApplyButton:
+                icon = QIcon::fromTheme(QLatin1String("dialog-ok-apply"));
+                break;
+        case SP_DialogYesButton:
+        case SP_DialogOkButton:
+                icon = QIcon::fromTheme(QLatin1String("dialog-ok"));
+                break;
+        case SP_DialogDiscardButton:
+                icon = QIcon::fromTheme(QLatin1String("edit-delete"));
+                break;
+        case SP_DialogResetButton:
+                icon = QIcon::fromTheme(QLatin1String("edit-clear"));
+                break;
+        case SP_DialogHelpButton:
+                icon = QIcon::fromTheme(QLatin1String("help-contents"));
+                break;
+        case SP_FileIcon:
+                icon = QIcon::fromTheme(QLatin1String("text-x-generic"));
+                break;
+        case SP_DirClosedIcon:
+        case SP_DirIcon:
+                icon = QIcon::fromTheme(QLatin1String("folder"));
+                break;
+        case SP_DriveFDIcon:
+                icon = QIcon::fromTheme(QLatin1String("floppy_unmount"));
+                break;
+        case SP_ComputerIcon:
+                icon = QIcon::fromTheme(QLatin1String("computer"),
+                                        QIcon::fromTheme(QLatin1String("system")));
+                break;
+        case SP_DesktopIcon:
+                icon = QIcon::fromTheme(QLatin1String("user-desktop"));
+                break;
+        case SP_TrashIcon:
+                icon = QIcon::fromTheme(QLatin1String("user-trash"));
+                break;
+        case SP_DriveCDIcon:
+        case SP_DriveDVDIcon:
+                icon = QIcon::fromTheme(QLatin1String("media-optical"));
+                break;
+        case SP_DriveHDIcon:
+                icon = QIcon::fromTheme(QLatin1String("drive-harddisk"));
+                break;
+        case SP_FileDialogToParent:
+                icon = QIcon::fromTheme(QLatin1String("go-up"));
+                break;
+        case SP_FileDialogNewFolder:
+                icon = QIcon::fromTheme(QLatin1String("folder-new"));
+                break;
+        case SP_ArrowUp:
+                icon = QIcon::fromTheme(QLatin1String("go-up"));
+                break;
+        case SP_ArrowDown:
+                icon = QIcon::fromTheme(QLatin1String("go-down"));
+                break;
+        case SP_ArrowRight:
+                icon = QIcon::fromTheme(QLatin1String("go-next"));
+                break;
+        case SP_ArrowLeft:
+                icon = QIcon::fromTheme(QLatin1String("go-previous"));
+                break;
+        case SP_DialogCancelButton:
+                icon = QIcon::fromTheme(QLatin1String("dialog-cancel"),
+                                        QIcon::fromTheme(QLatin1String("process-stop")));
+                break;
+        case SP_DialogCloseButton:
+                icon = QIcon::fromTheme(QLatin1String("window-close"));
+                break;
+        case SP_FileDialogDetailedView:
+                icon = QIcon::fromTheme(QLatin1String("view-list-details"));
+                break;
+        case SP_FileDialogListView:
+                icon = QIcon::fromTheme(QLatin1String("view-list-icons"));
+                break;
+        case SP_BrowserReload:
+                icon = QIcon::fromTheme(QLatin1String("view-refresh"));
+                break;
+        case SP_BrowserStop:
+                icon = QIcon::fromTheme(QLatin1String("process-stop"));
+                break;
+        case SP_MediaPlay:
+                icon = QIcon::fromTheme(QLatin1String("media-playback-start"));
+                break;
+        case SP_MediaPause:
+                icon = QIcon::fromTheme(QLatin1String("media-playback-pause"));
+                break;
+        case SP_MediaStop:
+                icon = QIcon::fromTheme(QLatin1String("media-playback-stop"));
+                break;
+        case SP_MediaSeekForward:
+                icon = QIcon::fromTheme(QLatin1String("media-seek-forward"));
+                break;
+        case SP_MediaSeekBackward:
+                icon = QIcon::fromTheme(QLatin1String("media-seek-backward"));
+                break;
+        case SP_MediaSkipForward:
+                icon = QIcon::fromTheme(QLatin1String("media-skip-forward"));
+                break;
+        case SP_MediaSkipBackward:
+                icon = QIcon::fromTheme(QLatin1String("media-skip-backward"));
+                break;
+        case SP_MediaVolume:
+                icon = QIcon::fromTheme(QLatin1String("audio-volume-medium"));
+                break;
+        case SP_MediaVolumeMuted:
+                icon = QIcon::fromTheme(QLatin1String("audio-volume-muted"));
+                break;
+        case SP_ArrowForward:
+            if (rtl)
+                return Style::standardIcon(SP_ArrowLeft, opt, widget);
+            return Style::standardIcon(SP_ArrowRight, opt, widget);
+        case SP_ArrowBack:
+            if (rtl)
+                return Style::standardIcon(SP_ArrowRight, opt, widget);
+            return Style::standardIcon(SP_ArrowLeft, opt, widget);
+        case SP_FileLinkIcon:
+            {
+                QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
+                if (!linkIcon.isNull()) {
+                    QIcon baseIcon = Style::standardIcon(SP_FileIcon, opt, widget);
+                    const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
+                    for (int i = 0 ; i < sizes.size() ; ++i) {
+                        int size = sizes[i].width();
+                        QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
+                        QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+                        QPainter painter(&basePixmap);
+                        painter.drawPixmap(size/2, size/2, linkPixmap);
+                        icon.addPixmap(basePixmap);
+                    }
+                }
+            }
+            break;
+        case SP_DirLinkIcon:
+            {
+                QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
+                if (!linkIcon.isNull()) {
+                    QIcon baseIcon = Style::standardIcon(SP_DirIcon, opt, widget);
+                    const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
+                    for (int i = 0 ; i < sizes.size() ; ++i) {
+                        int size = sizes[i].width();
+                        QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
+                        QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+                        QPainter painter(&basePixmap);
+                        painter.drawPixmap(size/2, size/2, linkPixmap);
+                        icon.addPixmap(basePixmap);
+                    }
+                }
+        }
+        break;
+        default:
+            break;
+        }
+    } // if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty())
+
+    if (!icon.isNull())
+        return icon;
+
+    switch (standardIcon) {
+     case SP_FileDialogNewFolder:
+        break;
+    case SP_FileDialogBack:
+        return Style::standardIcon(SP_ArrowBack, opt, widget);
+    case SP_FileDialogToParent:
+        return Style::standardIcon(SP_ArrowUp, opt, widget);
+    case SP_FileDialogDetailedView:
+        break;
+    case SP_FileDialogInfoView:
+        break;
+    case SP_FileDialogContentsView:
+        break;
+    case SP_FileDialogListView:
+        break;
+    case SP_DialogOkButton:
+    case SP_DialogYesButton:
+        icon.addFile(QLatin1String(":/assets/icons/dialog-apply.png"));
+        break;
+    case SP_DialogCancelButton:
+    case SP_DialogNoButton:
+        icon.addFile(QLatin1String(":/assets/icons/button-cancel.png"));
+        break;
+    case SP_DialogHelpButton:
+        icon.addFile(QLatin1String(":/assets/icons/help-faq.png"));
+        break;
+    case SP_DialogOpenButton:
+        break;
+    case SP_DialogSaveButton:
+        break;
+    case SP_DialogCloseButton:
+        return Style::standardIcon(SP_TitleBarCloseButton, opt, widget);
+    case SP_DialogApplyButton:
+        icon.addFile(QLatin1String(":/assets/icons/dialog-apply.png"));
+        break;
+    case SP_DialogResetButton:
+        break;
+    case SP_DialogDiscardButton:
+        break;
+    case SP_ArrowForward:
+        if (rtl)
+            return Style::standardIcon(SP_ArrowLeft, opt, widget);
+        return Style::standardIcon(SP_ArrowRight, opt, widget);
+    case SP_ArrowBack:
+        if (rtl)
+            return Style::standardIcon(SP_ArrowRight, opt, widget);
+        return Style::standardIcon(SP_ArrowLeft, opt, widget);
+    case SP_ArrowLeft:
+        icon.addFile(QLatin1String(":/assets/icons/arrow-left.png"));
+        break;
+    case SP_ArrowRight:
+        icon.addFile(QLatin1String(":/assets/icons/arrow-right.png"));
+        break;
+    case SP_ArrowUp:
+        icon.addFile(QLatin1String(":/assets/icons/arrow-up.png"));
+        break;
+    case SP_ArrowDown:
+        icon.addFile(QLatin1String(":/assets/icons/arrow-down.png"));
+        break;
+    case SP_DirHomeIcon:
+        icon.addFile(QLatin1String(":/assets/icons/user-home.svg"));
+        break;
+    case SP_DirIcon:
+        icon.addFile(QLatin1String(":/assets/icons/folder.svg"));
+        break;
+    case SP_DirOpenIcon:
+        icon.addFile(QLatin1String(":/assets/icons/folder-open.svg"));
+        break;
+    case SP_DirLinkIcon: {
+        QIcon linkIcon(":/assets/icons/emblem-symbolic-link.png");
+        QIcon baseIcon = Style::standardIcon(SP_DirIcon, opt, widget);
+        QList<QSize> sizes;
+        sizes << QSize(128, 128);
+        for (int i = 0 ; i < sizes.size() ; ++i) {
+            int size = sizes[i].width();
+            QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
+            QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+            QPainter painter(&basePixmap);
+            painter.drawPixmap(size/1.5, size/1.5, linkPixmap);
+            icon.addPixmap(basePixmap);
+        }
+        break;
+    }
+    case SP_DirLinkOpenIcon: {
+        QIcon linkIcon(":/assets/icons/emblem-symbolic-link.png");
+        QIcon baseIcon = Style::standardIcon(SP_DirOpenIcon, opt, widget);
+        QList<QSize> sizes;
+        sizes << QSize(128, 128);
+        for (int i = 0 ; i < sizes.size() ; ++i) {
+            int size = sizes[i].width();
+            QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
+            QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+            QPainter painter(&basePixmap);
+            painter.drawPixmap(size/1.5, size/1.5, linkPixmap);
+            icon.addPixmap(basePixmap);
+        }
+        break;
+    }
+    case SP_DriveCDIcon:
+    case SP_DriveDVDIcon:
+        icon.addFile(QLatin1String(":/assets/icons/media-optical.png"));
+        break;
+    case SP_DriveHDIcon:
+        icon.addFile(QLatin1String(":/assets/icons/drive-harddisk.png"));
+        break;
+    case SP_FileIcon:
+        icon.addFile(QLatin1String(":/assets/icons/text-x-generic.svg"));
+        break;
+    case SP_FileLinkIcon: {
+        QIcon linkIcon(":/assets/icons/emblem-symbolic-link.png");
+        QIcon baseIcon = Style::standardIcon(SP_FileIcon, opt, widget);
+        QList<QSize> sizes;
+        sizes << QSize(128, 128);
+        for (int i = 0 ; i < sizes.size() ; ++i) {
+            int size = sizes[i].width();
+            QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
+            QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+            QPainter painter(&basePixmap);
+            painter.drawPixmap(size/1.5, size/1.5, linkPixmap);
+            icon.addPixmap(basePixmap);
+        }
+        break;
+    }
+    case SP_TrashIcon:
+        icon.addFile(QLatin1String(":/assets/icons/user-trash.svg"));
+        break;
+    case SP_BrowserReload:
+        icon.addFile(QLatin1String(":/assets/icons/view-refresh.png"));
+        break;
+    case SP_BrowserStop:
+        icon.addFile(QLatin1String(":/assets/icons/process-stop.png"));
+        break;
+    case SP_MediaPlay:
+        break;
+    case SP_MediaPause:
+        break;
+    case SP_MediaStop:
+        break;
+    case SP_MediaSeekForward:
+        break;
+    case SP_MediaSeekBackward:
+        break;
+    case SP_MediaSkipForward:
+        break;
+    case SP_MediaSkipBackward:
+        break;
+    case SP_MediaVolume:
+        break;
+    case SP_MediaVolumeMuted:
+        break;
+    case SP_DockWidgetCloseButton:
+    case SP_TitleBarCloseButton:
+        icon.addFile(QString(":/assets/icons/window_close_normal_%1.png").arg(themeType));
+        icon.addFile(QString(":/assets/icons/window_close_hover_%1.png").arg(themeType), QSize(), QIcon::Active);
+        icon.addFile(QString(":/assets/icons/window_close_press_%1.png").arg(themeType), QSize(), QIcon::Active, QIcon::On);
+        break;
+    case SP_TitleBarMaxButton:
+        icon.addFile(QString(":/assets/icons/window_max_normal_%1.png").arg(themeType));
+        icon.addFile(QString(":/assets/icons/window_max_hover_%1.png").arg(themeType), QSize(), QIcon::Active);
+        icon.addFile(QString(":/assets/icons/window_max_press_%1.png").arg(themeType), QSize(), QIcon::Active, QIcon::On);
+        break;
+    case SP_TitleBarNormalButton:
+        icon.addFile(QString(":/assets/icons/window_unmax_normal_%1.png").arg(themeType));
+        icon.addFile(QString(":/assets/icons/window_unmax_hover_%1.png").arg(themeType), QSize(), QIcon::Active);
+        icon.addFile(QString(":/assets/icons/window_unmax_press_%1.png").arg(themeType), QSize(), QIcon::Active, QIcon::On);
+        break;
+    case SP_TitleBarMinButton:
+        icon.addFile(QString(":/assets/icons/window_min_normal_%1.png").arg(themeType));
+        icon.addFile(QString(":/assets/icons/window_min_hover_%1.png").arg(themeType), QSize(), QIcon::Active);
+        icon.addFile(QString(":/assets/icons/window_min_press_%1.png").arg(themeType), QSize(), QIcon::Active, QIcon::On);
+        break;
+    case SP_TitleBarMenuButton:
+        icon.addFile(QString(":/assets/icons/window_option_normal_%1.png").arg(themeType));
+        icon.addFile(QString(":/assets/icons/window_option_hover_%1.png").arg(themeType), QSize(), QIcon::Active);
+        icon.addFile(QString(":/assets/icons/window_option_press_%1.png").arg(themeType), QSize(), QIcon::Active, QIcon::On);
+        break;
+    case SP_LineEditClearButton:
+        icon.addFile(QLatin1String(":/assets/icons/input_clear_normal.svg"));
+        icon.addFile(QLatin1String(":/assets/icons/input_clear_hover.svg"), QSize(), QIcon::Active);
+        icon.addFile(QLatin1String(":/assets/icons/input_clear_press.svg"), QSize(), QIcon::Active, QIcon::On);
+        break;
+    default:
+        break;
+    }
+
+    if (!icon.isNull())
+        return icon;
+
+    return QCommonStyle::standardIcon(standardIcon, opt, widget);
+}
+
 QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, QStyle::SubControl subControl, const QWidget *widget) const
 {
     // cast option and check
@@ -627,4 +1010,18 @@ QRect Style::scrollbarSubControlRect(const QStyleOptionComplex *opt, QStyle::Sub
 
     return ret;
 }
+
+void Style::drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt, QPainter *p, const QWidget *widget) const
+{
+    if (opt->rect.width() <= 1 || opt->rect.height() <= 1)
+        return;
+    QRect r = opt->rect;
+    int size = qMin(r.height(), r.width());
+    QPixmap pixmap = standardIcon(sp, opt, widget).pixmap(size, size);
+
+    int xOffset = r.x() + (r.width() - size)/2;
+    int yOffset = r.y() + (r.height() - size)/2;
+    p->drawPixmap(xOffset, yOffset, pixmap);
+}
+
 }

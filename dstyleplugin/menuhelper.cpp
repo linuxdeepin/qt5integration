@@ -8,7 +8,7 @@
 
 namespace dstyle {
 
-static QWindow *qt_getWindow(const QWidget *widget)
+QWindow *Style::qt_getWindow(const QWidget *widget)
 {
     return widget ? widget->window()->windowHandle() : 0;
 }

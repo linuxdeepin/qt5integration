@@ -56,6 +56,14 @@ bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, c
         drawPushButtonFrame(painter, rect, background, outline, shadow );
     }
 
+    if (buttonOption->features & QStyleOptionButton::HasMenu) {
+        int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, buttonOption, widget);
+        QRect ir = buttonOption->rect;
+        QStyleOptionButton newBtn = *buttonOption;
+        newBtn.rect = QRect(ir.right() - mbi + 2, ir.height()/2 - mbi/2 + 3, mbi - 6, mbi - 6);
+        proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, painter, widget);
+    }
+
     return true;
 }
 
@@ -122,8 +130,13 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
     }
 
     // text size
-    const int textFlags( Qt::AlignCenter );
+    int textFlags( Qt::AlignCenter );
     const QSize textSize( option->fontMetrics.size( textFlags, buttonOption->text ) );
+
+    if (styleHint(SH_UnderlineShortcut, buttonOption, widget))
+        textFlags |= Qt::TextShowMnemonic;
+    else
+        textFlags |= Qt::TextHideMnemonic;
 
     // adjust text and icon rect based on options
     QRect iconRect;
@@ -165,6 +178,8 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
     // render text
     if( hasText && textRect.isValid() ) {
         painter->setPen(style->m_palette->brush(PaletteExtended::PushButton_TextColor, enabled, mouseOver, hasFocus, sunken, flat).color());
+        if (buttonOption->features & QStyleOptionButton::HasMenu)
+            textRect = textRect.adjusted(0, 0, -proxy()->pixelMetric(PM_MenuButtonIndicator, buttonOption, widget), 0);
         painter->drawText(textRect, textFlags, buttonOption->text);
     }
 

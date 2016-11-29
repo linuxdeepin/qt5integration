@@ -1,5 +1,57 @@
 <RCC>
     <qresource prefix="/">
         <file>assets/slider-handle.png</file>
+        <file>assets/icons/button-cancel.png</file>
+        <file>assets/icons/computer.svg</file>
+        <file>assets/icons/dialog-apply.png</file>
+        <file>assets/icons/document-save.png</file>
+        <file>assets/icons/drive-harddisk.png</file>
+        <file>assets/icons/emblem-symbolic-link.png</file>
+        <file>assets/icons/folder-open.svg</file>
+        <file>assets/icons/folder.svg</file>
+        <file>assets/icons/arrow-down.png</file>
+        <file>assets/icons/arrow-right.png</file>
+        <file>assets/icons/arrow-left.png</file>
+        <file>assets/icons/arrow-up.png</file>
+        <file>assets/icons/help-faq.png</file>
+        <file>assets/icons/input_clear_hover.svg</file>
+        <file>assets/icons/input_clear_normal.svg</file>
+        <file>assets/icons/input_clear_press.svg</file>
+        <file>assets/icons/media-optical.png</file>
+        <file>assets/icons/process-stop.png</file>
+        <file>assets/icons/user-home.svg</file>
+        <file>assets/icons/user-trash.svg</file>
+        <file>assets/icons/view-refresh.png</file>
+        <file>assets/icons/text-x-generic.svg</file>
+        <file>assets/icons/window_close_hover_dark.png</file>
+        <file>assets/icons/window_close_hover_light.png</file>
+        <file>assets/icons/window_close_normal_dark.png</file>
+        <file>assets/icons/window_close_normal_light.png</file>
+        <file>assets/icons/window_close_press_dark.png</file>
+        <file>assets/icons/window_close_press_light.png</file>
+        <file>assets/icons/window_max_hover_dark.png</file>
+        <file>assets/icons/window_max_hover_light.png</file>
+        <file>assets/icons/window_max_normal_dark.png</file>
+        <file>assets/icons/window_max_normal_light.png</file>
+        <file>assets/icons/window_max_press_dark.png</file>
+        <file>assets/icons/window_max_press_light.png</file>
+        <file>assets/icons/window_min_hover_dark.png</file>
+        <file>assets/icons/window_min_hover_light.png</file>
+        <file>assets/icons/window_min_normal_dark.png</file>
+        <file>assets/icons/window_min_normal_light.png</file>
+        <file>assets/icons/window_min_press_dark.png</file>
+        <file>assets/icons/window_min_press_light.png</file>
+        <file>assets/icons/window_option_hover_dark.png</file>
+        <file>assets/icons/window_option_hover_light.png</file>
+        <file>assets/icons/window_option_normal_dark.png</file>
+        <file>assets/icons/window_option_normal_light.png</file>
+        <file>assets/icons/window_option_press_dark.png</file>
+        <file>assets/icons/window_option_press_light.png</file>
+        <file>assets/icons/window_unmax_hover_dark.png</file>
+        <file>assets/icons/window_unmax_hover_light.png</file>
+        <file>assets/icons/window_unmax_normal_dark.png</file>
+        <file>assets/icons/window_unmax_normal_light.png</file>
+        <file>assets/icons/window_unmax_press_dark.png</file>
+        <file>assets/icons/window_unmax_press_light.png</file>
     </qresource>
 </RCC>

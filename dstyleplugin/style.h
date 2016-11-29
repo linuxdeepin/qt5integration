@@ -42,6 +42,8 @@ public:
     QSize sizeFromContents(ContentsType type, const QStyleOption *option,
                            const QSize &size, const QWidget *widget) const Q_DECL_OVERRIDE;
 
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt, const QWidget *widget) const Q_DECL_OVERRIDE;
+
     // some function type alias.
 //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
     using DrawComplexControlFunc = bool(Style::*)(const QStyleOptionComplex *, QPainter *, const QWidget *) const;
@@ -72,6 +74,11 @@ private:
     void drawSliderGroove(QPainter*, const QRect&, const QBrush & brush) const;
     void drawSliderHandle(QPainter* painter, const QRect& rect, const QBrush &brush, const QColor& outline, const QString &type) const;
     bool drawSliderTickmarkLabels(const QStyleOption*, QPainter*, const QWidget*) const;
+
+    // indicator
+    void drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt, QPainter *p, const QWidget *widget) const;
+
+    static QWindow *qt_getWindow(const QWidget *widget);
 
     StyleType m_type;
     PaletteExtended *m_palette;
