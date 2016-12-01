@@ -7,6 +7,15 @@
  * (at your option) any later version.
  **/
 
+#include "style.h"
+#include "common.h"
+#include "geometryutils.h"
+#include "paletteextended.h"
+#include "framehelper.h"
+#include "lineedithelper.h"
+#include "commonhelper.h"
+#include "dstyleanimation.h"
+
 #include <QMenu>
 #include <QLineEdit>
 #include <QPushButton>
@@ -15,24 +24,90 @@
 #include <QDebug>
 #include <QApplication>
 #include <QWindow>
+#include <QPixmapCache>
+#include <QAbstractScrollArea>
+
+#include <private/qhexstring_p.h>
+#include <private/qdrawhelper_p.h>
 
 #include <DApplication>
 #include <dplatformwindowhandle.h>
 
-#include "style.h"
-#include "common.h"
-#include "geometryutils.h"
-#include "paletteextended.h"
-#include "framehelper.h"
-#include "lineedithelper.h"
-#include "commonhelper.h"
-
 DWIDGET_USE_NAMESPACE
 
 namespace dstyle {
+QColor StylePrivate::outline(const QPalette &pal) const
+{
+    if (pal.window().style() == Qt::TexturePattern)
+        return QColor(0, 0, 0, 160);
+    return pal.background().color().darker(140);
+}
+
+QColor StylePrivate::buttonColor(const QPalette &pal) const
+{
+    QColor buttonColor = pal.button().color();
+    int val = qGray(buttonColor.rgb());
+    buttonColor = buttonColor.lighter(100 + qMax(1, (180 - val)/6));
+    buttonColor.setHsv(buttonColor.hue(), buttonColor.saturation() * 0.75, buttonColor.value());
+    return buttonColor;
+}
+
+QColor StylePrivate::highlight(const QPalette &pal) const
+{
+    return pal.color(QPalette::Highlight);
+}
+
+QColor StylePrivate::highlightedOutline(const QPalette &pal) const
+{
+    QColor highlightedOutline = highlight(pal).darker(125);
+    if (highlightedOutline.value() > 160)
+        highlightedOutline.setHsl(highlightedOutline.hue(), highlightedOutline.saturation(), 160);
+    return highlightedOutline;
+}
+
+QColor StylePrivate::backgroundColor(const QPalette &pal, const QWidget *widget) const
+{
+    if (qobject_cast<const QScrollBar *>(widget) && widget->parent() &&
+            qobject_cast<const QAbstractScrollArea *>(widget->parent()->parent()))
+        return widget->parentWidget()->parentWidget()->palette().color(QPalette::Base);
+    return pal.color(QPalette::Base);
+}
+
+#ifndef QT_NO_ANIMATION
+DStyleAnimation *StylePrivate::animation(const QObject *target) const
+{
+    return animations.value(target);
+}
+
+void StylePrivate::startAnimation(DStyleAnimation *animation) const
+{
+    Q_Q(const Style);
+    stopAnimation(animation->target());
+    q->connect(animation, SIGNAL(destroyed()), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
+    animations.insert(animation->target(), animation);
+    animation->start();
+}
+
+void dstyle::StylePrivate::stopAnimation(const QObject *target) const
+{
+    DStyleAnimation *animation = animations.take(target);
+    if (animation) {
+        animation->stop();
+        delete animation;
+    }
+}
+
+void StylePrivate::_q_removeAnimation()
+{
+    Q_Q(Style);
+    QObject *animation = q->sender();
+    if (animation)
+        animations.remove(animation->parent());
+}
+#endif
 
 Style::Style(StyleType style)
-    : QCommonStyle()
+    : QCommonStyle(*new StylePrivate())
     , m_type(style)
     , m_palette(new PaletteExtended(style, this))
 {
@@ -293,7 +368,7 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         //        case CE_DockWidgetTitle: fcn = &Style::drawDockWidgetTitleControl; break;
         //        case CE_CapacityBar: fcn = &Style::drawProgressBarControl; break;
 
-    // fallback
+        // fallback
     default: {
         // TODO: move this bare number comparison to some more human friendly form.
         if ((unsigned int)(element) == QStyle::CE_CustomBase + 1024) {
@@ -321,7 +396,7 @@ void Style::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComp
         break;
     }
 
-    if (fn && (this->*fn)(opt, p, w)) {
+    if (fn && (this->*fn)(cc, opt, p, w)) {
         return;
     }
 
@@ -333,21 +408,21 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     DrawPrimitiveFunc fcn( nullptr );
     switch( element )
     {
-//    case PE_PanelButtonCommand: fcn = &Style::drawPanelButtonCommandPrimitive; break;
-//    case PE_PanelButtonTool: fcn = &Style::drawPanelButtonToolPrimitive; break;
-//    case PE_PanelScrollAreaCorner: fcn = &Style::drawPanelScrollAreaCornerPrimitive; break;
+    //    case PE_PanelButtonCommand: fcn = &Style::drawPanelButtonCommandPrimitive; break;
+    //    case PE_PanelButtonTool: fcn = &Style::drawPanelButtonToolPrimitive; break;
+    //    case PE_PanelScrollAreaCorner: fcn = &Style::drawPanelScrollAreaCornerPrimitive; break;
     case PE_PanelMenu: {
         return painter->fillRect(option->rect, m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
                                                                 PaletteExtended::PseudoClass_Unspecified,
                                                                 option->palette.brush(QPalette::Background)));
     }
-//    case PE_PanelTipLabel: fcn = &Style::drawPanelTipLabelPrimitive; break;
-//    case PE_PanelItemViewItem: fcn = &Style::drawPanelItemViewItemPrimitive; break;
-//    case PE_IndicatorCheckBox: fcn = &Style::drawIndicatorCheckBoxPrimitive; break;
-//    case PE_IndicatorRadioButton: fcn = &Style::drawIndicatorRadioButtonPrimitive; break;
-//    case PE_IndicatorButtonDropDown: fcn = &Style::drawIndicatorButtonDropDownPrimitive; break;
-//    case PE_IndicatorTabClose: fcn = &Style::drawIndicatorTabClosePrimitive; break;
-//    case PE_IndicatorTabTear: fcn = &Style::drawIndicatorTabTearPrimitive; break;
+        //    case PE_PanelTipLabel: fcn = &Style::drawPanelTipLabelPrimitive; break;
+        //    case PE_PanelItemViewItem: fcn = &Style::drawPanelItemViewItemPrimitive; break;
+        //    case PE_IndicatorCheckBox: fcn = &Style::drawIndicatorCheckBoxPrimitive; break;
+        //    case PE_IndicatorRadioButton: fcn = &Style::drawIndicatorRadioButtonPrimitive; break;
+        //    case PE_IndicatorButtonDropDown: fcn = &Style::drawIndicatorButtonDropDownPrimitive; break;
+        //    case PE_IndicatorTabClose: fcn = &Style::drawIndicatorTabClosePrimitive; break;
+        //    case PE_IndicatorTabTear: fcn = &Style::drawIndicatorTabTearPrimitive; break;
     case PE_IndicatorArrowDown:
         return drawStandardIcon(QStyle::SP_ArrowDown, option, painter, widget);
     case PE_IndicatorArrowLeft:
@@ -356,21 +431,21 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
         return drawStandardIcon(QStyle::SP_ArrowRight, option, painter, widget);
     case PE_IndicatorArrowUp:
         return drawStandardIcon(QStyle::SP_ArrowUp, option, painter, widget);
-//    case PE_IndicatorHeaderArrow: fcn = &Style::drawIndicatorHeaderArrowPrimitive; break;
-//    case PE_IndicatorToolBarHandle: fcn = &Style::drawIndicatorToolBarHandlePrimitive; break;
-//    case PE_IndicatorToolBarSeparator: fcn = &Style::drawIndicatorToolBarSeparatorPrimitive; break;
-//    case PE_IndicatorBranch: fcn = &Style::drawIndicatorBranchPrimitive; break;
-//    case PE_FrameStatusBar: fcn = &Style::emptyPrimitive; break;
-//    case PE_Frame: fcn = &Style::drawFramePrimitive; break;
-//    case PE_FrameMenu: fcn = &Style::drawFrameMenuPrimitive; break;
+        //    case PE_IndicatorHeaderArrow: fcn = &Style::drawIndicatorHeaderArrowPrimitive; break;
+        //    case PE_IndicatorToolBarHandle: fcn = &Style::drawIndicatorToolBarHandlePrimitive; break;
+        //    case PE_IndicatorToolBarSeparator: fcn = &Style::drawIndicatorToolBarSeparatorPrimitive; break;
+        //    case PE_IndicatorBranch: fcn = &Style::drawIndicatorBranchPrimitive; break;
+        //    case PE_FrameStatusBar: fcn = &Style::emptyPrimitive; break;
+        //    case PE_Frame: fcn = &Style::drawFramePrimitive; break;
+        //    case PE_FrameMenu: fcn = &Style::drawFrameMenuPrimitive; break;
     case PE_FrameLineEdit: fcn = &LineEditHelper::drawFrameLineEditPrimitive; break;
-//    case PE_FrameGroupBox: fcn = &Style::drawFrameGroupBoxPrimitive; break;
-//    case PE_FrameTabWidget: fcn = &Style::drawFrameTabWidgetPrimitive; break;
-//    case PE_FrameTabBarBase: fcn = &Style::drawFrameTabBarBasePrimitive; break;
-//    case PE_FrameWindow: fcn = &Style::drawFrameWindowPrimitive; break;
+        //    case PE_FrameGroupBox: fcn = &Style::drawFrameGroupBoxPrimitive; break;
+        //    case PE_FrameTabWidget: fcn = &Style::drawFrameTabWidgetPrimitive; break;
+        //    case PE_FrameTabBarBase: fcn = &Style::drawFrameTabBarBasePrimitive; break;
+        //    case PE_FrameWindow: fcn = &Style::drawFrameWindowPrimitive; break;
     case PE_FrameFocusRect: fcn = &FrameHelper::drawFrameFocusRectPrimitive; break;
 
-    // fallback
+        // fallback
     default: break;
 
     }
@@ -398,6 +473,7 @@ int Style::styleHint(QStyle::StyleHint sh, const QStyleOption *opt, const QWidge
 #if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
     case SH_Widget_Animate: return true;
 #endif
+    case QStyle::SH_ItemView_ShowDecorationSelected: return true;
     default:
         break;
     }
@@ -511,134 +587,134 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty() && false) {
         switch (standardIcon) {
         case SP_DirHomeIcon:
-                icon = QIcon::fromTheme(QLatin1String("user-home"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("user-home"));
+            break;
         case SP_MessageBoxInformation:
-                icon = QIcon::fromTheme(QLatin1String("dialog-information"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("dialog-information"));
+            break;
         case SP_MessageBoxWarning:
-                icon = QIcon::fromTheme(QLatin1String("dialog-warning"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("dialog-warning"));
+            break;
         case SP_MessageBoxCritical:
-                icon = QIcon::fromTheme(QLatin1String("dialog-error"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("dialog-error"));
+            break;
         case SP_MessageBoxQuestion:
-                icon = QIcon::fromTheme(QLatin1String("dialog-question"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("dialog-question"));
+            break;
         case SP_DialogOpenButton:
         case SP_DirOpenIcon:
-                icon = QIcon::fromTheme(QLatin1String("folder-open"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("folder-open"));
+            break;
         case SP_DialogSaveButton:
-                icon = QIcon::fromTheme(QLatin1String("document-save"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("document-save"));
+            break;
         case SP_DialogApplyButton:
-                icon = QIcon::fromTheme(QLatin1String("dialog-ok-apply"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("dialog-ok-apply"));
+            break;
         case SP_DialogYesButton:
         case SP_DialogOkButton:
-                icon = QIcon::fromTheme(QLatin1String("dialog-ok"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("dialog-ok"));
+            break;
         case SP_DialogDiscardButton:
-                icon = QIcon::fromTheme(QLatin1String("edit-delete"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("edit-delete"));
+            break;
         case SP_DialogResetButton:
-                icon = QIcon::fromTheme(QLatin1String("edit-clear"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("edit-clear"));
+            break;
         case SP_DialogHelpButton:
-                icon = QIcon::fromTheme(QLatin1String("help-contents"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("help-contents"));
+            break;
         case SP_FileIcon:
-                icon = QIcon::fromTheme(QLatin1String("text-x-generic"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("text-x-generic"));
+            break;
         case SP_DirClosedIcon:
         case SP_DirIcon:
-                icon = QIcon::fromTheme(QLatin1String("folder"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("folder"));
+            break;
         case SP_DriveFDIcon:
-                icon = QIcon::fromTheme(QLatin1String("floppy_unmount"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("floppy_unmount"));
+            break;
         case SP_ComputerIcon:
-                icon = QIcon::fromTheme(QLatin1String("computer"),
-                                        QIcon::fromTheme(QLatin1String("system")));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("computer"),
+                                    QIcon::fromTheme(QLatin1String("system")));
+            break;
         case SP_DesktopIcon:
-                icon = QIcon::fromTheme(QLatin1String("user-desktop"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("user-desktop"));
+            break;
         case SP_TrashIcon:
-                icon = QIcon::fromTheme(QLatin1String("user-trash"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("user-trash"));
+            break;
         case SP_DriveCDIcon:
         case SP_DriveDVDIcon:
-                icon = QIcon::fromTheme(QLatin1String("media-optical"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("media-optical"));
+            break;
         case SP_DriveHDIcon:
-                icon = QIcon::fromTheme(QLatin1String("drive-harddisk"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("drive-harddisk"));
+            break;
         case SP_FileDialogToParent:
-                icon = QIcon::fromTheme(QLatin1String("go-up"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("go-up"));
+            break;
         case SP_FileDialogNewFolder:
-                icon = QIcon::fromTheme(QLatin1String("folder-new"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("folder-new"));
+            break;
         case SP_ArrowUp:
-                icon = QIcon::fromTheme(QLatin1String("go-up"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("go-up"));
+            break;
         case SP_ArrowDown:
-                icon = QIcon::fromTheme(QLatin1String("go-down"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("go-down"));
+            break;
         case SP_ArrowRight:
-                icon = QIcon::fromTheme(QLatin1String("go-next"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("go-next"));
+            break;
         case SP_ArrowLeft:
-                icon = QIcon::fromTheme(QLatin1String("go-previous"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("go-previous"));
+            break;
         case SP_DialogCancelButton:
-                icon = QIcon::fromTheme(QLatin1String("dialog-cancel"),
-                                        QIcon::fromTheme(QLatin1String("process-stop")));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("dialog-cancel"),
+                                    QIcon::fromTheme(QLatin1String("process-stop")));
+            break;
         case SP_DialogCloseButton:
-                icon = QIcon::fromTheme(QLatin1String("window-close"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("window-close"));
+            break;
         case SP_FileDialogDetailedView:
-                icon = QIcon::fromTheme(QLatin1String("view-list-details"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("view-list-details"));
+            break;
         case SP_FileDialogListView:
-                icon = QIcon::fromTheme(QLatin1String("view-list-icons"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("view-list-icons"));
+            break;
         case SP_BrowserReload:
-                icon = QIcon::fromTheme(QLatin1String("view-refresh"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("view-refresh"));
+            break;
         case SP_BrowserStop:
-                icon = QIcon::fromTheme(QLatin1String("process-stop"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("process-stop"));
+            break;
         case SP_MediaPlay:
-                icon = QIcon::fromTheme(QLatin1String("media-playback-start"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("media-playback-start"));
+            break;
         case SP_MediaPause:
-                icon = QIcon::fromTheme(QLatin1String("media-playback-pause"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("media-playback-pause"));
+            break;
         case SP_MediaStop:
-                icon = QIcon::fromTheme(QLatin1String("media-playback-stop"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("media-playback-stop"));
+            break;
         case SP_MediaSeekForward:
-                icon = QIcon::fromTheme(QLatin1String("media-seek-forward"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("media-seek-forward"));
+            break;
         case SP_MediaSeekBackward:
-                icon = QIcon::fromTheme(QLatin1String("media-seek-backward"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("media-seek-backward"));
+            break;
         case SP_MediaSkipForward:
-                icon = QIcon::fromTheme(QLatin1String("media-skip-forward"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("media-skip-forward"));
+            break;
         case SP_MediaSkipBackward:
-                icon = QIcon::fromTheme(QLatin1String("media-skip-backward"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("media-skip-backward"));
+            break;
         case SP_MediaVolume:
-                icon = QIcon::fromTheme(QLatin1String("audio-volume-medium"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("audio-volume-medium"));
+            break;
         case SP_MediaVolumeMuted:
-                icon = QIcon::fromTheme(QLatin1String("audio-volume-muted"));
-                break;
+            icon = QIcon::fromTheme(QLatin1String("audio-volume-muted"));
+            break;
         case SP_ArrowForward:
             if (rtl)
                 return Style::standardIcon(SP_ArrowLeft, opt, widget);
@@ -648,39 +724,39 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
                 return Style::standardIcon(SP_ArrowRight, opt, widget);
             return Style::standardIcon(SP_ArrowLeft, opt, widget);
         case SP_FileLinkIcon:
-            {
-                QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
-                if (!linkIcon.isNull()) {
-                    QIcon baseIcon = Style::standardIcon(SP_FileIcon, opt, widget);
-                    const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
-                    for (int i = 0 ; i < sizes.size() ; ++i) {
-                        int size = sizes[i].width();
-                        QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
-                        QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
-                        QPainter painter(&basePixmap);
-                        painter.drawPixmap(size/2, size/2, linkPixmap);
-                        icon.addPixmap(basePixmap);
-                    }
+        {
+            QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
+            if (!linkIcon.isNull()) {
+                QIcon baseIcon = Style::standardIcon(SP_FileIcon, opt, widget);
+                const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
+                for (int i = 0 ; i < sizes.size() ; ++i) {
+                    int size = sizes[i].width();
+                    QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
+                    QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+                    QPainter painter(&basePixmap);
+                    painter.drawPixmap(size/2, size/2, linkPixmap);
+                    icon.addPixmap(basePixmap);
                 }
             }
+        }
             break;
         case SP_DirLinkIcon:
-            {
-                QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
-                if (!linkIcon.isNull()) {
-                    QIcon baseIcon = Style::standardIcon(SP_DirIcon, opt, widget);
-                    const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
-                    for (int i = 0 ; i < sizes.size() ; ++i) {
-                        int size = sizes[i].width();
-                        QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
-                        QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
-                        QPainter painter(&basePixmap);
-                        painter.drawPixmap(size/2, size/2, linkPixmap);
-                        icon.addPixmap(basePixmap);
-                    }
+        {
+            QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
+            if (!linkIcon.isNull()) {
+                QIcon baseIcon = Style::standardIcon(SP_DirIcon, opt, widget);
+                const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
+                for (int i = 0 ; i < sizes.size() ; ++i) {
+                    int size = sizes[i].width();
+                    QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
+                    QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+                    QPainter painter(&basePixmap);
+                    painter.drawPixmap(size/2, size/2, linkPixmap);
+                    icon.addPixmap(basePixmap);
                 }
+            }
         }
-        break;
+            break;
         default:
             break;
         }
@@ -690,7 +766,7 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
         return icon;
 
     switch (standardIcon) {
-     case SP_FileDialogNewFolder:
+    case SP_FileDialogNewFolder:
         break;
     case SP_FileDialogBack:
         return Style::standardIcon(SP_ArrowBack, opt, widget);
@@ -880,137 +956,6 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
     return QCommonStyle::standardIcon(standardIcon, opt, widget);
 }
 
-QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, QStyle::SubControl subControl, const QWidget *widget) const
-{
-    // cast option and check
-    const QStyleOptionSlider* sliderOption( qstyleoption_cast<const QStyleOptionSlider*>( option ) );
-    if( !sliderOption ) return QCommonStyle::subControlRect( CC_Slider, option, subControl, widget );
-
-    switch( subControl )
-    {
-    case SC_SliderGroove:
-    {
-
-        // direction
-        const bool horizontal( sliderOption->orientation == Qt::Horizontal );
-
-        // get base class rect
-        QRect grooveRect( QCommonStyle::subControlRect( CC_Slider, option, subControl, widget ) );
-        grooveRect = GeometryUtils::insideMargin( grooveRect, pixelMetric( PM_DefaultFrameWidth, option, widget ) );
-
-        // centering
-        if( horizontal ) {
-            grooveRect = GeometryUtils::centerRect( grooveRect, grooveRect.width(), Metrics::Slider_GrooveThickness );
-        } else {
-            grooveRect = GeometryUtils::centerRect( grooveRect, Metrics::Slider_GrooveThickness, grooveRect.height() );
-        }
-
-        return grooveRect;
-
-    }
-
-    default: return QCommonStyle::subControlRect( CC_Slider, option, subControl, widget );
-    }
-}
-
-QRect Style::scrollbarSubControlRect(const QStyleOptionComplex *opt, QStyle::SubControl sc, const QWidget *widget) const
-{
-    QRect ret(0, 0, 0, 0);
-
-    if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-        const bool enabled(opt->state & QStyle::State_Enabled);
-        const bool mouseOver(opt->state & QStyle::State_MouseOver);
-        const QRect scrollBarRect = scrollbar->rect;
-        int sbextent = 0;
-        if (!proxy()->styleHint(SH_ScrollBar_Transient, scrollbar, widget))
-            sbextent = proxy()->pixelMetric(PM_ScrollBarExtent, scrollbar, widget);
-        int maxlen = ((scrollbar->orientation == Qt::Horizontal) ?
-                      scrollBarRect.width() : scrollBarRect.height());
-        int sliderlen;
-
-        // calculate slider length
-        if (scrollbar->maximum != scrollbar->minimum) {
-            uint range = scrollbar->maximum - scrollbar->minimum;
-            sliderlen = (qint64(scrollbar->pageStep) * maxlen) / (range + scrollbar->pageStep);
-
-            int slidermin = proxy()->pixelMetric(PM_ScrollBarSliderMin, scrollbar, widget);
-            if (sliderlen < slidermin || range > INT_MAX / 2)
-                sliderlen = slidermin;
-            if (sliderlen > maxlen)
-                sliderlen = maxlen;
-        } else {
-            sliderlen = maxlen;
-        }
-
-        int sliderstart = sliderPositionFromValue(scrollbar->minimum,
-                                                  scrollbar->maximum,
-                                                  scrollbar->sliderPosition,
-                                                  maxlen - sliderlen,
-                                                  scrollbar->upsideDown);
-
-        switch (sc) {
-        case SC_ScrollBarSubLine:            // top/left button
-            if (scrollbar->orientation == Qt::Horizontal) {
-                int buttonWidth = qMin(scrollBarRect.width() / 2, sbextent);
-                ret.setRect(0, 0, buttonWidth, scrollBarRect.height());
-            } else {
-                int buttonHeight = qMin(scrollBarRect.height() / 2, sbextent);
-                ret.setRect(0, 0, scrollBarRect.width(), buttonHeight);
-            }
-            break;
-        case SC_ScrollBarAddLine:            // bottom/right button
-            if (scrollbar->orientation == Qt::Horizontal) {
-                int buttonWidth = qMin(scrollBarRect.width()/2, sbextent);
-                ret.setRect(scrollBarRect.width() - buttonWidth, 0, buttonWidth, scrollBarRect.height());
-            } else {
-                int buttonHeight = qMin(scrollBarRect.height()/2, sbextent);
-                ret.setRect(0, scrollBarRect.height() - buttonHeight, scrollBarRect.width(), buttonHeight);
-            }
-            break;
-        case SC_ScrollBarSubPage:            // between top/left button and slider
-            if (scrollbar->orientation == Qt::Horizontal)
-                ret.setRect(sbextent, 0, sliderstart - sbextent, scrollBarRect.height());
-            else
-                ret.setRect(0, sbextent, scrollBarRect.width(), sliderstart - sbextent);
-            break;
-        case SC_ScrollBarAddPage:            // between bottom/right button and slider
-            if (scrollbar->orientation == Qt::Horizontal)
-                ret.setRect(sliderstart + sliderlen, 0,
-                            maxlen - sliderstart - sliderlen + sbextent, scrollBarRect.height());
-            else
-                ret.setRect(0, sliderstart + sliderlen, scrollBarRect.width(),
-                            maxlen - sliderstart - sliderlen + sbextent);
-            break;
-        case SC_ScrollBarGroove:
-            if (scrollbar->orientation == Qt::Horizontal)
-                ret.setRect(sbextent, 0, scrollBarRect.width() - sbextent * 2,
-                            scrollBarRect.height());
-            else
-                ret.setRect(0, sbextent, scrollBarRect.width(),
-                            scrollBarRect.height() - sbextent * 2);
-            break;
-        case SC_ScrollBarSlider:
-            if (scrollbar->orientation == Qt::Horizontal) {
-                if (mouseOver && enabled)
-                    ret.setRect(sliderstart, 0, sliderlen, scrollBarRect.height());
-                else
-                    ret.setRect(sliderstart, scrollBarRect.height() / 4, sliderlen, scrollBarRect.height() / 2);
-            } else {
-                if (mouseOver && enabled)
-                    ret.setRect(0, sliderstart, scrollBarRect.width(), sliderlen);
-                else
-                    ret.setRect(scrollBarRect.width() / 4, sliderstart, scrollBarRect.width() / 2, sliderlen);
-            }
-            break;
-        default:
-            break;
-        }
-        ret = visualRect(scrollbar->direction, scrollBarRect, ret);
-    }
-
-    return ret;
-}
-
 void Style::drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt, QPainter *p, const QWidget *widget) const
 {
     if (opt->rect.width() <= 1 || opt->rect.height() <= 1)
@@ -1023,5 +968,71 @@ void Style::drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt,
     int yOffset = r.y() + (r.height() - size)/2;
     p->drawPixmap(xOffset, yOffset, pixmap);
 }
+
+QWindow *Style::qt_getWindow(const QWidget *widget)
+{
+    return widget ? widget->window()->windowHandle() : 0;
+}
+
+QColor Style::mergedColors(const QColor &colorA, const QColor &colorB, int factor)
+{
+    const int maxFactor = 100;
+    QColor tmp = colorA;
+    tmp.setRed((tmp.red() * factor) / maxFactor + (colorB.red() * (maxFactor - factor)) / maxFactor);
+    tmp.setGreen((tmp.green() * factor) / maxFactor + (colorB.green() * (maxFactor - factor)) / maxFactor);
+    tmp.setBlue((tmp.blue() * factor) / maxFactor + (colorB.blue() * (maxFactor - factor)) / maxFactor);
+    return tmp;
+}
+
+QPixmap Style::colorizedImage(const QString &fileName, const QColor &color, int rotation)
+{
+    QString pixmapName = QLatin1String("$qt_ia-") % fileName % HexString<uint>(color.rgba()) % QString::number(rotation);
+    QPixmap pixmap;
+    if (!QPixmapCache::find(pixmapName, pixmap)) {
+        QImage image(fileName);
+
+        if (image.format() != QImage::Format_ARGB32_Premultiplied)
+            image = image.convertToFormat( QImage::Format_ARGB32_Premultiplied);
+
+        int width = image.width();
+        int height = image.height();
+        int source = color.rgba();
+
+        unsigned char sourceRed = qRed(source);
+        unsigned char sourceGreen = qGreen(source);
+        unsigned char sourceBlue = qBlue(source);
+
+        for (int y = 0; y < height; ++y)
+        {
+            QRgb *data = (QRgb*) image.scanLine(y);
+            for (int x = 0 ; x < width ; x++) {
+                QRgb col = data[x];
+                unsigned int colorDiff = (qBlue(col) - qRed(col));
+                unsigned char gray = qGreen(col);
+                unsigned char red = gray + qt_div_255(sourceRed * colorDiff);
+                unsigned char green = gray + qt_div_255(sourceGreen * colorDiff);
+                unsigned char blue = gray + qt_div_255(sourceBlue * colorDiff);
+                unsigned char alpha = qt_div_255(qAlpha(col) * qAlpha(source));
+                data[x] = qRgba(std::min(alpha, red),
+                                std::min(alpha, green),
+                                std::min(alpha, blue),
+                                alpha);
+            }
+        }
+        if (rotation != 0) {
+            QTransform transform;
+            transform.translate(-image.width()/2, -image.height()/2);
+            transform.rotate(rotation);
+            transform.translate(image.width()/2, image.height()/2);
+            image = image.transformed(transform);
+        }
+
+        pixmap = QPixmap::fromImage(image);
+        QPixmapCache::insert(pixmapName, pixmap);
+    }
+    return pixmap;
+}
+
+#include "moc_style.cpp"
 
 }

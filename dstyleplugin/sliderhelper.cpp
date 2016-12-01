@@ -28,8 +28,43 @@ static const char *SliderTickmarkPositionsProp = "tickmarkPositions";
 #define SliderHandleTypeVernier "Vernier"
 #define SliderHandleTypeNone "None"
 
-bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
+QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, QStyle::SubControl subControl, const QWidget *widget) const
 {
+    // cast option and check
+    const QStyleOptionSlider* sliderOption( qstyleoption_cast<const QStyleOptionSlider*>( option ) );
+    if( !sliderOption ) return QCommonStyle::subControlRect( CC_Slider, option, subControl, widget );
+
+    switch( subControl )
+    {
+    case SC_SliderGroove:
+    {
+
+        // direction
+        const bool horizontal( sliderOption->orientation == Qt::Horizontal );
+
+        // get base class rect
+        QRect grooveRect( QCommonStyle::subControlRect( CC_Slider, option, subControl, widget ) );
+        grooveRect = GeometryUtils::insideMargin( grooveRect, pixelMetric( PM_DefaultFrameWidth, option, widget ) );
+
+        // centering
+        if( horizontal ) {
+            grooveRect = GeometryUtils::centerRect( grooveRect, grooveRect.width(), Metrics::Slider_GrooveThickness );
+        } else {
+            grooveRect = GeometryUtils::centerRect( grooveRect, Metrics::Slider_GrooveThickness, grooveRect.height() );
+        }
+
+        return grooveRect;
+
+    }
+
+    default: return QCommonStyle::subControlRect( CC_Slider, option, subControl, widget );
+    }
+}
+
+bool Style::drawSlider(ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
+{
+    Q_UNUSED(control)
+
     // cast option and check
     const QStyleOptionSlider *sliderOption( qstyleoption_cast<const QStyleOptionSlider*>( option ) );
     if( !sliderOption ) return true;
@@ -38,12 +73,12 @@ bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, con
 
     // copy rect and palette
     const QRect& rect( option->rect );
-//    const QPalette& palette( option->palette );
+    //    const QPalette& palette( option->palette );
 
     // copy state
     const QStyle::State& state( option->state );
     const bool enabled( state & QStyle::State_Enabled );
-//    const bool mouseOver( enabled && ( state & QStyle::State_MouseOver ) );
+    //    const bool mouseOver( enabled && ( state & QStyle::State_MouseOver ) );
     const bool hasFocus( enabled && ( state & QStyle::State_HasFocus ) );
 
     // direction
@@ -161,8 +196,8 @@ bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, con
         QRect handleRect( subControlRect( QStyle::CC_Slider, sliderOption, QStyle::SC_SliderHandle, widget ) );
 
         // handle state
-//        const bool handleActive( sliderOption->activeSubControls & QStyle::SC_SliderHandle );
-//        const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken) );
+        //        const bool handleActive( sliderOption->activeSubControls & QStyle::SC_SliderHandle );
+        //        const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken) );
 
         // define brushs
         const QBrush background( plExt->brush(PaletteExtended::Slider_HandleBrush) );
@@ -172,7 +207,7 @@ bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, con
         //        const QColor shadow( _helper->shadowColor( palette ) );
         const QColor &outline = plExt->brush(PaletteExtended::Slider_HandleBorderColor,
                                              quint64((hasFocus && enabled) ? PaletteExtended::PseudoClass_Focus
-                                                      : PaletteExtended::PseudoClass_Unspecified)).color();
+                                                                           : PaletteExtended::PseudoClass_Unspecified)).color();
 
         // render
         const QString handleType = widget->property("handleType").toString();
@@ -212,14 +247,14 @@ void Style::drawSliderHandle(QPainter* painter, const QRect& rect, const QBrush&
     frameRect.adjust( 1, 1, -1, -1 );
 
     // shadow
-//    if( shadow.isValid() && !sunken )
-//    {
+    //    if( shadow.isValid() && !sunken )
+    //    {
 
-//        painter->setPen( QPen( shadow, 2 ) );
-//        painter->setBrush( Qt::NoBrush );
-//        painter->drawEllipse( frameRect );
+    //        painter->setPen( QPen( shadow, 2 ) );
+    //        painter->setBrush( Qt::NoBrush );
+    //        painter->drawEllipse( frameRect );
 
-//    }
+    //    }
 
     if (type == SliderHandleTypeNone) {
         return; // draw no handle

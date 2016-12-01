@@ -7,39 +7,14 @@
 #include <QComboBox>
 
 namespace dstyle {
-
-QWindow *Style::qt_getWindow(const QWidget *widget)
-{
-    return widget ? widget->window()->windowHandle() : 0;
-}
-
-QColor highlight(const QPalette &pal) {
-    return pal.color(QPalette::Highlight);
-}
-
-QColor highlightedOutline(const QPalette &pal) {
-    QColor highlightedOutline = highlight(pal).darker(125);
-    if (highlightedOutline.value() > 160)
-        highlightedOutline.setHsl(highlightedOutline.hue(), highlightedOutline.saturation(), 160);
-    return highlightedOutline;
-}
-
-QColor mergedColors(const QColor &colorA, const QColor &colorB, int factor = 50)
-{
-    const int maxFactor = 100;
-    QColor tmp = colorA;
-    tmp.setRed((tmp.red() * factor) / maxFactor + (colorB.red() * (maxFactor - factor)) / maxFactor);
-    tmp.setGreen((tmp.green() * factor) / maxFactor + (colorB.green() * (maxFactor - factor)) / maxFactor);
-    tmp.setBlue((tmp.blue() * factor) / maxFactor + (colorB.blue() * (maxFactor - factor)) / maxFactor);
-    return tmp;
-}
-
 bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
+    Q_D(const Style);
+
     painter->save();
     // Draws one item in a popup menu.
     if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-        QColor highlightOutline = highlightedOutline(option->palette);
+        QColor highlightOutline = d->highlightedOutline(option->palette);
         QColor highlight = option->palette.highlight().color();
         if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
             int w = 0;

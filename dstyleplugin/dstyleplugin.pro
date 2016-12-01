@@ -12,8 +12,8 @@ TARGET = dstyleplugin
 TEMPLATE = lib
 CONFIG += plugin
 
-SOURCES += dstyleplugin.cpp \ 
-    style.cpp \ 
+SOURCES += dstyleplugin.cpp \
+    style.cpp \
     sliderhelper.cpp \
     colorutils.cpp \
     geometryutils.cpp \
@@ -24,7 +24,8 @@ SOURCES += dstyleplugin.cpp \
     commonhelper.cpp \
     scrollbarhelper.cpp \
     painterhelper.cpp \
-    menuhelper.cpp
+    menuhelper.cpp \
+    dstyleanimation.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \
@@ -35,7 +36,8 @@ HEADERS += dstyleplugin.h \
     framehelper.h \
     lineedithelper.h \
     commonhelper.h \
-    painterhelper.h
+    painterhelper.h \
+    dstyleanimation.h
 
 DISTFILES += dstyleplugin.json
 
