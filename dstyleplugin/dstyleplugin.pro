@@ -50,4 +50,6 @@ unix {
 
 RESOURCES += \
     brushchemes.qrc \
+    assets_light.qrc \
+    assets_dark.qrc \
     assets.qrc

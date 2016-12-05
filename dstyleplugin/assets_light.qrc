@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/light/arrow-right_disabled.png</file>
+        <file>assets/light/arrow-right_selected.png</file>
+        <file>assets/light/arrow-right_normal.png</file>
+        <file>assets/light/check_disabled.png</file>
+        <file>assets/light/check_selected.png</file>
+        <file>assets/light/check_normal.png</file>
+    </qresource>
+</RCC>

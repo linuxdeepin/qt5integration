@@ -466,8 +466,11 @@ int Style::styleHint(QStyle::StyleHint sh, const QStyleOption *opt, const QWidge
     case SH_ComboBox_ListMouseTracking: return true;
     case SH_MenuBar_MouseTracking: return true;
     case SH_Menu_MouseTracking: return true;
-    case SH_Menu_SubMenuPopupDelay: return 150;
+    case SH_Menu_SubMenuPopupDelay: return 100;
     case SH_Menu_SloppySubMenus: return true;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
+    case SH_Menu_SubMenuUniDirection: return 1000;
+#endif
     case SH_Slider_AbsoluteSetButtons: return Qt::LeftButton;
     case SH_Slider_PageSetButtons: return Qt::MidButton;
 #if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
@@ -962,7 +965,70 @@ void Style::drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt,
         return;
     QRect r = opt->rect;
     int size = qMin(r.height(), r.width());
-    QPixmap pixmap = standardIcon(sp, opt, widget).pixmap(size, size);
+    const bool enabled(opt->state & QStyle::State_Enabled);
+    const bool mouseOver(opt->state & QStyle::State_MouseOver);
+    const bool hasFocus((opt->state & QStyle::State_HasFocus ) && !( widget && widget->focusProxy()));
+    const bool sunken((opt->state | QStyle::State_Sunken) == opt->state);
+    QIcon::Mode mode = QIcon::Normal;
+
+    if (!enabled)
+        mode = QIcon::Disabled;
+    else if (mouseOver)
+        mode = QIcon::Active;
+    else if (hasFocus)
+        mode = QIcon::Selected;
+
+    QPixmap pixmap = standardIcon(sp, opt, widget).pixmap(size, size, mode, sunken ? QIcon::On : QIcon::Off);
+
+    int xOffset = r.x() + (r.width() - size)/2;
+    int yOffset = r.y() + (r.height() - size)/2;
+    p->drawPixmap(xOffset, yOffset, pixmap);
+}
+
+void Style::drawDeepinStyleIcon(const QString &name, const QStyleOption *opt, QPainter *p, const QWidget *widget) const
+{
+    if (opt->rect.width() <= 1 || opt->rect.height() <= 1)
+        return;
+    QRect r = opt->rect;
+    int size = qMin(r.height(), r.width());
+    const bool enabled(opt->state & QStyle::State_Enabled);
+    const bool mouseOver(opt->state & QStyle::State_MouseOver);
+    const bool hasFocus((opt->state & QStyle::State_HasFocus ) && !( widget && widget->focusProxy()));
+    const bool selected(opt->state & QStyle::State_Selected);
+
+    QString icon_state = "_normal";
+
+    if (!enabled)
+        icon_state = "_disabled";
+    else if (mouseOver)
+        icon_state = "_hover";
+    else if (selected)
+        icon_state = "_selected";
+    else if (hasFocus)
+        icon_state = "_active";
+
+    QString style_name = "light";
+
+    if (m_type == StyleDark)
+        style_name = "dark";
+
+    const QStringList formatList = QStringList() << "png" << "svg";
+    QPixmap pixmap;
+
+    foreach (const QString &format, formatList) {
+        pixmap = QPixmap(":/assets/" + style_name + "/" + name + icon_state + "." + format);
+
+        if (!pixmap.isNull())
+            break;
+
+        pixmap = QPixmap(":/assets/" + style_name + "/" + name + "_normal." + format);
+
+        if (!pixmap.isNull())
+            break;
+    }
+
+    if (pixmap.isNull())
+        return;
 
     int xOffset = r.x() + (r.width() - size)/2;
     int yOffset = r.y() + (r.height() - size)/2;

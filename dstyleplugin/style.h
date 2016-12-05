@@ -78,6 +78,7 @@ private:
 
     // indicator
     void drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt, QPainter *p, const QWidget *widget) const;
+    void drawDeepinStyleIcon(const QString &name, const QStyleOption *opt, QPainter *p, const QWidget *widget) const;
 
     static QWindow *qt_getWindow(const QWidget *widget);
     static QColor mergedColors(const QColor &colorA, const QColor &colorB, int factor = 50);

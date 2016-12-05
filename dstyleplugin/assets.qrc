@@ -1,6 +1,10 @@
 <RCC>
     <qresource prefix="/">
         <file>assets/slider-handle.png</file>
+        <file>assets/icons/arrow-down.png</file>
+        <file>assets/icons/arrow-left.png</file>
+        <file>assets/icons/arrow-right.png</file>
+        <file>assets/icons/arrow-up.png</file>
         <file>assets/icons/button-cancel.png</file>
         <file>assets/icons/computer.svg</file>
         <file>assets/icons/dialog-apply.png</file>
@@ -9,20 +13,16 @@
         <file>assets/icons/emblem-symbolic-link.png</file>
         <file>assets/icons/folder-open.svg</file>
         <file>assets/icons/folder.svg</file>
-        <file>assets/icons/arrow-down.png</file>
-        <file>assets/icons/arrow-right.png</file>
-        <file>assets/icons/arrow-left.png</file>
-        <file>assets/icons/arrow-up.png</file>
         <file>assets/icons/help-faq.png</file>
         <file>assets/icons/input_clear_hover.svg</file>
         <file>assets/icons/input_clear_normal.svg</file>
         <file>assets/icons/input_clear_press.svg</file>
         <file>assets/icons/media-optical.png</file>
         <file>assets/icons/process-stop.png</file>
+        <file>assets/icons/text-x-generic.svg</file>
         <file>assets/icons/user-home.svg</file>
         <file>assets/icons/user-trash.svg</file>
         <file>assets/icons/view-refresh.png</file>
-        <file>assets/icons/text-x-generic.svg</file>
         <file>assets/icons/window_close_hover_dark.png</file>
         <file>assets/icons/window_close_hover_light.png</file>
         <file>assets/icons/window_close_normal_dark.png</file>

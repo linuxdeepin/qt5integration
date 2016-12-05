@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/dark/check_disabled.png</file>
+        <file>assets/dark/check_selected.png</file>
+        <file>assets/dark/check_normal.png</file>
+    </qresource>
+</RCC>

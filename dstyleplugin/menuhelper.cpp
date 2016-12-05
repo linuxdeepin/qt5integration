@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QStyleOptionMenuItem>
 #include <QComboBox>
+#include <QDebug>
 
 namespace dstyle {
 bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
@@ -14,6 +15,9 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
     painter->save();
     // Draws one item in a popup menu.
     if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
+        //TODO(zccrs): Temporarily fix the font size to 13px
+        const_cast<QStyleOptionMenuItem*>(menuItem)->font.setPixelSize(13);
+
         QColor highlightOutline = d->highlightedOutline(option->palette);
         QColor highlight = option->palette.highlight().color();
         if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
@@ -42,7 +46,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
         bool checkable = menuItem->checkType != QStyleOptionMenuItem::NotCheckable;
         bool checked = menuItem->checked;
         bool sunken = menuItem->state & State_Sunken;
-        bool enabled = menuItem->state & State_Enabled;
+//        bool enabled = menuItem->state & State_Enabled;
 
         bool ignoreCheckMark = false;
         int checkcol = qMax(menuItem->maxIconWidth, 20);
@@ -53,21 +57,18 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
 
         if (!ignoreCheckMark) {
             // Check
-            QRect checkRect(option->rect.left() + 7, option->rect.center().y() - 6, 14, 14);
+            QRect checkRect(option->rect.left() + 10, option->rect.center().y() - 5, 14, 14);
             checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);
             if (checkable) {
-                if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) {
+//                if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) {
                     // Radio button
-                    if (checked || sunken) {
-                        painter->setRenderHint(QPainter::Antialiasing);
-                        painter->setPen(Qt::NoPen);
+                    if (checked/* || sunken*/) {
+                        QStyleOptionMenuItem newMI = *menuItem;
+                        newMI.rect = checkRect;
 
-                        QPalette::ColorRole textRole = !enabled ? QPalette::Text:
-                                                                  selected ? QPalette::HighlightedText : QPalette::ButtonText;
-                        painter->setBrush(option->palette.brush( option->palette.currentColorGroup(), textRole));
-                        painter->drawEllipse(checkRect.adjusted(4, 4, -4, -4));
+                        drawDeepinStyleIcon("check", &newMI, painter, widget);
                     }
-                } else {
+                /*} else {
                     // Check box
                     if (menuItem->icon.isNull()) {
                         QStyleOptionButton box;
@@ -77,7 +78,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
                             box.state |= State_On;
                         proxy()->drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
                     }
-                }
+                }*/
             }
         } else { //ignore checkmark
             if (menuItem->icon.isNull())
@@ -191,18 +192,18 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
         // Arrow
         if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
             int dim = (menuItem->rect.height() - 4) / 2;
-            PrimitiveElement arrow;
-            arrow = option->direction == Qt::RightToLeft ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
+//            PrimitiveElement arrow;
+//            arrow = option->direction == Qt::RightToLeft ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
             int xpos = menuItem->rect.left() + menuItem->rect.width() - 3 - dim;
             QRect  vSubMenuRect = visualRect(option->direction, menuItem->rect,
                                              QRect(xpos, menuItem->rect.top() + menuItem->rect.height() / 2 - dim / 2, dim, dim));
             QStyleOptionMenuItem newMI = *menuItem;
             newMI.rect = vSubMenuRect;
-            newMI.state = !enabled ? State_None : State_Enabled;
             if (selected)
                 newMI.palette.setColor(QPalette::Foreground,
                                        newMI.palette.highlightedText().color());
-            proxy()->drawPrimitive(arrow, &newMI, painter, widget);
+
+            drawDeepinStyleIcon("arrow-right", &newMI, painter, widget);
         }
     }
     painter->restore();
