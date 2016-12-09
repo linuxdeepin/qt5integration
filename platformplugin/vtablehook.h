@@ -18,8 +18,8 @@ public:
                       const typename QtPrivate::FunctionPointer<Fun2>::Object *t2, Fun2 fun2)
     {
         //! ({code}) in the form of a code is to eliminate - Wstrict - aliasing build warnings
-        quintptr fun1_offset = ({quintptr *f = (quintptr *)&fun1; *f - 1;});
-        quintptr fun2_offset = ({quintptr *f = (quintptr *)&fun2; *f - 1;});
+        quintptr fun1_offset = *(quintptr *)&fun1;
+        quintptr fun2_offset = *(quintptr *)&fun2;
 
         if (fun1_offset < 0 || fun1_offset > UINT_LEAST16_MAX)
             return false;
@@ -40,9 +40,9 @@ public:
         quintptr *vfptr_t2 = *(quintptr**)t2;
 
         if (fun2_offset > UINT_LEAST16_MAX)
-            *(quintptr*)((char*)vfptr_t1 + fun1_offset) = fun2_offset + 1;
+            *(vfptr_t1 + fun1_offset / sizeof(quintptr)) = fun2_offset;
         else
-            *(quintptr*)((char*)vfptr_t1 + fun1_offset) = *(quintptr*)((char*)vfptr_t2 + fun2_offset);
+            *(vfptr_t1 + fun1_offset / sizeof(quintptr)) = *(vfptr_t2 + fun2_offset / sizeof(quintptr));
 
         return true;
     }
@@ -56,14 +56,14 @@ public:
             return false;
 
         //! ({code}) in the form of a code is to eliminate - Wstrict - aliasing build warnings
-        quintptr fun1_offset = ({quintptr *f = (quintptr *)&fun1; *f - 1;});
+        quintptr fun1_offset = *(quintptr *)&fun1;
 
         if (fun1_offset < 0 || fun1_offset > UINT_LEAST16_MAX)
             return false;
 
         quintptr *vfptr_t1 = *(quintptr**)t1;
 
-        *(quintptr*)((char*)vfptr_t1 + fun1_offset) = *(quintptr*)((char*)vfptr_t2 + fun1_offset);
+        *(vfptr_t1 + fun1_offset / sizeof(quintptr)) = *(vfptr_t2 + fun1_offset / sizeof(quintptr));
 
         return true;
     }
