@@ -152,6 +152,19 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
         QString s = menuitem->text;
         if (!s.isEmpty()) {                     // draw text
             p->save();
+            QFont font = menuitem->font;
+            // font may not have any "hard" flags set. We override
+            // the point size so that when it is resolved against the device, this font will win.
+            // This is mainly to handle cases where someone sets the font on the window
+            // and then the combo inherits it and passes it onward. At that point the resolve mask
+            // is very, very weak. This makes it stonger.
+            font.setPointSizeF(QFontInfo(menuItem->font).pointSizeF());
+
+            if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
+                font.setBold(true);
+
+            p->setFont(font);
+
             int t = s.indexOf(QLatin1Char('\t'));
             int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
             if (!styleHint(SH_UnderlineShortcut, menuitem, widget))
@@ -168,18 +181,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
                 p->drawText(vShortcutRect, text_flags, s.mid(t + 1));
                 s = s.left(t);
             }
-            QFont font = menuitem->font;
-            // font may not have any "hard" flags set. We override
-            // the point size so that when it is resolved against the device, this font will win.
-            // This is mainly to handle cases where someone sets the font on the window
-            // and then the combo inherits it and passes it onward. At that point the resolve mask
-            // is very, very weak. This makes it stonger.
-            font.setPointSizeF(QFontInfo(menuItem->font).pointSizeF());
 
-            if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
-                font.setBold(true);
-
-            p->setFont(font);
             if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
                 p->setPen(menuitem->palette.light().color());
                 p->drawText(vTextRect.adjusted(1, 1, 1, 1), text_flags, s.left(t));

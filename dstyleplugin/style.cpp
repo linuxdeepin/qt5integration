@@ -154,6 +154,10 @@ void Style::polish(QWidget *w)
 
         if (color.isValid())
             handle.setBorderColor(color);
+
+        handle.setShadowOffset(QPoint(0, 4));
+        handle.setShadowRadius(15);
+        handle.setShadowColor(QColor(0, 0, 0, 100));
     }
 }
 
@@ -561,6 +565,8 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 if (!menuItem->text.isEmpty()) {
                     newSize.setHeight(menuItem->fontMetrics.height());
+                } else {
+                    newSize.setHeight(newSize.height() + 4);
                 }
             }
             else if (!menuItem->icon.isNull()) {
@@ -573,7 +579,7 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
         }
 
         newSize.setWidth(newSize.width() + Menu_ItemHMargin * 2);
-        newSize.setHeight(newSize.height() + Menu_ItemVMargin * 2);
+        newSize.setHeight(newSize.height() + Menu_ItemVMargin * 2 + 1);
         break;
     case CT_SizeGrip:
         newSize += QSize(4, 4);

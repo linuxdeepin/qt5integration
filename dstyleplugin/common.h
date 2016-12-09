@@ -58,7 +58,7 @@ enum Metrics
 
     // menu
     Menu_ItemHMargin = 0,
-    Menu_ItemVMargin = 1,
+    Menu_ItemVMargin = -1,
     Menu_ArrowHMargin = 6,
     Menu_CheckMarkWidth = 12,
     Menu_RightBorder = 10,
@@ -67,7 +67,7 @@ enum Metrics
     Menu_ItemVTextMargin = 8,
     Menu_FrameWidth = 0,
     Menu_HMargin = 0,
-    Menu_VMargin = 5,
+    Menu_VMargin = 4,
     Menu_SeparatorItemHMargin = 5,
     Menu_PanelRightPadding = 10,
     MenuItem_MarginWidth = 3,
