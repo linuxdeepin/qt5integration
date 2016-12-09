@@ -1,7 +1,5 @@
 #include "qdeepintheme.h"
 #include "qdeepinfiledialoghelper.h"
-#include "qdeepinplatformmenu.h"
-#include "qdeepinplatformmenuitem.h"
 #include "diconproxyengine.h"
 
 #include <dfmglobal.h>
@@ -46,22 +44,6 @@ QDeepinTheme::QDeepinTheme()
 
     XSetErrorHandler(oldErrorHandler);
 }
-
-//QPlatformMenuItem *QDeepinTheme::createPlatformMenuItem() const
-//{
-//    if (!m_usePlatformNativeMenu)
-//        return 0;
-
-//    return new QDeepinPlatformMenuItem;
-//}
-
-//QPlatformMenu *QDeepinTheme::createPlatformMenu() const
-//{
-//    if (!m_usePlatformNativeMenu)
-//        return 0;
-
-//    return new QDeepinPlatformMenu;
-//}
 
 bool QDeepinTheme::usePlatformNativeDialog(DialogType type) const
 {

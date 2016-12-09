@@ -22,14 +22,10 @@ DESTDIR = $$_PRO_FILE_PWD_/../bin/plugins/platformthemes
 SOURCES += qdeepintheme.cpp \
     main.cpp \
     qdeepinfiledialoghelper.cpp \
-    qdeepinplatformmenu.cpp \
-    qdeepinplatformmenuitem.cpp \
     diconproxyengine.cpp
 
 HEADERS += qdeepintheme.h \
     qdeepinfiledialoghelper.h \
-    qdeepinplatformmenu.h \
-    qdeepinplatformmenuitem.h \
     diconproxyengine.h
 
 DISTFILES += \
