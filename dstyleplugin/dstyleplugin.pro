@@ -25,7 +25,8 @@ SOURCES += dstyleplugin.cpp \
     scrollbarhelper.cpp \
     painterhelper.cpp \
     menuhelper.cpp \
-    dstyleanimation.cpp
+    dstyleanimation.cpp \
+    progressbarhelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \

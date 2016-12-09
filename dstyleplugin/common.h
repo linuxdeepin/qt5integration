@@ -98,7 +98,7 @@ enum Metrics
 
     // progressbars
     ProgressBar_BusyIndicatorSize = 14,
-    ProgressBar_Thickness = 6,
+    ProgressBar_Thickness = 24,
     ProgressBar_ItemSpacing = 4,
 
     // mdi title bar

@@ -34,6 +34,7 @@ public:
     int pixelMetric(PixelMetric m, const QStyleOption *opt = Q_NULLPTR, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
 
     QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc, const QWidget *w) const Q_DECL_OVERRIDE;
+    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget) const Q_DECL_OVERRIDE;
 
     void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const Q_DECL_OVERRIDE;
@@ -83,6 +84,15 @@ private:
     static QWindow *qt_getWindow(const QWidget *widget);
     static QColor mergedColors(const QColor &colorA, const QColor &colorB, int factor = 50);
     static QPixmap colorizedImage(const QString &fileName, const QColor &color, int rotation = 0);
+
+    // progress bar
+    bool drawProgressBarControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    bool drawProgressBarContentsControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    bool drawProgressBarGrooveControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    bool drawProgressBarLabelControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    QRect progressBarLabelRect(const QStyleOption *opt, const QWidget *widget) const;
+    QRect progressBarGrooveRect(const QStyleOption *opt, const QWidget *widget) const;
+    QRect progressBarContentsRect(const QStyleOption *opt, const QWidget *widget) const;
 
     StyleType m_type;
     PaletteExtended *m_palette;

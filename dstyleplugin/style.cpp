@@ -332,6 +332,19 @@ QRect Style::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex
     return QCommonStyle::subControlRect(cc, opt, sc, w);
 }
 
+QRect Style::subElementRect(QStyle::SubElement r, const QStyleOption *opt, const QWidget *widget) const
+{
+    switch (r) {
+    case SE_ProgressBarGroove: return progressBarGrooveRect( opt, widget );
+    case SE_ProgressBarContents: return progressBarContentsRect( opt, widget );
+    case SE_ProgressBarLabel: return progressBarLabelRect( opt, widget );
+    default:
+        break;
+    }
+
+    return QCommonStyle::subElementRect(r, opt, widget);
+}
+
 void Style::drawControl(QStyle::ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
     DrawControlFunc fcn(Q_NULLPTR);
@@ -347,10 +360,10 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
     case CE_MenuBarItem: fcn = &Style::drawMenuBarItemControl; break;
     case CE_MenuItem: fcn = &Style::drawMenuItemControl; break;
         //        case CE_ToolBar: fcn = &Style::emptyControl; break;
-        //        case CE_ProgressBar: fcn = &Style::drawProgressBarControl; break;
-        //        case CE_ProgressBarContents: fcn = &Style::drawProgressBarContentsControl; break;
-        //        case CE_ProgressBarGroove: fcn = &Style::drawProgressBarGrooveControl; break;
-        //        case CE_ProgressBarLabel: fcn = &Style::drawProgressBarLabelControl; break;
+    case CE_ProgressBar: fcn = &Style::drawProgressBarControl; break;
+    case CE_ProgressBarContents: fcn = &Style::drawProgressBarContentsControl; break;
+    case CE_ProgressBarGroove: fcn = &Style::drawProgressBarGrooveControl; break;
+    case CE_ProgressBarLabel: fcn = &Style::drawProgressBarLabelControl; break;
     case CE_ScrollBarSlider: fcn = &Style::drawScrollBarSliderControl; break;
         //        case CE_ScrollBarAddLine: fcn = &Style::drawScrollBarAddLineControl; break;
         //        case CE_ScrollBarSubLine: fcn = &Style::drawScrollBarSubLineControl; break;
