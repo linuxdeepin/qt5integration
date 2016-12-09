@@ -6,7 +6,7 @@
 
 QT        += core gui widgets widgets-private
 CONFIG    += link_pkgconfig
-PKGCONFIG += dtkbase dtkwidget
+PKGCONFIG += dtkbase dtkwidget dtkutil
 
 TARGET = dstyleplugin
 TEMPLATE = lib
@@ -26,7 +26,8 @@ SOURCES += dstyleplugin.cpp \
     painterhelper.cpp \
     menuhelper.cpp \
     dstyleanimation.cpp \
-    progressbarhelper.cpp
+    progressbarhelper.cpp \
+    checkboxhelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \
@@ -34,8 +35,6 @@ HEADERS += dstyleplugin.h \
     colorutils.h \
     geometryutils.h \
     paletteextended.h \
-    framehelper.h \
-    lineedithelper.h \
     commonhelper.h \
     painterhelper.h \
     dstyleanimation.h

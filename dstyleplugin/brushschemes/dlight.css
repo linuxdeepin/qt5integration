@@ -72,6 +72,10 @@ PushButton:flat:hover {
     TextColor: "#16b8ff"
 }
 
+PushButton:flat:pressed {
+    TextColor: "#0082fa"
+}
+
 LineEdit {
     BackgroundBrush: rgb(255,255,255);
     BorderBrush: rgba(0,0,0,0.1);
@@ -106,4 +110,64 @@ ScrollBar:focus {
 Menu {
     SeparatorColor: rgba(0, 0, 0, 0.1);
     BorderColor: rgba(0, 0, 0, 0.1);
+}
+
+CheckBox {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_unchecked.png);
+}
+
+CheckBox:disabled {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox-unchecked-insensitive.png);
+}
+
+CheckBox:focus {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_unchecked_focus.png);
+}
+
+CheckBox:hover {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_unchecked_hover.png);
+}
+
+CheckBox:pressed {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_unchecked_press.png);
+}
+
+CheckBox:checked {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_checked.png);
+}
+
+CheckBox:checked:disabled {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox-checked-insensitive.png);
+}
+
+CheckBox:checked:focus {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox-checked_focus.png);
+}
+
+CheckBox:checked:hover {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_checked_hover.png);
+}
+
+CheckBox:checked:pressed {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_checked_press.png);
+}
+
+CheckBox:indeterminate {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_mixed.png);
+}
+
+CheckBox:indeterminate:disabled {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox-mixed-insensitive.png);
+}
+
+CheckBox:indeterminate:focus {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox-mixed_focus.png);
+}
+
+CheckBox:indeterminate:hover {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_mixed_hover.png);
+}
+
+CheckBox:indeterminate:pressed {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_mixed_press.png);
 }

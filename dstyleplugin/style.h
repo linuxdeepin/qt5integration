@@ -51,10 +51,13 @@ public:
     // some function type alias.
     //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
     using DrawComplexControlFunc = bool(Style::*)(ComplexControl, const QStyleOptionComplex *, QPainter *, const QWidget *) const;
-    using DrawPrimitiveFunc = bool(*)(const QStyleOption*, QPainter*, const QWidget* );
+    using DrawPrimitiveFunc = bool(Style::*)(QStyle::PrimitiveElement, const QStyleOption*, QPainter*, const QWidget* ) const;
     using DrawControlFunc = bool(Style::*)(const QStyleOption*, QPainter*, const QWidget*) const;
 
 private:
+    // frame
+    bool drawFrameFocusRectPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+
     // push button
     bool drawPushButtonBevel(const QStyleOption*, QPainter*, const QWidget*) const;
     bool drawPushButtonLabel(const QStyleOption *, QPainter *, const QWidget *) const;
@@ -77,6 +80,12 @@ private:
     void drawSliderHandle(QPainter* painter, const QRect& rect, const QBrush &brush, const QColor& outline, const QString &type) const;
     bool drawSliderTickmarkLabels(const QStyleOption*, QPainter*, const QWidget*) const;
 
+    // check box
+    bool drawIndicatorCheckBoxPrimitive(PrimitiveElement element, const QStyleOption*, QPainter*, const QWidget*widget) const;
+
+    // line edit
+    bool drawFrameLineEditPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+
     // indicator
     void drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt, QPainter *p, const QWidget *widget) const;
     void drawDeepinStyleIcon(const QString &name, const QStyleOption *opt, QPainter *p, const QWidget *widget) const;
@@ -84,6 +93,7 @@ private:
     static QWindow *qt_getWindow(const QWidget *widget);
     static QColor mergedColors(const QColor &colorA, const QColor &colorB, int factor = 50);
     static QPixmap colorizedImage(const QString &fileName, const QColor &color, int rotation = 0);
+    static void fillBrush(QPainter *p, const QRect &rect, const QBrush &brush);
 
     // progress bar
     bool drawProgressBarControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;

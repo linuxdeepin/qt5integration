@@ -11,8 +11,6 @@
 #include "common.h"
 #include "geometryutils.h"
 #include "paletteextended.h"
-#include "framehelper.h"
-#include "lineedithelper.h"
 #include "commonhelper.h"
 #include "dstyleanimation.h"
 
@@ -26,6 +24,8 @@
 #include <QWindow>
 #include <QPixmapCache>
 #include <QAbstractScrollArea>
+#include <QRadioButton>
+#include <QCheckBox>
 
 #include <private/qhexstring_p.h>
 #include <private/qdrawhelper_p.h>
@@ -132,7 +132,9 @@ void Style::polish(QWidget *w)
 
     if (qobject_cast<QPushButton *>(w)
             || qobject_cast<QComboBox *>(w)
-            || qobject_cast<QScrollBar *>(w))
+            || qobject_cast<QScrollBar *>(w)
+            || qobject_cast<QCheckBox*>(w)
+            || qobject_cast<QRadioButton*>(w))
         w->setAttribute(Qt::WA_Hover, true);
 
     if (qobject_cast<QScrollBar *>(w)) {
@@ -159,7 +161,9 @@ void Style::unpolish(QWidget *w)
 {
     if (qobject_cast<QPushButton *>(w)
             || qobject_cast<QComboBox *>(w)
-            || qobject_cast<QScrollBar *>(w))
+            || qobject_cast<QScrollBar *>(w)
+            || qobject_cast<QCheckBox*>(w)
+            || qobject_cast<QRadioButton*>(w))
         w->setAttribute(Qt::WA_Hover, false);
 
     if (qobject_cast<QScrollBar *>(w)) {
@@ -431,7 +435,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     }
         //    case PE_PanelTipLabel: fcn = &Style::drawPanelTipLabelPrimitive; break;
         //    case PE_PanelItemViewItem: fcn = &Style::drawPanelItemViewItemPrimitive; break;
-        //    case PE_IndicatorCheckBox: fcn = &Style::drawIndicatorCheckBoxPrimitive; break;
+    case PE_IndicatorCheckBox: fcn = &Style::drawIndicatorCheckBoxPrimitive; break;
         //    case PE_IndicatorRadioButton: fcn = &Style::drawIndicatorRadioButtonPrimitive; break;
         //    case PE_IndicatorButtonDropDown: fcn = &Style::drawIndicatorButtonDropDownPrimitive; break;
         //    case PE_IndicatorTabClose: fcn = &Style::drawIndicatorTabClosePrimitive; break;
@@ -451,12 +455,12 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
         //    case PE_FrameStatusBar: fcn = &Style::emptyPrimitive; break;
         //    case PE_Frame: fcn = &Style::drawFramePrimitive; break;
         //    case PE_FrameMenu: fcn = &Style::drawFrameMenuPrimitive; break;
-    case PE_FrameLineEdit: fcn = &LineEditHelper::drawFrameLineEditPrimitive; break;
+    case PE_FrameLineEdit: fcn = &Style::drawFrameLineEditPrimitive; break;
         //    case PE_FrameGroupBox: fcn = &Style::drawFrameGroupBoxPrimitive; break;
         //    case PE_FrameTabWidget: fcn = &Style::drawFrameTabWidgetPrimitive; break;
         //    case PE_FrameTabBarBase: fcn = &Style::drawFrameTabBarBasePrimitive; break;
         //    case PE_FrameWindow: fcn = &Style::drawFrameWindowPrimitive; break;
-    case PE_FrameFocusRect: fcn = &FrameHelper::drawFrameFocusRectPrimitive; break;
+    case PE_FrameFocusRect: fcn = &Style::drawFrameFocusRectPrimitive; break;
 
         // fallback
     default: break;
@@ -466,7 +470,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     painter->save();
 
     // call function if implemented
-    if( !( fcn && fcn( option, painter, widget ) ) )
+    if( !( fcn && (this->*fcn)( element, option, painter, widget ) ) )
     { QCommonStyle::drawPrimitive( element, option, painter, widget ); }
 
     painter->restore();
@@ -1110,6 +1114,21 @@ QPixmap Style::colorizedImage(const QString &fileName, const QColor &color, int 
         QPixmapCache::insert(pixmapName, pixmap);
     }
     return pixmap;
+}
+
+void Style::fillBrush(QPainter *p, const QRect &rect, const QBrush &brush)
+{
+    if (brush.style() == Qt::TexturePattern) {
+        const QPixmap &pixmap = brush.texture();
+        QRect r = rect;
+
+        r.setSize(pixmap.size());
+        r.moveCenter(rect.center());
+
+        p->drawPixmap(r, pixmap);
+    } else {
+        p->fillRect(rect, brush);
+    }
 }
 
 #include "moc_style.cpp"

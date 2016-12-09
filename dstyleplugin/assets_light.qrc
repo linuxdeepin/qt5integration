@@ -6,5 +6,65 @@
         <file>assets/light/check_disabled.png</file>
         <file>assets/light/check_selected.png</file>
         <file>assets/light/check_normal.png</file>
+        <file>assets/light/checkbox/checkbox-checked-insensitive.png</file>
+        <file>assets/light/checkbox/checkbox-checked-insensitive@2x.png</file>
+        <file>assets/light/checkbox/checkbox-checked_focus.png</file>
+        <file>assets/light/checkbox/checkbox-checked_focus@2x.png</file>
+        <file>assets/light/checkbox/checkbox-mixed-insensitive.png</file>
+        <file>assets/light/checkbox/checkbox-mixed-insensitive@2x.png</file>
+        <file>assets/light/checkbox/checkbox-mixed_focus.png</file>
+        <file>assets/light/checkbox/checkbox-mixed_focus@2x.png</file>
+        <file>assets/light/checkbox/checkbox-unchecked-insensitive.png</file>
+        <file>assets/light/checkbox/checkbox-unchecked-insensitive@2x.png</file>
+        <file>assets/light/checkbox/checkbox_checked.png</file>
+        <file>assets/light/checkbox/checkbox_checked@2x.png</file>
+        <file>assets/light/checkbox/checkbox_checked_hover.png</file>
+        <file>assets/light/checkbox/checkbox_checked_hover@2x.png</file>
+        <file>assets/light/checkbox/checkbox_checked_press.png</file>
+        <file>assets/light/checkbox/checkbox_checked_press@2x.png</file>
+        <file>assets/light/checkbox/checkbox_mixed.png</file>
+        <file>assets/light/checkbox/checkbox_mixed@2x.png</file>
+        <file>assets/light/checkbox/checkbox_mixed_hover.png</file>
+        <file>assets/light/checkbox/checkbox_mixed_hover@2x.png</file>
+        <file>assets/light/checkbox/checkbox_mixed_press.png</file>
+        <file>assets/light/checkbox/checkbox_mixed_press@2x.png</file>
+        <file>assets/light/checkbox/checkbox_unchecked.png</file>
+        <file>assets/light/checkbox/checkbox_unchecked@2x.png</file>
+        <file>assets/light/checkbox/checkbox_unchecked_focus.png</file>
+        <file>assets/light/checkbox/checkbox_unchecked_focus@2x.png</file>
+        <file>assets/light/checkbox/checkbox_unchecked_hover.png</file>
+        <file>assets/light/checkbox/checkbox_unchecked_hover@2x.png</file>
+        <file>assets/light/checkbox/checkbox_unchecked_press.png</file>
+        <file>assets/light/checkbox/checkbox_unchecked_press@2x.png</file>
+        <file>assets/light/checkbox/radio-checked-insensitive.png</file>
+        <file>assets/light/checkbox/radio-checked-insensitive@2x.png</file>
+        <file>assets/light/checkbox/radio-mixed-insensitive.png</file>
+        <file>assets/light/checkbox/radio-mixed-insensitive@2x.png</file>
+        <file>assets/light/checkbox/radio-unchecked-insensitive.png</file>
+        <file>assets/light/checkbox/radio-unchecked-insensitive@2x.png</file>
+        <file>assets/light/checkbox/radio_checked.png</file>
+        <file>assets/light/checkbox/radio_checked@2x.png</file>
+        <file>assets/light/checkbox/radio_checked_focus.png</file>
+        <file>assets/light/checkbox/radio_checked_focus@2x.png</file>
+        <file>assets/light/checkbox/radio_checked_hover.png</file>
+        <file>assets/light/checkbox/radio_checked_hover@2x.png</file>
+        <file>assets/light/checkbox/radio_checked_press.png</file>
+        <file>assets/light/checkbox/radio_checked_press@2x.png</file>
+        <file>assets/light/checkbox/radio_mixed.png</file>
+        <file>assets/light/checkbox/radio_mixed@2x.png</file>
+        <file>assets/light/checkbox/radio_mixed_focus.png</file>
+        <file>assets/light/checkbox/radio_mixed_focus@2x.png</file>
+        <file>assets/light/checkbox/radio_mixed_hover.png</file>
+        <file>assets/light/checkbox/radio_mixed_hover@2x.png</file>
+        <file>assets/light/checkbox/radio_mixed_press.png</file>
+        <file>assets/light/checkbox/radio_mixed_press@2x.png</file>
+        <file>assets/light/checkbox/radio_unchecked.png</file>
+        <file>assets/light/checkbox/radio_unchecked@2x.png</file>
+        <file>assets/light/checkbox/radio_unchecked_focus.png</file>
+        <file>assets/light/checkbox/radio_unchecked_focus@2x.png</file>
+        <file>assets/light/checkbox/radio_unchecked_hover.png</file>
+        <file>assets/light/checkbox/radio_unchecked_hover@2x.png</file>
+        <file>assets/light/checkbox/radio_unchecked_press.png</file>
+        <file>assets/light/checkbox/radio_unchecked_press@2x.png</file>
     </qresource>
 </RCC>

@@ -14,6 +14,7 @@
 #include <QColor>
 #include <QMetaEnum>
 #include <QFile>
+#include <QStyleOption>
 #include <QDebug>
 
 #include <private/qcssparser_p.h>
@@ -47,7 +48,33 @@ PaletteExtended::~PaletteExtended()
     delete m_brushScheme;
 }
 
-QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type, const QBrush &defaultBrush) const
+static quint64 preprocessClass(qint64 classs)
+{
+    if (classs & PaletteExtended::PseudoClass_On)
+        classs |= PaletteExtended::PseudoClass_Checked;
+
+    if (classs & PaletteExtended::PseudoClass_Checked)
+        classs |= PaletteExtended::PseudoClass_On;
+
+    if (classs & PaletteExtended::PseudoClass_Off)
+        classs |= PaletteExtended::PseudoClass_Unchecked;
+
+    if (classs & PaletteExtended::PseudoClass_Unchecked)
+        classs |= PaletteExtended::PseudoClass_Off;
+
+    if (!(classs & PaletteExtended::PseudoClass_Horizontal))
+        classs |= PaletteExtended::PseudoClass_Vertical;
+
+//    if (!(classs & PaletteExtended::PseudoClass_Open))
+//        classs |= PaletteExtended::PseudoClass_Closed;
+
+    if (!(classs & PaletteExtended::PseudoClass_Disabled))
+        classs |= PaletteExtended::PseudoClass_Enabled;
+
+    return classs;
+}
+
+QBrush PaletteExtended::brush(PaletteExtended::BrushName name,  quint64 type, const QBrush &defaultBrush) const
 {
     const QPair<BrushName, quint64> &key = qMakePair(name, type);
 
@@ -63,7 +90,7 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type, con
         bool eligible = false;
 
         foreach (const QCss::Selector &selector, rule.selectors) {
-            if (selector.pseudoClass() == type) {
+            if (preprocessClass(selector.pseudoClass()) == type || selector.pseudoClass() == type) {
                 eligible = true;
                 break;
             }
@@ -95,19 +122,80 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type, con
     return defaultBrush;
 }
 
-QBrush PaletteExtended::brush(PaletteExtended::BrushName name, bool enabled, bool mouseOver, bool hasFocus, bool sunken, bool flat, const QBrush &defaultBrush) const
+static quint64 pseudoClass(QStyle::State state)
 {
-    PaletteExtended::PseudoClassType extraType = flat ? PaletteExtended::PseudoClass_Flat : PaletteExtended::PseudoClass_Unknown;
-    const QBrush &normal = brush(name, flat ? extraType : PaletteExtended::PseudoClass_Unspecified, defaultBrush);
+    quint64 pc = 0;
+    if (state & QStyle::State_Enabled) {
+        pc |= PaletteExtended::PseudoClass_Enabled;
+    }
+//    if (state & QStyle::State_Active)
+//        pc |= PaletteExtended::PseudoClass_Active;
+    if (state & QStyle::State_Window)
+        pc |= PaletteExtended::PseudoClass_Window;
+    if (state & QStyle::State_On)
+        pc |= (PaletteExtended::PseudoClass_On | PaletteExtended::PseudoClass_Checked);
+    if (state & QStyle::State_Off)
+        pc |= (PaletteExtended::PseudoClass_Off | PaletteExtended::PseudoClass_Unchecked);
+    if (state & QStyle::State_NoChange)
+        pc |= PaletteExtended::PseudoClass_Indeterminate;
+    if (state & QStyle::State_Selected)
+        pc |= PaletteExtended::PseudoClass_Selected;
+    if (state & QStyle::State_Horizontal)
+        pc |= PaletteExtended::PseudoClass_Horizontal;
+    else
+        pc |= PaletteExtended::PseudoClass_Vertical;
+//    if (state & (QStyle::State_Open | QStyle::State_On | QStyle::State_Sunken))
+//        pc |= PaletteExtended::PseudoClass_Open;
+//    else
+//        pc |= PaletteExtended::PseudoClass_Closed;
+    if (state & QStyle::State_Children)
+        pc |= PaletteExtended::PseudoClass_Children;
+    if (state & QStyle::State_Sibling)
+        pc |= PaletteExtended::PseudoClass_Sibling;
+    if (state & QStyle::State_ReadOnly)
+        pc |= PaletteExtended::PseudoClass_ReadOnly;
+    if (state & QStyle::State_Item)
+        pc |= PaletteExtended::PseudoClass_Item;
+#ifdef QT_KEYPAD_NAVIGATION
+    if (state & QStyle::State_HasEditFocus)
+        pc |= PaletteExtended::PseudoClass_EditFocus;
+#endif
+    return pc;
+}
 
-    if (!enabled)
-        return brush(name, PaletteExtended::PseudoClass_Disabled | extraType, normal);
-    else if (sunken)
-        return brush(name, PaletteExtended::PseudoClass_Pressed | extraType, normal);
-    else if (mouseOver)
-        return brush(name, PaletteExtended::PseudoClass_Hover | extraType, normal);
-    else if (hasFocus)
-        return brush(name, PaletteExtended::PseudoClass_Focus | extraType, normal);
+#define RETURN_BRUSH(Type) {\
+    const QBrush &d = brush(name, PseudoClass_##Type, normal);\
+    return extraTypes ? brush(name, PseudoClass_##Type | extraTypes, d) : d;\
+}
+
+QBrush PaletteExtended::brush(PaletteExtended::BrushName name, const QStyleOption *option, quint64 extraTypes, const QBrush &defaultBrush) const
+{
+    QBrush normal = brush(name, PseudoClass_Unspecified, defaultBrush);
+
+    if (extraTypes)
+        normal = brush(name, extraTypes, normal);
+
+    extraTypes |= pseudoClass(option->state);
+
+    if (const QStyleOptionButton* buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option)) {
+        if (buttonOption->features & QStyleOptionButton::Flat)
+            extraTypes |= PseudoClass_Flat;
+
+        if (buttonOption->features & QStyleOptionButton::DefaultButton)
+            extraTypes |= PseudoClass_Default;
+    }
+
+    if (extraTypes)
+        normal = brush(name, extraTypes, normal);
+
+    if (!(option->state & QStyle::State_Enabled))
+        RETURN_BRUSH(Disabled)
+    else if (option->state & QStyle::State_Sunken)
+        RETURN_BRUSH(Pressed)
+    else if (option->state & QStyle::State_MouseOver)
+        RETURN_BRUSH(Hover)
+    else if (option->state & QStyle::State_HasFocus)
+        RETURN_BRUSH(Focus)
 
     return normal;
 }
@@ -141,16 +229,14 @@ void PaletteExtended::polish(QPalette &p)
     p.setBrush(QPalette::Button, brush(QPalette_Button));
     p.setBrush(QPalette::ButtonText, brush(QPalette_ButtonText));
 
-    p.setBrush(QPalette::Disabled, QPalette::Base, brush(QPalette_Base, false));
-    p.setBrush(QPalette::Disabled, QPalette::Text, brush(QPalette_Text, false));
-    p.setBrush(QPalette::Disabled, QPalette::Window, brush(QPalette_Window, false));
-    p.setBrush(QPalette::Disabled, QPalette::WindowText, brush(QPalette_WindowText, false));
-    p.setBrush(QPalette::Disabled, QPalette::Highlight, brush(QPalette_Highlight, false));
-    p.setBrush(QPalette::Disabled, QPalette::HighlightedText, brush(QPalette_HighlightedText, false));
-    p.setBrush(QPalette::Disabled, QPalette::Button, brush(QPalette_Button, false));
-    p.setBrush(QPalette::Disabled, QPalette::ButtonText, brush(QPalette_ButtonText, false));
-
-    qDebug() << p.brush(QPalette::Disabled, QPalette::Text);
+    p.setBrush(QPalette::Disabled, QPalette::Base, brush(QPalette_Base, PseudoClass_Disabled, p.brush(QPalette::Base)));
+    p.setBrush(QPalette::Disabled, QPalette::Text, brush(QPalette_Text, PseudoClass_Disabled, p.brush(QPalette::Text)));
+    p.setBrush(QPalette::Disabled, QPalette::Window, brush(QPalette_Window, PseudoClass_Disabled, p.brush(QPalette::Window)));
+    p.setBrush(QPalette::Disabled, QPalette::WindowText, brush(QPalette_WindowText, PseudoClass_Disabled, p.brush(QPalette::WindowText)));
+    p.setBrush(QPalette::Disabled, QPalette::Highlight, brush(QPalette_Highlight, PseudoClass_Disabled, p.brush(QPalette::Highlight)));
+    p.setBrush(QPalette::Disabled, QPalette::HighlightedText, brush(QPalette_HighlightedText, PseudoClass_Disabled, p.brush(QPalette::HighlightedText)));
+    p.setBrush(QPalette::Disabled, QPalette::Button, brush(QPalette_Button, PseudoClass_Disabled, p.brush(QPalette::Button)));
+    p.setBrush(QPalette::Disabled, QPalette::ButtonText, brush(QPalette_ButtonText, PseudoClass_Disabled, p.brush(QPalette::ButtonText)));
 }
 
 }

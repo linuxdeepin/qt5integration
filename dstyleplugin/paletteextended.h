@@ -17,6 +17,10 @@
 
 #include "common.h"
 
+QT_BEGIN_NAMESPACE
+class QStyleOption;
+QT_END_NAMESPACE
+
 namespace QCss {
 struct StyleSheet;
 }
@@ -59,7 +63,9 @@ public:
 
         Menu_SeparatorColor,
         Menu_BorderColor,
-        Menu_BackgroundBrush
+        Menu_BackgroundBrush,
+
+        CheckBox_BackgroundBrush
     };
     Q_ENUM(BrushName)
 
@@ -115,8 +121,7 @@ public:
     };
 
     QBrush brush(BrushName name, quint64 type = PseudoClass_Unspecified, const QBrush &defaultBrush = Qt::NoBrush) const;
-    QBrush brush(BrushName name, bool enabled, bool mouseOver = false, bool hasFocus = false, bool sunken = false,
-                 bool flat = false, const QBrush &defaultBrush = Qt::NoBrush) const;
+    QBrush brush(BrushName name, const QStyleOption *option, quint64 extraTypes = PseudoClass_Unknown, const QBrush &defaultBrush = Qt::NoBrush) const;
 
     void setType(StyleType type);
 

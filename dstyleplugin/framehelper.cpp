@@ -7,12 +7,13 @@
  * (at your option) any later version.
  **/
 
-#include "framehelper.h"
+#include "style.h"
 
 namespace dstyle {
 
-bool FrameHelper::drawFrameFocusRectPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget)
+bool Style::drawFrameFocusRectPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
+    Q_UNUSED(element)
     Q_UNUSED(option)
     Q_UNUSED(painter)
     Q_UNUSED(widget)

@@ -7,30 +7,23 @@
  * (at your option) any later version.
  **/
 
-#include <QDebug>
-
-#include "lineedithelper.h"
 #include "commonhelper.h"
 #include "common.h"
 #include "style.h"
+#include "paletteextended.h"
 
 namespace dstyle {
 
-bool LineEditHelper::drawFrameLineEditPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget)
+bool Style::drawFrameLineEditPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    Style *style = CommonHelper::widgetStyle(widget);
-    if (!style) return false;
+    Q_UNUSED(element)
+    Q_UNUSED(widget)
 
     const QRect& rect( option->rect );
 
-    // copy state
-    const QStyle::State& state( option->state );
-    const bool enabled( state & QStyle::State_Enabled );
-    const bool hasFocus( state & QStyle::State_HasFocus );
-
     // render
-    const QBrush background(style->m_palette->brush(PaletteExtended::LineEdit_BackgroundBrush, enabled, false, hasFocus) );
-    const QBrush outline(style->m_palette->brush(PaletteExtended::LineEdit_BorderBrush, enabled, false, hasFocus) );
+    const QBrush background(m_palette->brush(PaletteExtended::LineEdit_BackgroundBrush, option) );
+    const QBrush outline(m_palette->brush(PaletteExtended::LineEdit_BorderBrush, option) );
     CommonHelper::renderFrame( painter, rect, background, outline );
 
     return true;

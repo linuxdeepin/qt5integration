@@ -70,17 +70,13 @@ bool Style::drawProgressBarContentsControl(const QStyleOption *option, QPainter 
 
 bool Style::drawProgressBarGrooveControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    const QStyle::State& state( option->state );
+    Q_UNUSED(widget)
+
     const QRect rect( option->rect );
     const qreal radius( GeometryUtils::frameRadius() );
 
-    const bool enabled( state & QStyle::State_Enabled );
-    const bool mouseOver(state & QStyle::State_MouseOver);
-    const bool hasFocus((state & QStyle::State_HasFocus ) && !( widget && widget->focusProxy()));
-    const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken ) );
-
     const PaletteExtended *plExt = m_palette;
-    const QBrush brush( plExt->brush(PaletteExtended::PushButton_BackgroundBrush, enabled, mouseOver, hasFocus, sunken) );
+    const QBrush brush( plExt->brush(PaletteExtended::PushButton_BackgroundBrush, option) );
 
     QPainterPath path;
     path.addRoundedRect(rect, radius, radius);

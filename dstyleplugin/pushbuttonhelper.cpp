@@ -32,11 +32,6 @@ bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, c
     const QRect& rect( option->rect );
 
     // button state
-    const QStyle::State& state( option->state );
-    const bool enabled( state & QStyle::State_Enabled );
-    const bool mouseOver(state & QStyle::State_MouseOver);
-    const bool hasFocus((state & QStyle::State_HasFocus ) && !( widget && widget->focusProxy()));
-    const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken ) );
     const bool flat( buttonOption->features & QStyleOptionButton::Flat );
 
     // update animation state
@@ -49,8 +44,8 @@ bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, c
     } else {
         // TODO(hualet): update button color from palette in case button is default
         const QColor shadow( Qt::transparent );
-        const QBrush outline(style->m_palette->brush(PaletteExtended::PushButton_BorderBrush, enabled, mouseOver, hasFocus, sunken));
-        const QBrush background(style->m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, enabled, mouseOver, hasFocus, sunken));
+        const QBrush outline(style->m_palette->brush(PaletteExtended::PushButton_BorderBrush, option));
+        const QBrush background(style->m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, option));
 
         // render
         drawPushButtonFrame(painter, rect, background, outline, shadow );
@@ -177,7 +172,7 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
 
     // render text
     if( hasText && textRect.isValid() ) {
-        painter->setPen(style->m_palette->brush(PaletteExtended::PushButton_TextColor, enabled, mouseOver, hasFocus, sunken, flat).color());
+        painter->setPen(style->m_palette->brush(PaletteExtended::PushButton_TextColor, option).color());
         if (buttonOption->features & QStyleOptionButton::HasMenu)
             textRect = textRect.adjusted(0, 0, -proxy()->pixelMetric(PM_MenuButtonIndicator, buttonOption, widget), 0);
         painter->drawText(textRect, textFlags, buttonOption->text);

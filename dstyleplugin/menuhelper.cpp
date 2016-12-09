@@ -29,7 +29,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
                                       QPalette::Text);
                 w = menuItem->fontMetrics.width(menuItem->text) + Menu_SeparatorItemHMargin;
             }
-            painter->setPen(m_palette->brush(PaletteExtended::Menu_SeparatorColor, true, false).color());
+            painter->setPen(m_palette->brush(PaletteExtended::Menu_SeparatorColor, option).color());
             bool reverse = menuItem->direction == Qt::RightToLeft;
             painter->drawLine(menuItem->rect.left() + Menu_SeparatorItemHMargin + (reverse ? 0 : w), menuItem->rect.center().y(),
                               menuItem->rect.right() - Menu_SeparatorItemHMargin - (reverse ? w : 0), menuItem->rect.center().y());
@@ -45,7 +45,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
         }
         bool checkable = menuItem->checkType != QStyleOptionMenuItem::NotCheckable;
         bool checked = menuItem->checked;
-        bool sunken = menuItem->state & State_Sunken;
+//        bool sunken = menuItem->state & State_Sunken;
 //        bool enabled = menuItem->state & State_Enabled;
 
         bool ignoreCheckMark = false;
@@ -218,13 +218,12 @@ bool Style::drawMenuBarItemControl(const QStyleOption *option, QPainter *painter
 
     const bool enabled(option->state & QStyle::State_Enabled);
     const bool mouseOver(option->state & QStyle::State_MouseOver);
-    const bool hasFocus((option->state & QStyle::State_HasFocus ) && !( widget && widget->focusProxy()));
     const bool sunken((option->state | QStyle::State_Sunken) == option->state);
 
     if (mouseOver || sunken) {
         const QColor shadow( Qt::transparent );
-        const QBrush outline(style->m_palette->brush(PaletteExtended::PushButton_BorderBrush, enabled, mouseOver, hasFocus, sunken));
-        const QBrush background(style->m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, enabled, mouseOver, hasFocus, sunken));
+        const QBrush outline(style->m_palette->brush(PaletteExtended::PushButton_BorderBrush, option));
+        const QBrush background(style->m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, option));
 
         // render
         drawPushButtonFrame(painter, option->rect, background, outline, shadow );

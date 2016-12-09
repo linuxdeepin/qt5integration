@@ -110,3 +110,63 @@ Menu {
     SeparatorColor: rgba(255, 255, 255, 0.1);
     BorderColor: rgba(0, 0, 0, 0.1);
 }
+
+CheckBox {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked.png);
+}
+
+CheckBox:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-unchecked-insensitive.png);
+}
+
+CheckBox:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked_focus.png);
+}
+
+CheckBox:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked_hover.png);
+}
+
+CheckBox:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked_press.png);
+}
+
+CheckBox:checked {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked.png);
+}
+
+CheckBox:checked:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-checked-insensitive.png);
+}
+
+CheckBox:checked:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-checked_focus.png);
+}
+
+CheckBox:checked:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked_hover.png);
+}
+
+CheckBox:checked:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked_press.png);
+}
+
+CheckBox:indeterminate {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed.png);
+}
+
+CheckBox:indeterminate:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-mixed-insensitive.png);
+}
+
+CheckBox:indeterminate:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-mixed_focus.png);
+}
+
+CheckBox:indeterminate:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed_hover.png);
+}
+
+CheckBox:indeterminate:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed_press.png);
+}
