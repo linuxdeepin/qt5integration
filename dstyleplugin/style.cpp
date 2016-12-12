@@ -206,33 +206,6 @@ int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, c
     case PM_ToolBarFrameWidth: return Metrics::ToolBar_FrameWidth;
     case PM_ToolTipLabelFrameWidth: return Metrics::ToolTip_FrameWidth;
 
-        // layout
-    case PM_LayoutLeftMargin:
-    case PM_LayoutTopMargin:
-    case PM_LayoutRightMargin:
-    case PM_LayoutBottomMargin:
-    {
-        /*
-             * use either Child margin or TopLevel margin,
-             * depending on  widget type
-             */
-        if( ( option && ( option->state & QStyle::State_Window ) ) || ( widget && widget->isWindow() ) )
-        {
-
-            return Metrics::Layout_TopLevelMarginWidth;
-
-        } else if( widget && widget->inherits( "KPageView" ) ) {
-
-            return 0;
-
-        } else {
-
-            return Metrics::Layout_ChildMarginWidth;
-
-        }
-
-    }
-
     case PM_LayoutHorizontalSpacing: return Metrics::Layout_DefaultSpacing;
     case PM_LayoutVerticalSpacing: return Metrics::Layout_DefaultSpacing;
 
