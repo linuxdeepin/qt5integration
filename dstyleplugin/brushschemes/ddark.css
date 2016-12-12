@@ -116,7 +116,7 @@ CheckBox {
 }
 
 CheckBox:disabled {
-    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-unchecked-insensitive.png);
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked_insensitive.png);
 }
 
 CheckBox:focus {
@@ -136,11 +136,11 @@ CheckBox:checked {
 }
 
 CheckBox:checked:disabled {
-    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-checked-insensitive.png);
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked_insensitive.png);
 }
 
 CheckBox:checked:focus {
-    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-checked_focus.png);
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked_focus.png);
 }
 
 CheckBox:checked:hover {
@@ -156,11 +156,11 @@ CheckBox:indeterminate {
 }
 
 CheckBox:indeterminate:disabled {
-    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-mixed-insensitive.png);
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed_insensitive.png);
 }
 
 CheckBox:indeterminate:focus {
-    BackgroundBrush: url(:/assets/dark/checkbox/checkbox-mixed_focus.png);
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed_focus.png);
 }
 
 CheckBox:indeterminate:hover {
@@ -170,3 +170,64 @@ CheckBox:indeterminate:hover {
 CheckBox:indeterminate:pressed {
     BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed_press.png);
 }
+
+RadioButton {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked.png);
+}
+
+RadioButton:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked_insensitive.png);
+}
+
+RadioButton:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked_focus.png);
+}
+
+RadioButton:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked_hover.png);
+}
+
+RadioButton:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked_press.png);
+}
+
+RadioButton:checked {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked.png);
+}
+
+RadioButton:checked:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked_insensitive.png);
+}
+
+RadioButton:checked:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked_focus.png);
+}
+
+RadioButton:checked:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked_hover.png);
+}
+
+RadioButton:checked:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked_press.png);
+}
+
+RadioButton:indeterminate {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed.png);
+}
+
+RadioButton:indeterminate:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed_insensitive.png);
+}
+
+RadioButton:indeterminate:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed_focus.png);
+}
+
+RadioButton:indeterminate:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed_hover.png);
+}
+
+RadioButton:indeterminate:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed_press.png);
+}
+

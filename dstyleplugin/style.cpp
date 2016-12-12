@@ -440,7 +440,9 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
         //    case PE_PanelTipLabel: fcn = &Style::drawPanelTipLabelPrimitive; break;
         //    case PE_PanelItemViewItem: fcn = &Style::drawPanelItemViewItemPrimitive; break;
     case PE_IndicatorCheckBox: fcn = &Style::drawIndicatorCheckBoxPrimitive; break;
-        //    case PE_IndicatorRadioButton: fcn = &Style::drawIndicatorRadioButtonPrimitive; break;
+    case PE_IndicatorRadioButton:
+        fillBrush(painter, option->rect, m_palette->brush(PaletteExtended::RadioButton_BackgroundBrush, option));
+        return;
         //    case PE_IndicatorButtonDropDown: fcn = &Style::drawIndicatorButtonDropDownPrimitive; break;
         //    case PE_IndicatorTabClose: fcn = &Style::drawIndicatorTabClosePrimitive; break;
         //    case PE_IndicatorTabTear: fcn = &Style::drawIndicatorTabTearPrimitive; break;

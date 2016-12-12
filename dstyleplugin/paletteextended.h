@@ -65,7 +65,8 @@ public:
         Menu_BorderColor,
         Menu_BackgroundBrush,
 
-        CheckBox_BackgroundBrush
+        CheckBox_BackgroundBrush,
+        RadioButton_BackgroundBrush
     };
     Q_ENUM(BrushName)
 
