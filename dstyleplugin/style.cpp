@@ -109,9 +109,8 @@ void StylePrivate::_q_removeAnimation()
 Style::Style(StyleType style)
     : QCommonStyle(*new StylePrivate())
     , m_type(style)
-    , m_palette(new PaletteExtended(style, this))
 {
-
+    m_palette = PaletteExtended::instance(style);
 }
 
 Style::~Style()
@@ -158,6 +157,12 @@ void Style::polish(QWidget *w)
         handle.setShadowOffset(QPoint(0, 4));
         handle.setShadowRadius(15);
         handle.setShadowColor(QColor(0, 0, 0, 100));
+    }
+
+    if (w->testAttribute(Qt::WA_SetStyle)) {
+        QPalette palette = w->palette();
+        polish(palette);
+        w->setPalette(palette);
     }
 }
 

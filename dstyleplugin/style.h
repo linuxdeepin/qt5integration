@@ -105,7 +105,7 @@ private:
     QRect progressBarContentsRect(const QStyleOption *opt, const QWidget *widget) const;
 
     StyleType m_type;
-    PaletteExtended *m_palette;
+    PaletteExtended *m_palette = Q_NULLPTR;
 
     friend class SliderHelper;
     friend class PushButtonHelper;

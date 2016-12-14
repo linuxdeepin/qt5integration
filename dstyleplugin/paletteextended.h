@@ -30,8 +30,10 @@ namespace dstyle {
 class PaletteExtended : public QObject
 {
     Q_OBJECT
+
 public:
-    PaletteExtended(StyleType type, QObject *parent = 0);
+    static PaletteExtended *instance(StyleType type);
+
     ~PaletteExtended();
 
     enum BrushName {
@@ -124,13 +126,16 @@ public:
     QBrush brush(BrushName name, quint64 type = PseudoClass_Unspecified, const QBrush &defaultBrush = Qt::NoBrush) const;
     QBrush brush(BrushName name, const QStyleOption *option, quint64 extraTypes = PseudoClass_Unknown, const QBrush &defaultBrush = Qt::NoBrush) const;
 
-    void setType(StyleType type);
-
     void polish(QPalette &p);
 
 private:
+    void init(StyleType type);
+    PaletteExtended(StyleType type, QObject *parent = 0);
+
+    StyleType m_type;
     QCss::StyleSheet *m_brushScheme;
     mutable QHash<QPair<BrushName, quint64>, QBrush> m_brushCache;
+    static QList<PaletteExtended*> styleTypeToPaletteList;
 };
 }
 

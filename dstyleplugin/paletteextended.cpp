@@ -36,16 +36,31 @@ QT_END_NAMESPACE
 
 namespace dstyle {
 
-PaletteExtended::PaletteExtended(StyleType type, QObject *parent) :
-    QObject(parent),
-    m_brushScheme(new QCss::StyleSheet)
+QList<PaletteExtended*> PaletteExtended::styleTypeToPaletteList;
+PaletteExtended::PaletteExtended(StyleType type, QObject *parent)
+    : QObject(parent)
+    , m_brushScheme(new QCss::StyleSheet)
 {
-    setType(type);
+    init(type);
+}
+
+PaletteExtended *PaletteExtended::instance(StyleType type)
+{
+    foreach (PaletteExtended *p, styleTypeToPaletteList) {
+        if (p->m_type == type)
+            return p;
+    }
+
+    PaletteExtended *p = new PaletteExtended(type);
+    styleTypeToPaletteList << p;
+
+    return p;
 }
 
 PaletteExtended::~PaletteExtended()
 {
     delete m_brushScheme;
+    styleTypeToPaletteList.removeOne(this);
 }
 
 static quint64 preprocessClass(qint64 classs)
@@ -200,24 +215,6 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, const QStyleOptio
     return normal;
 }
 
-void PaletteExtended::setType(StyleType type)
-{
-    QFile file;
-
-    if (type == StyleType::StyleDark) {
-        file.setFileName(":/brushschemes/ddark.css");
-    } else if (type == StyleType::StyleLight) {
-        file.setFileName(":/brushschemes/dlight.css");
-    }
-
-    if (!file.open(QIODevice::ReadOnly))
-        return;
-
-    QCss::Parser parser(QString::fromLocal8Bit(file.readAll()));
-
-    parser.parse(m_brushScheme);
-}
-
 void PaletteExtended::polish(QPalette &p)
 {
     p.setBrush(QPalette::Base, brush(QPalette_Base));
@@ -237,6 +234,26 @@ void PaletteExtended::polish(QPalette &p)
     p.setBrush(QPalette::Disabled, QPalette::HighlightedText, brush(QPalette_HighlightedText, PseudoClass_Disabled, p.brush(QPalette::HighlightedText)));
     p.setBrush(QPalette::Disabled, QPalette::Button, brush(QPalette_Button, PseudoClass_Disabled, p.brush(QPalette::Button)));
     p.setBrush(QPalette::Disabled, QPalette::ButtonText, brush(QPalette_ButtonText, PseudoClass_Disabled, p.brush(QPalette::ButtonText)));
+}
+
+void PaletteExtended::init(StyleType type)
+{
+    m_type = type;
+
+    QFile file;
+
+    if (type == StyleType::StyleDark) {
+        file.setFileName(":/brushschemes/ddark.css");
+    } else if (type == StyleType::StyleLight) {
+        file.setFileName(":/brushschemes/dlight.css");
+    }
+
+    if (!file.open(QIODevice::ReadOnly))
+        return;
+
+    QCss::Parser parser(QString::fromLocal8Bit(file.readAll()));
+
+    parser.parse(m_brushScheme);
 }
 
 }
