@@ -3,6 +3,7 @@
 #include "dxcbbackingstore.h"
 #include "global.h"
 #include "windoweventhook.h"
+#include "xcbnativeeventfilter.h"
 
 #include "qxcbscreen.h"
 #include "qxcbbackingstore.h"
@@ -19,6 +20,15 @@ DXcbIntegration::DXcbIntegration(const QStringList &parameters, int &argc, char 
     : QXcbIntegration(parameters, argc, argv)
 {
 
+}
+
+DXcbIntegration::~DXcbIntegration()
+{
+    if (!m_eventFilter)
+        return;
+
+    qApp->removeNativeEventFilter(m_eventFilter);
+    delete m_eventFilter;
 }
 
 QPlatformWindow *DXcbIntegration::createPlatformWindow(QWindow *window) const
@@ -65,4 +75,12 @@ QPlatformBackingStore *DXcbIntegration::createPlatformBackingStore(QWindow *wind
         return new DXcbBackingStore(window, static_cast<QXcbBackingStore*>(store));
 
     return store;
+}
+
+void DXcbIntegration::initialize()
+{
+    QXcbIntegration::initialize();
+
+    m_eventFilter = new XcbNativeEventFilter(defaultConnection());
+    qApp->installNativeEventFilter(m_eventFilter);
 }

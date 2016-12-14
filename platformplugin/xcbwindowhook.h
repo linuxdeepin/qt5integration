@@ -3,6 +3,7 @@
 
 #define private public
 #include "qxcbwindow.h"
+#include "qxcbclipboard.h"
 #undef private
 
 class XcbWindowHook
