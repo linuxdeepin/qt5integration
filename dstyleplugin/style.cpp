@@ -157,6 +157,9 @@ void Style::polish(QWidget *w)
         handle.setShadowOffset(QPoint(0, 4));
         handle.setShadowRadius(15);
         handle.setShadowColor(QColor(0, 0, 0, 100));
+
+        // ###(zccrs): If the application is DApplication or derived class of it then not draw shortcut text
+        w->setProperty(QT_STRINGIFY(_d_hideShortcutText), (bool)qobject_cast<DApplication*>(qApp));
     }
 
     if (w->testAttribute(Qt::WA_SetStyle)) {
@@ -525,18 +528,36 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             int w = newSize.width();
+            bool hideShortcutText = widget->property(QT_STRINGIFY(_d_hideShortcutText)).toBool();
+
+            if (hideShortcutText) {
+                w -= menuItem->tabWidth;
+
+                int t = menuItem->text.indexOf(QLatin1Char('\t'));
+                if (t != -1) {
+                    int textWidth = option->fontMetrics.width(menuItem->text.mid(t + 1));
+                    w -= textWidth;
+
+                    if (menuItem->tabWidth == 0)
+                        w -= textWidth;
+                }
+            }
+
             int maxpmw = menuItem->maxIconWidth;
             int tabSpacing = 20;
-            if (menuItem->text.contains(QLatin1Char('\t')))
-                w += tabSpacing;
-            else if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu)
-                w += 2 * Menu_ArrowHMargin;
-            else if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
-                QFontMetrics fm(menuItem->font);
-                QFont fontBold = menuItem->font;
-                fontBold.setBold(true);
-                QFontMetrics fmBold(fontBold);
-                w += fmBold.width(menuItem->text) - fm.width(menuItem->text);
+            if (menuItem->text.contains(QLatin1Char('\t'))) {
+                if (!hideShortcutText)
+                    w += tabSpacing;
+            } else {
+                if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {
+                    w += 2 * Menu_ArrowHMargin;
+                } else if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
+                    QFontMetrics fm(menuItem->font);
+                    QFont fontBold = menuItem->font;
+                    fontBold.setBold(true);
+                    QFontMetrics fmBold(fontBold);
+                    w += fmBold.width(menuItem->text) - fm.width(menuItem->text);
+                }
             }
             int checkcol = qMax<int>(maxpmw, Menu_CheckMarkWidth); // Windows always shows a check column
             w += checkcol;
@@ -555,7 +576,7 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
                 }
             }
             newSize.setWidth(newSize.width() + 12);
-            newSize.setWidth(qMax(newSize.width(), 120));
+            newSize.setWidth(qMax(newSize.width(), 80));
         }
 
         newSize.setWidth(newSize.width() + Menu_ItemHMargin * 2);

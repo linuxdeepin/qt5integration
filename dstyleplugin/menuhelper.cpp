@@ -170,7 +170,8 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
             if (!styleHint(SH_UnderlineShortcut, menuitem, widget))
                 text_flags |= Qt::TextHideMnemonic;
             text_flags |= Qt::AlignLeft;
-            if (t >= 0) {
+
+            if (t >= 0 && !widget->property(QT_STRINGIFY(_d_hideShortcutText)).toBool()) {
                 QRect vShortcutRect = visualRect(opt->direction, menuitem->rect,
                                                  QRect(textRect.topRight(), QPoint(menuitem->rect.right(), textRect.bottom())));
                 if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
