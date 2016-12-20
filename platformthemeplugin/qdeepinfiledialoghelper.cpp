@@ -64,13 +64,13 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
 
     if (nativeDialog) {
         nativeDialog->setParent(parent);
-//        auxiliaryWindow->setParent(parent);
-//        auxiliaryWindow->setFlags(flags);
-//        auxiliaryWindow->setModality(modality);
+        auxiliaryWindow->setParent(parent);
+        auxiliaryWindow->setFlags(flags);
+        auxiliaryWindow->setModality(modality);
 
-//        if (modality != Qt::NonModal) {
-//            QGuiApplicationPrivate::showModalWindow(auxiliaryWindow);
-//        }
+        if (modality != Qt::NonModal) {
+            QGuiApplicationPrivate::showModalWindow(auxiliaryWindow);
+        }
     } else {
         qtDialog->setAttribute(Qt::WA_NativeWindow);
 
