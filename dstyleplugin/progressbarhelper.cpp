@@ -140,11 +140,6 @@ QRect Style::progressBarGrooveRect(const QStyleOption *option, const QWidget *wi
         QRect textRect( subElementRect( SE_ProgressBarLabel, option, widget ) );
         textRect = visualRect( option->direction, option->rect, textRect );
         rect = visualRect( option->direction, option->rect, rect );
-        rect = GeometryUtils::centerRect( rect, rect.width(), Metrics::ProgressBar_Thickness );
-    } else if( horizontal ) {
-        rect = GeometryUtils::centerRect( rect, rect.width(), Metrics::ProgressBar_Thickness );
-    } else {
-        rect = GeometryUtils::centerRect( rect, Metrics::ProgressBar_Thickness, rect.height() );
     }
 
     return rect;
