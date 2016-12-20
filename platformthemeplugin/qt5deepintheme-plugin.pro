@@ -4,6 +4,7 @@
 #
 #-------------------------------------------------
 
+QT       += dbus x11extras
 QT       += core-private gui-private platformsupport-private
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets widgets-private
 
@@ -11,7 +12,7 @@ TARGET = qdeepin
 TEMPLATE = lib
 CONFIG += plugin link_pkgconfig c++11
 
-PKGCONFIG += mtdev dde-file-manager dtkbase dtkwidget Qt5Xdg gtk+-2.0
+PKGCONFIG += mtdev dtkbase dtkwidget Qt5Xdg gtk+-2.0 x11
 
 PLUGIN_TYPE = platformthemes
 PLUGIN_EXTENDS = -
@@ -42,3 +43,16 @@ RESOURCES += \
 CONFIG(release, debug|release) {
     DEFINES += QT_NO_DEBUG_OUTPUT
 }
+
+dbus_interface_filedialogmanager = /usr/share/dbus-1/interfaces/com.deepin.filemanager.filedialogmanager.xml
+dbus_interface_filedialog = /usr/share/dbus-1/interfaces/com.deepin.filemanager.filedialog.xml
+
+!exists($$dbus_interface_filedialogmanager) {
+    error(Not found $$dbus_interface_filedialogmanager)
+}
+
+!exists($$dbus_interface_filedialog) {
+    error(Not found $$dbus_interface_filedialog)
+}
+
+DBUS_INTERFACES += $$dbus_interface_filedialogmanager $$dbus_interface_filedialog

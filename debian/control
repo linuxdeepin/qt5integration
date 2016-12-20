@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: Deepin Packages Builder <packages@deepin.com>
 Build-Depends: debhelper (>=9), git, qt5-default, qtbase5-dev, libqt5widgets5, libqt5gui5,
-	qtbase5-private-dev, libdde-file-manager-dev, libqt5xdg-dev, libdtkbase-dev,
+	qtbase5-private-dev, dde-file-manager, libqt5xdg-dev, libdtkbase-dev,
 	libdtkutil-dev, libdtkwidget-dev, pkg-config, libgtk2.0-dev, libqt5x11extras5-dev,
 	libxcb-xkb-dev, libxcb-render-util0-dev, libxcb-image0-dev, libxcb-icccm4-dev,
 	libxcb-keysyms1-dev, libegl1-mesa-dev, libmtdev-dev, libxkbcommon-x11-dev,

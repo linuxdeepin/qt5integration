@@ -1,8 +1,7 @@
 #include "qdeepintheme.h"
 #include "qdeepinfiledialoghelper.h"
 #include "diconproxyengine.h"
-
-#include <dfmglobal.h>
+#include "filedialogmanager_interface.h"
 
 #include <QVariant>
 #include <QDebug>
@@ -20,7 +19,6 @@ QT_BEGIN_NAMESPACE
 
 const char *QDeepinTheme::name = "deepin";
 bool QDeepinTheme::m_usePlatformNativeDialog = true;
-bool QDeepinTheme::m_usePlatformNativeMenu = true;
 
 static QString gtkSetting(const gchar *propertyName)
 {
@@ -34,8 +32,6 @@ static QString gtkSetting(const gchar *propertyName)
 
 QDeepinTheme::QDeepinTheme()
 {
-    DFMGlobal::installTranslator();
-
     // gtk_init will reset the Xlib error handler, and that causes
     // Qt applications to quit on X errors. Therefore, we need to manually restore it.
     int (*oldErrorHandler)(Display *, XErrorEvent *) = XSetErrorHandler(NULL);
@@ -43,20 +39,30 @@ QDeepinTheme::QDeepinTheme()
     gtk_init(0, 0);
 
     XSetErrorHandler(oldErrorHandler);
+    QDeepinFileDialogHelper::initDBusFileDialogManager();
+}
+
+QDeepinTheme::~QDeepinTheme()
+{
+    if (QDeepinFileDialogHelper::manager) {
+        QDeepinFileDialogHelper::manager->deleteLater();
+        QDeepinFileDialogHelper::manager = Q_NULLPTR;
+    }
 }
 
 bool QDeepinTheme::usePlatformNativeDialog(DialogType type) const
 {
-    if (type == FileDialog)
-        return m_usePlatformNativeDialog;
+    if (type == FileDialog) {
+        return m_usePlatformNativeDialog && QDeepinFileDialogHelper::manager;
+    }
 
     return QGenericUnixTheme::usePlatformNativeDialog(type);
 }
 
 QPlatformDialogHelper *QDeepinTheme::createPlatformDialogHelper(DialogType type) const
 {
-    if (type == FileDialog)
-        return m_usePlatformNativeDialog ? new QDeepinFileDialogHelper() : Q_NULLPTR;
+    if (type == FileDialog && usePlatformNativeDialog(type))
+        return new QDeepinFileDialogHelper();
 
     return QGenericUnixTheme::createPlatformDialogHelper(type);
 }

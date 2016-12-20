@@ -7,8 +7,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class DFileDialogHandle;
-
+class QFileDialog;
+class ComDeepinFilemanagerFiledialogInterface;
+typedef ComDeepinFilemanagerFiledialogInterface DFileDialogHandle;
+class ComDeepinFilemanagerFiledialogmanagerInterface;
+typedef ComDeepinFilemanagerFiledialogmanagerInterface DFileDialogManager;
 class QDeepinFileDialogHelper : public QPlatformFileDialogHelper
 {
 public:
@@ -28,11 +31,18 @@ public:
     void selectNameFilter(const QString &filter) Q_DECL_OVERRIDE;
     QString selectedNameFilter() const Q_DECL_OVERRIDE;
 
+    static void initDBusFileDialogManager();
+
 private:
-    mutable QPointer<DFileDialogHandle> dialog;
+    mutable QPointer<DFileDialogHandle> nativeDialog;
+    mutable QPointer<QWindow> auxiliaryWindow;
+    mutable QPointer<QFileDialog> qtDialog;
+    static DFileDialogManager *manager;
 
     void ensureDialog() const;
     void applyOptions();
+
+    friend class QDeepinTheme;
 };
 
 QT_END_NAMESPACE

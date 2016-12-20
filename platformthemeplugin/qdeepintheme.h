@@ -9,6 +9,7 @@ class QDeepinTheme : public QGenericUnixTheme
 {
 public:
     QDeepinTheme();
+    ~QDeepinTheme();
 
     bool usePlatformNativeDialog(DialogType type) const Q_DECL_OVERRIDE;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const Q_DECL_OVERRIDE;
@@ -22,7 +23,6 @@ public:
 
 private:
     static bool m_usePlatformNativeDialog;
-    static bool m_usePlatformNativeMenu;
 
     friend class QDeepinFileDialogHelper;
     friend class QDeepinPlatformMenu;
