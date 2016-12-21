@@ -157,10 +157,11 @@ void Style::polish(QWidget *w)
         handle.setShadowOffset(QPoint(0, 4));
         handle.setShadowRadius(15);
         handle.setShadowColor(QColor(0, 0, 0, 100));
-
-        // ###(zccrs): If the application is DApplication or derived class of it then not draw shortcut text
-        w->setProperty(QT_STRINGIFY(_d_hideShortcutText), (bool)qobject_cast<DApplication*>(qApp));
     }
+
+    // ###(zccrs): If the application is DApplication or derived class of it then not draw shortcut text
+    w->setProperty(QT_STRINGIFY(_d_hideShortcutText), (bool)qobject_cast<DApplication*>(qApp));
+    w->setProperty(QT_STRINGIFY(_d_drawMenuCheckBox), !(bool)qobject_cast<DApplication*>(qApp));
 
     if (w->testAttribute(Qt::WA_SetStyle)) {
         QPalette palette = w->palette();

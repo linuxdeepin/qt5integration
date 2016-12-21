@@ -103,11 +103,27 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name,  quint64 type, co
 
     foreach (const QCss::StyleRule &rule, m_brushScheme->nameIndex.values(path.first())) {
         bool eligible = false;
+        QList<quint64> pseudoClassList;
 
-        foreach (const QCss::Selector &selector, rule.selectors) {
-            if (preprocessClass(selector.pseudoClass()) == type || selector.pseudoClass() == type) {
+        for (int i = 0; i < rule.selectors.count(); ++i) {
+            const QCss::Selector &selector = rule.selectors.at(i);
+            quint64 pseudoClass = selector.pseudoClass();
+            pseudoClassList.append(pseudoClass);
+
+            if (preprocessClass(pseudoClass) == type || pseudoClass == type) {
                 eligible = true;
                 break;
+            }
+        }
+
+        if (!eligible) {
+            for (int i = pseudoClassList.count() - 1; i >= 0; --i) {
+                quint64 pseudoClass = pseudoClassList.at(i);
+
+                if ((pseudoClass | type) == type) {
+                    eligible = true;
+                    break;
+                }
             }
         }
 

@@ -57,10 +57,12 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
 
         if (!ignoreCheckMark) {
             // Check
-            QRect checkRect(option->rect.left() + 10, option->rect.center().y() - 5, 14, 14);
+            QRect checkRect(option->rect.left() + 7, option->rect.center().y() - 7, 14, 14);
             checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);
             if (checkable) {
-//                if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) {
+                bool _d_drawMenuCheckBox = widget->property(QT_STRINGIFY(_d_drawMenuCheckBox)).toBool();
+
+                if (!_d_drawMenuCheckBox || (menuItem->checkType & QStyleOptionMenuItem::Exclusive)) {
                     // Radio button
                     if (checked/* || sunken*/) {
                         QStyleOptionMenuItem newMI = *menuItem;
@@ -68,7 +70,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
 
                         drawDeepinStyleIcon("check", &newMI, painter, widget);
                     }
-                /*} else {
+                } else {
                     // Check box
                     if (menuItem->icon.isNull()) {
                         QStyleOptionButton box;
@@ -78,7 +80,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
                             box.state |= State_On;
                         proxy()->drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
                     }
-                }*/
+                }
             }
         } else { //ignore checkmark
             if (menuItem->icon.isNull())
