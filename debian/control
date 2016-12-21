@@ -3,12 +3,11 @@ Section: devel
 Priority: optional
 Maintainer: Deepin Packages Builder <packages@deepin.com>
 Build-Depends: debhelper (>=9), git, qt5-default, qtbase5-dev, libqt5widgets5, libqt5gui5,
-	qtbase5-private-dev, dde-file-manager, libqt5xdg-dev, libdtkbase-dev,
-	libdtkutil-dev, libdtkwidget-dev, pkg-config, libgtk2.0-dev, libqt5x11extras5-dev,
-	libxcb-xkb-dev, libxcb-render-util0-dev, libxcb-image0-dev, libxcb-icccm4-dev,
-	libxcb-keysyms1-dev, libegl1-mesa-dev, libmtdev-dev, libxkbcommon-x11-dev,
-	libdbus-1-dev, libqt5opengl5-dev, libudev-dev, libxrender-dev, libxi-dev,
-	libsm-dev, libice-dev, libfontconfig1-dev, libfreetype6-dev, libglib2.0-dev,
+	qtbase5-private-dev, libqt5xdg-dev, libdtkbase-dev, libdtkutil-dev, libdtkwidget-dev,
+	pkg-config, libgtk2.0-dev, libqt5x11extras5-dev, libxcb-xkb-dev, libxcb-render-util0-dev,
+	libxcb-image0-dev, libxcb-icccm4-dev, libxcb-keysyms1-dev, libegl1-mesa-dev, libmtdev-dev,
+	libxkbcommon-x11-dev, libdbus-1-dev, libqt5opengl5-dev, libudev-dev, libxrender-dev,
+	libxi-dev, libsm-dev, libice-dev, libfontconfig1-dev, libfreetype6-dev, libglib2.0-dev,
 	ca-certificates, libxcb-xinerama0-dev, libqt5svg5-dev
 Standards-Version: 3.9.8
 
