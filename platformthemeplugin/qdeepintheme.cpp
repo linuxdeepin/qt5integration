@@ -72,7 +72,7 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
     QIcon icon = XdgIcon::fromTheme(iconName);
 
     if (icon.availableSizes().isEmpty())
-        return 0;
+        return QGenericUnixTheme::createIconEngine(iconName);
 
     return icon.data_ptr()->engine->clone();
 }
