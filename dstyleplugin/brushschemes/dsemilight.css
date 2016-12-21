@@ -3,14 +3,17 @@ QPalette {
     Text: rgb(25,25,25);
     Window: rgb(255,255,255);
     WindowText: rgb(25,25,25);
-    Highlight: "#2ca7f8";
-    HighlightedText: rgb(255,255,255);
+    Highlight: rgba(44, 167, 248, 0.8);
+    HighlightedText: rgb(255,255,255, 0.8);
     Button: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
     ButtonText: "#000";
 }
 
 QPalette:disabled {
-    Text: "#AEAEAE"
+    Text: "#AEAEAE";
+    WindowText: rgb(255, 255, 255, 0.4);
+    Highlight: rgba(44, 167, 248, 0.4);
+    HighlightedText: rgb(255, 255, 255, 0.4);
 }
 
 Slider {
