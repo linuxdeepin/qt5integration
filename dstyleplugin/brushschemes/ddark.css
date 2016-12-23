@@ -74,12 +74,12 @@ PushButton:flat:hover {
 
 LineEdit {
     BackgroundBrush: rgba(255,255,255,0.15);
-    BorderBrush: rgb(0,0,0);
+    BorderBrush: rgb(0,0,0,0);
 }
 
 LineEdit:disabled {
     BackgroundBrush: rgba(255,255,255,0.04);
-    BorderBrush: rgb(0,0,0);
+    BorderBrush: rgb(0,0,0,0);
 }
 
 LineEdit:focus {
