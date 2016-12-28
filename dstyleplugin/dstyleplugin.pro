@@ -27,7 +27,8 @@ SOURCES += dstyleplugin.cpp \
     menuhelper.cpp \
     dstyleanimation.cpp \
     progressbarhelper.cpp \
-    checkboxhelper.cpp
+    checkboxhelper.cpp \
+    rubberbandhelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \

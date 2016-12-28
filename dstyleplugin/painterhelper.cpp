@@ -5,12 +5,18 @@
 
 namespace dstyle {
 namespace PainterHelper {
-void drawRect(QPainter *painter, const QBrush &background, const QRectF &rect, qreal borderWidth, const QBrush &border)
+void drawRect(QPainter *painter, const QRectF &rect, const QBrush &background, qreal borderWidth, const QBrush &border)
 {
-    QPainterPath path;
+    painter->fillRect(rect, background);
 
-    path.addRect(rect);
-    drawPath(painter, path, background, borderWidth, border);
+    if (qFuzzyIsNull(borderWidth) || background == border)
+        return;
+
+    painter->save();
+    painter->setBrush(background);
+    painter->setPen(QPen(border, borderWidth));
+    painter->drawRect(rect.adjusted(0, 0, -1, -1));
+    painter->restore();
 }
 
 void drawRoundedRect(QPainter *painter, const QRectF &rect, qreal xRadius, qreal yRadius, Qt::SizeMode mode, const QBrush &background, qreal borderWidth, const QBrush &border)

@@ -68,7 +68,10 @@ public:
         Menu_BackgroundBrush,
 
         CheckBox_BackgroundBrush,
-        RadioButton_BackgroundBrush
+        RadioButton_BackgroundBrush,
+
+        RubberBand_BackgroundBrush,
+        RubberBand_BorderBrush
     };
     Q_ENUM(BrushName)
 

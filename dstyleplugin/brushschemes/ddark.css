@@ -231,3 +231,7 @@ RadioButton:indeterminate:pressed {
     BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed_press.png);
 }
 
+RubberBand {
+    BackgroundBrush: rgba(43, 167, 248, 0.3);
+    BorderBrush: rgba(30, 126, 255, 0.2);
+}

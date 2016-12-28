@@ -360,7 +360,7 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         //        case CE_ScrollBarAddPage: fcn = &Style::emptyControl; break;
         //        case CE_ScrollBarSubPage: fcn = &Style::emptyControl; break;
         //        case CE_ShapedFrame: fcn = &Style::drawShapedFrameControl; break;
-        //        case CE_RubberBand: fcn = &Style::drawRubberBandControl; break;
+    case CE_RubberBand: fcn = &Style::drawRubberBandControl; break;
         //        case CE_SizeGrip: fcn = &Style::emptyControl; break;
         //        case CE_HeaderSection: fcn = &Style::drawHeaderSectionControl; break;
         //        case CE_HeaderEmptyArea: fcn = &Style::drawHeaderEmptyAreaControl; break;

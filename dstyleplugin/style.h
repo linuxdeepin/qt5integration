@@ -104,6 +104,9 @@ private:
     QRect progressBarGrooveRect(const QStyleOption *opt, const QWidget *widget) const;
     QRect progressBarContentsRect(const QStyleOption *opt, const QWidget *widget) const;
 
+    // rubber band
+    bool drawRubberBandControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+
     StyleType m_type;
     PaletteExtended *m_palette = Q_NULLPTR;
 
