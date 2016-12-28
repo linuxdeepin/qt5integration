@@ -18,7 +18,7 @@ Slider {
     GrooveHighlightColor: "#2ca7f8";
     HandleBrush: url(:/assets/light/slider/slider_handle.png);
     HandleBorderColor: lightgray;
-    TickmarkColor: rgba(0,0,0,0.2);
+    TickmarkColor: rgba(0,0,0,0.6);
 }
 
 Slider:focus {
