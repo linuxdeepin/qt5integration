@@ -200,14 +200,12 @@ bool Style::drawSlider(ComplexControl control, const QStyleOptionComplex *option
         //        const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken) );
 
         // define brushs
-        const QBrush background( plExt->brush(PaletteExtended::Slider_HandleBrush) );
+        const QBrush background( plExt->brush(PaletteExtended::Slider_HandleBrush, option) );
 
         // TODO: calculate outline shadow with some sort of algorithm.
         //        const QColor outline( _helper->sliderOutlineColor( palette, handleActive && mouseOver, hasFocus, opacity, mode ) );
         //        const QColor shadow( _helper->shadowColor( palette ) );
-        const QColor &outline = plExt->brush(PaletteExtended::Slider_HandleBorderColor,
-                                             quint64((hasFocus && enabled) ? PaletteExtended::PseudoClass_Focus
-                                                                           : PaletteExtended::PseudoClass_Unspecified)).color();
+        const QColor &outline = plExt->brush(PaletteExtended::Slider_HandleBorderColor, option).color();
 
         // render
         const QString handleType = widget->property("handleType").toString();
@@ -271,7 +269,7 @@ void Style::drawSliderHandle(QPainter* painter, const QRect& rect, const QBrush&
         PainterHelper::drawPath(painter, path, brush, Metrics::Painter_PenWidth, outline);
     } else {
         // draw circle handle
-        PainterHelper::drawEllipse(painter, frameRect, brush, Metrics::Painter_PenWidth, outline);
+        fillBrush(painter, rect, brush);
     }
 }
 

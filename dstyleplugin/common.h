@@ -107,7 +107,7 @@ enum Metrics
     Slider_TickLength = 8,
     Slider_TickMarginWidth = 2,
     Slider_GrooveThickness = 2,
-    Slider_ControlThickness = 14,
+    Slider_ControlThickness = 18,
 
     // tabbar
     TabBar_TabMarginHeight = 4,

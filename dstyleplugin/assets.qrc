@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>assets/slider-handle.png</file>
         <file>assets/icons/arrow-down.png</file>
         <file>assets/icons/arrow-left.png</file>
         <file>assets/icons/arrow-right.png</file>

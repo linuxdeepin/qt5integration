@@ -63,5 +63,14 @@
         <file>assets/dark/checkbox/radio_unchecked_hover_dark@2x.png</file>
         <file>assets/dark/checkbox/radio_unchecked_press_dark.png</file>
         <file>assets/dark/checkbox/radio_unchecked_press_dark@2x.png</file>
+        <file>assets/dark/slider/slider_handle.png</file>
+        <file>assets/dark/slider/slider_handle@2x.png</file>
+        <file>assets/dark/slider/slider_handle@2x_focus.png</file>
+        <file>assets/dark/slider/slider_handle@2x_insensitive.png</file>
+        <file>assets/dark/slider/slider_handle@3x.png</file>
+        <file>assets/dark/slider/slider_handle@3x_focus.png</file>
+        <file>assets/dark/slider/slider_handle@3x_insensitive.png</file>
+        <file>assets/dark/slider/slider_handle_focus.png</file>
+        <file>assets/dark/slider/slider_handle_insensitive.png</file>
     </qresource>
 </RCC>
