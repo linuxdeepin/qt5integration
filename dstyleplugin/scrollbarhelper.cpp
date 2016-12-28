@@ -199,10 +199,14 @@ bool Style::drawScrollBarSliderControl(const QStyleOption *option, QPainter *pai
 
     painter->setRenderHint(QPainter::Antialiasing);
 
-    qreal radius( GeometryUtils::frameRadius() );
+    QRectF rect = option->rect;
+
+    if (option->state & QStyle::State_Sunken)
+        rect.adjust(0.5, 0.5, 0, 0);
+
     const QBrush &background = m_palette->brush(PaletteExtended::ScrollBar_HandleBrush, option, 0, Qt::lightGray);
     const QBrush &border = m_palette->brush(PaletteExtended::ScrollBar_HandleBorderBrush, option, 0, background);
-    PainterHelper::drawRoundedRect(painter, option->rect, radius, radius, Qt::AbsoluteSize, background, Metrics::Painter_PenWidth, border);
+    PainterHelper::drawRoundedRect(painter, rect, 3, 3, Qt::AbsoluteSize, background, Metrics::Painter_PenWidth, border);
 
     return true;
 }
