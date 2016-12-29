@@ -79,7 +79,7 @@ bool Style::drawSlider(ComplexControl control, const QStyleOptionComplex *option
     const QStyle::State& state( option->state );
     const bool enabled( state & QStyle::State_Enabled );
     //    const bool mouseOver( enabled && ( state & QStyle::State_MouseOver ) );
-    const bool hasFocus( enabled && ( state & QStyle::State_HasFocus ) );
+//    const bool hasFocus( enabled && ( state & QStyle::State_HasFocus ) );
 
     // direction
     const bool horizontal( sliderOption->orientation == Qt::Horizontal );
@@ -195,21 +195,9 @@ bool Style::drawSlider(ComplexControl control, const QStyleOptionComplex *option
         // get rect and center
         QRect handleRect( subControlRect( QStyle::CC_Slider, sliderOption, QStyle::SC_SliderHandle, widget ) );
 
-        // handle state
-        //        const bool handleActive( sliderOption->activeSubControls & QStyle::SC_SliderHandle );
-        //        const bool sunken( state & ( QStyle::State_On|QStyle::State_Sunken) );
-
-        // define brushs
-        const QBrush background( plExt->brush(PaletteExtended::Slider_HandleBrush, option) );
-
-        // TODO: calculate outline shadow with some sort of algorithm.
-        //        const QColor outline( _helper->sliderOutlineColor( palette, handleActive && mouseOver, hasFocus, opacity, mode ) );
-        //        const QColor shadow( _helper->shadowColor( palette ) );
-        const QColor &outline = plExt->brush(PaletteExtended::Slider_HandleBorderColor, option).color();
-
         // render
         const QString handleType = widget->property("handleType").toString();
-        drawSliderHandle( painter, handleRect, background, outline, handleType);
+        drawSliderHandle( painter, sliderOption, handleRect, handleType);
     }
 
     return true;
@@ -234,9 +222,8 @@ void Style::drawSliderGroove(QPainter *painter, const QRect &rect, const QBrush 
     return;
 }
 
-void Style::drawSliderHandle(QPainter* painter, const QRect& rect, const QBrush& brush, const QColor& outline , const QString &type) const
+void Style::drawSliderHandle(QPainter* painter, const QStyleOptionSlider *option, const QRect& rect, const QString &type) const
 {
-
     // setup painter
     painter->setRenderHint( QPainter::Antialiasing, true );
 
@@ -258,18 +245,10 @@ void Style::drawSliderHandle(QPainter* painter, const QRect& rect, const QBrush&
         return; // draw no handle
     } else if (type == SliderHandleTypeVernier) {
         // draw vernier handle
-        QPainterPath path;
-        path.moveTo(frameRect.x(), frameRect.y());
-        path.lineTo(frameRect.x() + frameRect.width(), frameRect.y());
-        path.lineTo(frameRect.x() + frameRect.width(), frameRect.y() + frameRect.height() / 2);
-        path.lineTo(frameRect.x() + frameRect.width() / 2, frameRect.y() + frameRect.height());
-        path.lineTo(frameRect.x(), frameRect.y() + frameRect.height() / 2);
-        path.lineTo(frameRect.x(), frameRect.y());
-
-        PainterHelper::drawPath(painter, path, brush, Metrics::Painter_PenWidth, outline);
+        fillBrush(painter, rect, m_palette->brush(PaletteExtended::Slider_VernierHandleBrush, option));
     } else {
         // draw circle handle
-        fillBrush(painter, rect, brush);
+        fillBrush(painter, rect, m_palette->brush(PaletteExtended::Slider_HandleBrush, option));
     }
 }
 

@@ -54,4 +54,6 @@ RESOURCES += \
     brushchemes.qrc \
     assets_light.qrc \
     assets_dark.qrc \
+    assets_semidark.qrc \
+    assets_semilight.qrc \
     assets.qrc

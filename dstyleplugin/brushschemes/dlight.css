@@ -3,8 +3,8 @@ QPalette {
     Text: rgb(25,25,25);
     Window: rgb(255,255,255);
     WindowText: rgb(25,25,25);
-    Highlight: rgba(44, 167, 248, 0.8);
-    HighlightedText: rgb(255,255,255, 0.8);
+    Highlight: "#2ca7f8";
+    HighlightedText: rgb(255,255,255);
     Button: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
     ButtonText: "#000";
 }
@@ -20,12 +20,14 @@ Slider {
     GrooveColor: "#a4a4a4";
     GrooveHighlightColor: "#2ca7f8";
     HandleBrush: url(:/assets/light/slider/slider_handle.png);
+    VernierHandleBrush: url(:/assets/light/slider/slider_point_handle.png);
     HandleBorderColor: lightgray;
     TickmarkColor: rgba(0,0,0,0.6);
 }
 
 Slider:focus {
     HandleBrush: url(:/assets/light/slider/slider_handle_focus.png);
+    VernierHandleBrush: url(:/assets/light/slider/slider_point_handle_focus.png);
     HandleBorderColor: "#2ca7f8";
 }
 
@@ -33,7 +35,13 @@ Slider:disabled {
     GrooveColor: rgba(163, 163, 163, 0.4);
     GrooveHighlightColor: "#aedfff";
     HandleBrush: url(:/assets/light/slider/slider_handle_insensitive.png);
+    VernierHandleBrush: url(:/assets/light/slider/slider_point_handle_insensitive.png);
     HandleBorderColor: rgba(0, 0, 0, 0.1);
+}
+
+Slider:pressed {
+    HandleBrush: url(:/assets/light/slider/slider_handle_press.png);
+    VernierHandleBrush: url(:/assets/light/slider/slider_point_handle_press.png);
 }
 
 PushButton {

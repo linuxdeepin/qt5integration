@@ -74,5 +74,10 @@
         <file>assets/semidark/slider/slider_handle_insensitive.png</file>
         <file>assets/semidark/header_arrow_down.png</file>
         <file>assets/semidark/header_arrow_up.png</file>
+        <file>assets/semidark/slider/slider_handle_press.png</file>
+        <file>assets/semidark/slider/slider_point_handle_focus.png</file>
+        <file>assets/semidark/slider/slider_point_handle_insensitive.png</file>
+        <file>assets/semidark/slider/slider_point_handle_press.png</file>
+        <file>assets/semidark/slider/slider_point_handle.png</file>
     </qresource>
 </RCC>

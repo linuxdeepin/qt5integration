@@ -53,6 +53,7 @@ public:
         Slider_GrooveColor,
         Slider_GrooveHighlightColor,
         Slider_HandleBrush,
+        Slider_VernierHandleBrush,
         Slider_HandleBorderColor,
         Slider_TickmarkColor,
 
