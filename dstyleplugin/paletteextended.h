@@ -71,7 +71,10 @@ public:
         RadioButton_BackgroundBrush,
 
         RubberBand_BackgroundBrush,
-        RubberBand_BorderBrush
+        RubberBand_BorderBrush,
+
+        HeaderView_ArrowIndicatorUpIcon,
+        HeaderView_ArrowIndicatorDownIcon
     };
     Q_ENUM(BrushName)
 

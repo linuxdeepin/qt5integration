@@ -237,3 +237,8 @@ RubberBand {
     BackgroundBrush: rgba(43, 167, 248, 0.3);
     BorderBrush: rgba(30, 126, 255, 0.2);
 }
+
+HeaderView {
+    ArrowIndicatorUpIcon: url(:/assets/light/header_arrow_up.png);
+    ArrowIndicatorDownIcon: url(:/assets/light/header_arrow_down.png);
+}

@@ -107,6 +107,10 @@ private:
     // rubber band
     bool drawRubberBandControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
 
+    // header view
+    bool drawIndicatorHeaderArrowPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    QRect headerArrowRect(const QStyleOption *opt, const QWidget *widget) const;
+
     StyleType m_type;
     PaletteExtended *m_palette = Q_NULLPTR;
 

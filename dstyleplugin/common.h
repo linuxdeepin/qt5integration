@@ -132,7 +132,7 @@ enum Metrics
     // list headers
     Header_MarginWidth = 6,
     Header_ItemSpacing = 4,
-    Header_ArrowSize = 10,
+    Header_ArrowSize = 12,
 
     // tree view
     ItemView_ArrowSize = 10,

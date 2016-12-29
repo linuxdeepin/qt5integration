@@ -328,6 +328,7 @@ QRect Style::subElementRect(QStyle::SubElement r, const QStyleOption *opt, const
     case SE_ProgressBarGroove: return progressBarGrooveRect( opt, widget );
     case SE_ProgressBarContents: return progressBarContentsRect( opt, widget );
     case SE_ProgressBarLabel: return progressBarLabelRect( opt, widget );
+    case SE_HeaderArrow: return headerArrowRect( opt, widget );
     default:
         break;
     }
@@ -436,7 +437,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
         return drawStandardIcon(QStyle::SP_ArrowRight, option, painter, widget);
     case PE_IndicatorArrowUp:
         return drawStandardIcon(QStyle::SP_ArrowUp, option, painter, widget);
-        //    case PE_IndicatorHeaderArrow: fcn = &Style::drawIndicatorHeaderArrowPrimitive; break;
+    case PE_IndicatorHeaderArrow: fcn = &Style::drawIndicatorHeaderArrowPrimitive; break;
         //    case PE_IndicatorToolBarHandle: fcn = &Style::drawIndicatorToolBarHandlePrimitive; break;
         //    case PE_IndicatorToolBarSeparator: fcn = &Style::drawIndicatorToolBarSeparatorPrimitive; break;
         //    case PE_IndicatorBranch: fcn = &Style::drawIndicatorBranchPrimitive; break;

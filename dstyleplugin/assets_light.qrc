@@ -75,5 +75,7 @@
         <file>assets/light/slider/slider_handle@3x_insensitive.png</file>
         <file>assets/light/slider/slider_handle_focus.png</file>
         <file>assets/light/slider/slider_handle_insensitive.png</file>
+        <file>assets/light/header_arrow_down.png</file>
+        <file>assets/light/header_arrow_up.png</file>
     </qresource>
 </RCC>
