@@ -1,0 +1,243 @@
+QPalette {
+    Base: rgba(0,0,0,0);
+    Text: rgb(255,255,255);
+    Window: rgb(25,25,25);
+    WindowText: rgb(255,255,255);
+    Highlight: "#61b5f8";
+    HighlightedText: rgb(255,255,255);
+    Button: rgba(255, 255, 255, 0.15);
+    ButtonText: "#dcdcdc";
+}
+
+QPalette:disabled {
+    Text: "#40dcdcdc"
+}
+
+Slider {
+    GrooveColor: rgba(255, 255, 255, 0.2);
+    GrooveHighlightColor: "#2ca7f8";
+    HandleBrush: url(:/assets/dark/slider/slider_handle.png);
+    HandleBorderColor: transparent;
+    TickmarkColor: rgba(255,255,255,0.6);
+}
+
+Slider:focus {
+    HandleBrush: url(:/assets/dark/slider/slider_handle_focus.png);
+    HandleBorderColor: "#2ca7f8";
+}
+
+Slider:disabled {
+    GrooveColor: rgba(255, 255, 255, 0.08);
+    GrooveHighlightColor: "#0d4265";
+    HandleBrush: url(:/assets/dark/slider/slider_handle_insensitive.png);
+    HandleBorderColor: rgba(0, 0, 0, 0.1);
+}
+
+PushButton {
+    BackgroundBrush: rgba(255, 255, 255, 0.15);
+    TextColor: "#dcdcdc";
+    BorderBrush: transparent;
+}
+
+PushButton:disabled {
+    BackgroundBrush: rgba(255, 255, 255, 0.06);
+    TextColor: "#40dcdcdc";
+    BorderBrush: transparent;
+}
+
+PushButton:hover {
+    BackgroundBrush: rgba(255, 255, 255, 0.3);
+    TextColor: white;
+    BorderBrush: transparent;
+}
+
+PushButton:pressed {
+    BackgroundBrush: rgba(255,255,255,0.1);
+    TextColor: "#2ca7f8";
+    BorderBrush: transparent;
+}
+
+PushButton:focus {
+    BorderBrush: "#2ca7f8";
+}
+
+PushButton:flat {
+    TextColor: "#0082fa"
+}
+
+PushButton:flat:disabled {
+    TextColor: "#0060b9"
+}
+
+PushButton:flat:hover {
+    TextColor: "#16b8ff"
+}
+
+LineEdit {
+    BackgroundBrush: rgba(255,255,255,0.15);
+    BorderBrush: rgb(0,0,0,0);
+}
+
+LineEdit:disabled {
+    BackgroundBrush: rgba(255,255,255,0.04);
+    BorderBrush: rgb(0,0,0,0);
+}
+
+LineEdit:focus {
+    BackgroundBrush: rgba(255,255,255,0.05);
+    BorderBrush: rgba(43,167,248,0.6);
+}
+
+ScrollBar {
+    HandleBrush: rgba(255, 255, 255, 0.2);
+    HandleBroderBrush: rgba(255, 255, 255, 0.05);
+}
+
+ScrollBar:hover {
+    HandleBrush: rgba(255, 255, 255, 0.4);
+    HandleBroderBrush: rgba(255, 255, 255, 0.1);
+}
+
+ScrollBar:pressed {
+    HandleBrush: rgba(96, 96, 96, 0.3);
+}
+
+ScrollBar:focus {
+    HandleBroderBrush: "#2ca7f8";
+}
+
+Menu {
+    BackgroundBrush: "#313131";
+    SeparatorColor: rgba(255, 255, 255, 0.1);
+    BorderColor: rgba(0, 0, 0, 0.1);
+}
+
+CheckBox {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked.png);
+}
+
+CheckBox:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked_insensitive.png);
+}
+
+CheckBox:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked_focus.png);
+}
+
+CheckBox:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked_hover.png);
+}
+
+CheckBox:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_unchecked_press.png);
+}
+
+CheckBox:checked {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked.png);
+}
+
+CheckBox:checked:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked_insensitive.png);
+}
+
+CheckBox:checked:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked_focus.png);
+}
+
+CheckBox:checked:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked_hover.png);
+}
+
+CheckBox:checked:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_checked_press.png);
+}
+
+CheckBox:indeterminate {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed.png);
+}
+
+CheckBox:indeterminate:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed_insensitive.png);
+}
+
+CheckBox:indeterminate:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed_focus.png);
+}
+
+CheckBox:indeterminate:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed_hover.png);
+}
+
+CheckBox:indeterminate:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/checkbox_mixed_press.png);
+}
+
+RadioButton {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked.png);
+}
+
+RadioButton:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked_insensitive.png);
+}
+
+RadioButton:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked_focus.png);
+}
+
+RadioButton:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked_hover.png);
+}
+
+RadioButton:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_unchecked_press.png);
+}
+
+RadioButton:checked {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked.png);
+}
+
+RadioButton:checked:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked_insensitive.png);
+}
+
+RadioButton:checked:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked_focus.png);
+}
+
+RadioButton:checked:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked_hover.png);
+}
+
+RadioButton:checked:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_checked_press.png);
+}
+
+RadioButton:indeterminate {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed.png);
+}
+
+RadioButton:indeterminate:disabled {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed_insensitive.png);
+}
+
+RadioButton:indeterminate:focus {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed_focus.png);
+}
+
+RadioButton:indeterminate:hover {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed_hover.png);
+}
+
+RadioButton:indeterminate:pressed {
+    BackgroundBrush: url(:/assets/dark/checkbox/radio_mixed_press.png);
+}
+
+RubberBand {
+    BackgroundBrush: rgba(43, 167, 248, 0.3);
+    BorderBrush: rgba(30, 126, 255, 0.2);
+}
+
+HeaderView {
+    ArrowIndicatorUpIcon: url(:/assets/dark/header_arrow_up.png);
+    ArrowIndicatorDownIcon: url(:/assets/dark/header_arrow_down.png);
+}

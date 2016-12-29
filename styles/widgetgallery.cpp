@@ -114,6 +114,8 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     menuBar()->addAction("breeze");
     menuBar()->addAction("dlight");
     menuBar()->addAction("ddark");
+    menuBar()->addAction("dsemidark");
+    menuBar()->addAction("dsemilight");
 
     connect(menuBar(), &QMenuBar::triggered, this, [this](const QAction *action) {
         changeStyle(action->text());

@@ -12,7 +12,7 @@
 
 namespace dstyle {
 
-enum StyleType { StyleDark, StyleLight };
+enum StyleType { StyleDark, StyleLight, StyleSemiDark, StyleSemiLight };
 
 enum Metrics
 {

@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>brushschemes/dlight.css</file>
         <file>brushschemes/ddark.css</file>
+        <file>brushschemes/dsemidark.css</file>
+        <file>brushschemes/dsemilight.css</file>
     </qresource>
 </RCC>

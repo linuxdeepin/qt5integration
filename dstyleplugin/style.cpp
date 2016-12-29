@@ -1037,6 +1037,10 @@ void Style::drawDeepinStyleIcon(const QString &name, const QStyleOption *opt, QP
 
     if (m_type == StyleDark)
         style_name = "dark";
+    else if (m_type == StyleSemiDark)
+        style_name = "semidark";
+    else if (m_type == StyleSemiLight)
+        style_name = "semilight";
 
     const QStringList formatList = QStringList() << "png" << "svg";
     QPixmap pixmap;

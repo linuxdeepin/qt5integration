@@ -1,0 +1,244 @@
+QPalette {
+    Base: rgba(0,0,0,0);
+    Text: rgb(25,25,25);
+    Window: rgb(255,255,255);
+    WindowText: rgb(25,25,25);
+    Highlight: "#2ca7f8";
+    HighlightedText: rgb(255,255,255);
+    Button: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
+    ButtonText: "#000";
+}
+
+QPalette:disabled {
+    Text: "#AEAEAE"
+}
+
+Slider {
+    GrooveColor: "#a4a4a4";
+    GrooveHighlightColor: "#2ca7f8";
+    HandleBrush: url(:/assets/light/slider/slider_handle.png);
+    HandleBorderColor: lightgray;
+    TickmarkColor: rgba(0,0,0,0.6);
+}
+
+Slider:focus {
+    HandleBrush: url(:/assets/light/slider/slider_handle_focus.png);
+    HandleBorderColor: "#2ca7f8";
+}
+
+Slider:disabled {
+    GrooveColor: rgba(163, 163, 163, 0.4);
+    GrooveHighlightColor: "#aedfff";
+    HandleBrush: url(:/assets/light/slider/slider_handle_insensitive.png);
+    HandleBorderColor: rgba(0, 0, 0, 0.1);
+}
+
+PushButton {
+    BackgroundBrush: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
+    TextColor: "#000";
+    BorderBrush: rgba(0,0,0,0.08);
+}
+
+PushButton:disabled {
+    BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 rgba(255, 255, 255, 0.4), stop:1 rgba(253, 253, 253, 0.4));
+    TextColor: "#AEAEAE";
+    BorderBrush: rgba(0,0,0,0.02);
+}
+
+PushButton:hover {
+    BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 "#8ccfff", stop:1 "#4bb8ff");
+    TextColor: "#fff";
+    BorderBrush: rgba(0, 117, 243, 0.2);
+}
+
+PushButton:pressed {
+    BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 "#0b8cff", stop:1 "#0aa1ff");
+    TextColor: "#fff";
+    BorderBrush: rgba(29, 129, 255, 0.3);
+}
+
+PushButton:focus {
+    BorderBrush: "#2ca7f8";
+}
+
+PushButton:flat {
+    TextColor: "#0082fa"
+}
+
+PushButton:flat:disabled {
+    TextColor: "#0060b9"
+}
+
+PushButton:flat:hover {
+    TextColor: "#16b8ff"
+}
+
+PushButton:flat:pressed {
+    TextColor: "#0082fa"
+}
+
+LineEdit {
+    BackgroundBrush: rgb(255,255,255);
+    BorderBrush: rgba(0,0,0,0.1);
+}
+
+LineEdit:disabled {
+    BackgroundBrush: rgb(255,255,255);
+    BorderBrush: rgba(0,0,0,0.04);
+}
+
+LineEdit:focus {
+    BackgroundBrush: rgb(255,255,255);
+    BorderBrush: rgb(44,167,248);
+}
+
+ScrollBar {
+    HandleBrush: rgba(16, 16, 16, 0.5);
+}
+
+ScrollBar:hover {
+    HandleBrush: rgba(16, 16, 16, 0.5);
+}
+
+ScrollBar:pressed {
+    HandleBrush: rgba(16, 16, 16, 0.55);
+}
+
+ScrollBar:focus {
+    HandleBorderBrush: "#2ca7f8";
+}
+
+Menu {
+    SeparatorColor: rgba(0, 0, 0, 0.1);
+    BorderColor: rgba(0, 0, 0, 0.1);
+}
+
+CheckBox {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_unchecked.png);
+}
+
+CheckBox:disabled {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_unchecked_insensitive.png);
+}
+
+CheckBox:focus {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_unchecked_focus.png);
+}
+
+CheckBox:hover {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_unchecked_hover.png);
+}
+
+CheckBox:pressed {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_unchecked_press.png);
+}
+
+CheckBox:checked {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_checked.png);
+}
+
+CheckBox:checked:disabled {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_checked_insensitive.png);
+}
+
+CheckBox:checked:focus {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_checked_focus.png);
+}
+
+CheckBox:checked:hover {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_checked_hover.png);
+}
+
+CheckBox:checked:pressed {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_checked_press.png);
+}
+
+CheckBox:indeterminate {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_mixed.png);
+}
+
+CheckBox:indeterminate:disabled {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_mixed_insensitive.png);
+}
+
+CheckBox:indeterminate:focus {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_mixed_focus.png);
+}
+
+CheckBox:indeterminate:hover {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_mixed_hover.png);
+}
+
+CheckBox:indeterminate:pressed {
+    BackgroundBrush: url(:/assets/light/checkbox/checkbox_mixed_press.png);
+}
+
+RadioButton {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_unchecked.png);
+}
+
+RadioButton:disabled {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_unchecked_insensitive.png);
+}
+
+RadioButton:focus {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_unchecked_focus.png);
+}
+
+RadioButton:hover {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_unchecked_hover.png);
+}
+
+RadioButton:pressed {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_unchecked_press.png);
+}
+
+RadioButton:checked {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_checked.png);
+}
+
+RadioButton:checked:disabled {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_checked_insensitive.png);
+}
+
+RadioButton:checked:focus {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_checked_focus.png);
+}
+
+RadioButton:checked:hover {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_checked_hover.png);
+}
+
+RadioButton:checked:pressed {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_checked_press.png);
+}
+
+RadioButton:indeterminate {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_mixed.png);
+}
+
+RadioButton:indeterminate:disabled {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_mixed_insensitive.png);
+}
+
+RadioButton:indeterminate:focus {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_mixed_focus.png);
+}
+
+RadioButton:indeterminate:hover {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_mixed_hover.png);
+}
+
+RadioButton:indeterminate:pressed {
+    BackgroundBrush: url(:/assets/light/checkbox/radio_mixed_press.png);
+}
+
+RubberBand {
+    BackgroundBrush: rgba(43, 167, 248, 0.3);
+    BorderBrush: rgba(30, 126, 255, 0.2);
+}
+
+HeaderView {
+    ArrowIndicatorUpIcon: url(:/assets/light/header_arrow_up.png);
+    ArrowIndicatorDownIcon: url(:/assets/light/header_arrow_down.png);
+}

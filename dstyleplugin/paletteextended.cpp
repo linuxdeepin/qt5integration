@@ -262,6 +262,10 @@ void PaletteExtended::init(StyleType type)
         file.setFileName(":/brushschemes/ddark.css");
     } else if (type == StyleType::StyleLight) {
         file.setFileName(":/brushschemes/dlight.css");
+    } else if (type == StyleType::StyleSemiDark) {
+        file.setFileName(":/brushschemes/dsemidark.css");
+    } else if (type == StyleType::StyleSemiLight) {
+        file.setFileName(":/brushschemes/dsemilight.css");
     }
 
     if (!file.open(QIODevice::ReadOnly))

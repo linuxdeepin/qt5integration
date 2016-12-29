@@ -21,6 +21,10 @@ QStyle *DStylePlugin::create(const QString &key)
         return new dstyle::Style(dstyle::StyleDark);
     } else if (key == "dlight") {
         return new dstyle::Style(dstyle::StyleLight);
+    } else if (key == "dsemidark") {
+        return new dstyle::Style(dstyle::StyleSemiDark);
+    } else if (key == "dsemilight") {
+        return new dstyle::Style(dstyle::StyleSemiLight);
     }
 
     return nullptr;
