@@ -496,7 +496,8 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
     switch (type) {
     case CT_PushButton:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            if (!btn->text.isEmpty() && newSize.width() < 80)
+            const bool flat = btn->features & QStyleOptionButton::Flat;
+            if (!btn->text.isEmpty() && newSize.width() < 80 && !flat )
                 newSize.setWidth(80);
             if (!btn->icon.isNull() && btn->iconSize.height() > 16)
                 newSize -= QSize(0, 2);
