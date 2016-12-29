@@ -57,7 +57,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
 
         if (!ignoreCheckMark) {
             // Check
-            QRect checkRect(option->rect.left() + 7, option->rect.center().y() - 7, 14, 14);
+            QRect checkRect(option->rect.left() + 10, option->rect.center().y() - 4, 14, 14);
             checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);
             if (checkable) {
                 bool _d_drawMenuCheckBox = widget->property(QT_STRINGIFY(_d_drawMenuCheckBox)).toBool();
