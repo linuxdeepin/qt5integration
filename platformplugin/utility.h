@@ -3,6 +3,8 @@
 
 #include <QImage>
 
+#include <xcb/xproto.h>
+
 QT_BEGIN_NAMESPACE
 class QXcbWindow;
 QT_END_NAMESPACE
@@ -40,9 +42,14 @@ public:
     static QRegion regionAddMargins(const QRegion &region, const QMargins &margins, const QPoint &offset = QPoint(0, 0));
 
     static QByteArray windowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, quint32 len);
-    static void setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len);
+    static void setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len, uint8_t format = 8);
+
+    // by Deepin Window Manager
+    static bool blurWindowBackground(const uint WId, const QRegion &region);
+
 private:
     static void sendMoveResizeMessage(uint WId, uint32_t action, QPoint globalPos = QPoint(), Qt::MouseButton qbutton = Qt::LeftButton);
+    static QVector<xcb_rectangle_t> qregion2XcbRectangles(const QRegion &region);
 };
 
 #endif // UTILITY_H

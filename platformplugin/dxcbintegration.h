@@ -16,8 +16,11 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
     void initialize() Q_DECL_OVERRIDE;
 
+    QPlatformNativeInterface *nativeInterface()const Q_DECL_OVERRIDE;
+
 private:
     XcbNativeEventFilter *m_eventFilter = Q_NULLPTR;
+    QScopedPointer<QXcbNativeInterface> m_nativeInterface;
 };
 
 

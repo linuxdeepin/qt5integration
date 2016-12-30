@@ -37,7 +37,8 @@ SOURCES += \
     $$PWD/xcbwindowhook.cpp \
     $$PWD/utility.cpp \
     $$PWD/windoweventhook.cpp \
-    $$PWD/xcbnativeeventfilter.cpp
+    $$PWD/xcbnativeeventfilter.cpp \
+    $$PWD/dxcbnativeinterface.cpp
 
 HEADERS += \
     $$PWD/dxcbintegration.h \
@@ -47,7 +48,8 @@ HEADERS += \
     $$PWD/utility.h \
     $$PWD/global.h \
     $$PWD/windoweventhook.h \
-    $$PWD/xcbnativeeventfilter.h
+    $$PWD/xcbnativeeventfilter.h \
+    $$PWD/dxcbnativeinterface.h
 
 DISTFILES += \
     $$PWD/dxcb.json

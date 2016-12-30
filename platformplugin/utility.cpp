@@ -1,4 +1,7 @@
 #include "utility.h"
+#include "qxcbintegration.h"
+#include "qxcbconnection.h"
+#include "qxcbwmsupport.h"
 
 #include <QPixmap>
 #include <QPainter>
@@ -15,6 +18,7 @@
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
 #define XATOM_MOVE_RESIZE "_NET_WM_MOVERESIZE"
+#define XDEEPIN_BLUR_REGION "_NET_WM_DEEPIN_BLUR_REGION"
 
 QT_BEGIN_NAMESPACE
 //extern Q_WIDGETS_EXPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed = 0);
@@ -109,12 +113,21 @@ QImage Utility::borderImage(const QPixmap &px, const QMargins &borders,
 
 xcb_atom_t Utility::internAtom(const char *name)
 {
+    xcb_atom_t atom = QXcbIntegration::instance()->defaultConnection()->internAtom(name);
+
+    if (Q_LIKELY(atom != XCB_NONE))
+        return atom;
+
     if (!name || *name == 0)
         return XCB_NONE;
 
     xcb_intern_atom_cookie_t cookie = xcb_intern_atom(QX11Info::connection(), false, strlen(name), name);
     xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(QX11Info::connection(), cookie, 0);
-    int atom = reply->atom;
+
+    if (!reply)
+        return XCB_NONE;
+
+    atom = reply->atom;
     free(reply);
 
     return atom;
@@ -151,20 +164,7 @@ void Utility::setFrameExtents(uint WId, const QMargins &margins)
 
 void Utility::setInputShapeRectangles(uint WId, const QRegion &region)
 {
-    QVector<xcb_rectangle_t> rectangles;
-
-    rectangles.reserve(region.rectCount());
-
-    for (const QRect &rect : region.rects()) {
-        xcb_rectangle_t r;
-
-        r.x = rect.x();
-        r.y = rect.y();
-        r.width = rect.width();
-        r.height = rect.height();
-
-        rectangles << r;
-    }
+    const QVector<xcb_rectangle_t> &rectangles = qregion2XcbRectangles(region);
 
     xcb_shape_rectangles(QX11Info::connection(), XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT, XCB_CLIP_ORDERING_YX_BANDED, WId,
                          0, 0, rectangles.size(), rectangles.constData());
@@ -197,6 +197,26 @@ void Utility::sendMoveResizeMessage(uint WId, uint32_t action, QPoint globalPos,
                    (const char *)&xev);
 
     xcb_flush(QX11Info::connection());
+}
+
+QVector<xcb_rectangle_t> Utility::qregion2XcbRectangles(const QRegion &region)
+{
+    QVector<xcb_rectangle_t> rectangles;
+
+    rectangles.reserve(region.rectCount());
+
+    for (const QRect &rect : region.rects()) {
+        xcb_rectangle_t r;
+
+        r.x = rect.x();
+        r.y = rect.y();
+        r.width = rect.width();
+        r.height = rect.height();
+
+        rectangles << r;
+    }
+
+    return rectangles;
 }
 
 void Utility::startWindowSystemResize(uint WId, CornerEdge cornerEdge, const QPoint &globalPos)
@@ -279,8 +299,33 @@ QByteArray Utility::windowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typ
     return data;
 }
 
-void Utility::setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len)
+void Utility::setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len, uint8_t format)
 {
     xcb_connection_t* conn = QX11Info::connection();
-    xcb_change_property(conn, XCB_PROP_MODE_REPLACE, WId, propAtom, typeAtom, 8, len, data);
+    xcb_change_property(conn, XCB_PROP_MODE_REPLACE, WId, propAtom, typeAtom, format, len, data);
+    xcb_flush(conn);
+}
+
+bool Utility::blurWindowBackground(const uint WId, const QRegion &region)
+{
+    xcb_atom_t atom = internAtom(XDEEPIN_BLUR_REGION);
+
+    if (atom == XCB_NONE)
+        return false;
+
+    const QVector<QRect> &rects = region.rects();
+    QVector<quint32> data;
+
+    data.reserve(rects.size() * 4);
+
+    for (const QRect &rect : rects) {
+        data << rect.x();
+        data << rect.y();
+        data << rect.width();
+        data << rect.height();
+    }
+
+    setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, data.data(), data.size(), sizeof(quint32) * 8);
+
+    return true;
 }

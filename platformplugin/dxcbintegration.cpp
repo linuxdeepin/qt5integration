@@ -4,6 +4,7 @@
 #include "global.h"
 #include "windoweventhook.h"
 #include "xcbnativeeventfilter.h"
+#include "dxcbnativeinterface.h"
 
 #include "qxcbscreen.h"
 #include "qxcbbackingstore.h"
@@ -19,7 +20,7 @@
 DXcbIntegration::DXcbIntegration(const QStringList &parameters, int &argc, char **argv)
     : QXcbIntegration(parameters, argc, argv)
 {
-
+    m_nativeInterface.reset(new DXcbNativeInterface());
 }
 
 DXcbIntegration::~DXcbIntegration()
@@ -83,4 +84,9 @@ void DXcbIntegration::initialize()
 
     m_eventFilter = new XcbNativeEventFilter(defaultConnection());
     qApp->installNativeEventFilter(m_eventFilter);
+}
+
+QPlatformNativeInterface *DXcbIntegration::nativeInterface() const
+{
+    return m_nativeInterface.data();
 }
