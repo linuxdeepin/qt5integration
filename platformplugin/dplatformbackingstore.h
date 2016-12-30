@@ -7,21 +7,25 @@
 
 #include <QBasicTimer>
 
+#include "global.h"
+
 QT_BEGIN_NAMESPACE
 class QXcbBackingStore;
 class QWidgetWindow;
 QT_END_NAMESPACE
 
+struct xcb_property_notify_event_t;
+
+DPP_BEGIN_NAMESPACE
+
 class DXcbShmGraphicsBuffer;
 class WindowEventListener;
 
-struct xcb_property_notify_event_t;
-
-class DXcbBackingStore : public QPlatformBackingStore
+class DPlatformBackingStore : public QPlatformBackingStore
 {
 public:
-    DXcbBackingStore(QWindow *window, QXcbBackingStore *proxy);
-    ~DXcbBackingStore();
+    DPlatformBackingStore(QWindow *window, QXcbBackingStore *proxy);
+    ~DPlatformBackingStore();
 
     QPaintDevice *paintDevice() Q_DECL_OVERRIDE;
 
@@ -134,5 +138,7 @@ private:
 
     friend class WindowEventListener;
 };
+
+DPP_END_NAMESPACE
 
 #endif // DXCBBACKINGSTORE_H

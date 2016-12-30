@@ -3,6 +3,10 @@
 
 #define MOUSE_MARGINS 10
 
+#define DPP_BEGIN_NAMESPACE namespace deepin_platform_plugin {
+#define DPP_END_NAMESPACE }
+#define DPP_USE_NAMESPACE using namespace deepin_platform_plugin;
+
 #define PUBLIC_CLASS(Class, Target) \
     class D##Class : public Class\
     {friend class Target;}

@@ -12,6 +12,10 @@
 
 #include "qxcbwindow.h"
 
+#include "global.h"
+
+DPP_BEGIN_NAMESPACE
+
 class WindowEventHook
 {
 public:
@@ -22,5 +26,7 @@ public:
 
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
 };
+
+DPP_END_NAMESPACE
 
 #endif // WINDOWEVENTHOOK_H

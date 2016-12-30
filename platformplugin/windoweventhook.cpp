@@ -22,6 +22,8 @@
 
 #include <private/qguiapplication_p.h>
 
+DPP_BEGIN_NAMESPACE
+
 WindowEventHook::WindowEventHook(QXcbWindow *window)
 {
     VtableHook::overrideVfptrFun(window, &QXcbWindowEventListener::handleClientMessageEvent,
@@ -162,3 +164,5 @@ void WindowEventHook::handleClientMessageEvent(const xcb_client_message_event_t 
         me->QXcbWindow::handleClientMessageEvent(event);
     }
 }
+
+DPP_END_NAMESPACE

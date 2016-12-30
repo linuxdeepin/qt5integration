@@ -1,13 +1,15 @@
-#include "dxcbintegration.h"
-#include "xcbwindowhook.h"
-#include "dxcbbackingstore.h"
+#include "dplatformintegration.h"
+#include "dplatformbackingstore.h"
 #include "global.h"
+#include "dplatformwindowhook.h"
+#ifdef Q_OS_LINUX
 #include "windoweventhook.h"
 #include "xcbnativeeventfilter.h"
-#include "dxcbnativeinterface.h"
+#include "dplatformnativeinterface.h"
 
 #include "qxcbscreen.h"
 #include "qxcbbackingstore.h"
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 #include <private/qwidgetwindow_qpa_p.h>
@@ -17,22 +19,26 @@
 
 #include <QWidget>
 
-DXcbIntegration::DXcbIntegration(const QStringList &parameters, int &argc, char **argv)
+DPP_BEGIN_NAMESPACE
+
+DPlatformIntegration::DPlatformIntegration(const QStringList &parameters, int &argc, char **argv)
     : QXcbIntegration(parameters, argc, argv)
 {
-    m_nativeInterface.reset(new DXcbNativeInterface());
+    m_nativeInterface.reset(new DPlatformNativeInterface());
 }
 
-DXcbIntegration::~DXcbIntegration()
+DPlatformIntegration::~DPlatformIntegration()
 {
+#ifdef Q_OS_LINUX
     if (!m_eventFilter)
         return;
 
     qApp->removeNativeEventFilter(m_eventFilter);
     delete m_eventFilter;
+#endif
 }
 
-QPlatformWindow *DXcbIntegration::createPlatformWindow(QWindow *window) const
+QPlatformWindow *DPlatformIntegration::createPlatformWindow(QWindow *window) const
 {
     qDebug() << __FUNCTION__ << window << window->type() << window->parent();
 
@@ -51,42 +57,48 @@ QPlatformWindow *DXcbIntegration::createPlatformWindow(QWindow *window) const
     }
 
     QPlatformWindow *w = QXcbIntegration::createPlatformWindow(window);
-    QXcbWindow *xw = dynamic_cast<QXcbWindow*>(w);
+    QXcbWindow *xw = static_cast<QXcbWindow*>(w);
 
     if (isUseDxcb) {
-        Q_UNUSED(new XcbWindowHook(xw))
+        Q_UNUSED(new DPlatformWindowHook(xw))
 
+#ifdef Q_OS_LINUX
         if (window->type() == Qt::Widget
                 || window->type() == Qt::Window
                 || window->type() == Qt::Dialog) {
             Q_UNUSED(new WindowEventHook(xw))
         }
+#endif
     }
 
-    return w;
+    return xw;
 }
 
-QPlatformBackingStore *DXcbIntegration::createPlatformBackingStore(QWindow *window) const
+QPlatformBackingStore *DPlatformIntegration::createPlatformBackingStore(QWindow *window) const
 {
     qDebug() << __FUNCTION__ << window << window->type() << window->parent();
 
     QPlatformBackingStore *store = QXcbIntegration::createPlatformBackingStore(window);
 
     if (window->type() != Qt::Desktop && window->property(useDxcb).toBool())
-        return new DXcbBackingStore(window, static_cast<QXcbBackingStore*>(store));
+        return new DPlatformBackingStore(window, static_cast<QXcbBackingStore*>(store));
 
     return store;
 }
 
-void DXcbIntegration::initialize()
+QPlatformNativeInterface *DPlatformIntegration::nativeInterface() const
+{
+    return m_nativeInterface.data();
+}
+
+#ifdef Q_OS_LINUX
+void DPlatformIntegration::initialize()
 {
     QXcbIntegration::initialize();
 
     m_eventFilter = new XcbNativeEventFilter(defaultConnection());
     qApp->installNativeEventFilter(m_eventFilter);
 }
+#endif
 
-QPlatformNativeInterface *DXcbIntegration::nativeInterface() const
-{
-    return m_nativeInterface.data();
-}
+DPP_END_NAMESPACE

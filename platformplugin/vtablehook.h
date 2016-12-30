@@ -5,6 +5,10 @@
 #include <QSet>
 #include <QDebug>
 
+#include "global.h"
+
+DPP_BEGIN_NAMESPACE
+
 class VtableHook
 {
 public:
@@ -72,5 +76,7 @@ private:
     static QHash<quintptr**, quintptr*> objToOriginalVfptr;
     static QHash<void*, quintptr*> objToGhostVfptr;
 };
+
+DPP_END_NAMESPACE
 
 #endif // VTABLEHOOK_H

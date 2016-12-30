@@ -1,5 +1,7 @@
 #include "vtablehook.h"
 
+DPP_BEGIN_NAMESPACE
+
 QHash<quintptr**, quintptr*> VtableHook::objToOriginalVfptr;
 QHash<void*, quintptr*> VtableHook::objToGhostVfptr;
 
@@ -43,3 +45,5 @@ bool VtableHook::clearGhostVtable(void *obj)
 
     return false;
 }
+
+DPP_END_NAMESPACE

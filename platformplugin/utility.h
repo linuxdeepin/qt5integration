@@ -5,11 +5,15 @@
 
 #include <xcb/xproto.h>
 
+#include "global.h"
+
 QT_BEGIN_NAMESPACE
 class QXcbWindow;
 QT_END_NAMESPACE
 
 typedef uint32_t xcb_atom_t;
+
+DPP_BEGIN_NAMESPACE
 
 class Utility
 {
@@ -51,5 +55,7 @@ private:
     static void sendMoveResizeMessage(uint WId, uint32_t action, QPoint globalPos = QPoint(), Qt::MouseButton qbutton = Qt::LeftButton);
     static QVector<xcb_rectangle_t> qregion2XcbRectangles(const QRegion &region);
 };
+
+DPP_END_NAMESPACE
 
 #endif // UTILITY_H

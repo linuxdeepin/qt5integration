@@ -7,6 +7,8 @@
 
 #include <xcb/xfixes.h>
 
+DPP_BEGIN_NAMESPACE
+
 XcbNativeEventFilter::XcbNativeEventFilter(QXcbConnection *connection)
     : m_connection(connection)
 {
@@ -47,3 +49,5 @@ bool XcbNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *
 
     return false;
 }
+
+DPP_END_NAMESPACE

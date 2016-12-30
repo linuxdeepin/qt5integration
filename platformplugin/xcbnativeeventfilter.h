@@ -1,6 +1,8 @@
 #ifndef XCBNATIVEEVENTFILTER_H
 #define XCBNATIVEEVENTFILTER_H
 
+#include "global.h"
+
 #include <QAbstractNativeEventFilter>
 #include <QClipboard>
 
@@ -9,6 +11,8 @@
 QT_BEGIN_NAMESPACE
 class QXcbConnection;
 QT_END_NAMESPACE
+
+DPP_BEGIN_NAMESPACE
 
 class XcbNativeEventFilter : public QAbstractNativeEventFilter
 {
@@ -21,5 +25,7 @@ public:
 private:
     QXcbConnection *m_connection;
 };
+
+DPP_END_NAMESPACE
 
 #endif // XCBNATIVEEVENTFILTER_H

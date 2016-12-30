@@ -1,23 +1,26 @@
-#include "xcbwindowhook.h"
+#include "dplatformwindowhook.h"
 #include "vtablehook.h"
 #include "global.h"
 #include "utility.h"
 
-#include <QX11Info>
-
 #include <private/qwindow_p.h>
 
+#ifdef Q_OS_LINUX
+#include <QX11Info>
 #include <X11/Xlib.h>
+#endif
 
-#define HOOK_VFPTR(Fun) VtableHook::overrideVfptrFun(window, &QPlatformWindow::Fun, this, &XcbWindowHook::Fun)
-#define CALL this->window()->QXcbWindow
+#define HOOK_VFPTR(Fun) VtableHook::overrideVfptrFun(window, &QPlatformWindow::Fun, this, &DPlatformWindowHook::Fun)
+#define CALL this->window()->QNativeWindow
 
-PUBLIC_CLASS(QXcbWindow, XcbWindowHook);
+DPP_BEGIN_NAMESPACE
 
-QHash<const QPlatformWindow*, XcbWindowHook*> XcbWindowHook::mapped;
+PUBLIC_CLASS(QNativeWindow, DPlatformWindowHook);
 
-XcbWindowHook::XcbWindowHook(QXcbWindow *window)
-    : xcbWindow(window)
+QHash<const QPlatformWindow*, DPlatformWindowHook*> DPlatformWindowHook::mapped;
+
+DPlatformWindowHook::DPlatformWindowHook(QNativeWindow *window)
+    : nativeWindow(window)
 {
     mapped[window] = this;
 
@@ -30,28 +33,30 @@ XcbWindowHook::XcbWindowHook(QXcbWindow *window)
     HOOK_VFPTR(mapToGlobal);
     HOOK_VFPTR(mapFromGlobal);
     HOOK_VFPTR(setMask);
+#ifdef Q_OS_LINUX
     HOOK_VFPTR(setWindowState);
+#endif
     HOOK_VFPTR(propagateSizeHints);
 
     QObject::connect(window->window(), &QWindow::destroyed, window->window(), [this] {
-        if (mapped.contains(xcbWindow)) {
+        if (mapped.contains(nativeWindow)) {
             delete this;
-            VtableHook::clearGhostVtable(static_cast<QPlatformWindow*>(xcbWindow));
+            VtableHook::clearGhostVtable(static_cast<QPlatformWindow*>(nativeWindow));
         }
     });
 }
 
-XcbWindowHook::~XcbWindowHook()
+DPlatformWindowHook::~DPlatformWindowHook()
 {
-    mapped.remove(xcbWindow);
+    mapped.remove(nativeWindow);
 }
 
-XcbWindowHook *XcbWindowHook::me() const
+DPlatformWindowHook *DPlatformWindowHook::me() const
 {
     return getHookByWindow(window());
 }
 
-void XcbWindowHook::setGeometry(const QRect &rect)
+void DPlatformWindowHook::setGeometry(const QRect &rect)
 {
     const QMargins &margins = me()->windowMargins;
 
@@ -60,7 +65,7 @@ void XcbWindowHook::setGeometry(const QRect &rect)
     CALL::setGeometry(rect + margins);
 }
 
-QRect XcbWindowHook::geometry() const
+QRect DPlatformWindowHook::geometry() const
 {
     const QMargins &margins = me()->windowMargins;
 
@@ -69,43 +74,43 @@ QRect XcbWindowHook::geometry() const
     return CALL::geometry() - margins;
 }
 
-QMargins XcbWindowHook::frameMargins() const
+QMargins DPlatformWindowHook::frameMargins() const
 {
     QMargins margins = CALL::frameMargins();
 
     return margins/* + me()->windowMargins*/;
 }
 
-void XcbWindowHook::setParent(const QPlatformWindow *window)
+void DPlatformWindowHook::setParent(const QPlatformWindow *window)
 {
     CALL::setParent(window);
 }
 
-void XcbWindowHook::setWindowTitle(const QString &title)
+void DPlatformWindowHook::setWindowTitle(const QString &title)
 {
     return CALL::setWindowTitle(title);
 }
 
-void XcbWindowHook::setWindowIcon(const QIcon &icon)
+void DPlatformWindowHook::setWindowIcon(const QIcon &icon)
 {
     return CALL::setWindowIcon(icon);
 }
 
-QPoint XcbWindowHook::mapToGlobal(const QPoint &pos) const
+QPoint DPlatformWindowHook::mapToGlobal(const QPoint &pos) const
 {
-    XcbWindowHook *me = XcbWindowHook::me();
+    DPlatformWindowHook *me = DPlatformWindowHook::me();
 
     return CALL::mapToGlobal(pos + QPoint(me->windowMargins.left(), me->windowMargins.top()));
 }
 
-QPoint XcbWindowHook::mapFromGlobal(const QPoint &pos) const
+QPoint DPlatformWindowHook::mapFromGlobal(const QPoint &pos) const
 {
-    XcbWindowHook *me = XcbWindowHook::me();
+    DPlatformWindowHook *me = DPlatformWindowHook::me();
 
     return CALL::mapFromGlobal(pos - QPoint(me->windowMargins.left(), me->windowMargins.top()));
 }
 
-void XcbWindowHook::setMask(const QRegion &region)
+void DPlatformWindowHook::setMask(const QRegion &region)
 {
     QRegion tmp_region;
 
@@ -128,9 +133,10 @@ void XcbWindowHook::setMask(const QRegion &region)
     Utility::setInputShapeRectangles(CALL::winId(), tmp_region);
 }
 
-void XcbWindowHook::setWindowState(Qt::WindowState state)
+#ifdef Q_OS_LINUX
+void DPlatformWindowHook::setWindowState(Qt::WindowState state)
 {
-    DQXcbWindow *window = static_cast<DQXcbWindow*>(this->window());
+    DQNativeWindow *window = static_cast<DQNativeWindow*>(this->window());
 
     if (window->m_windowState == state)
         return;
@@ -147,8 +153,9 @@ void XcbWindowHook::setWindowState(Qt::WindowState state)
         CALL::setWindowState(state);
     }
 }
+#endif
 
-void XcbWindowHook::propagateSizeHints()
+void DPlatformWindowHook::propagateSizeHints()
 {
     QWindow *win = window()->window();
     QWindowPrivate *winp = qt_window_private(win);
@@ -170,12 +177,12 @@ void XcbWindowHook::propagateSizeHints()
 //    qDebug() << winp->minimumSize << winp->maximumSize << marginSize;
 }
 
-XcbWindowHook *XcbWindowHook::getHookByWindow(const QPlatformWindow *window)
+DPlatformWindowHook *DPlatformWindowHook::getHookByWindow(const QPlatformWindow *window)
 {
     return mapped.value(window);
 }
 
-void XcbWindowHook::setWindowMargins(const QMargins &margins, bool propagateSizeHints)
+void DPlatformWindowHook::setWindowMargins(const QMargins &margins, bool propagateSizeHints)
 {
     windowMargins = margins;
 
@@ -183,7 +190,7 @@ void XcbWindowHook::setWindowMargins(const QMargins &margins, bool propagateSize
         return;
     }
 
-    QWindow *win = xcbWindow->window();
+    QWindow *win = nativeWindow->window();
     QWindowPrivate *winp = qt_window_private(win);
 
     const QSize &user_max_size = win->property(userWindowMaximumSize).toSize();
@@ -197,5 +204,7 @@ void XcbWindowHook::setWindowMargins(const QMargins &margins, bool propagateSize
         winp->minimumSize = user_min_size;
     }
 
-    static_cast<QPlatformWindow*>(xcbWindow)->propagateSizeHints();
+    static_cast<QPlatformWindow*>(nativeWindow)->propagateSizeHints();
 }
+
+DPP_END_NAMESPACE

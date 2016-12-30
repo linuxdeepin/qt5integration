@@ -1,5 +1,5 @@
-#include "dxcbbackingstore.h"
-#include "xcbwindowhook.h"
+#include "dplatformbackingstore.h"
+#include "dplatformwindowhook.h"
 #include "vtablehook.h"
 #include "utility.h"
 #include "global.h"
@@ -26,18 +26,20 @@
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformnativeinterface.h>
 
+DPP_BEGIN_NAMESPACE
+
 PUBLIC_CLASS(QMouseEvent, WindowEventListener);
 PUBLIC_CLASS(QWheelEvent, WindowEventListener);
 PUBLIC_CLASS(QResizeEvent, WindowEventListener);
 PUBLIC_CLASS(QWidget, WindowEventListener);
 PUBLIC_CLASS(QWindow, WindowEventListener);
 
-PUBLIC_CLASS(QXcbWindow, DXcbBackingStore);
+PUBLIC_CLASS(QXcbWindow, DPlatformBackingStore);
 
 class WindowEventListener : public QObject
 {
 public:
-    explicit WindowEventListener(DXcbBackingStore *store)
+    explicit WindowEventListener(DPlatformBackingStore *store)
         : QObject(0)
         , m_store(store)
     {
@@ -415,7 +417,7 @@ private:
     QTimer startAnimationTimer;
     QVariantAnimation cursorAnimation;
 
-    DXcbBackingStore *m_store;
+    DPlatformBackingStore *m_store;
 };
 
 //class DXcbShmGraphicsBuffer : public QPlatformGraphicsBuffer
@@ -449,7 +451,7 @@ private:
 //    QImage *m_image;
 //};
 
-DXcbBackingStore::DXcbBackingStore(QWindow *window, QXcbBackingStore *proxy)
+DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *proxy)
     : QPlatformBackingStore(window)
     , m_proxy(proxy)
 {
@@ -463,7 +465,7 @@ DXcbBackingStore::DXcbBackingStore(QWindow *window, QXcbBackingStore *proxy)
 //    updateFrameExtents();
 
     VtableHook::overrideVfptrFun(static_cast<QXcbWindow*>(window->handle()), &QXcbWindowEventListener::handlePropertyNotifyEvent,
-                                 this, &DXcbBackingStore::handlePropertyNotifyEvent);
+                                 this, &DPlatformBackingStore::handlePropertyNotifyEvent);
 
     QObject::connect(window, &QWindow::windowStateChanged,
                      m_eventListener, [this] {
@@ -471,7 +473,7 @@ DXcbBackingStore::DXcbBackingStore(QWindow *window, QXcbBackingStore *proxy)
     });
 }
 
-DXcbBackingStore::~DXcbBackingStore()
+DPlatformBackingStore::~DPlatformBackingStore()
 {
     delete m_proxy;
     delete m_eventListener;
@@ -482,12 +484,12 @@ DXcbBackingStore::~DXcbBackingStore()
     VtableHook::clearGhostVtable(static_cast<QXcbWindowEventListener*>(static_cast<QXcbWindow*>(window()->handle())));
 }
 
-QPaintDevice *DXcbBackingStore::paintDevice()
+QPaintDevice *DPlatformBackingStore::paintDevice()
 {
     return &m_image;
 }
 
-void DXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void DPlatformBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(region)
 
@@ -516,7 +518,7 @@ void DXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
 
 //    qDebug() << "flush" << window << tmp_region << offset;
 
-    XcbWindowHook *window_hook = XcbWindowHook::getHookByWindow(window->handle());
+    DPlatformWindowHook *window_hook = DPlatformWindowHook::getHookByWindow(window->handle());
 
     if (window_hook)
         window_hook->setWindowMargins(QMargins(0, 0, 0, 0));
@@ -529,7 +531,7 @@ void DXcbBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
 
 #ifndef QT_NO_OPENGL
 #if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
-void DXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+void DPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                      QPlatformTextureList *textures, QOpenGLContext *context)
 {
     Q_UNUSED(textures);
@@ -538,7 +540,7 @@ void DXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, c
     flush(window, region, offset);
 }
 #else
-void DXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+void DPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                                        QPlatformTextureList *textures, QOpenGLContext *context,
                                        bool translucentBackground)
 {
@@ -550,23 +552,23 @@ void DXcbBackingStore::composeAndFlush(QWindow *window, const QRegion &region, c
 }
 #endif
 
-QImage DXcbBackingStore::toImage() const
+QImage DPlatformBackingStore::toImage() const
 {
     return m_image;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
-GLuint DXcbBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize) const
+GLuint DPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize) const
 {
     return m_proxy->toTexture(dirtyRegion, textureSize);
 }
 #elif QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
-GLuint DXcbBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, bool *needsSwizzle) const
+GLuint DPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, bool *needsSwizzle) const
 {
     return m_proxy->toTexture(dirtyRegion, textureSize, needsSwizzle);
 }
 #else
-GLuint DXcbBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const
+GLuint DPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const
 {
     return m_proxy->toTexture(dirtyRegion, textureSize, flags);
 }
@@ -574,14 +576,14 @@ GLuint DXcbBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSiz
 #endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
-QPlatformGraphicsBuffer *DXcbBackingStore::graphicsBuffer() const
+QPlatformGraphicsBuffer *DPlatformBackingStore::graphicsBuffer() const
 {
 //    return m_graphicsBuffer;
     return m_proxy->graphicsBuffer();
 }
 #endif
 
-void DXcbBackingStore::resize(const QSize &size, const QRegion &staticContents)
+void DPlatformBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
 //    qDebug() << "resize" << size << staticContents;
 #if QT_VERSION > QT_VERSION_CHECK(5, 5, 1)
@@ -621,7 +623,7 @@ void DXcbBackingStore::resize(const QSize &size, const QRegion &staticContents)
     paintWindowShadow();
 }
 
-void DXcbBackingStore::beginPaint(const QRegion &region)
+void DPlatformBackingStore::beginPaint(const QRegion &region)
 {
     if (m_translucentBackground) {
         QPainter p(paintDevice());
@@ -635,14 +637,14 @@ void DXcbBackingStore::beginPaint(const QRegion &region)
     }
 }
 
-void DXcbBackingStore::endPaint()
+void DPlatformBackingStore::endPaint()
 {
 //    m_proxy->endPaint();
 
 //    qDebug() << "end paint";
 }
 
-void DXcbBackingStore::initUserPropertys()
+void DPlatformBackingStore::initUserPropertys()
 {
     updateWindowRadius();
     updateBorderWidth();
@@ -657,7 +659,7 @@ void DXcbBackingStore::initUserPropertys()
     updateEnableSystemResize();
 }
 
-void DXcbBackingStore::updateWindowMargins(bool repaintShadow)
+void DPlatformBackingStore::updateWindowMargins(bool repaintShadow)
 {
     Qt::WindowState state = window()->windowState();
 
@@ -680,7 +682,7 @@ void DXcbBackingStore::updateWindowMargins(bool repaintShadow)
     }
 }
 
-void DXcbBackingStore::updateFrameExtents()
+void DPlatformBackingStore::updateFrameExtents()
 {
     const QMargins &borderMargins = QMargins(m_borderWidth, m_borderWidth, m_borderWidth, m_borderWidth);
 
@@ -693,7 +695,7 @@ void DXcbBackingStore::updateFrameExtents()
     Utility::setFrameExtents(window()->winId(), extentsMargins);
 }
 
-void DXcbBackingStore::updateInputShapeRegion()
+void DPlatformBackingStore::updateInputShapeRegion()
 {
     if (isUserSetClipPath)
         return;
@@ -703,7 +705,7 @@ void DXcbBackingStore::updateInputShapeRegion()
     Utility::setInputShapeRectangles(window()->winId(), region);
 }
 
-void DXcbBackingStore::updateWindowRadius()
+void DPlatformBackingStore::updateWindowRadius()
 {
     const QVariant &v = window()->property(windowRadius);
 
@@ -723,7 +725,7 @@ void DXcbBackingStore::updateWindowRadius()
     }
 }
 
-void DXcbBackingStore::updateBorderWidth()
+void DPlatformBackingStore::updateBorderWidth()
 {
     const QVariant &v = window()->property(borderWidth);
 
@@ -744,7 +746,7 @@ void DXcbBackingStore::updateBorderWidth()
     }
 }
 
-void DXcbBackingStore::updateBorderColor()
+void DPlatformBackingStore::updateBorderColor()
 {
     const QVariant &v = window()->property(borderColor);
 
@@ -763,7 +765,7 @@ void DXcbBackingStore::updateBorderColor()
     }
 }
 
-void DXcbBackingStore::updateUserClipPath()
+void DPlatformBackingStore::updateUserClipPath()
 {
     const QVariant &v = window()->property(clipPath);
 
@@ -788,7 +790,7 @@ void DXcbBackingStore::updateUserClipPath()
         setClipPah(path);
 }
 
-void DXcbBackingStore::updateClipPath()
+void DPlatformBackingStore::updateClipPath()
 {
     if (!isUserSetClipPath) {
         QPainterPath path;
@@ -802,7 +804,7 @@ void DXcbBackingStore::updateClipPath()
     }
 }
 
-void DXcbBackingStore::updateFrameMask()
+void DPlatformBackingStore::updateFrameMask()
 {
     const QVariant &v = window()->property(frameMask);
 
@@ -817,7 +819,7 @@ void DXcbBackingStore::updateFrameMask()
     isUserSetFrameMask = !region.isEmpty();
 }
 
-void DXcbBackingStore::updateShadowRadius()
+void DPlatformBackingStore::updateShadowRadius()
 {
     const QVariant &v = window()->property(shadowRadius);
 
@@ -838,7 +840,7 @@ void DXcbBackingStore::updateShadowRadius()
     }
 }
 
-void DXcbBackingStore::updateShadowOffset()
+void DPlatformBackingStore::updateShadowOffset()
 {
     const QVariant &v = window()->property(shadowOffset);
 
@@ -858,7 +860,7 @@ void DXcbBackingStore::updateShadowOffset()
     }
 }
 
-void DXcbBackingStore::updateShadowColor()
+void DPlatformBackingStore::updateShadowColor()
 {
     const QVariant &v = window()->property(shadowColor);
 
@@ -877,7 +879,7 @@ void DXcbBackingStore::updateShadowColor()
     }
 }
 
-void DXcbBackingStore::updateTranslucentBackground()
+void DPlatformBackingStore::updateTranslucentBackground()
 {
     const QVariant &v = window()->property(translucentBackground);
 
@@ -890,7 +892,7 @@ void DXcbBackingStore::updateTranslucentBackground()
     m_translucentBackground = v.toBool();
 }
 
-void DXcbBackingStore::updateEnableSystemResize()
+void DPlatformBackingStore::updateEnableSystemResize()
 {
     const QVariant &v = window()->property(enableSystemResize);
 
@@ -903,7 +905,7 @@ void DXcbBackingStore::updateEnableSystemResize()
     m_enableSystemResize = v.toBool();
 }
 
-void DXcbBackingStore::updateEnableSystemMove()
+void DPlatformBackingStore::updateEnableSystemMove()
 {
     const QVariant &v = window()->property(enableSystemMove);
 
@@ -916,7 +918,7 @@ void DXcbBackingStore::updateEnableSystemMove()
     m_enableSystemMove = v.toBool();
 }
 
-void DXcbBackingStore::setWindowMargins(const QMargins &margins)
+void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
 {
     if (windowMargins == margins)
         return;
@@ -924,7 +926,7 @@ void DXcbBackingStore::setWindowMargins(const QMargins &margins)
     windowMargins = margins;
     m_windowClipPath = m_clipPath.translated(windowOffset());
 
-    XcbWindowHook *hook = XcbWindowHook::getHookByWindow(m_proxy->window()->handle());
+    DPlatformWindowHook *hook = DPlatformWindowHook::getHookByWindow(m_proxy->window()->handle());
 
     if (hook) {
         hook->setWindowMargins(margins, true);
@@ -941,7 +943,7 @@ void DXcbBackingStore::setWindowMargins(const QMargins &margins)
     updateFrameExtents();
 }
 
-void DXcbBackingStore::setClipPah(const QPainterPath &path)
+void DPlatformBackingStore::setClipPah(const QPainterPath &path)
 {
     if (m_clipPath != path) {
         m_clipPath = path;
@@ -954,7 +956,7 @@ void DXcbBackingStore::setClipPah(const QPainterPath &path)
     }
 }
 
-void DXcbBackingStore::paintWindowShadow(QRegion region)
+void DPlatformBackingStore::paintWindowShadow(QRegion region)
 {
     QPainter pa;
 
@@ -964,7 +966,7 @@ void DXcbBackingStore::paintWindowShadow(QRegion region)
     pa.drawPixmap(0, 0, shadowPixmap);
     pa.end();
 
-    XcbWindowHook *window_hook = XcbWindowHook::getHookByWindow(window()->handle());
+    DPlatformWindowHook *window_hook = DPlatformWindowHook::getHookByWindow(window()->handle());
 
     if (window_hook)
         window_hook->setWindowMargins(QMargins(0, 0, 0, 0));
@@ -983,7 +985,7 @@ void DXcbBackingStore::paintWindowShadow(QRegion region)
     /// end
 }
 
-void DXcbBackingStore::repaintWindowShadow()
+void DPlatformBackingStore::repaintWindowShadow()
 {
     updateShadowTimer.stop();
 
@@ -1001,7 +1003,7 @@ inline QSize margins2Size(const QMargins &margins)
                  margins.top() + margins.bottom());
 }
 
-void DXcbBackingStore::updateWindowShadow()
+void DPlatformBackingStore::updateWindowShadow()
 {
     QPixmap pixmap(m_image.size());
 
@@ -1058,23 +1060,23 @@ void DXcbBackingStore::updateWindowShadow()
     }
 }
 
-void DXcbBackingStore::doDelayedUpdateWindowShadow(int delaye)
+void DPlatformBackingStore::doDelayedUpdateWindowShadow(int delaye)
 {
     if (m_eventListener)
         updateShadowTimer.start(delaye, m_eventListener);
 }
 
-bool DXcbBackingStore::isWidgetWindow(const QWindow *window)
+bool DPlatformBackingStore::isWidgetWindow(const QWindow *window)
 {
     return window->metaObject()->className() == QStringLiteral("QWidgetWindow");
 }
 
-QWidgetWindow *DXcbBackingStore::widgetWindow() const
+QWidgetWindow *DPlatformBackingStore::widgetWindow() const
 {
     return static_cast<QWidgetWindow*>(window());
 }
 
-bool DXcbBackingStore::canUseClipPath() const
+bool DPlatformBackingStore::canUseClipPath() const
 {
     QXcbWindow::NetWmStates states = (QXcbWindow::NetWmStates)window()->property(netWmStates).toInt();
 
@@ -1085,14 +1087,14 @@ bool DXcbBackingStore::canUseClipPath() const
     return true;
 }
 
-void DXcbBackingStore::onWindowStateChanged()
+void DPlatformBackingStore::onWindowStateChanged()
 {
     updateClipPath();
     updateFrameExtents();
     doDelayedUpdateWindowShadow();
 }
 
-void DXcbBackingStore::handlePropertyNotifyEvent(const xcb_property_notify_event_t *event)
+void DPlatformBackingStore::handlePropertyNotifyEvent(const xcb_property_notify_event_t *event)
 {
     DQXcbWindow *window = static_cast<DQXcbWindow*>(reinterpret_cast<QXcbWindowEventListener*>(this));
     QWindow *ww = window->window();
@@ -1112,3 +1114,5 @@ void DXcbBackingStore::handlePropertyNotifyEvent(const xcb_property_notify_event
         ww->setWindowState(window->m_windowState);
     }
 }
+
+DPP_END_NAMESPACE

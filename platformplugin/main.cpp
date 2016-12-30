@@ -32,24 +32,29 @@
 ****************************************************************************/
 
 #include <qpa/qplatformintegrationplugin.h>
-#include "dxcbintegration.h"
+#include "dplatformintegration.h"
 
 #include <QDebug>
 
+DPP_USE_NAMESPACE
+
 QT_BEGIN_NAMESPACE
 
-class QXcbIntegrationPlugin : public QPlatformIntegrationPlugin
+class DPlatformIntegrationPlugin : public QPlatformIntegrationPlugin
 {
-   Q_OBJECT
-   Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "dxcb.json")
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "dpp.json")
+
 public:
     QPlatformIntegration *create(const QString&, const QStringList&, int &, char **) Q_DECL_OVERRIDE;
 };
 
-QPlatformIntegration* QXcbIntegrationPlugin::create(const QString& system, const QStringList& parameters, int &argc, char **argv)
+QPlatformIntegration* DPlatformIntegrationPlugin::create(const QString& system, const QStringList& parameters, int &argc, char **argv)
 {
+#ifdef Q_OS_LINUX
     if (!system.compare(QLatin1String("dxcb"), Qt::CaseInsensitive))
-        return new DXcbIntegration(parameters, argc, argv);
+        return new DPlatformIntegration(parameters, argc, argv);
+#endif
 
     return 0;
 }
