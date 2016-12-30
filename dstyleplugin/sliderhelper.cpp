@@ -254,7 +254,7 @@ void Style::drawSliderHandle(QPainter* painter, const QStyleOptionSlider *option
 
 bool Style::drawSliderTickmarkLabels(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    QRect rect( widget->rect() );
+    QRect rect( option->rect );
 
     QVariantList labels = widget->property("tickmarkLabels").toList();
     if (labels.length() == 0) return false;
@@ -269,10 +269,14 @@ bool Style::drawSliderTickmarkLabels(const QStyleOption *option, QPainter *paint
             painter->setPen(QPen(plExt->brush(PaletteExtended::Slider_TickmarkColor), Metrics::Painter_PenWidth));
 
             for (int i = 0; i < positions.length() && i < labels.length(); i++) {
-                QString text = labels.at(i).toString();
-                int rWidth = option->fontMetrics.width(text);
-                QRect r ( rect.x() + positions.at(i).toInt() - rWidth / 2,
-                          rect.y(), rWidth, rect.height() );
+                const QString text = labels.at(i).toString();
+                const int rWidth = option->fontMetrics.width(text);
+
+                const int deltaX = slider->x() - widget->x();
+                const int x = positions.at(i).toInt() + deltaX;
+                const int rX = qMax(0.0, qMin(rect.width() - rWidth / 1.0, x - rWidth / 2.0));
+
+                QRect r ( rX, rect.y(), rWidth, rect.height() );
                 painter->drawText(r, Qt::AlignTop, text);
             }
         }
