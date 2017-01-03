@@ -18,6 +18,7 @@
 #endif
 
 #include <QWidget>
+#include <QGuiApplication>
 
 DPP_BEGIN_NAMESPACE
 

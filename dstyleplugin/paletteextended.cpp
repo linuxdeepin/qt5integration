@@ -96,7 +96,11 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name,  quint64 type, co
     if (m_brushCache.contains(key))
         return m_brushCache.value(key);
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
+    QMetaEnum metaEnum = metaObject()->enumerator(0);
+#else
     QMetaEnum metaEnum = QMetaEnum::fromType<PaletteExtended::BrushName>();
+#endif
     QString colorName = metaEnum.valueToKey(name);
 
     const QStringList &path = colorName.split("_");

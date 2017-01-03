@@ -77,7 +77,11 @@ public:
         HeaderView_ArrowIndicatorUpIcon,
         HeaderView_ArrowIndicatorDownIcon
     };
+#if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
+    Q_ENUMS(BrushName)
+#else
     Q_ENUM(BrushName)
+#endif
 
     enum PseudoClassType {
         PseudoClass_Unknown          = Q_UINT64_C(0x0000000000000000),

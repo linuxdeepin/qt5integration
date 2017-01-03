@@ -12,7 +12,7 @@ TARGET = qdeepin
 TEMPLATE = lib
 CONFIG += plugin link_pkgconfig c++11
 
-PKGCONFIG += mtdev dtkbase dtkwidget Qt5Xdg gtk+-2.0 x11
+PKGCONFIG += mtdev Qt5Xdg gtk+-2.0 x11
 
 PLUGIN_TYPE = platformthemes
 PLUGIN_EXTENDS = -

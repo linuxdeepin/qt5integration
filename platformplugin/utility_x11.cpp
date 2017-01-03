@@ -115,11 +115,13 @@ QImage Utility::borderImage(const QPixmap &px, const QMargins &borders,
 
 xcb_atom_t Utility::internAtom(const char *name)
 {
-    xcb_atom_t atom = QXcbIntegration::instance()->defaultConnection()->internAtom(name);
+    xcb_atom_t atom;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
+    atom = QXcbIntegration::instance()->defaultConnection()->internAtom(name);
 
     if (Q_LIKELY(atom != XCB_NONE))
         return atom;
-
+#endif
     if (!name || *name == 0)
         return XCB_NONE;
 

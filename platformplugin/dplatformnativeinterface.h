@@ -20,7 +20,9 @@ class DPlatformNativeInterface : public DPlatformNativeInterfaceParent
 public:
     DPlatformNativeInterface();
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
     QFunctionPointer platformFunction(const QByteArray &function) const Q_DECL_OVERRIDE;
+#endif
 };
 
 DPP_END_NAMESPACE

@@ -13,7 +13,11 @@
 #include <QX11Info>
 #include <QDebug>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
+#include <private/qwidgetwindow_qpa_p.h>
+#else
 #include <private/qwidgetwindow_p.h>
+#endif
 #include <private/qguiapplication_p.h>
 
 #include <X11/Xlib.h>
