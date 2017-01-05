@@ -1,6 +1,8 @@
 #ifndef QDEEPINTHEME_H
 #define QDEEPINTHEME_H
 
+#include <QMimeDatabase>
+
 #include <private/qgenericunixthemes_p.h>
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -16,6 +18,8 @@ public:
 
     QIconEngine *createIconEngine(const QString &iconName) const Q_DECL_OVERRIDE;
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
+    QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
+                           QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
 
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 
@@ -23,6 +27,7 @@ public:
 
 private:
     static bool m_usePlatformNativeDialog;
+    static QMimeDatabase m_mimeDatabase;
 
     friend class QDeepinFileDialogHelper;
     friend class QDeepinPlatformMenu;

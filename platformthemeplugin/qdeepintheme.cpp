@@ -19,6 +19,7 @@ QT_BEGIN_NAMESPACE
 
 const char *QDeepinTheme::name = "deepin";
 bool QDeepinTheme::m_usePlatformNativeDialog = true;
+QMimeDatabase QDeepinTheme::m_mimeDatabase;
 
 static QString gtkSetting(const gchar *propertyName)
 {
@@ -88,6 +89,13 @@ QPixmap QDeepinTheme::standardPixmap(QPlatformTheme::StandardPixmap sp, const QS
     return QGenericUnixTheme::standardPixmap(sp, size);
 }
 
+QPixmap QDeepinTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size, QPlatformTheme::IconOptions iconOptions) const
+{
+    Q_UNUSED(iconOptions);
+
+    return XdgIcon::fromTheme(m_mimeDatabase.mimeTypeForFile(fileInfo).iconName()).pixmap(size.toSize());
+}
+
 QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
@@ -105,6 +113,8 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(gtkSetting("gtk-icon-theme-name"));
     case QPlatformTheme::SystemIconFallbackThemeName:
         return QVariant(gtkSetting("gtk-fallback-icon-theme"));
+    case QPlatformTheme::IconThemeSearchPaths:
+        return QVariant(QGenericUnixTheme::xdgIconThemePaths() << QDir::homePath() + "/.local/share/icons");
     default:
         break;
     }
