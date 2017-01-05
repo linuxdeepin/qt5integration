@@ -473,6 +473,7 @@ int Style::styleHint(QStyle::StyleHint sh, const QStyleOption *opt, const QWidge
     case SH_MenuBar_MouseTracking: return true;
     case SH_Menu_MouseTracking: return true;
     case SH_Menu_SubMenuPopupDelay: return 100;
+    case QStyle::SH_Menu_Scrollable: return true;
     case SH_Menu_SloppySubMenus: return true;
 #if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
     case SH_Menu_SubMenuUniDirection: return 1000;
