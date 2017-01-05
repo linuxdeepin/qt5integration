@@ -484,6 +484,8 @@ int Style::styleHint(QStyle::StyleHint sh, const QStyleOption *opt, const QWidge
     case SH_Widget_Animate: return true;
 #endif
     case QStyle::SH_ItemView_ShowDecorationSelected: return true;
+    case SH_RubberBand_Mask:
+        return 0;
     default:
         break;
     }
