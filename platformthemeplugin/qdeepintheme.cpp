@@ -9,6 +9,7 @@
 #include <XdgIcon>
 
 #include <private/qicon_p.h>
+#include <private/qiconloader_p.h>
 
 #undef signals
 #include <gtk/gtk.h>
@@ -31,6 +32,19 @@ static QString gtkSetting(const gchar *propertyName)
     return str;
 }
 
+extern void updateXdgIconSystemTheme();
+
+static void gtkIconThemeSetCallback()
+{
+    QIconLoader::instance()->updateSystemTheme();
+    updateXdgIconSystemTheme();
+
+    if (qApp->inherits("Dtk::Widget::DApplication")) {
+        // emit the signal: DApplication::iconThemeChanged
+        qApp->metaObject()->invokeMethod(qApp, QT_STRINGIFY(iconThemeChanged));
+    }
+}
+
 QDeepinTheme::QDeepinTheme()
 {
     // gtk_init will reset the Xlib error handler, and that causes
@@ -40,6 +54,17 @@ QDeepinTheme::QDeepinTheme()
     gtk_init(0, 0);
 
     XSetErrorHandler(oldErrorHandler);
+
+    static GtkSettings *settings = Q_NULLPTR;
+
+    if (!settings) {
+        settings = gtk_settings_get_default();
+
+        if (settings) {
+            g_signal_connect(settings, "notify::gtk-icon-theme-name", G_CALLBACK(gtkIconThemeSetCallback), 0);
+        }
+    }
+
     QDeepinFileDialogHelper::initDBusFileDialogManager();
 }
 
