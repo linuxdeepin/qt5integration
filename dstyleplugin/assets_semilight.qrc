@@ -67,12 +67,6 @@
         <file>assets/semilight/checkbox/radio_unchecked_press.png</file>
         <file>assets/semilight/checkbox/radio_unchecked_press@2x.png</file>
         <file>assets/semilight/slider/slider_handle.png</file>
-        <file>assets/semilight/slider/slider_handle@2x.png</file>
-        <file>assets/semilight/slider/slider_handle@2x_focus.png</file>
-        <file>assets/semilight/slider/slider_handle@2x_insensitive.png</file>
-        <file>assets/semilight/slider/slider_handle@3x.png</file>
-        <file>assets/semilight/slider/slider_handle@3x_focus.png</file>
-        <file>assets/semilight/slider/slider_handle@3x_insensitive.png</file>
         <file>assets/semilight/slider/slider_handle_focus.png</file>
         <file>assets/semilight/slider/slider_handle_insensitive.png</file>
         <file>assets/semilight/header_arrow_down.png</file>

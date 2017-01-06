@@ -147,6 +147,11 @@ bool Style::drawSlider(ComplexControl control, const QStyleOptionComplex *option
         // retrieve groove rect
         QRect grooveRect( subControlRect( QStyle::CC_Slider, sliderOption, QStyle::SC_SliderGroove, widget ) );
 
+        // NOTE(hualet): adjust(cut) the grooveRect here, so later groove drawing will not
+        // result in groove both ends are extended too far from the minimum tickmark and the maximum tickmark.
+        const float adjustSize = pixelMetric(PM_SliderLength) / 2.0 * 0.5;
+        grooveRect.adjust(adjustSize, 0, -adjustSize, 0);
+
         // base brush
         const QBrush grooveBrush( plExt->brush(PaletteExtended::Slider_GrooveColor) );
 
@@ -228,8 +233,8 @@ void Style::drawSliderHandle(QPainter* painter, const QStyleOptionSlider *option
     painter->setRenderHint( QPainter::Antialiasing, true );
 
     // copy rect
-    QRectF frameRect( rect );
-    frameRect.adjust( 1, 1, -1, -1 );
+    //    QRectF frameRect( rect );
+    //    frameRect.adjust( 1, 1, -1, -1 );
 
     // shadow
     //    if( shadow.isValid() && !sunken )

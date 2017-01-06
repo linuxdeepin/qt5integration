@@ -274,7 +274,7 @@ int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, c
         // sliders
     case PM_SliderThickness: return Metrics::Slider_ControlThickness;
     case PM_SliderControlThickness: return Metrics::Slider_ControlThickness;
-    case PM_SliderLength: return Metrics::Slider_ControlThickness / 1.3;
+    case PM_SliderLength: return Metrics::Slider_ControlThickness;
 
         // checkboxes and radio buttons
     case PM_IndicatorWidth: return Metrics::CheckBox_Size;
