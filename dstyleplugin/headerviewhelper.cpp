@@ -2,9 +2,8 @@
 #include "paletteextended.h"
 
 namespace dstyle {
-bool Style::drawIndicatorHeaderArrowPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+bool Style::drawIndicatorHeaderArrowPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    Q_UNUSED(element)
     Q_UNUSED(widget)
 
     if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {

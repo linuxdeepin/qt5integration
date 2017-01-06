@@ -51,12 +51,15 @@ public:
     // some function type alias.
     //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
     using DrawComplexControlFunc = bool(Style::*)(ComplexControl, const QStyleOptionComplex *, QPainter *, const QWidget *) const;
-    using DrawPrimitiveFunc = bool(Style::*)(QStyle::PrimitiveElement, const QStyleOption*, QPainter*, const QWidget* ) const;
+    using DrawPrimitiveFunc = bool(Style::*)(const QStyleOption*, QPainter*, const QWidget* ) const;
     using DrawControlFunc = bool(Style::*)(const QStyleOption*, QPainter*, const QWidget*) const;
 
 private:
     // frame
-    bool drawFrameFocusRectPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    bool drawFramePrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    bool drawFrameFocusRectPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+
+    bool drawShapedFrameControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
 
     // push button
     bool drawPushButtonBevel(const QStyleOption*, QPainter*, const QWidget*) const;
@@ -81,10 +84,10 @@ private:
     bool drawSliderTickmarkLabels(const QStyleOption*, QPainter*, const QWidget*) const;
 
     // check box
-    bool drawIndicatorCheckBoxPrimitive(PrimitiveElement element, const QStyleOption*, QPainter*, const QWidget*widget) const;
+    bool drawIndicatorCheckBoxPrimitive(const QStyleOption*, QPainter*, const QWidget*widget) const;
 
     // line edit
-    bool drawFrameLineEditPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    bool drawFrameLineEditPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
 
     // indicator
     void drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt, QPainter *p, const QWidget *widget) const;
@@ -108,7 +111,7 @@ private:
     bool drawRubberBandControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
 
     // header view
-    bool drawIndicatorHeaderArrowPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    bool drawIndicatorHeaderArrowPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
     QRect headerArrowRect(const QStyleOption *opt, const QWidget *widget) const;
 
     StyleType m_type;

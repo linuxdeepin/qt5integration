@@ -1,10 +1,10 @@
 QPalette {
-    Base: rgba(0,0,0,0);
+    Base: "#313131";
     Text: rgb(255,255,255);
-    Window: rgb(25,25,25);
+    Window: "#202020";
     WindowText: rgb(255,255,255);
     Highlight: rgba(44, 167, 248, 0.8);
-    HighlightedText: rgb(255,255,255, 0.8);
+    HighlightedText: rgba(255,255,255, 0.8);
     Button: rgba(255, 255, 255, 0.15);
     ButtonText: "#dcdcdc";
 }

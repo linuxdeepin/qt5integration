@@ -360,7 +360,7 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         //        case CE_ScrollBarSubLine: fcn = &Style::drawScrollBarSubLineControl; break;
         //        case CE_ScrollBarAddPage: fcn = &Style::emptyControl; break;
         //        case CE_ScrollBarSubPage: fcn = &Style::emptyControl; break;
-        //        case CE_ShapedFrame: fcn = &Style::drawShapedFrameControl; break;
+    case CE_ShapedFrame: fcn = &Style::drawShapedFrameControl; break;
     case CE_RubberBand: fcn = &Style::drawRubberBandControl; break;
         //        case CE_SizeGrip: fcn = &Style::emptyControl; break;
         //        case CE_HeaderSection: fcn = &Style::drawHeaderSectionControl; break;
@@ -442,7 +442,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
         //    case PE_IndicatorToolBarSeparator: fcn = &Style::drawIndicatorToolBarSeparatorPrimitive; break;
         //    case PE_IndicatorBranch: fcn = &Style::drawIndicatorBranchPrimitive; break;
         //    case PE_FrameStatusBar: fcn = &Style::emptyPrimitive; break;
-        //    case PE_Frame: fcn = &Style::drawFramePrimitive; break;
+    case PE_Frame: fcn = &Style::drawFramePrimitive; break;
         //    case PE_FrameMenu: fcn = &Style::drawFrameMenuPrimitive; break;
     case PE_FrameLineEdit: fcn = &Style::drawFrameLineEditPrimitive; break;
         //    case PE_FrameGroupBox: fcn = &Style::drawFrameGroupBoxPrimitive; break;
@@ -459,7 +459,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     painter->save();
 
     // call function if implemented
-    if( !( fcn && (this->*fcn)( element, option, painter, widget ) ) )
+    if( !( fcn && (this->*fcn)( option, painter, widget ) ) )
     { QCommonStyle::drawPrimitive( element, option, painter, widget ); }
 
     painter->restore();

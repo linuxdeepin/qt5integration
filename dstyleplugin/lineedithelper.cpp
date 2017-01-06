@@ -14,9 +14,8 @@
 
 namespace dstyle {
 
-bool Style::drawFrameLineEditPrimitive(QStyle::PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+bool Style::drawFrameLineEditPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    Q_UNUSED(element)
     Q_UNUSED(widget)
 
     const QRect& rect( option->rect );
