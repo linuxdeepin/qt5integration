@@ -15,22 +15,16 @@
 
 namespace dstyle {
 
-static void drawComboBoxPopupFramePrimitive(const QStyleOption *option, QPainter *painter) {
-    const QRect rect( option->rect );
-    const QPalette palette( option->palette );
-
-    painter->setRenderHints(painter->renderHints() | QPainter::Antialiasing);
-
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(palette.color(QPalette::Base));
-
-    painter->drawRoundedRect(rect, 4, 4);
-}
-
 bool Style::drawFramePrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-
+    // combo box drop-list.
     if (widget->inherits("QComboBoxPrivateContainer")) {
+        drawComboBoxPopupFramePrimitive(option, painter);
+        return true;
+    }
+
+    // line edit completer drop-list
+    if (widget->inherits("QAbstractItemView") || !widget->parentWidget()) {
         drawComboBoxPopupFramePrimitive(option, painter);
         return true;
     }

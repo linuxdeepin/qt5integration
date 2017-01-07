@@ -114,6 +114,9 @@ private:
     bool drawIndicatorHeaderArrowPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
     QRect headerArrowRect(const QStyleOption *opt, const QWidget *widget) const;
 
+    // combobox
+    void drawComboBoxPopupFramePrimitive(const QStyleOption *option, QPainter *painter) const;
+
     StyleType m_type;
     PaletteExtended *m_palette = Q_NULLPTR;
 

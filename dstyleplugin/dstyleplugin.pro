@@ -29,7 +29,8 @@ SOURCES += dstyleplugin.cpp \
     progressbarhelper.cpp \
     checkboxhelper.cpp \
     rubberbandhelper.cpp \
-    headerviewhelper.cpp
+    headerviewhelper.cpp \
+    comboboxhelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \
