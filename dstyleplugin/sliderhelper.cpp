@@ -150,7 +150,11 @@ bool Style::drawSlider(ComplexControl control, const QStyleOptionComplex *option
         // NOTE(hualet): adjust(cut) the grooveRect here, so later groove drawing will not
         // result in groove both ends are extended too far from the minimum tickmark and the maximum tickmark.
         const float adjustSize = pixelMetric(PM_SliderLength) / 2.0 * 0.5;
-        grooveRect.adjust(adjustSize, 0, -adjustSize, 0);
+
+        if (sliderOption->orientation == Qt::Horizontal)
+            grooveRect.adjust(adjustSize, 0, -adjustSize, 0);
+        else
+            grooveRect.adjust(0, adjustSize, 0, -adjustSize);
 
         // base brush
         const QBrush grooveBrush( plExt->brush(PaletteExtended::Slider_GrooveColor) );

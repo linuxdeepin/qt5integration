@@ -18,7 +18,13 @@ QRect GeometryUtils::centerRect(const QRect &rect, const QSize &size)
 
 QRect GeometryUtils::centerRect(const QRect &rect, int width, int height)
 {
-    return QRect(rect.left() + (rect.width() - width)/2, rect.top() + (rect.height() - height)/2, width, height);
+    QRect newRect = rect;
+
+    newRect.setWidth(width);
+    newRect.setHeight(height);
+    newRect.moveCenter(rect.center());
+
+    return newRect;
 }
 
 QRect GeometryUtils::insideMargin(const QRect &r, int margin)
