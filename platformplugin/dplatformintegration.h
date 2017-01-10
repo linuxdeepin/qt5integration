@@ -29,6 +29,8 @@ public:
 
     QPlatformNativeInterface *nativeInterface()const Q_DECL_OVERRIDE;
 
+    QStringList themeNames() const Q_DECL_OVERRIDE;
+
 #ifdef Q_OS_LINUX
     void initialize() Q_DECL_OVERRIDE;
 

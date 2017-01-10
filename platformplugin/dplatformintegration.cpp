@@ -92,6 +92,15 @@ QPlatformNativeInterface *DPlatformIntegration::nativeInterface() const
     return m_nativeInterface.data();
 }
 
+QStringList DPlatformIntegration::themeNames() const
+{
+    QStringList list = DPlatformIntegrationParent::themeNames();
+
+    list.prepend("deepin");
+
+    return list;
+}
+
 #ifdef Q_OS_LINUX
 void DPlatformIntegration::initialize()
 {
