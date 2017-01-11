@@ -500,8 +500,14 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
     case CT_PushButton:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             const bool flat = btn->features & QStyleOptionButton::Flat;
-            if (!btn->text.isEmpty() && newSize.width() < 80 && !flat )
-                newSize.setWidth(80);
+            const bool semiTransparent = m_type == StyleSemiDark || m_type == StyleSemiLight;
+            if (!btn->text.isEmpty() && !flat) {
+                if (newSize.width() < 80)
+                    newSize.setWidth(80);
+                // QPushButton should be set a minimum height 36 in d-semi-transparent style.
+                if (semiTransparent && newSize.height() < 36)
+                    newSize.setHeight(36);
+            }
             if (!btn->icon.isNull() && btn->iconSize.height() > 16)
                 newSize -= QSize(0, 2);
         }
