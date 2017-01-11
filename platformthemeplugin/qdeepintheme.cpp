@@ -64,8 +64,6 @@ QDeepinTheme::QDeepinTheme()
             g_signal_connect(settings, "notify::gtk-icon-theme-name", G_CALLBACK(gtkIconThemeSetCallback), 0);
         }
     }
-
-    QDeepinFileDialogHelper::initDBusFileDialogManager();
 }
 
 QDeepinTheme::~QDeepinTheme()
@@ -79,6 +77,16 @@ QDeepinTheme::~QDeepinTheme()
 bool QDeepinTheme::usePlatformNativeDialog(DialogType type) const
 {
     if (type == FileDialog) {
+        if (qgetenv("_d_disableDBusFileDialog") == "true")
+            return false;
+
+        static bool dbusDialogManagerInitialized = false;
+
+        if (!dbusDialogManagerInitialized) {
+            dbusDialogManagerInitialized = true;
+            QDeepinFileDialogHelper::initDBusFileDialogManager();
+        }
+
         return m_usePlatformNativeDialog && QDeepinFileDialogHelper::manager;
     }
 
