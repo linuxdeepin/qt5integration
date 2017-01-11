@@ -148,6 +148,8 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(gtkSetting("gtk-fallback-icon-theme"));
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(QGenericUnixTheme::xdgIconThemePaths() << QDir::homePath() + "/.local/share/icons");
+    case UseFullScreenForPopupMenu:
+        return true;
     default:
         break;
     }
