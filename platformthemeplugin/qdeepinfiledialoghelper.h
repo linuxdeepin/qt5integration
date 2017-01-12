@@ -37,6 +37,7 @@ private:
     mutable QPointer<DFileDialogHandle> nativeDialog;
     mutable QPointer<QWindow> auxiliaryWindow;
     mutable QPointer<QFileDialog> qtDialog;
+    QPointer<QWindow> activeWindow;
     static DFileDialogManager *manager;
 
     void ensureDialog() const;

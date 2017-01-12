@@ -7,7 +7,6 @@
 #include <QDialog>
 #include <QEvent>
 #include <QWindow>
-#include <QApplication>
 #include <QDBusObjectPath>
 #include <QFileDialog>
 #include <QX11Info>
@@ -67,6 +66,11 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
     applyOptions();
 
     if (nativeDialog) {
+        if (parent)
+            activeWindow = parent;
+        else
+            activeWindow = QGuiApplication::focusWindow();
+
         nativeDialog->setParent(parent);
         auxiliaryWindow->setParent(parent);
         auxiliaryWindow->setFlags(flags);
@@ -134,6 +138,11 @@ void QDeepinFileDialogHelper::hide()
 
     if (auxiliaryWindow) {
         QGuiApplicationPrivate::hideModalWindow(auxiliaryWindow);
+
+        if (activeWindow) {
+            activeWindow->requestActivate();
+            activeWindow.clear();
+        }
     }
 }
 
