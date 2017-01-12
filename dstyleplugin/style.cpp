@@ -146,7 +146,8 @@ void Style::polish(QWidget *w)
         w->setFont(font);
     }
 
-    if (DApplication::isDXcbPlatform() && qobject_cast<QMenu*>(w)) {
+    if (DApplication::isDXcbPlatform() && qobject_cast<QMenu*>(w)
+            && (!w->windowHandle() || DPlatformWindowHandle::isEnabledDXcb(w))) {
         DPlatformWindowHandle handle(w);
 
         const QColor &color = m_palette->brush(PaletteExtended::Menu_BorderColor).color();
