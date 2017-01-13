@@ -78,6 +78,32 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
 
         if (modality != Qt::NonModal) {
             QGuiApplicationPrivate::showModalWindow(auxiliaryWindow);
+
+            if (modality == Qt::ApplicationModal) {
+                connect(qApp, &QGuiApplication::applicationStateChanged, this, [this] {
+                    if (qApp->applicationState() == Qt::ApplicationActive)
+                        nativeDialog->activateWindow();
+                });
+                connect(nativeDialog, &DFileDialogHandle::windowActiveChanged, this, [this] {
+                    if (qApp->platformName() != "dxcb")
+                        return;
+
+                    QWindow *focus_window = qApp->focusWindow();
+
+                    if (!focus_window)
+                        return;
+
+                    if (focus_window->type() != Qt::Widget
+                            && focus_window->type() != Qt::Window
+                            && focus_window->type() != Qt::Dialog) {
+                        return;
+                    }
+
+                    if (!nativeDialog->windowActive() && qApp->applicationState() == Qt::ApplicationActive) {
+                        nativeDialog->activateWindow();
+                    }
+                });
+            }
         }
     } else {
         qtDialog->setAttribute(Qt::WA_NativeWindow);
