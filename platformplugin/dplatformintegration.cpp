@@ -62,15 +62,15 @@ QPlatformWindow *DPlatformIntegration::createPlatformWindow(QWindow *window) con
 
     if (isUseDxcb) {
         Q_UNUSED(new DPlatformWindowHook(xw))
+    }
 
 #ifdef Q_OS_LINUX
-        if (window->type() == Qt::Widget
-                || window->type() == Qt::Window
-                || window->type() == Qt::Dialog) {
-            Q_UNUSED(new WindowEventHook(xw))
-        }
-#endif
+    if (window->type() == Qt::Widget
+            || window->type() == Qt::Window
+            || window->type() == Qt::Dialog) {
+        Q_UNUSED(new WindowEventHook(xw))
     }
+#endif
 
     return xw;
 }

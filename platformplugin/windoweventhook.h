@@ -25,6 +25,11 @@ public:
     { return static_cast<QXcbWindow*>(reinterpret_cast<QXcbWindowEventListener*>(const_cast<WindowEventHook*>(this)));}
 
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
+    void handleFocusInEvent(const xcb_focus_in_event_t *event);
+    void handleFocusOutEvent(const xcb_focus_out_event_t *event);
+
+private:
+    static bool relayFocusToModalWindow(QWindow *w, QXcbConnection *connection);
 };
 
 DPP_END_NAMESPACE

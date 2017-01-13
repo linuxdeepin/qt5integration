@@ -21,6 +21,7 @@
 #include <QMimeData>
 
 #include <private/qguiapplication_p.h>
+#include <private/qwindow_p.h>
 
 DPP_BEGIN_NAMESPACE
 
@@ -28,6 +29,10 @@ WindowEventHook::WindowEventHook(QXcbWindow *window)
 {
     VtableHook::overrideVfptrFun(window, &QXcbWindowEventListener::handleClientMessageEvent,
                                  this, &WindowEventHook::handleClientMessageEvent);
+    VtableHook::overrideVfptrFun(window, &QXcbWindowEventListener::handleFocusInEvent,
+                                 this, &WindowEventHook::handleFocusInEvent);
+    VtableHook::overrideVfptrFun(window, &QXcbWindowEventListener::handleFocusOutEvent,
+                                 this, &WindowEventHook::handleFocusOutEvent);
 
     QObject::connect(window->window(), &QWindow::destroyed, window->window(), [this, window] {
         delete this;
@@ -163,6 +168,95 @@ void WindowEventHook::handleClientMessageEvent(const xcb_client_message_event_t 
     } else {
         me->QXcbWindow::handleClientMessageEvent(event);
     }
+}
+
+bool WindowEventHook::relayFocusToModalWindow(QWindow *w, QXcbConnection *connection)
+{
+    QWindow *modal_window = 0;
+    if (QGuiApplicationPrivate::instance()->isWindowBlocked(w,&modal_window) && modal_window != w) {
+        if (!modal_window->isExposed())
+            return false;
+
+        modal_window->requestActivate();
+        connection->flush();
+        return true;
+    }
+
+    return false;
+}
+
+void WindowEventHook::handleFocusInEvent(const xcb_focus_in_event_t *event)
+{
+    Q_UNUSED(event)
+
+    QXcbWindow *xcbWindow = window();
+    QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(xcbWindow->window()))->eventReceiver();
+
+    if (relayFocusToModalWindow(w, xcbWindow->connection()))
+        return;
+
+    xcbWindow->connection()->setFocusWindow(static_cast<QXcbWindow *>(w->handle()));
+    QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
+}
+
+enum QX11EmbedMessageType {
+    XEMBED_EMBEDDED_NOTIFY = 0,
+    XEMBED_WINDOW_ACTIVATE = 1,
+    XEMBED_WINDOW_DEACTIVATE = 2,
+    XEMBED_REQUEST_FOCUS = 3,
+    XEMBED_FOCUS_IN = 4,
+    XEMBED_FOCUS_OUT = 5,
+    XEMBED_FOCUS_NEXT = 6,
+    XEMBED_FOCUS_PREV = 7,
+    XEMBED_MODALITY_ON = 10,
+    XEMBED_MODALITY_OFF = 11,
+    XEMBED_REGISTER_ACCELERATOR = 12,
+    XEMBED_UNREGISTER_ACCELERATOR = 13,
+    XEMBED_ACTIVATE_ACCELERATOR = 14
+};
+
+static bool focusInPeeker(QXcbConnection *connection, xcb_generic_event_t *event)
+{
+    if (!event) {
+        // FocusIn event is not in the queue, proceed with FocusOut normally.
+        QWindowSystemInterface::handleWindowActivated(0, Qt::ActiveWindowFocusReason);
+        return true;
+    }
+    uint response_type = event->response_type & ~0x80;
+    if (response_type == XCB_FOCUS_IN) {
+        // Ignore focus events that are being sent only because the pointer is over
+        // our window, even if the input focus is in a different window.
+        xcb_focus_in_event_t *e = (xcb_focus_in_event_t *) event;
+        if (e->detail != XCB_NOTIFY_DETAIL_POINTER)
+            return true;
+    }
+
+    /* We are also interested in XEMBED_FOCUS_IN events */
+    if (response_type == XCB_CLIENT_MESSAGE) {
+        xcb_client_message_event_t *cme = (xcb_client_message_event_t *)event;
+        if (cme->type == connection->atom(QXcbAtom::_XEMBED)
+            && cme->data.data32[1] == XEMBED_FOCUS_IN)
+            return true;
+    }
+
+    return false;
+}
+
+void WindowEventHook::handleFocusOutEvent(const xcb_focus_out_event_t *event)
+{
+    Q_UNUSED(event)
+
+    QXcbWindow *xcbWindow = window();
+    QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(xcbWindow->window()))->eventReceiver();
+
+    if (relayFocusToModalWindow(w, xcbWindow->connection()))
+        return;
+
+    xcbWindow->connection()->setFocusWindow(0);
+    // Do not set the active window to 0 if there is a FocusIn coming.
+    // There is however no equivalent for XPutBackEvent so register a
+    // callback for QXcbConnection instead.
+    xcbWindow->connection()->addPeekFunc(focusInPeeker);
 }
 
 DPP_END_NAMESPACE
