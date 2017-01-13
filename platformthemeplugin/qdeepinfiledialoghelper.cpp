@@ -282,8 +282,36 @@ void QDeepinFileDialogHelper::ensureDialog() const
             auxiliaryWindow = new QWindow();
 
             connect(nativeDialog, &QObject::destroyed, auxiliaryWindow, &QWindow::deleteLater);
+            connect(nativeDialog, &QObject::destroyed, nativeDialog, &DFileDialogHandle::deleteLater);
+            connect(nativeDialog, &DFileDialogHandle::destroyed, nativeDialog, &QObject::deleteLater);
             connect(nativeDialog, &DFileDialogHandle::accepted, this, &QDeepinFileDialogHelper::accept);
             connect(nativeDialog, &DFileDialogHandle::rejected, this, &QDeepinFileDialogHelper::reject);
+            connect(nativeDialog, &DFileDialogHandle::destroyed, this, &QDeepinFileDialogHelper::reject);
+
+            QTimer *heartbeatTimer = new QTimer(nativeDialog);
+
+            connect(heartbeatTimer, &QTimer::timeout, nativeDialog, [this, heartbeatTimer] {
+                QDBusPendingReply<> reply = nativeDialog->makeHeartbeat();
+
+                reply.waitForFinished();
+
+                if (reply.isError()) {
+                    qWarning() << "Make heartbeat is failed:" << reply.error();
+
+                    if (reply.error().type() == QDBusError::UnknownMethod) {
+                        qWarning() << "Make heartbeat is't support for current dbus file dialog, Will be stop heartbeat timer.";
+
+                        heartbeatTimer->stop();
+                        return;
+                    }
+
+                    nativeDialog->QObject::deleteLater();
+                    const_cast<QDeepinFileDialogHelper*>(this)->reject();
+                }
+            });
+            int heartbeatInterval = nativeDialog->heartbeatInterval();
+            heartbeatTimer->setInterval(qMax(1 * 1000, qMin(int(heartbeatInterval / 1.5), heartbeatInterval - 5 * 1000)));
+            heartbeatTimer->start();
         }
     }
 
