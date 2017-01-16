@@ -309,6 +309,9 @@ QRect Style::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex
     switch (cc) {
     case QStyle::CC_Slider: return sliderSubControlRect(opt, sc, w);
     case QStyle::CC_ScrollBar: return scrollbarSubControlRect(opt, sc, w);
+#ifndef QT_NO_COMBOBOX
+    case QStyle::CC_ComboBox: return comboBoxSubControlRect(opt, sc, w);
+#endif
     default:
         break;
     }
@@ -347,7 +350,7 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         //        case CE_CheckBoxLabel: fcn = &Style::drawCheckBoxLabelControl; break;
         //        case CE_RadioButtonLabel: fcn = &Style::drawCheckBoxLabelControl; break;
         //        case CE_ToolButtonLabel: fcn = &Style::drawToolButtonLabelControl; break;
-        //        case CE_ComboBoxLabel: fcn = &Style::drawComboBoxLabelControl; break;
+    case CE_ComboBoxLabel: fcn = &Style::drawComboBoxLabelControl; break;
     case CE_MenuBarEmptyArea: return;
     case CE_MenuBarItem: fcn = &Style::drawMenuBarItemControl; break;
     case CE_MenuItem: fcn = &Style::drawMenuItemControl; break;
@@ -397,6 +400,9 @@ void Style::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComp
 
     switch (cc) {
     case QStyle::CC_Slider: fn = &Style::drawSlider; break;
+#ifndef QT_NO_COMBOBOX
+    case QStyle::CC_ComboBox: fn = &Style::drawComboBox; break;
+#endif
     default:
         break;
     }
@@ -530,7 +536,7 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
         newSize += QSize(0, -3);
         break;
     case CT_ComboBox:
-        newSize += QSize(2, 4);
+//        newSize += QSize(2, 4);
         break;
     case CT_LineEdit:
         newSize += QSize(0, 4);

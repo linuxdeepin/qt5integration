@@ -116,6 +116,9 @@ private:
 
     // combobox
     void drawComboBoxPopupFramePrimitive(const QStyleOption *option, QPainter *painter) const;
+    bool drawComboBox(ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const;
+    QRect comboBoxSubControlRect(const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget ) const;
+    bool drawComboBoxLabelControl(const QStyleOption *option, QPainter *painter, const QWidget *) const;
 
     StyleType m_type;
     PaletteExtended *m_palette = Q_NULLPTR;
