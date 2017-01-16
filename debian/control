@@ -13,6 +13,7 @@ Standards-Version: 3.9.8
 
 Package: dde-qt5integration
 Architecture: any
+Provides: libqt5dxcb-plugin, libqt5deepintheme-plugin
 Conflicts: libqt5dxcb-plugin, libqt5deepintheme-plugin
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: <insert up to 60 chars description>
