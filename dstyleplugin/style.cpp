@@ -164,11 +164,21 @@ void Style::polish(QWidget *w)
     w->setProperty(QT_STRINGIFY(_d_hideShortcutText), (bool)qobject_cast<DApplication*>(qApp));
     w->setProperty(QT_STRINGIFY(_d_drawMenuCheckBox), !(bool)qobject_cast<DApplication*>(qApp));
 
+    QPalette palette = w->palette();
+
     if (w->testAttribute(Qt::WA_SetStyle)) {
-        QPalette palette = w->palette();
         polish(palette);
-        w->setPalette(palette);
     }
+
+    // combo box drop-list.
+    // line edit completer drop-list
+    if (widgetIsComboBoxPopupFramePrimitive(w)) {
+        palette.setBrush(QPalette::Background, m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
+                                                                PaletteExtended::PseudoClass_Unspecified,
+                                                                palette.brush(QPalette::Background)));
+    }
+
+    w->setPalette(palette);
 }
 
 void Style::unpolish(QWidget *w)

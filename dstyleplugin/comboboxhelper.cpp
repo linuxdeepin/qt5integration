@@ -26,7 +26,7 @@ void Style::drawComboBoxPopupFramePrimitive(const QStyleOption *option, QPainter
     painter->setRenderHints(painter->renderHints() | QPainter::Antialiasing);
 
     painter->setPen(m_palette->brush(PaletteExtended::Menu_BorderColor).color());
-    painter->setBrush(m_palette->brush(PaletteExtended::Menu_BackgroundBrush));
+    painter->setBrush(option->palette.brush(QPalette::Background));
 
     painter->drawRoundedRect(rect, 4, 4);
 }
@@ -225,6 +225,13 @@ bool Style::drawComboBoxLabelControl(const QStyleOption *option, QPainter *paint
     }
 
     return true;
+}
+
+bool Style::widgetIsComboBoxPopupFramePrimitive(const QWidget *w)
+{
+    // combo box drop-list.
+    // line edit completer drop-list
+    return w->inherits("QComboBoxPrivateContainer") || (w->inherits("QAbstractItemView") && w->isTopLevel());
 }
 
 }

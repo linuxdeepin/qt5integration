@@ -18,13 +18,8 @@ namespace dstyle {
 bool Style::drawFramePrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
     // combo box drop-list.
-    if (widget->inherits("QComboBoxPrivateContainer")) {
-        drawComboBoxPopupFramePrimitive(option, painter);
-        return true;
-    }
-
     // line edit completer drop-list
-    if (widget->inherits("QAbstractItemView") || !widget->parentWidget()) {
+    if (widgetIsComboBoxPopupFramePrimitive(widget)) {
         drawComboBoxPopupFramePrimitive(option, painter);
         return true;
     }

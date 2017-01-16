@@ -120,6 +120,8 @@ private:
     QRect comboBoxSubControlRect(const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget ) const;
     bool drawComboBoxLabelControl(const QStyleOption *option, QPainter *painter, const QWidget *) const;
 
+    static bool widgetIsComboBoxPopupFramePrimitive(const QWidget *w);
+
     StyleType m_type;
     PaletteExtended *m_palette = Q_NULLPTR;
 
