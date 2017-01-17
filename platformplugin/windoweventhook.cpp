@@ -36,7 +36,7 @@ WindowEventHook::WindowEventHook(QXcbWindow *window)
 
     QObject::connect(window->window(), &QWindow::destroyed, window->window(), [this, window] {
         delete this;
-        VtableHook::clearGhostVtable(static_cast<QPlatformWindow*>(window));
+        VtableHook::clearGhostVtable(static_cast<QXcbWindowEventListener*>(window));
     });
 }
 
