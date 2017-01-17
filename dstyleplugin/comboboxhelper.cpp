@@ -229,6 +229,9 @@ bool Style::drawComboBoxLabelControl(const QStyleOption *option, QPainter *paint
 
 bool Style::widgetIsComboBoxPopupFramePrimitive(const QWidget *w)
 {
+    if (!w)
+        return false;
+
     // combo box drop-list.
     // line edit completer drop-list
     return w->inherits("QComboBoxPrivateContainer") || (w->inherits("QAbstractItemView") && w->isTopLevel());
