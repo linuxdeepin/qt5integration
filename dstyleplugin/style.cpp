@@ -173,6 +173,7 @@ void Style::polish(QWidget *w)
     // combo box drop-list.
     // line edit completer drop-list
     if (widgetIsComboBoxPopupFramePrimitive(w)) {
+        polish(palette);
         palette.setBrush(QPalette::Background, m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
                                                                 PaletteExtended::PseudoClass_Unspecified,
                                                                 palette.brush(QPalette::Background)));
@@ -503,6 +504,8 @@ int Style::styleHint(QStyle::StyleHint sh, const QStyleOption *opt, const QWidge
     case QStyle::SH_ItemView_ShowDecorationSelected: return true;
     case SH_RubberBand_Mask:
         return 0;
+    case SH_ComboBox_Popup:
+        return true;
     default:
         break;
     }

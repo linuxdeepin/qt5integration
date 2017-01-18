@@ -122,6 +122,7 @@ ScrollBar:focus {
 Menu {
     SeparatorColor: rgba(0, 0, 0, 0.1);
     BorderColor: rgba(0, 0, 0, 0.1);
+    BackgroundBrush: rgb(255,255,255);
 }
 
 CheckBox {

@@ -234,7 +234,9 @@ bool Style::widgetIsComboBoxPopupFramePrimitive(const QWidget *w)
 
     // combo box drop-list.
     // line edit completer drop-list
-    return w->inherits("QComboBoxPrivateContainer") || (w->inherits("QAbstractItemView") && w->isTopLevel());
+    return w->inherits("QComboBoxListView")
+            || w->inherits("QComboBoxPrivateContainer")
+            || (w->inherits("QAbstractItemView") && w->isTopLevel());
 }
 
 }
