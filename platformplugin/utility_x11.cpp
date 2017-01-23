@@ -9,6 +9,10 @@
 #include <QDebug>
 #include <QtX11Extras/QX11Info>
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+#include <QtWidgets/qtwidgetsglobal.h>
+#endif
+
 #include <xcb/shape.h>
 
 #include <X11/cursorfont.h>

@@ -18,8 +18,13 @@ public:
 
     QIconEngine *createIconEngine(const QString &iconName) const Q_DECL_OVERRIDE;
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+    QIcon fileIcon(const QFileInfo &fileInfo,
+                   QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
+#else
     QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
                            QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
+#endif
 
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
 

@@ -122,12 +122,21 @@ QPixmap QDeepinTheme::standardPixmap(QPlatformTheme::StandardPixmap sp, const QS
     return QGenericUnixTheme::standardPixmap(sp, size);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+QIcon QDeepinTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const
+{
+    Q_UNUSED(iconOptions);
+
+    return XdgIcon::fromTheme(m_mimeDatabase.mimeTypeForFile(fileInfo).iconName());
+}
+#else
 QPixmap QDeepinTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size, QPlatformTheme::IconOptions iconOptions) const
 {
     Q_UNUSED(iconOptions);
 
     return XdgIcon::fromTheme(m_mimeDatabase.mimeTypeForFile(fileInfo).iconName()).pixmap(size.toSize());
 }
+#endif
 
 QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
