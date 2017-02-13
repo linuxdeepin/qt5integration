@@ -48,8 +48,17 @@ public:
     static QByteArray windowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, quint32 len);
     static void setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len, uint8_t format = 8);
 
+    struct BlurArea {
+        quint32 x;
+        quint32 y;
+        quint32 width;
+        quint32 height;
+        quint32 xRadius;
+        quint32 yRaduis;
+    };
+
     // by Deepin Window Manager
-    static bool blurWindowBackground(const uint WId, const QRegion &region);
+    static bool blurWindowBackground(const uint WId, const QVector<BlurArea> &areas);
 
 private:
     static void sendMoveResizeMessage(uint WId, uint32_t action, QPoint globalPos = QPoint(), Qt::MouseButton qbutton = Qt::LeftButton);

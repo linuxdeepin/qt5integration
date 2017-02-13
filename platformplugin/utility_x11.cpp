@@ -23,6 +23,7 @@
 
 #define XATOM_MOVE_RESIZE "_NET_WM_MOVERESIZE"
 #define XDEEPIN_BLUR_REGION "_NET_WM_DEEPIN_BLUR_REGION"
+#define XDEEPIN_BLUR_REGION_ROUNDED "_NET_WM_DEEPIN_BLUR_REGION_ROUNDED"
 
 QT_BEGIN_NAMESPACE
 //extern Q_WIDGETS_EXPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed = 0);
@@ -314,26 +315,21 @@ void Utility::setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAt
     xcb_flush(conn);
 }
 
-bool Utility::blurWindowBackground(const uint WId, const QRegion &region)
+bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &areas)
 {
-    xcb_atom_t atom = internAtom(XDEEPIN_BLUR_REGION);
+    xcb_atom_t atom = internAtom(XDEEPIN_BLUR_REGION_ROUNDED);
 
     if (atom == XCB_NONE)
         return false;
 
-    const QVector<QRect> &rects = region.rects();
-    QVector<quint32> data;
+    if (areas.isEmpty()) {
+        QVector<BlurArea> areas;
 
-    data.reserve(rects.size() * 4);
-
-    for (const QRect &rect : rects) {
-        data << rect.x();
-        data << rect.y();
-        data << rect.width();
-        data << rect.height();
+        areas << BlurArea();
+        setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, areas.constData(), areas.size() * sizeof(BlurArea) / sizeof(quint32), sizeof(quint32) * 8);
+    } else {
+        setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, areas.constData(), areas.size() * sizeof(BlurArea) / sizeof(quint32), sizeof(quint32) * 8);
     }
-
-    setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, data.data(), data.size(), sizeof(quint32) * 8);
 
     return true;
 }
