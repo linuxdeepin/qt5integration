@@ -87,7 +87,9 @@ bool QDeepinTheme::usePlatformNativeDialog(DialogType type) const
             QDeepinFileDialogHelper::initDBusFileDialogManager();
         }
 
-        return m_usePlatformNativeDialog && QDeepinFileDialogHelper::manager;
+        return m_usePlatformNativeDialog
+                && QDeepinFileDialogHelper::manager
+                && QDeepinFileDialogHelper::manager->isUseFileChooserDialog();
     }
 
     return QGenericUnixTheme::usePlatformNativeDialog(type);
