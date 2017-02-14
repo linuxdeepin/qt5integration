@@ -315,9 +315,19 @@ void Utility::setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAt
     xcb_flush(conn);
 }
 
+bool Utility::hasBlurWindow()
+{
+    static xcb_atom_t atom = internAtom(XDEEPIN_BLUR_REGION_ROUNDED);
+
+    if (atom == XCB_NONE)
+        return false;
+
+    return true;
+}
+
 bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &areas)
 {
-    xcb_atom_t atom = internAtom(XDEEPIN_BLUR_REGION_ROUNDED);
+    static xcb_atom_t atom = internAtom(XDEEPIN_BLUR_REGION_ROUNDED);
 
     if (atom == XCB_NONE)
         return false;

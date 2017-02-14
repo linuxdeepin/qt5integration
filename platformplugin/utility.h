@@ -58,6 +58,7 @@ public:
     };
 
     // by Deepin Window Manager
+    static bool hasBlurWindow();
     static bool blurWindowBackground(const uint WId, const QVector<BlurArea> &areas);
 
 private:

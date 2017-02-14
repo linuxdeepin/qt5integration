@@ -10,11 +10,13 @@ DPlatformNativeInterface::DPlatformNativeInterface()
 
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
 QFunctionPointer DPlatformNativeInterface::platformFunction(const QByteArray &function) const
 {
     if (function == setWmBlurWindowBackgroundArea) {
         return reinterpret_cast<QFunctionPointer>(&Utility::blurWindowBackground);
+    } else if (function == hasBlurWindow) {
+        return reinterpret_cast<QFunctionPointer>(&Utility::hasBlurWindow);
     }
 
     return QXcbNativeInterface::platformFunction(function);

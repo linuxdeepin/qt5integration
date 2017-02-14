@@ -31,5 +31,6 @@ DEFINE_CONST_CHAR(userWindowMaximumSize);
 
 // functions
 DEFINE_CONST_CHAR(setWmBlurWindowBackgroundArea);
+DEFINE_CONST_CHAR(hasBlurWindow);
 
 #endif // GLOBAL_H
