@@ -58,6 +58,9 @@ QDeepinFileDialogHelper::~QDeepinFileDialogHelper()
 
     if (auxiliaryWindow)
         auxiliaryWindow->deleteLater();
+
+    if (nativeDialog)
+        nativeDialog->deleteLater();
 }
 
 bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
@@ -290,7 +293,7 @@ void QDeepinFileDialogHelper::ensureDialog() const
 
             QTimer *heartbeatTimer = new QTimer(nativeDialog);
 
-            connect(heartbeatTimer, &QTimer::timeout, nativeDialog, [this, heartbeatTimer] {
+            connect(heartbeatTimer, &QTimer::timeout, this, [this, heartbeatTimer] {
                 QDBusPendingReply<> reply = nativeDialog->makeHeartbeat();
 
                 reply.waitForFinished();
