@@ -28,6 +28,7 @@ DEFINE_CONST_CHAR(enableSystemResize);
 DEFINE_CONST_CHAR(enableSystemMove);
 DEFINE_CONST_CHAR(userWindowMinimumSize);
 DEFINE_CONST_CHAR(userWindowMaximumSize);
+DEFINE_CONST_CHAR(windowBlurAreas);
 
 // functions
 DEFINE_CONST_CHAR(setWmBlurWindowBackgroundArea);

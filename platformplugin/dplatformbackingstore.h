@@ -8,6 +8,7 @@
 #include <QBasicTimer>
 
 #include "global.h"
+#include "utility.h"
 
 QT_BEGIN_NAMESPACE
 class QXcbBackingStore;
@@ -71,6 +72,7 @@ private:
     void updateInputShapeRegion();
     void updateClipPath();
     void updateWindowShadow();
+    bool updateWindowBlurAreasForWM();
     void doDelayedUpdateWindowShadow(int delaye = 100);
 
     /// update of user propertys
@@ -85,9 +87,11 @@ private:
     void updateTranslucentBackground();
     void updateEnableSystemResize();
     void updateEnableSystemMove();
+    void updateWindowBlurAreas();
 
     void setWindowMargins(const QMargins &margins);
     void setClipPah(const QPainterPath &path);
+    void setWindowBlurArea(const QVector<Utility::BlurArea> &area);
 
     void paintWindowShadow(QRegion region = QRegion());
     void repaintWindowShadow();
@@ -128,6 +132,8 @@ private:
     bool m_translucentBackground = false;
     bool m_enableSystemResize = true;
     bool m_enableSystemMove = true;
+
+    QVector<Utility::BlurArea> m_blurAreaList;
 
     QRect windowValidRect;
     QMargins windowMargins;

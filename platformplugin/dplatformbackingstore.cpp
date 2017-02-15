@@ -1,8 +1,6 @@
 #include "dplatformbackingstore.h"
 #include "dplatformwindowhook.h"
 #include "vtablehook.h"
-#include "utility.h"
-#include "global.h"
 
 #include "qxcbbackingstore.h"
 
@@ -272,6 +270,8 @@ skip_set_cursor:
                     Utility::cancelWindowMoveResize(window->winId());
 
                 updateStealMoveEvent();
+            } else if (e->propertyName() == windowBlurAreas) {
+                m_store->updateWindowBlurAreas();
             }
 
             break;
@@ -657,6 +657,7 @@ void DPlatformBackingStore::initUserPropertys()
     updateTranslucentBackground();
     updateEnableSystemMove();
     updateEnableSystemResize();
+    updateWindowBlurAreas();
 }
 
 void DPlatformBackingStore::updateWindowMargins(bool repaintShadow)
@@ -918,6 +919,20 @@ void DPlatformBackingStore::updateEnableSystemMove()
     m_enableSystemMove = v.toBool();
 }
 
+void DPlatformBackingStore::updateWindowBlurAreas()
+{
+    const QVariant &v = window()->property(windowBlurAreas);
+    const QVector<quint32> &tmpV = qvariant_cast<QVector<quint32>>(v);
+    const QVector<Utility::BlurArea> &a = *(reinterpret_cast<const QVector<Utility::BlurArea>*>(&tmpV));
+
+    if (a.isEmpty() && m_blurAreaList.isEmpty())
+        return;
+
+    m_blurAreaList = a;
+
+    updateWindowBlurAreasForWM();
+}
+
 void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
 {
     if (windowMargins == margins)
@@ -941,6 +956,9 @@ void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
 
     updateInputShapeRegion();
     updateFrameExtents();
+
+    if (!m_blurAreaList.isEmpty())
+        updateWindowBlurAreasForWM();
 }
 
 void DPlatformBackingStore::setClipPah(const QPainterPath &path)
@@ -1058,6 +1076,25 @@ void DPlatformBackingStore::updateWindowShadow()
     } else {
         shadowPixmap = QPixmap::fromImage(Utility::borderImage(shadowPixmap, windowMargins + m_windowRadius, m_size));
     }
+}
+
+bool DPlatformBackingStore::updateWindowBlurAreasForWM()
+{
+    QVector<Utility::BlurArea> newAreas;
+    newAreas.reserve(m_blurAreaList.size());
+
+    QPoint window_offset = windowOffset();
+
+    foreach (Utility::BlurArea area, m_blurAreaList) {
+        area.x += window_offset.x();
+        area.y += window_offset.y();
+        area.width = qMin(area.x + area.width, (quint32)windowValidRect.right()) - area.x;
+        area.height = qMin(area.y + area.height, (quint32)windowValidRect.bottom()) - area.y;
+
+        newAreas.append(std::move(area));
+    }
+
+    return Utility::blurWindowBackground(window()->winId(), newAreas);
 }
 
 void DPlatformBackingStore::doDelayedUpdateWindowShadow(int delaye)
