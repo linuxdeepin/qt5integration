@@ -42,6 +42,6 @@ exists($$PWD/libqt5xcbqpa-dev) {
         !system(cd $$PWD/libqt5xcbqpa-dev && git checkout $$VERSION):error(Not support Qt Version: $$VERSION)
     }
 } else {
-    !system(git clone https://github.com/zccrs/libqt5xcbqpa-dev.git):error(clone libqt5xcbqpa header sources failed)
+    !system(git clone https://cr.deepin.io/libqt5xcbqpa-dev):error(clone libqt5xcbqpa header sources failed)
     !system(cd $$PWD/libqt5xcbqpa-dev && git checkout $$VERSION):error(Not support Qt Version: $$VERSION)
 }
