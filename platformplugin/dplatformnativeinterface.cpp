@@ -3,6 +3,10 @@
 #include "utility.h"
 #include "dplatformwindowhook.h"
 
+#ifdef Q_OS_LINUX
+#include "dxcbwmsupport.h"
+#endif
+
 DPP_BEGIN_NAMESPACE
 
 DPlatformNativeInterface::DPlatformNativeInterface()
@@ -18,6 +22,11 @@ QFunctionPointer DPlatformNativeInterface::platformFunction(const QByteArray &fu
     } else if (function == hasBlurWindow) {
         return reinterpret_cast<QFunctionPointer>(&Utility::hasBlurWindow);
     }
+#ifdef Q_OS_LINUX
+    else if (function == connectWindowManagerChangedSignal) {
+        return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectWindowManagerChangedSignal);
+    }
+#endif
 
     return QXcbNativeInterface::platformFunction(function);
 }

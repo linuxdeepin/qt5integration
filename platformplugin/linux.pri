@@ -14,11 +14,13 @@ greaterThan(QT_MINOR_VERSION, 4): LIBS += -lQt5XcbQpa
 HEADERS += \
     $$PWD/windoweventhook.h \
     $$PWD/xcbnativeeventfilter.h \
+    $$PWD/dxcbwmsupport.h
 
 SOURCES += \
     $$PWD/windoweventhook.cpp \
     $$PWD/xcbnativeeventfilter.cpp \
-    $$PWD/utility_x11.cpp
+    $$PWD/utility_x11.cpp \
+    $$PWD/dxcbwmsupport.cpp
 
 INCLUDEPATH += $$PWD/libqt5xcbqpa-dev
 

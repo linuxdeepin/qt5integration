@@ -1,7 +1,10 @@
 #include "utility.h"
 #include "qxcbintegration.h"
 #include "qxcbconnection.h"
-#include "qxcbwmsupport.h"
+#include "qxcbscreen.h"
+
+#include "dplatformintegration.h"
+#include "dxcbwmsupport.h"
 
 #include <QPixmap>
 #include <QPainter>
@@ -120,23 +123,16 @@ QImage Utility::borderImage(const QPixmap &px, const QMargins &borders,
 
 xcb_atom_t Utility::internAtom(const char *name)
 {
-    xcb_atom_t atom;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
-    atom = QXcbIntegration::instance()->defaultConnection()->internAtom(name);
-
-    if (Q_LIKELY(atom != XCB_NONE))
-        return atom;
-#endif
     if (!name || *name == 0)
         return XCB_NONE;
 
-    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(QX11Info::connection(), false, strlen(name), name);
+    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(QX11Info::connection(), true, strlen(name), name);
     xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(QX11Info::connection(), cookie, 0);
 
     if (!reply)
         return XCB_NONE;
 
-    atom = reply->atom;
+    xcb_atom_t atom = reply->atom;
     free(reply);
 
     return atom;
@@ -315,19 +311,35 @@ void Utility::setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAt
     xcb_flush(conn);
 }
 
+static xcb_atom_t get_xdeepin_blur_region_rounded_atom()
+{
+    static xcb_atom_t atom = 0;
+    static int atom_state = 0;
+
+    if (atom_state < 2) {
+        atom = Utility::internAtom(XDEEPIN_BLUR_REGION_ROUNDED);
+
+        if (atom_state == 0) {
+            QObject::connect(DXcbWMSupport::instance(), &DXcbWMSupport::windowManagerChanged,
+                             [&] {
+                atom_state = 1;
+            });
+        }
+
+        atom_state = 2;
+    }
+
+    return atom;
+}
+
 bool Utility::hasBlurWindow()
 {
-    static xcb_atom_t atom = internAtom(XDEEPIN_BLUR_REGION_ROUNDED);
-
-    if (atom == XCB_NONE)
-        return false;
-
-    return true;
+    return  DXcbWMSupport::instance()->isSupportedByWM(get_xdeepin_blur_region_rounded_atom());
 }
 
 bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &areas)
 {
-    static xcb_atom_t atom = internAtom(XDEEPIN_BLUR_REGION_ROUNDED);
+    xcb_atom_t atom = get_xdeepin_blur_region_rounded_atom();
 
     if (atom == XCB_NONE)
         return false;
@@ -345,3 +357,21 @@ bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &area
 }
 
 DPP_END_NAMESPACE
+
+QT_BEGIN_NAMESPACE
+QDebug operator<<(QDebug deg, const Utility::BlurArea &area)
+{
+    QDebugStateSaver saver(deg);
+    Q_UNUSED(saver)
+
+    deg.setAutoInsertSpaces(true);
+    deg << "x:" << area.x
+        << "y:" << area.y
+        << "width:" << area.width
+        << "height:" << area.height
+        << "xRadius:" << area.xRadius
+        << "yRadius:" << area.yRaduis;
+
+    return deg;
+}
+QT_END_NAMESPACE

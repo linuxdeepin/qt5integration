@@ -68,4 +68,9 @@ private:
 
 DPP_END_NAMESPACE
 
+QT_BEGIN_NAMESPACE
+DPP_USE_NAMESPACE
+QDebug operator<<(QDebug deg, const Utility::BlurArea &area);
+QT_END_NAMESPACE
+
 #endif // UTILITY_H

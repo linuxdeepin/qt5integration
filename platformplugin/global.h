@@ -26,6 +26,7 @@ DEFINE_CONST_CHAR(frameMask);
 DEFINE_CONST_CHAR(translucentBackground);
 DEFINE_CONST_CHAR(enableSystemResize);
 DEFINE_CONST_CHAR(enableSystemMove);
+DEFINE_CONST_CHAR(enableBlurWindow);
 DEFINE_CONST_CHAR(userWindowMinimumSize);
 DEFINE_CONST_CHAR(userWindowMaximumSize);
 DEFINE_CONST_CHAR(windowBlurAreas);
@@ -33,5 +34,6 @@ DEFINE_CONST_CHAR(windowBlurAreas);
 // functions
 DEFINE_CONST_CHAR(setWmBlurWindowBackgroundArea);
 DEFINE_CONST_CHAR(hasBlurWindow);
+DEFINE_CONST_CHAR(connectWindowManagerChangedSignal);
 
 #endif // GLOBAL_H

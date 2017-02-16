@@ -5,6 +5,9 @@
 #include "qxcbclipboard.h"
 #undef private
 
+#include "dplatformintegration.h"
+#include "dxcbwmsupport.h"
+
 #include <xcb/xfixes.h>
 
 DPP_BEGIN_NAMESPACE
@@ -33,18 +36,25 @@ bool XcbNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *
     xcb_xfixes_selection_notify_event_t *event = (xcb_xfixes_selection_notify_event_t *)reinterpret_cast<xcb_generic_event_t*>(message);
     uint response_type = event->response_type & ~0x80;
 
-    if (response_type != m_connection->xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY)
-        return false;
+    if (response_type == m_connection->xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
+        QXcbClipboard *xcbClipboard = m_connection->m_clipboard;
 
-    QXcbClipboard *xcbClipboard = m_connection->m_clipboard;
+        QClipboard::Mode mode = clipboardModeForAtom(event->selection);
+        if (mode > QClipboard::Selection)
+            return false;
 
-    QClipboard::Mode mode = clipboardModeForAtom(event->selection);
-    if (mode > QClipboard::Selection)
-        return false;
+        // here we care only about the xfixes events that come from non Qt processes
+        if (event->owner == XCB_NONE && event->subtype == XCB_XFIXES_SELECTION_EVENT_SET_SELECTION_OWNER) {
+            xcbClipboard->emitChanged(mode);
+        }
+    } else if (response_type == XCB_PROPERTY_NOTIFY) {
+        xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
 
-    // here we care only about the xfixes events that come from non Qt processes
-    if (event->owner == XCB_NONE && event->subtype == XCB_XFIXES_SELECTION_EVENT_SET_SELECTION_OWNER) {
-        xcbClipboard->emitChanged(mode);
+        xcb_atom_t a = DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK);
+
+        if (pn->atom == a && pn->window == DPlatformIntegration::instance()->defaultConnection()->rootWindow()) {
+            DXcbWMSupport::instance()->emitWMChanged();
+        }
     }
 
     return false;

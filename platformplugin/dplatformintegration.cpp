@@ -22,9 +22,21 @@
 
 DPP_BEGIN_NAMESPACE
 
+#ifdef Q_OS_LINUX
+#if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
+DPlatformIntegration *DPlatformIntegration::m_instance = Q_NULLPTR;
+#endif
+#endif
+
 DPlatformIntegration::DPlatformIntegration(const QStringList &parameters, int &argc, char **argv)
     : QXcbIntegration(parameters, argc, argv)
 {
+#ifdef Q_OS_LINUX
+#if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
+    m_instance = this;
+#endif
+#endif
+
     m_nativeInterface.reset(new DPlatformNativeInterface());
 }
 

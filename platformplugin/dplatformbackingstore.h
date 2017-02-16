@@ -87,6 +87,7 @@ private:
     void updateTranslucentBackground();
     void updateEnableSystemResize();
     void updateEnableSystemMove();
+    void updateEnableBlurWindow();
     void updateWindowBlurAreas();
 
     void setWindowMargins(const QMargins &margins);
@@ -132,6 +133,7 @@ private:
     bool m_translucentBackground = false;
     bool m_enableSystemResize = true;
     bool m_enableSystemMove = true;
+    bool m_enableBlurWindow = false;
 
     QVector<Utility::BlurArea> m_blurAreaList;
 

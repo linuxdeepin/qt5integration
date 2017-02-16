@@ -14,6 +14,7 @@
 #include <QGuiApplication>
 #include <QVariantAnimation>
 #include <QTimer>
+#include <QDebug>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 #include <private/qwidgetwindow_qpa_p.h>
@@ -270,6 +271,8 @@ skip_set_cursor:
                     Utility::cancelWindowMoveResize(window->winId());
 
                 updateStealMoveEvent();
+            } else if (e->propertyName() == enableBlurWindow) {
+                m_store->updateEnableBlurWindow();
             } else if (e->propertyName() == windowBlurAreas) {
                 m_store->updateWindowBlurAreas();
             }
@@ -618,6 +621,12 @@ void DPlatformBackingStore::resize(const QSize &size, const QRegion &staticConte
     if (!isUserSetClipPath || shadowPixmap.isNull()) {
         updateInputShapeRegion();
         updateWindowShadow();
+
+        if (!m_blurAreaList.isEmpty() || m_enableBlurWindow)
+            updateWindowBlurAreasForWM();
+    } else {
+        if (m_enableBlurWindow)
+            updateWindowBlurAreasForWM();
     }
 
     paintWindowShadow();
@@ -657,6 +666,7 @@ void DPlatformBackingStore::initUserPropertys()
     updateTranslucentBackground();
     updateEnableSystemMove();
     updateEnableSystemResize();
+    updateEnableBlurWindow();
     updateWindowBlurAreas();
 }
 
@@ -919,6 +929,23 @@ void DPlatformBackingStore::updateEnableSystemMove()
     m_enableSystemMove = v.toBool();
 }
 
+void DPlatformBackingStore::updateEnableBlurWindow()
+{
+    const QVariant &v = window()->property(enableBlurWindow);
+
+    if (!v.isValid()) {
+        window()->setProperty(enableBlurWindow, m_enableBlurWindow);
+
+        return;
+    }
+
+    if (m_enableBlurWindow != v.toBool()) {
+        m_enableBlurWindow = v.toBool();
+
+        updateWindowBlurAreasForWM();
+    }
+}
+
 void DPlatformBackingStore::updateWindowBlurAreas()
 {
     const QVariant &v = window()->property(windowBlurAreas);
@@ -1081,17 +1108,30 @@ void DPlatformBackingStore::updateWindowShadow()
 bool DPlatformBackingStore::updateWindowBlurAreasForWM()
 {
     QVector<Utility::BlurArea> newAreas;
-    newAreas.reserve(m_blurAreaList.size());
+    QRect windowValidRect = windowGeometry();
 
-    QPoint window_offset = windowOffset();
+    if (m_enableBlurWindow) {
+        Utility::BlurArea area;
 
-    foreach (Utility::BlurArea area, m_blurAreaList) {
-        area.x += window_offset.x();
-        area.y += window_offset.y();
-        area.width = qMin(area.x + area.width, (quint32)windowValidRect.right()) - area.x;
-        area.height = qMin(area.y + area.height, (quint32)windowValidRect.bottom()) - area.y;
+        area.x = windowValidRect.x();
+        area.y = windowValidRect.y();
+        area.width = windowValidRect.width();
+        area.height = windowValidRect.height();
+        area.xRadius = m_windowRadius;
+        area.yRaduis = m_windowRadius;
 
         newAreas.append(std::move(area));
+    } else {
+        newAreas.reserve(m_blurAreaList.size());
+
+        foreach (Utility::BlurArea area, m_blurAreaList) {
+            area.x += windowValidRect.x();
+            area.y += windowValidRect.y();
+            area.width = qMin(area.x + area.width, (quint32)windowValidRect.right()) - area.x + 1;
+            area.height = qMin(area.y + area.height, (quint32)windowValidRect.bottom()) - area.y + 1;
+
+            newAreas.append(std::move(area));
+        }
     }
 
     return Utility::blurWindowBackground(window()->winId(), newAreas);
