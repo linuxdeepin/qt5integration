@@ -158,6 +158,10 @@ void Style::polish(QWidget *w)
         handle.setShadowOffset(QPoint(0, 4));
         handle.setShadowRadius(15);
         handle.setShadowColor(QColor(0, 0, 0, 100));
+        handle.setEnableBlurWindow(true);
+        handle.setTranslucentBackground(true);
+
+        w->setAttribute(Qt::WA_TranslucentBackground);
     }
 
     // ###(zccrs): If the application is DApplication or derived class of it then not draw shortcut text
@@ -434,9 +438,22 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     //    case PE_PanelButtonTool: fcn = &Style::drawPanelButtonToolPrimitive; break;
     //    case PE_PanelScrollAreaCorner: fcn = &Style::drawPanelScrollAreaCornerPrimitive; break;
     case PE_PanelMenu: {
-        return painter->fillRect(option->rect, m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
-                                                                PaletteExtended::PseudoClass_Unspecified,
-                                                                option->palette.brush(QPalette::Background)));
+        QBrush menu_background_brush = m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
+                                                        PaletteExtended::PseudoClass_Unspecified,
+                                                        option->palette.brush(QPalette::Background));
+        QColor menu_background_color = menu_background_brush.color();
+
+        if (DPlatformWindowHandle::isEnabledDXcb(const_cast<QWidget*>(widget)) && menu_background_color.isValid()) {
+            DPlatformWindowHandle handle(const_cast<QWidget*>(widget));
+
+            if (handle.enableBlurWindow()) {
+                menu_background_color.setAlphaF(DPlatformWindowHandle::hasBlurWindow() ? 0.4 : menu_background_color.alphaF());
+            }
+
+            menu_background_brush.setColor(menu_background_color);
+        }
+
+        return painter->fillRect(option->rect, menu_background_brush);
     }
         //    case PE_PanelTipLabel: fcn = &Style::drawPanelTipLabelPrimitive; break;
         //    case PE_PanelItemViewItem: fcn = &Style::drawPanelItemViewItemPrimitive; break;
