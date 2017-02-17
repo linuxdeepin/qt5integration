@@ -61,9 +61,12 @@ DXcbWMSupport *DXcbWMSupport::instance()
     return globalXWMS;
 }
 
-bool DXcbWMSupport::connectWindowManagerChangedSignal(std::function<void ()> slot)
+bool DXcbWMSupport::connectWindowManagerChangedSignal(QObject *object, std::function<void ()> slot)
 {
-    return QObject::connect(globalXWMS, &DXcbWMSupport::windowManagerChanged, slot);
+    if (!object)
+        return QObject::connect(globalXWMS, &DXcbWMSupport::windowManagerChanged, slot);
+
+    return QObject::connect(globalXWMS, &DXcbWMSupport::windowManagerChanged, object, slot);
 }
 
 bool DXcbWMSupport::isSupportedByWM(xcb_atom_t atom) const

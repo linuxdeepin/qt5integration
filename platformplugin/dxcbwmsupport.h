@@ -18,7 +18,7 @@ class DXcbWMSupport : public QObject
 
 public:
     static DXcbWMSupport *instance();
-    static bool connectWindowManagerChangedSignal(std::function<void()> slot);
+    static bool connectWindowManagerChangedSignal(QObject *object, std::function<void()> slot);
 
     bool isSupportedByWM(xcb_atom_t atom) const;
 
