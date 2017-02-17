@@ -10,7 +10,7 @@ QPalette {
 }
 
 QPalette:disabled {
-    Text: "#40dcdcdc";
+    Text: rgba(255, 255, 255, 0.4);
     WindowText: rgba(255, 255, 255, 0.4);
     Highlight: "#8ccfff";
     HighlightedText: rgba(255,255,255, 0.4);

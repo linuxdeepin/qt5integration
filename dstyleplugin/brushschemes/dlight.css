@@ -10,10 +10,10 @@ QPalette {
 }
 
 QPalette:disabled {
-    Text: "#AEAEAE";
-    WindowText: rgb(255,255,255, 0.4);
+    Text: rgba(0, 0, 0, 0.4);
+    WindowText: rgba(0, 0, 0, 0.4);
     Highlight: rgba(44, 167, 248, 0.4);
-    HighlightedText: rgb(255,255,255, 0.4);
+    HighlightedText: rgba(255,255,255, 0.4);
 }
 
 Slider {

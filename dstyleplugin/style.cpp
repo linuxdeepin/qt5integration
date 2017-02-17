@@ -443,7 +443,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
                                                         option->palette.brush(QPalette::Background));
         QColor menu_background_color = menu_background_brush.color();
 
-        if (DPlatformWindowHandle::isEnabledDXcb(const_cast<QWidget*>(widget)) && menu_background_color.isValid()) {
+        if (DPlatformWindowHandle::isEnabledDXcb(widget) && menu_background_color.isValid()) {
             DPlatformWindowHandle handle(const_cast<QWidget*>(widget));
 
             if (handle.enableBlurWindow()) {
