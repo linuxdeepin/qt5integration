@@ -447,7 +447,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
             DPlatformWindowHandle handle(const_cast<QWidget*>(widget));
 
             if (handle.enableBlurWindow()) {
-                menu_background_color.setAlphaF(DPlatformWindowHandle::hasBlurWindow() ? 0.4 : menu_background_color.alphaF());
+                menu_background_color.setAlphaF(DPlatformWindowHandle::hasBlurWindow() ? 0.6 : menu_background_color.alphaF());
             }
 
             menu_background_brush.setColor(menu_background_color);
@@ -625,7 +625,7 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
                 }
             }
             newSize.setWidth(newSize.width() + 12);
-            newSize.setWidth(qMax(newSize.width(), 80));
+            newSize.setWidth(qMax(newSize.width(), 100));
         }
 
         newSize.setWidth(newSize.width() + Menu_ItemHMargin * 2);
