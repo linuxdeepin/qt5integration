@@ -15,7 +15,7 @@ QT       += core-private #xcb_qpa_lib-private
 greaterThan(QT_MAJOR_VERSION, 4) {
   QT += widgets widgets-private
   # Qt >= 5.8
-  greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 7): QT += gui-private
+  greaterThan(QT_MINOR_VERSION, 7): QT += gui-private
   else: QT += platformsupport-private
 }
 
@@ -52,17 +52,4 @@ INSTALLS += target
 
 CONFIG(release, debug|release) {
     DEFINES += QT_NO_DEBUG_OUTPUT
-}
-
-contains(QT_CONFIG, xcb-xlib) {
-    DEFINES += XCB_USE_XLIB
-
-    contains(QT_CONFIG, xinput2) {
-        DEFINES += XCB_USE_XINPUT2
-        !isEmpty(QMAKE_LIBXI_VERSION_MAJOR) {
-            DEFINES += LIBXI_MAJOR=$$QMAKE_LIBXI_VERSION_MAJOR \
-                       LIBXI_MINOR=$$QMAKE_LIBXI_VERSION_MINOR \
-                       LIBXI_PATCH=$$QMAKE_LIBXI_VERSION_PATCH
-        }
-    }
 }
