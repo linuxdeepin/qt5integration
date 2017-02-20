@@ -63,5 +63,5 @@ You may also find these channels useful if you encounter any other issues:
 
 ## License
 
-qt5integration is licensed under [GPLv3](https://github.com/linuxdeepin/developer-center/wiki/LICENSE).
+qt5integration is licensed under [GPLv3](LICENSE).
 
