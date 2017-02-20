@@ -1,4 +1,5 @@
 #include "xcbnativeeventfilter.h"
+#include "utility.h"
 
 #define private public
 #include "qxcbconnection.h"
@@ -50,10 +51,15 @@ bool XcbNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *
     } else if (response_type == XCB_PROPERTY_NOTIFY) {
         xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
 
-        xcb_atom_t a = DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK);
+        if (pn->window != DPlatformIntegration::instance()->defaultConnection()->rootWindow())
+            return false;
 
-        if (pn->atom == a && pn->window == DPlatformIntegration::instance()->defaultConnection()->rootWindow()) {
+        if (pn->atom == DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK)) {
+            DXcbWMSupport::instance()->updateNetWMAtoms();
+            DXcbWMSupport::instance()->updateRootWindowProperties();
             DXcbWMSupport::instance()->emitWMChanged();
+        } else if (pn->atom == DXcbWMSupport::instance()->_kde_net_wm_blur_rehind_region_atom) {
+            DXcbWMSupport::instance()->updateRootWindowProperties();
         }
     }
 

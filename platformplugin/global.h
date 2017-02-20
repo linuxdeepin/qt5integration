@@ -35,5 +35,6 @@ DEFINE_CONST_CHAR(windowBlurAreas);
 DEFINE_CONST_CHAR(setWmBlurWindowBackgroundArea);
 DEFINE_CONST_CHAR(hasBlurWindow);
 DEFINE_CONST_CHAR(connectWindowManagerChangedSignal);
+DEFINE_CONST_CHAR(connectHasBlurWindowChanged);
 
 #endif // GLOBAL_H

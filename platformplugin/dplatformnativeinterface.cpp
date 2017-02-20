@@ -17,14 +17,15 @@ DPlatformNativeInterface::DPlatformNativeInterface()
 #if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
 QFunctionPointer DPlatformNativeInterface::platformFunction(const QByteArray &function) const
 {
+#ifdef Q_OS_LINUX
     if (function == setWmBlurWindowBackgroundArea) {
         return reinterpret_cast<QFunctionPointer>(&Utility::blurWindowBackground);
     } else if (function == hasBlurWindow) {
         return reinterpret_cast<QFunctionPointer>(&Utility::hasBlurWindow);
-    }
-#ifdef Q_OS_LINUX
-    else if (function == connectWindowManagerChangedSignal) {
+    } else if (function == connectWindowManagerChangedSignal) {
         return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectWindowManagerChangedSignal);
+    } else if (function == connectHasBlurWindowChanged) {
+        return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectHasBlurWindowChanged);
     }
 #endif
 

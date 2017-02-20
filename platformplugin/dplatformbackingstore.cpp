@@ -1,6 +1,9 @@
 #include "dplatformbackingstore.h"
 #include "dplatformwindowhook.h"
 #include "vtablehook.h"
+#ifdef Q_OS_LINUX
+#include "dxcbwmsupport.h"
+#endif
 
 #include "qxcbbackingstore.h"
 
@@ -37,6 +40,8 @@ PUBLIC_CLASS(QXcbWindow, DPlatformBackingStore);
 
 class WindowEventListener : public QObject
 {
+    Q_OBJECT
+
 public:
     explicit WindowEventListener(DPlatformBackingStore *store)
         : QObject(0)
@@ -68,6 +73,12 @@ public:
         } else {
             VtableHook::clearGhostVtable(m_store->window());
         }
+    }
+
+public slots:
+    void updateWindowBlurAreasForWM()
+    {
+        m_store->updateWindowBlurAreasForWM();
     }
 
 protected:
@@ -458,11 +469,10 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
     : QPlatformBackingStore(window)
     , m_proxy(proxy)
 {
-    initUserPropertys();
-
     m_eventListener = new WindowEventListener(this);
     shadowPixmap.fill(Qt::transparent);
 
+    initUserPropertys();
     //! Warning: At this point you must be initialized window Margins and window Extents
     updateWindowMargins();
 //    updateFrameExtents();
@@ -942,6 +952,16 @@ void DPlatformBackingStore::updateEnableBlurWindow()
     if (m_enableBlurWindow != v.toBool()) {
         m_enableBlurWindow = v.toBool();
 
+#ifdef Q_OS_LINUX
+        if (m_enableBlurWindow) {
+            QObject::connect(DXcbWMSupport::instance(), &DXcbWMSupport::windowManagerChanged,
+                             m_eventListener, &WindowEventListener::updateWindowBlurAreasForWM);
+        } else {
+            QObject::disconnect(DXcbWMSupport::instance(), &DXcbWMSupport::windowManagerChanged,
+                                m_eventListener, &WindowEventListener::updateWindowBlurAreasForWM);
+        }
+#endif
+
         updateWindowBlurAreasForWM();
     }
 }
@@ -1127,8 +1147,8 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
         foreach (Utility::BlurArea area, m_blurAreaList) {
             area.x += windowValidRect.x();
             area.y += windowValidRect.y();
-            area.width = qMin(area.x + area.width, (quint32)windowValidRect.right()) - area.x + 1;
-            area.height = qMin(area.y + area.height, (quint32)windowValidRect.bottom()) - area.y + 1;
+            area.width = qMin(area.x + area.width, (quint32)windowValidRect.right() + 1) - area.x;
+            area.height = qMin(area.y + area.height, (quint32)windowValidRect.bottom() + 1) - area.y;
 
             newAreas.append(std::move(area));
         }
@@ -1193,3 +1213,5 @@ void DPlatformBackingStore::handlePropertyNotifyEvent(const xcb_property_notify_
 }
 
 DPP_END_NAMESPACE
+
+#include "dplatformbackingstore.moc"

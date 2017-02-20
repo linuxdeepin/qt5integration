@@ -153,7 +153,7 @@ void Utility::setFrameExtents(uint WId, const QMargins &margins)
     xcb_atom_t frameExtents = internAtom("_GTK_FRAME_EXTENTS");
 
     if (frameExtents == XCB_NONE) {
-        qWarning() << "Failed to create atom with name DEEPIN_WINDOW_SHADOW";
+        qWarning() << "Failed to create atom with name _GTK_FRAME_EXTENTS";
         return;
     }
 
@@ -311,46 +311,43 @@ void Utility::setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAt
     xcb_flush(conn);
 }
 
-static xcb_atom_t get_xdeepin_blur_region_rounded_atom()
-{
-    static xcb_atom_t atom = 0;
-    static int atom_state = 0;
-
-    if (atom_state < 2) {
-        atom = Utility::internAtom(XDEEPIN_BLUR_REGION_ROUNDED);
-
-        if (atom_state == 0) {
-            QObject::connect(DXcbWMSupport::instance(), &DXcbWMSupport::windowManagerChanged,
-                             [&] {
-                atom_state = 1;
-            });
-        }
-
-        atom_state = 2;
-    }
-
-    return atom;
-}
-
 bool Utility::hasBlurWindow()
 {
-    return  DXcbWMSupport::instance()->isSupportedByWM(get_xdeepin_blur_region_rounded_atom());
+    return  DXcbWMSupport::instance()->hasBlurWindow();
 }
 
 bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &areas)
 {
-    xcb_atom_t atom = get_xdeepin_blur_region_rounded_atom();
-
-    if (atom == XCB_NONE)
+    if (!hasBlurWindow())
         return false;
 
-    if (areas.isEmpty()) {
-        QVector<BlurArea> areas;
+    if (DXcbWMSupport::instance()->isDeepinWM()) {
+        xcb_atom_t atom = DXcbWMSupport::instance()->_net_wm_deepin_blur_region_rounded_atom;
 
-        areas << BlurArea();
-        setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, areas.constData(), areas.size() * sizeof(BlurArea) / sizeof(quint32), sizeof(quint32) * 8);
+        if (atom == XCB_NONE)
+            return false;
+
+        if (areas.isEmpty()) {
+            QVector<BlurArea> areas;
+
+            areas << BlurArea();
+            setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, areas.constData(), areas.size() * sizeof(BlurArea) / sizeof(quint32), sizeof(quint32) * 8);
+        } else {
+            setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, areas.constData(), areas.size() * sizeof(BlurArea) / sizeof(quint32), sizeof(quint32) * 8);
+        }
     } else {
-        setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, areas.constData(), areas.size() * sizeof(BlurArea) / sizeof(quint32), sizeof(quint32) * 8);
+        xcb_atom_t atom = DXcbWMSupport::instance()->_kde_net_wm_blur_rehind_region_atom;
+
+        if (atom == XCB_NONE)
+            return false;
+
+        QVector<quint32> rects;
+
+        foreach (const BlurArea &area, areas) {
+            rects << area.x << area.y << area.width << area.height;
+        }
+
+        setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, rects.constData(), rects.size(), sizeof(quint32) * 8);
     }
 
     return true;
