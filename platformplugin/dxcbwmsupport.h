@@ -24,9 +24,12 @@ public:
     static bool connectHasBlurWindowChanged(QObject *object, std::function<void()> slot);
 
     bool isDeepinWM() const;
+    bool isKwin() const;
     bool isSupportedByWM(xcb_atom_t atom) const;
     bool isContainsForRootWindow(xcb_atom_t atom) const;
     bool hasBlurWindow() const;
+
+    QString windowMaragerName() const;
 
 signals:
     void windowManagerChanged();
@@ -42,7 +45,11 @@ private:
     void updateHasBlurWindow();
 
     bool m_isDeepinWM = false;
+    bool m_isKwin = false;
     bool m_hasBlurWindow = false;
+
+    QString m_wmName;
+
     xcb_atom_t _net_wm_deepin_blur_region_rounded_atom = 0;
     xcb_atom_t _kde_net_wm_blur_rehind_region_atom = 0;
 

@@ -57,7 +57,36 @@ void DXcbWMSupport::updateNetWMAtoms()
 
     _net_wm_deepin_blur_region_rounded_atom = Utility::internAtom(QT_STRINGIFY(_NET_WM_DEEPIN_BLUR_REGION_ROUNDED));
     _kde_net_wm_blur_rehind_region_atom = Utility::internAtom(QT_STRINGIFY(_KDE_NET_WM_BLUR_BEHIND_REGION));
-    m_isDeepinWM = isSupportedByWM(_net_wm_deepin_blur_region_rounded_atom);
+
+    m_wmName.clear();
+
+    xcb_get_property_reply_t *reply =
+        xcb_get_property_reply(xcb_connection,
+            xcb_get_property_unchecked(xcb_connection, false, root,
+                             DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
+                             XCB_ATOM_WINDOW, 0, 1024), NULL);
+
+    if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
+        xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply));
+
+        if (windowManager != XCB_WINDOW_NONE) {
+            xcb_get_property_reply_t *windowManagerReply =
+                xcb_get_property_reply(xcb_connection,
+                    xcb_get_property_unchecked(xcb_connection, false, windowManager,
+                                     DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_NET_WM_NAME),
+                                     DPlatformIntegration::xcbConnection()->atom(QXcbAtom::UTF8_STRING), 0, 1024), NULL);
+            if (windowManagerReply && windowManagerReply->format == 8
+                    && windowManagerReply->type == DPlatformIntegration::xcbConnection()->atom(QXcbAtom::UTF8_STRING)) {
+                m_wmName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply), xcb_get_property_value_length(windowManagerReply));
+            }
+
+            free(windowManagerReply);
+        }
+    }
+    free(reply);
+
+    m_isDeepinWM = (m_wmName == "Mutter(DeepinGala)");
+    m_isKwin = !m_isDeepinWM && (m_wmName == "KWin");
 
     updateHasBlurWindow();
 }
@@ -87,7 +116,7 @@ void DXcbWMSupport::updateRootWindowProperties()
 
 void DXcbWMSupport::updateHasBlurWindow()
 {
-    bool hasBlurWindow(m_isDeepinWM || isContainsForRootWindow(_kde_net_wm_blur_rehind_region_atom));
+    bool hasBlurWindow(m_isDeepinWM || (m_isKwin && isContainsForRootWindow(_kde_net_wm_blur_rehind_region_atom)));
 
     if (m_hasBlurWindow == hasBlurWindow)
         return;
@@ -117,9 +146,19 @@ bool DXcbWMSupport::connectHasBlurWindowChanged(QObject *object, std::function<v
     return QObject::connect(globalXWMS, &DXcbWMSupport::hasBlurWindowChanged, object, slot);
 }
 
+QString DXcbWMSupport::windowMaragerName() const
+{
+    return m_wmName;
+}
+
 bool DXcbWMSupport::isDeepinWM() const
 {
     return m_isDeepinWM;
+}
+
+bool DXcbWMSupport::isKwin() const
+{
+    return m_isKwin;
 }
 
 bool DXcbWMSupport::isSupportedByWM(xcb_atom_t atom) const
