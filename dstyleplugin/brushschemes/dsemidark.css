@@ -46,7 +46,7 @@ Slider:pressed {
 
 PushButton {
     BackgroundBrush: rgba(255, 255, 255, 0.15);
-    TextColor: "#dcdcdc";
+    TextColor: "white";
     BorderBrush: transparent;
 }
 
