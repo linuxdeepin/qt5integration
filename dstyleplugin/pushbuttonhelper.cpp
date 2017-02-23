@@ -48,7 +48,7 @@ bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, c
         const QBrush background(style->m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, option));
 
         // render
-        drawPushButtonFrame(painter, rect, background, outline, shadow );
+        drawPushButtonFrame(painter, rect, background, outline, shadow, widget);
     }
 
     if (buttonOption->features & QStyleOptionButton::HasMenu) {
@@ -181,15 +181,35 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
     return true;
 }
 
-bool Style::drawPushButtonFrame( QPainter* painter, const QRect& rect, const QBrush& brush, const QBrush& outline, const QColor& shadow ) const
+bool Style::drawPushButtonFrame( QPainter* painter, const QRect& rect, const QBrush& brush, const QBrush& outline, const QColor& shadow, const QWidget *widget) const
 {
     Q_UNUSED(shadow)
 
     // setup painter
     painter->setRenderHint( QPainter::Antialiasing, true );
 
-    qreal radius( GeometryUtils::frameRadius() );
-    PainterHelper::drawRoundedRect(painter, rect, radius, radius, Qt::AbsoluteSize, brush, Metrics::Painter_PenWidth, outline);
+    const qreal radius( GeometryUtils::frameRadius() );
+
+    QPainterPath path;
+    path.addRoundedRect(rect, radius, radius);
+
+    // ButtonTuples are QPushButton groups that needs to be taken care of,
+    // the right corners of the LeftButton are not rounded, and the left
+    // corners of the RightButton are not rounded either.
+    if (widget) {
+        const QString className = widget->metaObject()->className();
+        if (className == "dcc::widgets::LeftButton") {
+            QPainterPath rightHalf;
+            rightHalf.addRect(rect.x() + rect.width() / 2, rect.y(), rect.width(), rect.height());
+            path = path.united(rightHalf);
+        } else if (className == "dcc::widgets::RightButton") {
+            QPainterPath leftHalf;
+            leftHalf.addRect(rect.x(), rect.y(), rect.width() / 2, rect.height());
+            path = path.united(leftHalf);
+        }
+    }
+
+    PainterHelper::drawPath(painter, path, brush, Metrics::Painter_PenWidth, outline);
 
     return true;
 }

@@ -64,7 +64,7 @@ private:
     // push button
     bool drawPushButtonBevel(const QStyleOption*, QPainter*, const QWidget*) const;
     bool drawPushButtonLabel(const QStyleOption *, QPainter *, const QWidget *) const;
-    bool drawPushButtonFrame(QPainter* painter, const QRect& rect, const QBrush &color, const QBrush &outline, const QColor& shadow) const;
+    bool drawPushButtonFrame(QPainter* painter, const QRect& rect, const QBrush &color, const QBrush &outline, const QColor& shadow,  const QWidget *widget = nullptr) const;
 
     // scroll bar
     QRect scrollbarSubControlRect(const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget ) const;
