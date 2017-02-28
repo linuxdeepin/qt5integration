@@ -1006,6 +1006,8 @@ void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
 
     if (!m_blurAreaList.isEmpty())
         updateWindowBlurAreasForWM();
+
+    window()->setProperty(frameMargins, QVariant::fromValue(windowMargins));
 }
 
 void DPlatformBackingStore::setClipPah(const QPainterPath &path)

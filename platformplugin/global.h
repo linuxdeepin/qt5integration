@@ -23,6 +23,7 @@ DEFINE_CONST_CHAR(shadowOffset);
 DEFINE_CONST_CHAR(shadowColor);
 DEFINE_CONST_CHAR(clipPath);
 DEFINE_CONST_CHAR(frameMask);
+DEFINE_CONST_CHAR(frameMargins);
 DEFINE_CONST_CHAR(translucentBackground);
 DEFINE_CONST_CHAR(enableSystemResize);
 DEFINE_CONST_CHAR(enableSystemMove);
