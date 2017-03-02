@@ -27,6 +27,9 @@ public:
     void handleClientMessageEvent(const xcb_client_message_event_t *event);
     void handleFocusInEvent(const xcb_focus_in_event_t *event);
     void handleFocusOutEvent(const xcb_focus_out_event_t *event);
+#ifdef XCB_USE_XINPUT22
+    void handleXIEnterLeave(xcb_ge_event_t *event);
+#endif
 
 private:
     static bool relayFocusToModalWindow(QWindow *w, QXcbConnection *connection);

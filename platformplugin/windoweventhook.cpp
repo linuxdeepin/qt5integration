@@ -14,6 +14,7 @@
 #define private public
 #define protected public
 #include "qxcbdrag.h"
+#include "qxcbkeyboard.h"
 #undef private
 #undef protected
 
@@ -23,7 +24,11 @@
 #include <private/qguiapplication_p.h>
 #include <private/qwindow_p.h>
 
+#include <X11/extensions/XI2proto.h>
+
 DPP_BEGIN_NAMESPACE
+
+PUBLIC_CLASS(QXcbWindow, WindowEventHook);
 
 WindowEventHook::WindowEventHook(QXcbWindow *window)
 {
@@ -33,6 +38,10 @@ WindowEventHook::WindowEventHook(QXcbWindow *window)
                                  this, &WindowEventHook::handleFocusInEvent);
     VtableHook::overrideVfptrFun(window, &QXcbWindowEventListener::handleFocusOutEvent,
                                  this, &WindowEventHook::handleFocusOutEvent);
+#ifdef XCB_USE_XINPUT22
+    VtableHook::overrideVfptrFun(window, &QXcbWindowEventListener::handleXIEnterLeave,
+                                 this, &WindowEventHook::handleXIEnterLeave);
+#endif
 
     QObject::connect(window->window(), &QWindow::destroyed, window->window(), [this, window] {
         delete this;
@@ -258,5 +267,76 @@ void WindowEventHook::handleFocusOutEvent(const xcb_focus_out_event_t *event)
     // callback for QXcbConnection instead.
     xcbWindow->connection()->addPeekFunc(focusInPeeker);
 }
+
+#ifdef XCB_USE_XINPUT22
+static Qt::KeyboardModifiers translateModifiers(const QXcbKeyboard::_mod_masks &rmod_masks, int s)
+{
+    Qt::KeyboardModifiers ret = 0;
+    if (s & XCB_MOD_MASK_SHIFT)
+        ret |= Qt::ShiftModifier;
+    if (s & XCB_MOD_MASK_CONTROL)
+        ret |= Qt::ControlModifier;
+    if (s & rmod_masks.alt)
+        ret |= Qt::AltModifier;
+    if (s & rmod_masks.meta)
+        ret |= Qt::MetaModifier;
+    if (s & rmod_masks.altgr)
+        ret |= Qt::GroupSwitchModifier;
+    return ret;
+}
+
+static inline int fixed1616ToInt(FP1616 val)
+{
+    return int((qreal(val >> 16)) + (val & 0xFFFF) / (qreal)0xFFFF);
+}
+
+void WindowEventHook::handleXIEnterLeave(xcb_ge_event_t *event)
+{
+    DQXcbWindow *me = reinterpret_cast<DQXcbWindow*>(window());
+
+    xXIEnterEvent *ev = reinterpret_cast<xXIEnterEvent *>(event);
+
+    // Compare the window with current mouse grabber to prevent deliver events to any other windows.
+    // If leave event occurs and the window is under mouse - allow to deliver the leave event.
+    QXcbWindow *mouseGrabber = me->connection()->mouseGrabber();
+    if (mouseGrabber && mouseGrabber != me
+            && (ev->evtype != XI_Leave || QGuiApplicationPrivate::currentMouseWindow != me->window())) {
+        return;
+    }
+
+    if (ev->evtype == XI_Enter) {
+        if (ev->buttons_len > 0) {
+            Qt::MouseButtons buttons = me->connection()->buttons();
+            const Qt::KeyboardModifiers modifiers = translateModifiers(me->connection()->keyboard()->rmod_masks, ev->mods.effective_mods);
+            unsigned char *buttonMask = (unsigned char *) &ev[1];
+            for (int i = 1; i <= 15; ++i) {
+                Qt::MouseButton b = me->connection()->translateMouseButton(i);
+                bool isSet = XIMaskIsSet(buttonMask, i);
+
+                me->connection()->setButton(b, isSet);
+
+                const int event_x = fixed1616ToInt(ev->event_x);
+                const int event_y = fixed1616ToInt(ev->event_y);
+                const int root_x = fixed1616ToInt(ev->root_x);
+                const int root_y = fixed1616ToInt(ev->root_y);
+
+                if (buttons.testFlag(b)) {
+                    if (!isSet) {
+                        me->handleButtonReleaseEvent(event_x, event_y, root_x, root_y,
+                                                     ev->detail, modifiers, ev->time,
+                                                     Qt::MouseEventSynthesizedBySystem);
+                    }
+                } else if (isSet) {
+                    me->handleButtonPressEvent(event_x, event_y, root_x, root_y,
+                                               ev->detail, modifiers, ev->time,
+                                               Qt::MouseEventSynthesizedBySystem);
+                }
+            }
+        }
+    }
+
+    me->QXcbWindow::handleXIEnterLeave(event);
+}
+#endif
 
 DPP_END_NAMESPACE
