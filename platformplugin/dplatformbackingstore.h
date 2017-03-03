@@ -67,7 +67,7 @@ public:
 private:
     void initUserPropertys();
 
-    void updateWindowMargins(bool repaintShadow = true);
+    bool updateWindowMargins(bool repaintShadow = true);
     void updateFrameExtents();
     void updateInputShapeRegion();
     void updateClipPath();

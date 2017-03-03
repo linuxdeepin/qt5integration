@@ -680,7 +680,7 @@ void DPlatformBackingStore::initUserPropertys()
     updateWindowBlurAreas();
 }
 
-void DPlatformBackingStore::updateWindowMargins(bool repaintShadow)
+bool DPlatformBackingStore::updateWindowMargins(bool repaintShadow)
 {
     Qt::WindowState state = window()->windowState();
 
@@ -690,27 +690,29 @@ void DPlatformBackingStore::updateWindowMargins(bool repaintShadow)
     if (state == Qt::WindowMaximized || state == Qt::WindowFullScreen) {
         setWindowMargins(QMargins(0, 0, 0, 0));
     } else if (state != Qt::WindowMinimized) {
-        setWindowMargins(QMargins(m_shadowRadius - m_shadowOffset.x(),
-                                  m_shadowRadius - m_shadowOffset.y(),
-                                  m_shadowRadius + m_shadowOffset.x(),
-                                  m_shadowRadius + m_shadowOffset.y()));
+        setWindowMargins(QMargins(qMax(m_shadowRadius - m_shadowOffset.x(), m_borderWidth),
+                                  qMax(m_shadowRadius - m_shadowOffset.y(), m_borderWidth),
+                                  qMax(m_shadowRadius + m_shadowOffset.x(), m_borderWidth),
+                                  qMax(m_shadowRadius + m_shadowOffset.y(), m_borderWidth)));
     }
 
     if (repaintShadow && old_margins != windowMargins) {
         window()->handle()->setGeometry(window_geometry);
 
         repaintWindowShadow();
+
+        return true;
     }
+
+    return false;
 }
 
 void DPlatformBackingStore::updateFrameExtents()
 {
-    const QMargins &borderMargins = QMargins(m_borderWidth, m_borderWidth, m_borderWidth, m_borderWidth);
-
     QMargins extentsMargins = windowMargins;
 
     if (canUseClipPath() && !isUserSetClipPath) {
-        extentsMargins -= borderMargins;
+        extentsMargins -= m_borderWidth;
     }
 
     Utility::setFrameExtents(window()->winId(), extentsMargins);
@@ -763,7 +765,9 @@ void DPlatformBackingStore::updateBorderWidth()
         m_borderWidth = width;
 
         updateFrameExtents();
-        doDelayedUpdateWindowShadow();
+
+        if (!updateWindowMargins())
+            doDelayedUpdateWindowShadow();
     }
 }
 
@@ -851,7 +855,7 @@ void DPlatformBackingStore::updateShadowRadius()
     }
 
     bool ok;
-    int radius = v.toInt(&ok);
+    int radius = qMax(v.toInt(&ok), 0);
 
     if (ok && radius != m_shadowRadius) {
         m_shadowRadius = radius;
@@ -873,7 +877,7 @@ void DPlatformBackingStore::updateShadowOffset()
 
     const QPoint &offset = v.toPoint();
 
-    if (!offset.isNull() && offset != m_shadowOffset) {
+    if (offset != m_shadowOffset) {
         m_shadowOffset = offset;
 
         updateWindowMargins();
@@ -1072,17 +1076,8 @@ inline QSize margins2Size(const QMargins &margins)
 
 void DPlatformBackingStore::updateWindowShadow()
 {
-    QPixmap pixmap(m_image.size());
-
-    if (pixmap.isNull())
+    if (m_image.isNull())
         return;
-
-    pixmap.fill(Qt::transparent);
-
-    QPainter pa(&pixmap);
-
-    pa.fillPath(m_clipPath, m_shadowColor);
-    pa.end();
 
     bool paintShadow = isUserSetClipPath || shadowPixmap.isNull();
 
@@ -1096,10 +1091,26 @@ void DPlatformBackingStore::updateWindowShadow()
     }
 
     if (paintShadow) {
-        QImage image = Utility::dropShadow(pixmap, m_shadowRadius, m_shadowColor);
+        int shadowRadius = qMax(m_shadowRadius, m_borderWidth);
+
+        QPixmap pixmap(m_size - QSize(2 * shadowRadius, 2 * shadowRadius));
+
+        if (pixmap.isNull())
+            return;
+
+        pixmap.fill(Qt::transparent);
+
+        QPainter pa(&pixmap);
+
+        pa.fillPath(m_clipPath, m_shadowColor);
+        pa.end();
+
+        QImage image;
+
+        image = Utility::dropShadow(pixmap, shadowRadius, m_shadowColor);
 
         /// begin paint window border;
-        QPainter pa(&image);
+        pa.begin(&image);
         QPainterPathStroker pathStroker;
 
         pathStroker.setWidth(m_borderWidth * 2);
