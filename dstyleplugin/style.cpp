@@ -26,6 +26,7 @@
 #include <QAbstractScrollArea>
 #include <QRadioButton>
 #include <QCheckBox>
+#include <QToolButton>
 
 #include <private/qhexstring_p.h>
 #include <private/qdrawhelper_p.h>
@@ -133,7 +134,8 @@ void Style::polish(QWidget *w)
             || qobject_cast<QComboBox *>(w)
             || qobject_cast<QScrollBar *>(w)
             || qobject_cast<QCheckBox*>(w)
-            || qobject_cast<QRadioButton*>(w))
+            || qobject_cast<QRadioButton*>(w)
+            || qobject_cast<QToolButton*>(w))
         w->setAttribute(Qt::WA_Hover, true);
 
     if (qobject_cast<QScrollBar *>(w)) {
@@ -192,7 +194,8 @@ void Style::unpolish(QWidget *w)
             || qobject_cast<QComboBox *>(w)
             || qobject_cast<QScrollBar *>(w)
             || qobject_cast<QCheckBox*>(w)
-            || qobject_cast<QRadioButton*>(w))
+            || qobject_cast<QRadioButton*>(w)
+            || qobject_cast<QToolButton*>(w))
         w->setAttribute(Qt::WA_Hover, false);
 
     if (qobject_cast<QScrollBar *>(w)) {
@@ -364,7 +367,7 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
     case CE_PushButtonLabel: fcn = &Style::drawPushButtonLabel; break;
         //        case CE_CheckBoxLabel: fcn = &Style::drawCheckBoxLabelControl; break;
         //        case CE_RadioButtonLabel: fcn = &Style::drawCheckBoxLabelControl; break;
-        //        case CE_ToolButtonLabel: fcn = &Style::drawToolButtonLabelControl; break;
+    case CE_ToolButtonLabel: fcn = &Style::drawToolButtonLabelControl; break;
     case CE_ComboBoxLabel: fcn = &Style::drawComboBoxLabelControl; break;
     case CE_MenuBarEmptyArea: return;
     case CE_MenuBarItem: fcn = &Style::drawMenuBarItemControl; break;
@@ -435,7 +438,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     switch( element )
     {
     //    case PE_PanelButtonCommand: fcn = &Style::drawPanelButtonCommandPrimitive; break;
-    //    case PE_PanelButtonTool: fcn = &Style::drawPanelButtonToolPrimitive; break;
+    case PE_PanelButtonTool: fcn = &Style::drawPanelButtonToolPrimitive; break;
     //    case PE_PanelScrollAreaCorner: fcn = &Style::drawPanelScrollAreaCornerPrimitive; break;
     case PE_PanelMenu: {
         QBrush menu_background_brush = m_palette->brush(PaletteExtended::Menu_BackgroundBrush,

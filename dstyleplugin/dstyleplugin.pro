@@ -30,7 +30,8 @@ SOURCES += dstyleplugin.cpp \
     checkboxhelper.cpp \
     rubberbandhelper.cpp \
     headerviewhelper.cpp \
-    comboboxhelper.cpp
+    comboboxhelper.cpp \
+    toolbuttonhelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \

@@ -122,6 +122,10 @@ private:
 
     static bool widgetIsComboBoxPopupFramePrimitive(const QWidget *w);
 
+    // tool button
+    bool drawToolButtonLabelControl( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
+    bool drawPanelButtonToolPrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
+
     StyleType m_type;
     PaletteExtended *m_palette = Q_NULLPTR;
 

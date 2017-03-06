@@ -21,9 +21,6 @@ namespace dstyle {
 
 bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    Style *style = CommonHelper::widgetStyle(widget);
-    if (!style) return false;
-
     // cast option and check
     const QStyleOptionButton* buttonOption( qstyleoption_cast< const QStyleOptionButton* >( option ) );
     if( !buttonOption ) return true;
@@ -44,8 +41,8 @@ bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, c
     } else {
         // TODO(hualet): update button color from palette in case button is default
         const QColor shadow( Qt::transparent );
-        const QBrush outline(style->m_palette->brush(PaletteExtended::PushButton_BorderBrush, option));
-        const QBrush background(style->m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, option));
+        const QBrush outline(m_palette->brush(PaletteExtended::PushButton_BorderBrush, option));
+        const QBrush background(m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, option));
 
         // render
         drawPushButtonFrame(painter, rect, background, outline, shadow, widget);
@@ -64,9 +61,6 @@ bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, c
 
 bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    Style *style = CommonHelper::widgetStyle(widget);
-    if (!style) return false;
-
     // cast option and check
     const QStyleOptionButton* buttonOption( qstyleoption_cast<const QStyleOptionButton*>( option ) );
     if( !buttonOption ) return true;
@@ -172,7 +166,7 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
 
     // render text
     if( hasText && textRect.isValid() ) {
-        painter->setPen(style->m_palette->brush(PaletteExtended::PushButton_TextColor, option).color());
+        painter->setPen(m_palette->brush(PaletteExtended::PushButton_TextColor, option).color());
         if (buttonOption->features & QStyleOptionButton::HasMenu)
             textRect = textRect.adjusted(0, 0, -proxy()->pixelMetric(PM_MenuButtonIndicator, buttonOption, widget), 0);
         painter->drawText(textRect, textFlags, buttonOption->text);
