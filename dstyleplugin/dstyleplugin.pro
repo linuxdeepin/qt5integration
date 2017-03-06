@@ -31,7 +31,8 @@ SOURCES += dstyleplugin.cpp \
     rubberbandhelper.cpp \
     headerviewhelper.cpp \
     comboboxhelper.cpp \
-    toolbuttonhelper.cpp
+    toolbuttonhelper.cpp \
+    tabwidgethelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \

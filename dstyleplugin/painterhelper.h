@@ -3,6 +3,8 @@
 
 #include <QBrush>
 
+#include "common.h"
+
 QT_BEGIN_NAMESPACE
 class QPainter;
 class QPainterPath;
@@ -15,6 +17,8 @@ namespace PainterHelper {
                          const QBrush &background, qreal borderWidth = 0, const QBrush &border = Qt::NoBrush);
     void drawEllipse(QPainter *painter, const QRectF &rect, const QBrush &background, qreal borderWidth = 0, const QBrush &border = Qt::NoBrush);
     void drawPath(QPainter *painter, const QPainterPath &path, const QBrush &background, qreal borderWidth = 0, const QBrush &border = Qt::NoBrush);
+    QPainterPath roundedPath( const QRectF& rect, Corners corners, qreal radius );
+    QColor colorBlend(const QColor &color1, const QColor &color2);
 } // end namespace PainterHelper
 } // end namespace dtyle
 

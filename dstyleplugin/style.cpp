@@ -484,7 +484,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
         //    case PE_FrameMenu: fcn = &Style::drawFrameMenuPrimitive; break;
     case PE_FrameLineEdit: fcn = &Style::drawFrameLineEditPrimitive; break;
         //    case PE_FrameGroupBox: fcn = &Style::drawFrameGroupBoxPrimitive; break;
-        //    case PE_FrameTabWidget: fcn = &Style::drawFrameTabWidgetPrimitive; break;
+    case PE_FrameTabWidget: fcn = &Style::drawFrameTabWidgetPrimitive; break;
         //    case PE_FrameTabBarBase: fcn = &Style::drawFrameTabBarBasePrimitive; break;
         //    case PE_FrameWindow: fcn = &Style::drawFrameWindowPrimitive; break;
     case PE_FrameFocusRect: fcn = &Style::drawFrameFocusRectPrimitive; break;

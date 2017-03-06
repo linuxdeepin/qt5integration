@@ -24,7 +24,7 @@ bool Style::drawFramePrimitive(const QStyleOption *option, QPainter *painter, co
         return true;
     }
 
-    return false;
+    return true;
 }
 
 bool Style::drawFrameFocusRectPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
