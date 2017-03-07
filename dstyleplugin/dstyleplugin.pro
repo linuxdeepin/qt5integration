@@ -32,7 +32,8 @@ SOURCES += dstyleplugin.cpp \
     headerviewhelper.cpp \
     comboboxhelper.cpp \
     toolbuttonhelper.cpp \
-    tabwidgethelper.cpp
+    tabwidgethelper.cpp \
+    spinboxhelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \

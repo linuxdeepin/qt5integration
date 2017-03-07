@@ -252,3 +252,37 @@ HeaderView {
     ArrowIndicatorUpIcon: url(:/assets/dark/header_arrow_up.png);
     ArrowIndicatorDownIcon: url(:/assets/dark/header_arrow_down.png);
 }
+
+SpinBox {
+    MinusBrush: url(:/assets/dark/spinbox/spinbutton_minus_normal.png);
+    PlusBrush: url(:/assets/dark/spinbox/spinbutton_plus_normal.png);
+    DownBrush: url(:/assets/dark/spinbox/spinbutton_down_normal.png);
+    UpBrush: url(:/assets/dark/spinbox/spinbutton_up_normal.png);
+    BorderColor: black;
+}
+
+SpinBox:disabled {
+    MinusBrush: url(:/assets/dark/spinbox/spinbutton_minus_insensitive.png);
+    PlusBrush: url(:/assets/dark/spinbox/spinbutton_plus_insensitive.png);
+    DownBrush: url(:/assets/dark/spinbox/spinbutton_down_insensitive.png);
+    UpBrush: url(:/assets/dark/spinbox/spinbutton_up_insensitive.png);
+    BorderColor: black;
+}
+
+SpinBox:focus {
+    BorderColor: rgba(43,167,248,0.6);
+}
+
+SpinBox:pressed {
+    MinusBrush: url(:/assets/dark/spinbox/spinbutton_minus_press.png);
+    PlusBrush: url(:/assets/dark/spinbox/spinbutton_plus_press.png);
+    DownBrush: url(:/assets/dark/spinbox/spinbutton_down_press.png);
+    UpBrush: url(:/assets/dark/spinbox/spinbutton_up_press.png);
+}
+
+SpinBox:hover {
+    MinusBrush: url(:/assets/dark/spinbox/spinbutton_minus_hover.png);
+    PlusBrush: url(:/assets/dark/spinbox/spinbutton_plus_hover.png);
+    DownBrush: url(:/assets/dark/spinbox/spinbutton_down_hover.png);
+    UpBrush: url(:/assets/dark/spinbox/spinbutton_up_hover.png);
+}

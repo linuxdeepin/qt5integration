@@ -141,8 +141,9 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name,  quint64 type, co
                 if (brush.style() == Qt::NoBrush) {
                     const QString &uri = declaration.uriValue();
 
-                    if (!uri.isEmpty())
+                    if (!uri.isEmpty()) {
                         brush.setTexture(QPixmap(uri));
+                    }
                 }
 
                 m_brushCache[key] = brush;

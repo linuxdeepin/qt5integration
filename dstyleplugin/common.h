@@ -31,7 +31,7 @@ enum Metrics
     Layout_DefaultSpacing = 6,
 
     // line editors
-    LineEdit_FrameWidth = 4,
+    LineEdit_FrameWidth = 2,
 
     // combobox
     ComboBox_FrameWidth = 6,

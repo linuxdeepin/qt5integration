@@ -75,7 +75,13 @@ public:
         RubberBand_BorderBrush,
 
         HeaderView_ArrowIndicatorUpIcon,
-        HeaderView_ArrowIndicatorDownIcon
+        HeaderView_ArrowIndicatorDownIcon,
+
+        SpinBox_MinusBrush,
+        SpinBox_PlusBrush,
+        SpinBox_DownBrush,
+        SpinBox_UpBrush,
+        SpinBox_BorderColor
     };
 #if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
     Q_ENUMS(BrushName)

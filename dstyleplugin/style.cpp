@@ -135,7 +135,8 @@ void Style::polish(QWidget *w)
             || qobject_cast<QScrollBar *>(w)
             || qobject_cast<QCheckBox*>(w)
             || qobject_cast<QRadioButton*>(w)
-            || qobject_cast<QToolButton*>(w))
+            || qobject_cast<QToolButton*>(w)
+            || qobject_cast<QAbstractSpinBox*>(w))
         w->setAttribute(Qt::WA_Hover, true);
 
     if (qobject_cast<QScrollBar *>(w)) {
@@ -195,7 +196,8 @@ void Style::unpolish(QWidget *w)
             || qobject_cast<QScrollBar *>(w)
             || qobject_cast<QCheckBox*>(w)
             || qobject_cast<QRadioButton*>(w)
-            || qobject_cast<QToolButton*>(w))
+            || qobject_cast<QToolButton*>(w)
+            || qobject_cast<QAbstractSpinBox*>(w))
         w->setAttribute(Qt::WA_Hover, false);
 
     if (qobject_cast<QScrollBar *>(w)) {
@@ -325,11 +327,12 @@ QRect Style::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex
     //    SubControlRectFunc fn = nullptr;
 
     switch (cc) {
-    case QStyle::CC_Slider: return sliderSubControlRect(opt, sc, w);
-    case QStyle::CC_ScrollBar: return scrollbarSubControlRect(opt, sc, w);
+    case CC_Slider: return sliderSubControlRect(opt, sc, w);
+    case CC_ScrollBar: return scrollbarSubControlRect(opt, sc, w);
 #ifndef QT_NO_COMBOBOX
-    case QStyle::CC_ComboBox: return comboBoxSubControlRect(opt, sc, w);
+    case CC_ComboBox: return comboBoxSubControlRect(opt, sc, w);
 #endif
+//    case CC_SpinBox:  return spinboxSubControlRect(opt, sc, w);
     default:
         break;
     }
@@ -417,15 +420,16 @@ void Style::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComp
     DrawComplexControlFunc fn = nullptr;
 
     switch (cc) {
-    case QStyle::CC_Slider: fn = &Style::drawSlider; break;
+    case CC_Slider: fn = &Style::drawSlider; break;
 #ifndef QT_NO_COMBOBOX
-    case QStyle::CC_ComboBox: fn = &Style::drawComboBox; break;
+    case CC_ComboBox: fn = &Style::drawComboBox; break;
 #endif
+    case CC_SpinBox: fn = &Style::drawSpinBoxComplexControl; break;
     default:
         break;
     }
 
-    if (fn && (this->*fn)(cc, opt, p, w)) {
+    if (fn && (this->*fn)(opt, p, w)) {
         return;
     }
 
@@ -476,6 +480,14 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     case PE_IndicatorArrowUp:
         return drawStandardIcon(QStyle::SP_ArrowUp, option, painter, widget);
     case PE_IndicatorHeaderArrow: fcn = &Style::drawIndicatorHeaderArrowPrimitive; break;
+    case PE_IndicatorSpinDown:
+    case PE_IndicatorSpinMinus:
+        fillBrush(painter, option->rect, m_palette->brush(PaletteExtended::SpinBox_DownBrush, option));
+        return;
+    case PE_IndicatorSpinPlus:
+    case PE_IndicatorSpinUp:
+        fillBrush(painter, option->rect, m_palette->brush(PaletteExtended::SpinBox_UpBrush, option));
+        return;
         //    case PE_IndicatorToolBarHandle: fcn = &Style::drawIndicatorToolBarHandlePrimitive; break;
         //    case PE_IndicatorToolBarSeparator: fcn = &Style::drawIndicatorToolBarSeparatorPrimitive; break;
         //    case PE_IndicatorBranch: fcn = &Style::drawIndicatorBranchPrimitive; break;

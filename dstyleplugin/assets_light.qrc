@@ -76,5 +76,21 @@
         <file>assets/light/slider/slider_point_handle_insensitive.png</file>
         <file>assets/light/slider/slider_point_handle_press.png</file>
         <file>assets/light/slider/slider_point_handle.png</file>
+        <file>assets/light/spinbox/spinbutton_minus_hover.png</file>
+        <file>assets/light/spinbox/spinbutton_minus_insensitive.png</file>
+        <file>assets/light/spinbox/spinbutton_minus_normal.png</file>
+        <file>assets/light/spinbox/spinbutton_minus_press.png</file>
+        <file>assets/light/spinbox/spinbutton_plus_hover.png</file>
+        <file>assets/light/spinbox/spinbutton_plus_insensitive.png</file>
+        <file>assets/light/spinbox/spinbutton_plus_normal.png</file>
+        <file>assets/light/spinbox/spinbutton_plus_press.png</file>
+        <file>assets/light/spinbox/spinbutton_down_hover.png</file>
+        <file>assets/light/spinbox/spinbutton_down_insensitive.png</file>
+        <file>assets/light/spinbox/spinbutton_down_normal.png</file>
+        <file>assets/light/spinbox/spinbutton_down_press.png</file>
+        <file>assets/light/spinbox/spinbutton_up_hover.png</file>
+        <file>assets/light/spinbox/spinbutton_up_insensitive.png</file>
+        <file>assets/light/spinbox/spinbutton_up_normal.png</file>
+        <file>assets/light/spinbox/spinbutton_up_press.png</file>
     </qresource>
 </RCC>

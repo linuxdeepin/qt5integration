@@ -50,7 +50,7 @@ public:
 
     // some function type alias.
     //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
-    using DrawComplexControlFunc = bool(Style::*)(ComplexControl, const QStyleOptionComplex *, QPainter *, const QWidget *) const;
+    using DrawComplexControlFunc = bool(Style::*)(const QStyleOptionComplex *, QPainter *, const QWidget *) const;
     using DrawPrimitiveFunc = bool(Style::*)(const QStyleOption*, QPainter*, const QWidget* ) const;
     using DrawControlFunc = bool(Style::*)(const QStyleOption*, QPainter*, const QWidget*) const;
 
@@ -78,7 +78,7 @@ private:
 
     // slider
     QRect sliderSubControlRect(const QStyleOptionComplex *option, SubControl subControl, const QWidget *widget ) const;
-    bool drawSlider(ComplexControl control, const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const;
+    bool drawSlider(const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const;
     void drawSliderGroove(QPainter*, const QRect&, const QBrush & brush) const;
     void drawSliderHandle(QPainter* painter, const QStyleOptionSlider *option, const QRect& rect, const QString &type) const;
     bool drawSliderTickmarkLabels(const QStyleOption*, QPainter*, const QWidget*) const;
@@ -116,7 +116,7 @@ private:
 
     // combobox
     void drawComboBoxPopupFramePrimitive(const QStyleOption *option, QPainter *painter) const;
-    bool drawComboBox(ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const;
+    bool drawComboBox(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const;
     QRect comboBoxSubControlRect(const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget ) const;
     bool drawComboBoxLabelControl(const QStyleOption *option, QPainter *painter, const QWidget *) const;
 
@@ -128,6 +128,10 @@ private:
 
     // tab widget
     bool drawFrameTabWidgetPrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
+
+    // spin box
+    bool drawSpinBoxComplexControl( const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget ) const;
+    QRect spinboxSubControlRect(const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget) const;
 
     StyleType m_type;
     PaletteExtended *m_palette = Q_NULLPTR;

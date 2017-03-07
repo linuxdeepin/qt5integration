@@ -31,10 +31,8 @@ void Style::drawComboBoxPopupFramePrimitive(const QStyleOption *option, QPainter
     painter->drawRoundedRect(rect, 4, 4);
 }
 
-bool Style::drawComboBox(QStyle::ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
+bool Style::drawComboBox(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
 {
-    Q_UNUSED(control)
-
     // cast option and check
     const QStyleOptionComboBox* comboBoxOption( qstyleoption_cast<const QStyleOptionComboBox*>( option ) );
     if( !comboBoxOption ) return true;

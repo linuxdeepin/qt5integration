@@ -61,10 +61,8 @@ QRect Style::sliderSubControlRect(const QStyleOptionComplex *option, QStyle::Sub
     }
 }
 
-bool Style::drawSlider(ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
+bool Style::drawSlider(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
 {
-    Q_UNUSED(control)
-
     // cast option and check
     const QStyleOptionSlider *sliderOption( qstyleoption_cast<const QStyleOptionSlider*>( option ) );
     if( !sliderOption ) return true;
