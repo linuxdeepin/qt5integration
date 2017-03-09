@@ -169,10 +169,33 @@ void Utility::setFrameExtents(uint WId, const QMargins &margins)
 
 void Utility::setInputShapeRectangles(uint WId, const QRegion &region)
 {
-    const QVector<xcb_rectangle_t> &rectangles = qregion2XcbRectangles(region);
+    setInputShapeRectangles(WId, qregion2XcbRectangles(region));
+}
 
+void Utility::setInputShapeRectangles(uint WId, const QVector<xcb_rectangle_t> &rectangles)
+{
     xcb_shape_rectangles(QX11Info::connection(), XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT, XCB_CLIP_ORDERING_YX_BANDED, WId,
                          0, 0, rectangles.size(), rectangles.constData());
+}
+
+void Utility::setInputShapePath(uint WId, const QPainterPath &path)
+{
+    QVector<xcb_rectangle_t> rectangles;
+
+    foreach(const QPolygonF &polygon, path.toFillPolygons()) {
+        foreach(const QRect &area, QRegion(polygon.toPolygon()).rects()) {
+            xcb_rectangle_t rectangle;
+
+            rectangle.x = area.x();
+            rectangle.y = area.y();
+            rectangle.width = area.width();
+            rectangle.height = area.height();
+
+            rectangles.append(std::move(rectangle));
+        }
+    }
+
+    setInputShapeRectangles(WId, rectangles);
 }
 
 void Utility::sendMoveResizeMessage(uint WId, uint32_t action, QPoint globalPos, Qt::MouseButton qbutton)

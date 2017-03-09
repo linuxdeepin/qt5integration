@@ -630,14 +630,16 @@ void DPlatformBackingStore::resize(const QSize &size, const QRegion &staticConte
     //! TODO: update window margins
     //    updateWindowMargins();
 
-    if (!isUserSetClipPath || shadowPixmap.isNull()) {
+    if (isUserSetClipPath) {
+        if (shadowPixmap.isNull()) {
+            updateWindowShadow();
+            updateWindowBlurAreasForWM();
+        }
+    } else {
         updateInputShapeRegion();
         updateWindowShadow();
 
         if (!m_blurAreaList.isEmpty() || !m_blurPathList.isEmpty() || m_enableBlurWindow)
-            updateWindowBlurAreasForWM();
-    } else {
-        if (m_enableBlurWindow)
             updateWindowBlurAreasForWM();
     }
 
@@ -723,12 +725,19 @@ void DPlatformBackingStore::updateFrameExtents()
 
 void DPlatformBackingStore::updateInputShapeRegion()
 {
-    if (isUserSetClipPath)
-        return;
+    if (isUserSetClipPath) {
+        QPainterPathStroker stroker;
+        QPainterPath p;
 
-    QRegion region(windowGeometry().adjusted(-MOUSE_MARGINS, -MOUSE_MARGINS, MOUSE_MARGINS, MOUSE_MARGINS));
+        stroker.setWidth(MOUSE_MARGINS);
+        p = stroker.createStroke(m_windowClipPath);
+        p.addRect(m_windowClipPath.boundingRect());
 
-    Utility::setInputShapeRectangles(window()->winId(), region);
+        Utility::setInputShapePath(window()->winId(), p);
+    } else {
+        QRegion region(windowGeometry().adjusted(-MOUSE_MARGINS, -MOUSE_MARGINS, MOUSE_MARGINS, MOUSE_MARGINS));
+        Utility::setInputShapeRectangles(window()->winId(), region);
+    }
 }
 
 void DPlatformBackingStore::updateWindowRadius()
@@ -1024,7 +1033,7 @@ void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
     updateInputShapeRegion();
     updateFrameExtents();
 
-    if (!m_blurAreaList.isEmpty() || !m_blurPathList.isEmpty())
+    if (!m_blurAreaList.isEmpty() || !m_blurPathList.isEmpty() || m_enableBlurWindow)
         updateWindowBlurAreasForWM();
 
     window()->setProperty(frameMargins, QVariant::fromValue(windowMargins));
@@ -1037,7 +1046,10 @@ void DPlatformBackingStore::setClipPah(const QPainterPath &path)
         m_windowClipPath = m_clipPath.translated(windowOffset());
         windowValidRect = m_clipPath.boundingRect().toRect();
 
+        updateInputShapeRegion();
+
         if (isUserSetClipPath) {
+            updateWindowBlurAreasForWM();
             doDelayedUpdateWindowShadow();
         }
     }
@@ -1170,7 +1182,7 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
         area.yRaduis = m_windowRadius;
 
         newAreas.append(std::move(area));
-    } else if (m_blurPathList.isEmpty()) {
+    } else {
         newAreas.reserve(m_blurAreaList.size());
 
         foreach (Utility::BlurArea area, m_blurAreaList) {
@@ -1181,25 +1193,29 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
 
             newAreas.append(std::move(area));
         }
-    } else {
-        QList<QPainterPath> newPathList;
-        QPainterPath backgroundPath;
+    }
 
-        backgroundPath.addRect(windowValidRect);
+    if ((isUserSetClipPath && !m_windowClipPath.isEmpty()) || !m_blurPathList.isEmpty()) {
+        QList<QPainterPath> newPathList;
+
         newPathList.reserve(m_blurPathList.size());
 
-        foreach (const QPainterPath &path, m_blurPathList)
-            newPathList << path.translated(windowValidRect.topLeft()).intersected(backgroundPath);
+        foreach (const QPainterPath &path, m_blurPathList) {
+            if (m_windowClipPath.isEmpty())
+                newPathList << path.translated(windowValidRect.topLeft());
+            else
+                newPathList << path.translated(windowValidRect.topLeft()).intersected(m_windowClipPath);
+        }
 
-        foreach (const Utility::BlurArea &area, m_blurAreaList) {
+        foreach (const Utility::BlurArea &area, newAreas) {
             QPainterPath path;
 
-            path.addRoundedRect(area.x + windowValidRect.x(),
-                                area.y + windowValidRect.y(),
-                                qMin(area.x + area.width, (quint32)windowValidRect.right() + 1) - area.x,
-                                qMin(area.y + area.height, (quint32)windowValidRect.bottom() + 1) - area.y,
-                                area.xRadius, area.yRaduis);
-            newPathList << path;
+            path.addRoundedRect(area.x, area.y, area.width, area.height, area.xRadius, area.yRaduis);
+
+            if (m_windowClipPath.isEmpty())
+                newPathList << path;
+            else
+                newPathList << path.intersected(m_windowClipPath);
         }
 
         return Utility::blurWindowBackgroundByPaths(window()->winId(), newPathList);
