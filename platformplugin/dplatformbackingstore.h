@@ -89,6 +89,7 @@ private:
     void updateEnableSystemMove();
     void updateEnableBlurWindow();
     void updateWindowBlurAreas();
+    void updateWindowBlurPaths();
 
     void setWindowMargins(const QMargins &margins);
     void setClipPah(const QPainterPath &path);
@@ -136,6 +137,7 @@ private:
     bool m_enableBlurWindow = false;
 
     QVector<Utility::BlurArea> m_blurAreaList;
+    QList<QPainterPath> m_blurPathList;
 
     QRect windowValidRect;
     QMargins windowMargins;

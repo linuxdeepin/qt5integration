@@ -20,6 +20,10 @@ QFunctionPointer DPlatformNativeInterface::platformFunction(const QByteArray &fu
 #ifdef Q_OS_LINUX
     if (function == setWmBlurWindowBackgroundArea) {
         return reinterpret_cast<QFunctionPointer>(&Utility::blurWindowBackground);
+    } else if (function == setWmBlurWindowBackgroundPathList) {
+        return reinterpret_cast<QFunctionPointer>(&Utility::blurWindowBackgroundByPaths);
+    } else if (function == setWmBlurWindowBackgroundMaskImage) {
+        return reinterpret_cast<QFunctionPointer>(&Utility::blurWindowBackgroundByImage);
     } else if (function == hasBlurWindow) {
         return reinterpret_cast<QFunctionPointer>(&Utility::hasBlurWindow);
     } else if (function == connectWindowManagerChangedSignal) {

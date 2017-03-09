@@ -31,9 +31,12 @@ DEFINE_CONST_CHAR(enableBlurWindow);
 DEFINE_CONST_CHAR(userWindowMinimumSize);
 DEFINE_CONST_CHAR(userWindowMaximumSize);
 DEFINE_CONST_CHAR(windowBlurAreas);
+DEFINE_CONST_CHAR(windowBlurPaths);
 
 // functions
 DEFINE_CONST_CHAR(setWmBlurWindowBackgroundArea);
+DEFINE_CONST_CHAR(setWmBlurWindowBackgroundPathList);
+DEFINE_CONST_CHAR(setWmBlurWindowBackgroundMaskImage);
 DEFINE_CONST_CHAR(hasBlurWindow);
 DEFINE_CONST_CHAR(connectWindowManagerChangedSignal);
 DEFINE_CONST_CHAR(connectHasBlurWindowChanged);

@@ -331,10 +331,9 @@ bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &area
             QVector<BlurArea> areas;
 
             areas << BlurArea();
-            setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, areas.constData(), areas.size() * sizeof(BlurArea) / sizeof(quint32), sizeof(quint32) * 8);
-        } else {
-            setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, areas.constData(), areas.size() * sizeof(BlurArea) / sizeof(quint32), sizeof(quint32) * 8);
         }
+
+        setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, areas.constData(), areas.size() * sizeof(BlurArea) / sizeof(quint32), sizeof(quint32) * 8);
     } else {
         xcb_atom_t atom = DXcbWMSupport::instance()->_kde_net_wm_blur_rehind_region_atom;
 
@@ -344,11 +343,90 @@ bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &area
         QVector<quint32> rects;
 
         foreach (const BlurArea &area, areas) {
-            rects << area.x << area.y << area.width << area.height;
+            if (area.xRadius <= 0 || area.yRaduis <= 0) {
+                rects << area.x << area.y << area.width << area.height;
+            } else {
+                QPainterPath path;
+
+                path.addRoundedRect(area.x, area.y, area.width, area.height, area.xRadius, area.yRaduis);
+
+                foreach(const QPolygonF &polygon, path.toFillPolygons()) {
+                    foreach(const QRect &area, QRegion(polygon.toPolygon()).rects()) {
+                        rects << area.x() << area.y() << area.width() << area.height();
+                    }
+                }
+            }
         }
 
         setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, rects.constData(), rects.size(), sizeof(quint32) * 8);
     }
+
+    return true;
+}
+
+bool Utility::blurWindowBackgroundByPaths(const uint WId, const QList<QPainterPath> &paths)
+{
+    if (DXcbWMSupport::instance()->isDeepinWM()) {
+        QRect boundingRect;
+
+        for (const QPainterPath &p : paths) {
+            boundingRect |= p.boundingRect().toRect();
+        }
+
+        QImage image(boundingRect.size(), QImage::Format_Alpha8);
+
+        image.fill(Qt::transparent);
+
+        QPainter painter(&image);
+
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.translate(-boundingRect.topLeft());
+
+        for (const QPainterPath &p : paths) {
+            painter.fillPath(p, Qt::black);
+        }
+
+        return blurWindowBackgroundByImage(WId, boundingRect, image);
+    } else {
+        xcb_atom_t atom = DXcbWMSupport::instance()->_kde_net_wm_blur_rehind_region_atom;
+
+        if (atom == XCB_NONE)
+            return false;
+
+        QVector<quint32> rects;
+
+        foreach (const QPainterPath &path, paths) {
+            foreach(const QPolygonF &polygon, path.toFillPolygons()) {
+                foreach(const QRect &area, QRegion(polygon.toPolygon()).rects()) {
+                    rects << area.x() << area.y() << area.width() << area.height();
+                }
+            }
+        }
+
+        setWindowProperty(WId, atom, XCB_ATOM_CARDINAL, rects.constData(), rects.size(), sizeof(quint32) * 8);
+    }
+
+    return true;
+}
+
+bool Utility::blurWindowBackgroundByImage(const uint WId, const QRect &blurRect, const QImage &maskImage)
+{
+    if (!DXcbWMSupport::instance()->isDeepinWM() || maskImage.format() != QImage::Format_Alpha8)
+        return false;
+
+    QByteArray array;
+    QVector<qint32> area;
+
+    area.reserve(5);
+    area << blurRect.x() << blurRect.y() << blurRect.width() << blurRect.height() << maskImage.bytesPerLine();
+
+    array.reserve(area.size() * sizeof(qint32) / sizeof(char) * area.size() + maskImage.byteCount());
+    array.append((const char*)area.constData(), sizeof(qint32) / sizeof(char) * area.size());
+    array.append((const char*)maskImage.constBits(), maskImage.byteCount());
+
+    setWindowProperty(WId, DXcbWMSupport::instance()->_net_wm_deepin_blur_region_mask,
+                      DXcbWMSupport::instance()->_net_wm_deepin_blur_region_mask,
+                      array.constData(), array.length(), 8);
 
     return true;
 }

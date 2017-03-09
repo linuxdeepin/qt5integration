@@ -52,6 +52,7 @@ private:
 
     xcb_atom_t _net_wm_deepin_blur_region_rounded_atom = 0;
     xcb_atom_t _kde_net_wm_blur_rehind_region_atom = 0;
+    xcb_atom_t _net_wm_deepin_blur_region_mask = 0;
 
     QVector<xcb_atom_t> net_wm_atoms;
     QVector<xcb_atom_t> root_window_properties;

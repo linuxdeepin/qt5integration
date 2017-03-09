@@ -286,6 +286,8 @@ skip_set_cursor:
                 m_store->updateEnableBlurWindow();
             } else if (e->propertyName() == windowBlurAreas) {
                 m_store->updateWindowBlurAreas();
+            } else if (e->propertyName() == windowBlurPaths) {
+                m_store->updateWindowBlurPaths();
             }
 
             break;
@@ -632,7 +634,7 @@ void DPlatformBackingStore::resize(const QSize &size, const QRegion &staticConte
         updateInputShapeRegion();
         updateWindowShadow();
 
-        if (!m_blurAreaList.isEmpty() || m_enableBlurWindow)
+        if (!m_blurAreaList.isEmpty() || !m_blurPathList.isEmpty() || m_enableBlurWindow)
             updateWindowBlurAreasForWM();
     } else {
         if (m_enableBlurWindow)
@@ -678,6 +680,7 @@ void DPlatformBackingStore::initUserPropertys()
     updateEnableSystemResize();
     updateEnableBlurWindow();
     updateWindowBlurAreas();
+    updateWindowBlurPaths();
 }
 
 bool DPlatformBackingStore::updateWindowMargins(bool repaintShadow)
@@ -984,6 +987,19 @@ void DPlatformBackingStore::updateWindowBlurAreas()
     updateWindowBlurAreasForWM();
 }
 
+void DPlatformBackingStore::updateWindowBlurPaths()
+{
+    const QVariant &v = window()->property(windowBlurPaths);
+    const QList<QPainterPath> paths = qvariant_cast<QList<QPainterPath>>(v);
+
+    if (paths.isEmpty() && m_blurPathList.isEmpty())
+        return;
+
+    m_blurPathList = paths;
+
+    updateWindowBlurAreasForWM();
+}
+
 void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
 {
     if (windowMargins == margins)
@@ -1008,7 +1024,7 @@ void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
     updateInputShapeRegion();
     updateFrameExtents();
 
-    if (!m_blurAreaList.isEmpty())
+    if (!m_blurAreaList.isEmpty() || !m_blurPathList.isEmpty())
         updateWindowBlurAreasForWM();
 
     window()->setProperty(frameMargins, QVariant::fromValue(windowMargins));
@@ -1154,7 +1170,7 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
         area.yRaduis = m_windowRadius;
 
         newAreas.append(std::move(area));
-    } else {
+    } else if (m_blurPathList.isEmpty()) {
         newAreas.reserve(m_blurAreaList.size());
 
         foreach (Utility::BlurArea area, m_blurAreaList) {
@@ -1165,6 +1181,28 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
 
             newAreas.append(std::move(area));
         }
+    } else {
+        QList<QPainterPath> newPathList;
+        QPainterPath backgroundPath;
+
+        backgroundPath.addRect(windowValidRect);
+        newPathList.reserve(m_blurPathList.size());
+
+        foreach (const QPainterPath &path, m_blurPathList)
+            newPathList << path.translated(windowValidRect.topLeft()).intersected(backgroundPath);
+
+        foreach (const Utility::BlurArea &area, m_blurAreaList) {
+            QPainterPath path;
+
+            path.addRoundedRect(area.x + windowValidRect.x(),
+                                area.y + windowValidRect.y(),
+                                qMin(area.x + area.width, (quint32)windowValidRect.right() + 1) - area.x,
+                                qMin(area.y + area.height, (quint32)windowValidRect.bottom() + 1) - area.y,
+                                area.xRadius, area.yRaduis);
+            newPathList << path;
+        }
+
+        return Utility::blurWindowBackgroundByPaths(window()->winId(), newPathList);
     }
 
     return Utility::blurWindowBackground(window()->winId(), newAreas);
