@@ -1139,23 +1139,27 @@ void DPlatformBackingStore::updateWindowShadow()
 
         /// begin paint window border;
         pa.begin(&image);
-        QPainterPathStroker pathStroker;
 
-        pathStroker.setWidth(m_borderWidth * 2);
+        if (m_borderWidth > 0) {
+            QPainterPathStroker pathStroker;
 
-        QTransform transform = pa.transform();
-        const QRectF &clipRect = m_clipPath.boundingRect();
+            pathStroker.setWidth(m_borderWidth * 2);
 
-        transform.translate(windowMargins.left() + 2, windowMargins.top() + 2);
-        transform.scale((clipRect.width() - 4) / clipRect.width(),
-                        (clipRect.height() - 4) / clipRect.height());
+            QTransform transform = pa.transform();
+            const QRectF &clipRect = m_clipPath.boundingRect();
 
-//        pa.setCompositionMode(QPainter::CompositionMode_Source);
-        pa.setRenderHint(QPainter::Antialiasing);
-        pa.fillPath(pathStroker.createStroke(m_windowClipPath), m_borderColor);
-        pa.setCompositionMode(QPainter::CompositionMode_Clear);
-        pa.setRenderHint(QPainter::Antialiasing, false);
-        pa.setTransform(transform);
+            transform.translate(windowMargins.left() + 2, windowMargins.top() + 2);
+            transform.scale((clipRect.width() - 4) / clipRect.width(),
+                            (clipRect.height() - 4) / clipRect.height());
+
+    //        pa.setCompositionMode(QPainter::CompositionMode_Source);
+            pa.setRenderHint(QPainter::Antialiasing);
+            pa.fillPath(pathStroker.createStroke(m_windowClipPath), m_borderColor);
+            pa.setCompositionMode(QPainter::CompositionMode_Clear);
+            pa.setRenderHint(QPainter::Antialiasing, false);
+            pa.setTransform(transform);
+        }
+
         pa.fillPath(m_clipPath, Qt::transparent);
         pa.end();
         /// end
