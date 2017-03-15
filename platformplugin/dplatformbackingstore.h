@@ -90,6 +90,7 @@ private:
     void updateEnableBlurWindow();
     void updateWindowBlurAreas();
     void updateWindowBlurPaths();
+    void updateAutoInputMaskByClipPath();
 
     void setWindowMargins(const QMargins &margins);
     void setClipPah(const QPainterPath &path);
@@ -135,6 +136,7 @@ private:
     bool m_enableSystemResize = true;
     bool m_enableSystemMove = true;
     bool m_enableBlurWindow = false;
+    bool m_autoInputMaskByClipPath = true;
 
     QVector<Utility::BlurArea> m_blurAreaList;
     QList<QPainterPath> m_blurPathList;

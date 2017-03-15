@@ -288,6 +288,8 @@ skip_set_cursor:
                 m_store->updateWindowBlurAreas();
             } else if (e->propertyName() == windowBlurPaths) {
                 m_store->updateWindowBlurPaths();
+            } else if (e->propertyName() == autoInputMaskByClipPath) {
+                m_store->updateAutoInputMaskByClipPath();
             }
 
             break;
@@ -635,6 +637,9 @@ void DPlatformBackingStore::resize(const QSize &size, const QRegion &staticConte
             updateWindowShadow();
             updateWindowBlurAreasForWM();
         }
+
+        if (!m_autoInputMaskByClipPath)
+            updateInputShapeRegion();
     } else {
         updateInputShapeRegion();
         updateWindowShadow();
@@ -683,6 +688,7 @@ void DPlatformBackingStore::initUserPropertys()
     updateEnableBlurWindow();
     updateWindowBlurAreas();
     updateWindowBlurPaths();
+    updateAutoInputMaskByClipPath();
 }
 
 bool DPlatformBackingStore::updateWindowMargins(bool repaintShadow)
@@ -725,7 +731,7 @@ void DPlatformBackingStore::updateFrameExtents()
 
 void DPlatformBackingStore::updateInputShapeRegion()
 {
-    if (isUserSetClipPath) {
+    if (m_autoInputMaskByClipPath && isUserSetClipPath) {
         QPainterPathStroker stroker;
         QPainterPath p;
 
@@ -1007,6 +1013,21 @@ void DPlatformBackingStore::updateWindowBlurPaths()
     m_blurPathList = paths;
 
     updateWindowBlurAreasForWM();
+}
+
+void DPlatformBackingStore::updateAutoInputMaskByClipPath()
+{
+    const QVariant &v = window()->property(autoInputMaskByClipPath);
+
+    if (!v.isValid()) {
+        window()->setProperty(autoInputMaskByClipPath, m_autoInputMaskByClipPath);
+
+        return;
+    }
+
+    if (m_autoInputMaskByClipPath != v.toBool()) {
+        m_autoInputMaskByClipPath = v.toBool();
+    }
 }
 
 void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
