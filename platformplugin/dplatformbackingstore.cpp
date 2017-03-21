@@ -489,31 +489,6 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
                      m_eventListener, [this] {
         updateWindowMargins(false);
     });
-
-    QObject::connect(m_windowHook, &DPlatformWindowHook::windowGeometryAboutChanged,
-                     m_eventListener, [this] (const QRect &rect) {
-        if (m_windowSize == rect.size())
-            return;
-
-        m_windowSize = rect.size();
-        m_size = rect.marginsAdded(windowMargins).size();
-
-        updateClipPath();
-        //! TODO: update window margins
-        //    updateWindowMargins();
-
-        if (isUserSetClipPath) {
-            if (shadowPixmap.isNull()) {
-                updateWindowShadow();
-            }
-
-            if (!m_autoInputMaskByClipPath)
-                updateInputShapeRegion();
-        } else {
-            updateInputShapeRegion();
-            updateWindowShadow();
-        }
-    });
 }
 
 DPlatformBackingStore::~DPlatformBackingStore()
@@ -649,16 +624,11 @@ void DPlatformBackingStore::resize(const QSize &size, const QRegion &staticConte
 
 //    m_graphicsBuffer = new DXcbShmGraphicsBuffer(&m_image);
 
+    m_windowSize = size;
     m_size = QSize(size.width() + windowMargins.left() + windowMargins.right(),
                    size.height() + windowMargins.top() + windowMargins.bottom());
 
     m_proxy->resize(m_size, staticContents);
-
-    if (m_windowSize == size) {
-        return;
-    }
-
-    m_windowSize = size;
 
     updateClipPath();
     //! TODO: update window margins
@@ -667,8 +637,10 @@ void DPlatformBackingStore::resize(const QSize &size, const QRegion &staticConte
     if (isUserSetClipPath) {
         if (shadowPixmap.isNull()) {
             updateWindowShadow();
-            updateWindowBlurAreasForWM();
         }
+
+        if (!m_windowClipPath.isEmpty())
+            updateWindowBlurAreasForWM();
 
         if (!m_autoInputMaskByClipPath)
             updateInputShapeRegion();

@@ -75,7 +75,7 @@ private:
     void updateClipPath();
     void updateWindowShadow();
     bool updateWindowBlurAreasForWM();
-    void doDelayedUpdateWindowShadow(int delaye = 100);
+    void doDelayedUpdateWindowShadow(int delaye = 30);
 
     /// update of user propertys
     void updateWindowRadius();
