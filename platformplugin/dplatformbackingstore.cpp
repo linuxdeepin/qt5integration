@@ -47,8 +47,6 @@ public:
         : QObject(0)
         , m_store(store)
     {
-        store->window()->installEventFilter(this);
-
         cursorAnimation.setDuration(50);
         cursorAnimation.setEasingCurve(QEasingCurve::InExpo);
 
@@ -473,12 +471,12 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
     : QPlatformBackingStore(window)
     , m_proxy(proxy)
 {
-    initUserPropertys();
 
     m_eventListener = new WindowEventListener(this);
     m_windowHook = DPlatformWindowHook::getHookByWindow(window->handle());
     shadowPixmap.fill(Qt::transparent);
 
+    initUserPropertys();
     //! Warning: At this point you must be initialized window Margins and window Extents
     updateWindowMargins();
 //    updateFrameExtents();
@@ -490,6 +488,8 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
                      m_eventListener, [this] {
         updateWindowMargins(false);
     });
+
+    window->installEventFilter(m_eventListener);
 }
 
 DPlatformBackingStore::~DPlatformBackingStore()
