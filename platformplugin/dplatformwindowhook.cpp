@@ -21,6 +21,7 @@ QHash<const QPlatformWindow*, DPlatformWindowHook*> DPlatformWindowHook::mapped;
 
 DPlatformWindowHook::DPlatformWindowHook(QNativeWindow *window)
     : nativeWindow(window)
+    , QObject(window->window())
 {
     mapped[window] = this;
 
@@ -37,18 +38,12 @@ DPlatformWindowHook::DPlatformWindowHook(QNativeWindow *window)
     HOOK_VFPTR(setWindowState);
 #endif
     HOOK_VFPTR(propagateSizeHints);
-
-    QObject::connect(window->window(), &QWindow::destroyed, window->window(), [this] {
-        if (mapped.contains(nativeWindow)) {
-            delete this;
-            VtableHook::clearGhostVtable(static_cast<QPlatformWindow*>(nativeWindow));
-        }
-    });
 }
 
 DPlatformWindowHook::~DPlatformWindowHook()
 {
     mapped.remove(nativeWindow);
+    VtableHook::clearGhostVtable(static_cast<QPlatformWindow*>(nativeWindow));
 }
 
 DPlatformWindowHook *DPlatformWindowHook::me() const
@@ -61,7 +56,7 @@ void DPlatformWindowHook::setGeometry(const QRect &rect)
     const QMargins &margins = me()->windowMargins;
 
 //    qDebug() << __FUNCTION__ << rect << rect + margins;
-
+    emit me()->windowGeometryAboutChanged(rect);
     CALL::setGeometry(rect + margins);
 }
 

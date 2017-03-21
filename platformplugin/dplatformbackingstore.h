@@ -4,6 +4,7 @@
 #define private public
 #include <qpa/qplatformbackingstore.h>
 #undef private
+#include <qpa/qplatformwindow.h>
 
 #include <QBasicTimer>
 
@@ -21,6 +22,7 @@ DPP_BEGIN_NAMESPACE
 
 class DXcbShmGraphicsBuffer;
 class WindowEventListener;
+class DPlatformWindowHook;
 
 class DPlatformBackingStore : public QPlatformBackingStore
 {
@@ -106,7 +108,7 @@ private:
     inline QPoint windowOffset() const
     { return QPoint(windowMargins.left(), windowMargins.top());}
     inline QRect windowGeometry() const
-    { return QRect(windowOffset(), m_image.size());}
+    { return QRect(windowOffset(), m_windowSize);}
 
     bool canUseClipPath() const;
 
@@ -114,11 +116,13 @@ private:
     void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event);
 
     QSize m_size;
+    QSize m_windowSize;
     QImage m_image;
 
     QXcbBackingStore *m_proxy;
     WindowEventListener *m_eventListener = Q_NULLPTR;
 //    DXcbShmGraphicsBuffer *m_graphicsBuffer = Q_NULLPTR;
+    DPlatformWindowHook *m_windowHook = Q_NULLPTR;
 
     int m_windowRadius = 4;
     int m_borderWidth = 1;

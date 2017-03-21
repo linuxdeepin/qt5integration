@@ -474,6 +474,7 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
     , m_proxy(proxy)
 {
     m_eventListener = new WindowEventListener(this);
+    m_windowHook = DPlatformWindowHook::getHookByWindow(window->handle());
     shadowPixmap.fill(Qt::transparent);
 
     initUserPropertys();
@@ -487,6 +488,31 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
     QObject::connect(window, &QWindow::windowStateChanged,
                      m_eventListener, [this] {
         updateWindowMargins(false);
+    });
+
+    QObject::connect(m_windowHook, &DPlatformWindowHook::windowGeometryAboutChanged,
+                     m_eventListener, [this] (const QRect &rect) {
+        if (m_windowSize == rect.size())
+            return;
+
+        m_windowSize = rect.size();
+        m_size = rect.marginsAdded(windowMargins).size();
+
+        updateClipPath();
+        //! TODO: update window margins
+        //    updateWindowMargins();
+
+        if (isUserSetClipPath) {
+            if (shadowPixmap.isNull()) {
+                updateWindowShadow();
+            }
+
+            if (!m_autoInputMaskByClipPath)
+                updateInputShapeRegion();
+        } else {
+            updateInputShapeRegion();
+            updateWindowShadow();
+        }
     });
 }
 
@@ -535,7 +561,7 @@ void DPlatformBackingStore::flush(QWindow *window, const QRegion &region, const 
 
 //    qDebug() << "flush" << window << tmp_region << offset;
 
-    DPlatformWindowHook *window_hook = DPlatformWindowHook::getHookByWindow(window->handle());
+    DPlatformWindowHook *window_hook = m_windowHook;
 
     if (window_hook)
         window_hook->setWindowMargins(QMargins(0, 0, 0, 0));
@@ -627,6 +653,12 @@ void DPlatformBackingStore::resize(const QSize &size, const QRegion &staticConte
                    size.height() + windowMargins.top() + windowMargins.bottom());
 
     m_proxy->resize(m_size, staticContents);
+
+    if (m_windowSize == size) {
+        return;
+    }
+
+    m_windowSize = size;
 
     updateClipPath();
     //! TODO: update window margins
@@ -839,9 +871,9 @@ void DPlatformBackingStore::updateClipPath()
         QPainterPath path;
 
         if (canUseClipPath())
-            path.addRoundedRect(QRect(QPoint(0, 0), m_image.size()), m_windowRadius, m_windowRadius);
+            path.addRoundedRect(QRect(QPoint(0, 0), m_windowSize), m_windowRadius, m_windowRadius);
         else
-            path.addRect(0, 0, m_image.width(), m_image.height());
+            path.addRect(0, 0, m_windowSize.width(), m_windowSize.height());
 
         setClipPah(path);
     }
@@ -1038,13 +1070,13 @@ void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
     windowMargins = margins;
     m_windowClipPath = m_clipPath.translated(windowOffset());
 
-    DPlatformWindowHook *hook = DPlatformWindowHook::getHookByWindow(m_proxy->window()->handle());
+    DPlatformWindowHook *hook = m_windowHook;
 
     if (hook) {
         hook->setWindowMargins(margins, true);
     }
 
-    const QSize &tmp_size = m_image.size();
+    const QSize &tmp_size = windowGeometry().size();
 
     m_size = QSize(tmp_size.width() + windowMargins.left() + windowMargins.right(),
                    tmp_size.height() + windowMargins.top() + windowMargins.bottom());
@@ -1086,16 +1118,16 @@ void DPlatformBackingStore::paintWindowShadow(QRegion region)
     pa.drawPixmap(0, 0, shadowPixmap);
     pa.end();
 
-    DPlatformWindowHook *window_hook = DPlatformWindowHook::getHookByWindow(window()->handle());
+    DPlatformWindowHook *window_hook = m_windowHook;
 
     if (window_hook)
         window_hook->setWindowMargins(QMargins(0, 0, 0, 0));
 
     if (region.isEmpty()) {
-        region += QRect(windowMargins.left(), 0, m_image.width(), windowMargins.top());
-        region += QRect(windowMargins.left(), windowMargins.top() + m_image.height(), m_image.width(), windowMargins.bottom());
+        region += QRect(windowMargins.left(), 0, m_windowSize.width(), windowMargins.top());
+        region += QRect(windowMargins.left(), windowMargins.top() + m_windowSize.height(), m_windowSize.width(), windowMargins.bottom());
         region += QRect(0, 0, windowMargins.left(), m_size.height());
-        region += QRect(windowMargins.left() + m_image.width(), 0, windowMargins.right(), m_size.height());
+        region += QRect(windowMargins.left() + m_windowSize.width(), 0, windowMargins.right(), m_size.height());
     }
 
     m_proxy->flush(window(), region, QPoint(0, 0));
@@ -1114,7 +1146,7 @@ void DPlatformBackingStore::repaintWindowShadow()
     updateWindowShadow();
     paintWindowShadow(QRegion(0, 0, m_size.width(), m_size.height()));
 
-    flush(window(), QRect(QPoint(0, 0), m_image.size()), QPoint(0, 0));
+    flush(window(), QRect(QPoint(0, 0), m_windowSize), QPoint(0, 0));
 }
 
 inline QSize margins2Size(const QMargins &margins)
@@ -1194,7 +1226,7 @@ void DPlatformBackingStore::updateWindowShadow()
 bool DPlatformBackingStore::updateWindowBlurAreasForWM()
 {
     QVector<Utility::BlurArea> newAreas;
-    QRect windowValidRect = windowGeometry();
+    const QRect &windowValidRect = windowGeometry();
 
     if (m_enableBlurWindow) {
         Utility::BlurArea area;

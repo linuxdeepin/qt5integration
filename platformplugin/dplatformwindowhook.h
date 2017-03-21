@@ -18,8 +18,10 @@ typedef QWindowsWindow QNativeWindow;
 
 DPP_BEGIN_NAMESPACE
 
-class DPlatformWindowHook
+class DPlatformWindowHook : public QObject
 {
+    Q_OBJECT
+
 public:
     DPlatformWindowHook(QNativeWindow *window);
 
@@ -52,6 +54,9 @@ public:
     void propagateSizeHints();
 
     static DPlatformWindowHook *getHookByWindow(const QPlatformWindow *window);
+
+signals:
+    void windowGeometryAboutChanged(const QRect &rect);
 
 private:
     void setWindowMargins(const QMargins &margins, bool propagateSizeHints = false);
