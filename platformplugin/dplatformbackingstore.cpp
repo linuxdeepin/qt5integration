@@ -473,11 +473,12 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
     : QPlatformBackingStore(window)
     , m_proxy(proxy)
 {
+    initUserPropertys();
+
     m_eventListener = new WindowEventListener(this);
     m_windowHook = DPlatformWindowHook::getHookByWindow(window->handle());
     shadowPixmap.fill(Qt::transparent);
 
-    initUserPropertys();
     //! Warning: At this point you must be initialized window Margins and window Extents
     updateWindowMargins();
 //    updateFrameExtents();
@@ -817,8 +818,6 @@ void DPlatformBackingStore::updateUserClipPath()
     const QVariant &v = window()->property(clipPath);
 
     if (!v.isValid()) {
-        window()->setProperty(clipPath, QVariant::fromValue(m_clipPath));
-
         return;
     }
 
