@@ -1196,8 +1196,12 @@ void DPlatformBackingStore::updateWindowShadow()
 
 bool DPlatformBackingStore::updateWindowBlurAreasForWM()
 {
-    QVector<Utility::BlurArea> newAreas;
     const QRect &windowValidRect = windowGeometry();
+
+    if (windowValidRect.isEmpty())
+        return false;
+
+    QVector<Utility::BlurArea> newAreas;
 
     if (m_enableBlurWindow) {
         Utility::BlurArea area;
@@ -1216,8 +1220,8 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
         foreach (Utility::BlurArea area, m_blurAreaList) {
             area.x += windowValidRect.x();
             area.y += windowValidRect.y();
-            area.width = qMin(area.x + area.width, (quint32)windowValidRect.right() + 1) - area.x;
-            area.height = qMin(area.y + area.height, (quint32)windowValidRect.bottom() + 1) - area.y;
+            area.width = qMin(area.x + area.width, windowValidRect.right() + 1) - area.x;
+            area.height = qMin(area.y + area.height, windowValidRect.bottom() + 1) - area.y;
 
             newAreas.append(std::move(area));
         }

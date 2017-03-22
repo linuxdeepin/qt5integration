@@ -51,12 +51,12 @@ public:
     static void setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len, uint8_t format = 8);
 
     struct BlurArea {
-        quint32 x;
-        quint32 y;
-        quint32 width;
-        quint32 height;
-        quint32 xRadius;
-        quint32 yRaduis;
+        qint32 x;
+        qint32 y;
+        qint32 width;
+        qint32 height;
+        qint32 xRadius;
+        qint32 yRaduis;
     };
 
     // by Deepin Window Manager
