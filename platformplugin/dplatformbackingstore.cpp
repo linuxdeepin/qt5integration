@@ -1059,6 +1059,9 @@ void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
     m_size = QSize(tmp_size.width() + windowMargins.left() + windowMargins.right(),
                    tmp_size.height() + windowMargins.top() + windowMargins.bottom());
 
+    if (!m_size.isValid())
+        return;
+
     m_proxy->resize(m_size, QRegion());
 
     updateInputShapeRegion();
