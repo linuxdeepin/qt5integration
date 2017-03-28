@@ -52,6 +52,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     styleComboBox = new QComboBox;
     styleComboBox->addItem("NorwegianWood");
     styleComboBox->addItems(QStyleFactory::keys());
+    styleComboBox->setToolTip("Hello");
 
     styleLabel = new QLabel(tr("&Style:"));
     styleLabel->setBuddy(styleComboBox);

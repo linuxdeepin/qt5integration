@@ -149,22 +149,29 @@ void Style::polish(QWidget *w)
         w->setFont(font);
     }
 
-    if (DApplication::isDXcbPlatform() && qobject_cast<QMenu*>(w)
-            && (!w->windowHandle() || DPlatformWindowHandle::isEnabledDXcb(w))) {
-        DPlatformWindowHandle handle(w);
+    if (DApplication::isDXcbPlatform() && (!w->windowHandle() || DPlatformWindowHandle::isEnabledDXcb(w))) {
+        if (qobject_cast<QMenu*>(w)) {
+            DPlatformWindowHandle handle(w);
 
-        const QColor &color = m_palette->brush(PaletteExtended::Menu_BorderColor).color();
+            const QColor &color = m_palette->brush(PaletteExtended::Menu_BorderColor).color();
 
-        if (color.isValid())
-            handle.setBorderColor(color);
+            if (color.isValid())
+                handle.setBorderColor(color);
 
-        handle.setShadowOffset(QPoint(0, 4));
-        handle.setShadowRadius(15);
-        handle.setShadowColor(QColor(0, 0, 0, 100));
-        handle.setEnableBlurWindow(true);
-        handle.setTranslucentBackground(true);
+            handle.setShadowOffset(QPoint(0, 4));
+            handle.setShadowRadius(15);
+            handle.setShadowColor(QColor(0, 0, 0, 100));
+            handle.setEnableBlurWindow(true);
+            handle.setTranslucentBackground(true);
 
-        w->setAttribute(Qt::WA_TranslucentBackground);
+            w->setAttribute(Qt::WA_TranslucentBackground);
+        } else if (w->inherits("QTipLabel")) {
+            DPlatformWindowHandle handle(w);
+
+            handle.setShadowOffset(QPoint(0, 4));
+
+            w->setAttribute(Qt::WA_TranslucentBackground);
+        }
     }
 
     // ###(zccrs): If the application is DApplication or derived class of it then not draw shortcut text
@@ -462,7 +469,11 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
 
         return painter->fillRect(option->rect, menu_background_brush);
     }
-        //    case PE_PanelTipLabel: fcn = &Style::drawPanelTipLabelPrimitive; break;
+    case PE_PanelTipLabel: /*fcn = &Style::drawPanelTipLabelPrimitive; break;*/ {
+        painter->fillRect(option->rect, Qt::white);
+
+        return;
+    }
         //    case PE_PanelItemViewItem: fcn = &Style::drawPanelItemViewItemPrimitive; break;
     case PE_IndicatorCheckBox: fcn = &Style::drawIndicatorCheckBoxPrimitive; break;
     case PE_IndicatorRadioButton:
