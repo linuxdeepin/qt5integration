@@ -111,6 +111,7 @@ private:
     { return QRect(windowOffset(), m_windowSize);}
 
     bool canUseClipPath() const;
+    bool canResize() const;
 
     void onWindowStateChanged();
     void handlePropertyNotifyEvent(const xcb_property_notify_event_t *event);

@@ -736,17 +736,19 @@ void DPlatformBackingStore::updateFrameExtents()
 
 void DPlatformBackingStore::updateInputShapeRegion()
 {
+    const int mouse_margins = canResize() ? MOUSE_MARGINS : 0;
+
     if (m_autoInputMaskByClipPath && isUserSetClipPath) {
         QPainterPathStroker stroker;
         QPainterPath p;
 
-        stroker.setWidth(MOUSE_MARGINS);
+        stroker.setWidth(mouse_margins);
         p = stroker.createStroke(m_windowClipPath);
         p.addRect(m_windowClipPath.boundingRect());
 
         Utility::setInputShapePath(window()->winId(), p);
     } else {
-        QRegion region(windowGeometry().adjusted(-MOUSE_MARGINS, -MOUSE_MARGINS, MOUSE_MARGINS, MOUSE_MARGINS));
+        QRegion region(windowGeometry().adjusted(-mouse_margins, -mouse_margins, mouse_margins, mouse_margins));
         Utility::setInputShapeRectangles(window()->winId(), region);
     }
 }
@@ -948,7 +950,12 @@ void DPlatformBackingStore::updateEnableSystemResize()
         return;
     }
 
+    if (m_enableSystemResize == v.toBool())
+        return;
+
     m_enableSystemResize = v.toBool();
+
+    updateInputShapeRegion();
 }
 
 void DPlatformBackingStore::updateEnableSystemMove()
@@ -1281,6 +1288,13 @@ bool DPlatformBackingStore::canUseClipPath() const
     }
 
     return true;
+}
+
+bool DPlatformBackingStore::canResize() const
+{
+    return m_enableSystemResize
+            && !window()->flags().testFlag(Qt::Popup)
+            && window()->minimumSize() != window()->maximumSize();
 }
 
 void DPlatformBackingStore::onWindowStateChanged()
