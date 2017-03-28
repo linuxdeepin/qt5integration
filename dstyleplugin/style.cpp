@@ -161,7 +161,9 @@ void Style::polish(QWidget *w)
             handle.setShadowOffset(QPoint(0, 4));
             handle.setShadowRadius(15);
             handle.setShadowColor(QColor(0, 0, 0, 100));
+#ifdef DTK_SUPPORT_BLUR_WINDOW
             handle.setEnableBlurWindow(true);
+#endif
             handle.setTranslucentBackground(true);
 
             w->setAttribute(Qt::WA_TranslucentBackground);
@@ -455,6 +457,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
         QBrush menu_background_brush = m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
                                                         PaletteExtended::PseudoClass_Unspecified,
                                                         option->palette.brush(QPalette::Background));
+#ifdef DTK_SUPPORT_BLUR_WINDOW
         QColor menu_background_color = menu_background_brush.color();
 
         if (DPlatformWindowHandle::isEnabledDXcb(widget) && menu_background_color.isValid()) {
@@ -466,6 +469,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
 
             menu_background_brush.setColor(menu_background_color);
         }
+#endif
 
         return painter->fillRect(option->rect, menu_background_brush);
     }

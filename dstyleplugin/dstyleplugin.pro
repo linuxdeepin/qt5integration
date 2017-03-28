@@ -61,3 +61,11 @@ RESOURCES += \
     assets_semidark.qrc \
     assets_semilight.qrc \
     assets.qrc
+
+load(configure)
+qtCompileTest(dtkwidget) {
+    DEFINES += DTK_SUPPORT_BLUR_WINDOW
+    message(The libdtkwidget support blur window)
+} else {
+    warning(The libdtkwidget can not support blur window)
+}
