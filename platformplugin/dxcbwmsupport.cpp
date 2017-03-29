@@ -117,7 +117,8 @@ void DXcbWMSupport::updateRootWindowProperties()
 
 void DXcbWMSupport::updateHasBlurWindow()
 {
-    bool hasBlurWindow(m_isDeepinWM || (m_isKwin && isContainsForRootWindow(_kde_net_wm_blur_rehind_region_atom)));
+    bool hasBlurWindow((m_isDeepinWM && isSupportedByWM(_net_wm_deepin_blur_region_rounded_atom))
+                       || (m_isKwin && isContainsForRootWindow(_kde_net_wm_blur_rehind_region_atom)));
 
     if (m_hasBlurWindow == hasBlurWindow)
         return;
