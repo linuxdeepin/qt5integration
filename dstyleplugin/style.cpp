@@ -170,7 +170,8 @@ void Style::polish(QWidget *w)
         } else if (w->inherits("QTipLabel")) {
             DPlatformWindowHandle handle(w);
 
-            handle.setShadowOffset(QPoint(0, 4));
+            handle.setShadowOffset(QPoint(0, 2));
+            handle.setShadowRadius(4);
 
             w->setAttribute(Qt::WA_TranslucentBackground);
         }

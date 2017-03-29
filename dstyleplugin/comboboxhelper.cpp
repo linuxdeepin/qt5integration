@@ -138,7 +138,7 @@ bool Style::drawComboBoxLabelControl(const QStyleOption *option, QPainter *paint
     if( !cb ) return false;
 
     // copy rect and palette
-    const QRect& rect( option->rect );
+    const QRect& rect( option->rect.adjusted(0, 0, -20, 0) );
 
     // state
     const QStyle::State& state( option->state );
