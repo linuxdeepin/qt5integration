@@ -47,13 +47,13 @@ Slider:pressed {
 PushButton {
     BackgroundBrush: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
     TextColor: "#000";
-    BorderBrush: rgba(0,0,0,0.08);
+    BorderBrush: rgba(0,0,0,0.1);
 }
 
 PushButton:disabled {
     BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 rgba(255, 255, 255, 0.4), stop:1 rgba(253, 253, 253, 0.4));
     TextColor: "#AEAEAE";
-    BorderBrush: rgba(0,0,0,0.02);
+    BorderBrush: rgba(0,0,0,0.04);
 }
 
 PushButton:hover {
