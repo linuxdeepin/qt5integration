@@ -742,9 +742,13 @@ void DPlatformBackingStore::updateInputShapeRegion()
         QPainterPathStroker stroker;
         QPainterPath p;
 
-        stroker.setWidth(mouse_margins);
-        p = stroker.createStroke(m_windowClipPath);
-        p.addRect(m_windowClipPath.boundingRect());
+        if (Q_LIKELY(mouse_margins > 0)) {
+            stroker.setWidth(mouse_margins);
+            p = stroker.createStroke(m_windowClipPath);
+            p.addRect(m_windowClipPath.boundingRect());
+        } else {
+            p = m_windowClipPath;
+        }
 
         Utility::setInputShapePath(window()->winId(), p);
     } else {
@@ -1059,10 +1063,9 @@ void DPlatformBackingStore::setWindowMargins(const QMargins &margins)
     m_size = QSize(tmp_size.width() + windowMargins.left() + windowMargins.right(),
                    tmp_size.height() + windowMargins.top() + windowMargins.bottom());
 
-    if (!m_size.isValid())
-        return;
-
-    m_proxy->resize(m_size, QRegion());
+    if (m_size.isValid()) {
+        m_proxy->resize(m_size, QRegion());
+    }
 
     updateInputShapeRegion();
     updateFrameExtents();
@@ -1316,15 +1319,15 @@ void DPlatformBackingStore::handlePropertyNotifyEvent(const xcb_property_notify_
 
     window->QXcbWindow::handlePropertyNotifyEvent(event);
 
+    if (window->m_windowState != oldState) {
+        ww->setWindowState(window->m_windowState);
+    }
+
     if (event->window == window->xcb_window()
             && event->atom == window->atom(QXcbAtom::_NET_WM_STATE)) {
         QXcbWindow::NetWmStates states = window->netWmStates();
 
         ww->setProperty(netWmStates, (int)states);
-    }
-
-    if (window->m_windowState != oldState) {
-        ww->setWindowState(window->m_windowState);
     }
 }
 
