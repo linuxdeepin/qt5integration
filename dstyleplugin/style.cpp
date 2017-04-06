@@ -616,7 +616,6 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
                 int t = menuItem->text.indexOf(QLatin1Char('\t'));
                 if (t != -1) {
                     int textWidth = option->fontMetrics.width(menuItem->text.mid(t + 1));
-                    w -= textWidth;
 
                     if (menuItem->tabWidth == 0)
                         w -= textWidth;
