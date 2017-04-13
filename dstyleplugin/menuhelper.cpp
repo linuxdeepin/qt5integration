@@ -15,9 +15,6 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
     painter->save();
     // Draws one item in a popup menu.
     if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-        //TODO(zccrs): Temporarily fix the font size to 13px
-        const_cast<QStyleOptionMenuItem*>(menuItem)->font.setPixelSize(13);
-
         QColor highlightOutline = d->highlightedOutline(option->palette);
         QColor highlight = option->palette.highlight().color();
         if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
