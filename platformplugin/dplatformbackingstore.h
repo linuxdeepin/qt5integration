@@ -110,6 +110,11 @@ private:
     inline QRect windowGeometry() const
     { return QRect(windowOffset(), m_windowSize);}
 
+    inline int getShadowRadius() const
+    { return m_enableShadow ? m_shadowRadius : 0;}
+    inline QPoint getShadowOffset() const
+    { return m_shadowOffset;}
+
     bool canUseClipPath() const;
     bool canResize() const;
 
@@ -142,6 +147,7 @@ private:
     bool m_enableSystemMove = true;
     bool m_enableBlurWindow = false;
     bool m_autoInputMaskByClipPath = true;
+    bool m_enableShadow = true;
 
     QVector<Utility::BlurArea> m_blurAreaList;
     QList<QPainterPath> m_blurPathList;

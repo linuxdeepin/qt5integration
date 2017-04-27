@@ -39,9 +39,9 @@ public:
     static void startWindowSystemMove(uint WId);
     static void cancelWindowMoveResize(uint WId);
     static void setFrameExtents(uint WId, const QMargins &margins);
-    static void setInputShapeRectangles(uint WId, const QRegion &region);
-    static void setInputShapeRectangles(uint WId, const QVector<xcb_rectangle_t> &rectangles);
-    static void setInputShapePath(uint WId, const QPainterPath &path);
+    static void setRectangles(uint WId, const QRegion &region, bool onlyInput = true);
+    static void setRectangles(uint WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput = true);
+    static void setShapePath(uint WId, const QPainterPath &path, bool onlyInput = true);
     static void startWindowSystemResize(uint WId, CornerEdge cornerEdge, const QPoint &globalPos = QPoint());
     static bool setWindowCursor(uint WId, CornerEdge ce);
 

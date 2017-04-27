@@ -167,19 +167,30 @@ void Utility::setFrameExtents(uint WId, const QMargins &margins)
     xcb_change_property(QX11Info::connection(), XCB_PROP_MODE_REPLACE, WId, frameExtents, XCB_ATOM_CARDINAL, 32, 4, value);
 }
 
-void Utility::setInputShapeRectangles(uint WId, const QRegion &region)
+void Utility::setRectangles(uint WId, const QRegion &region, bool onlyInput)
 {
-    setInputShapeRectangles(WId, qregion2XcbRectangles(region));
+    setRectangles(WId, qregion2XcbRectangles(region), onlyInput);
 }
 
-void Utility::setInputShapeRectangles(uint WId, const QVector<xcb_rectangle_t> &rectangles)
+void Utility::setRectangles(uint WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput)
 {
-    xcb_shape_rectangles(QX11Info::connection(), XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT, XCB_CLIP_ORDERING_YX_BANDED, WId,
-                         0, 0, rectangles.size(), rectangles.constData());
+    if (rectangles.isEmpty()) {
+        xcb_shape_mask(QX11Info::connection(), XCB_SHAPE_SO_SET,
+                       onlyInput ? XCB_SHAPE_SK_INPUT : XCB_SHAPE_SK_BOUNDING, WId, 0, 0, XCB_NONE);
+
+        return;
+    }
+
+    xcb_shape_rectangles(QX11Info::connection(), XCB_SHAPE_SO_SET, onlyInput ? XCB_SHAPE_SK_INPUT : XCB_SHAPE_SK_BOUNDING,
+                         XCB_CLIP_ORDERING_YX_BANDED, WId, 0, 0, rectangles.size(), rectangles.constData());
 }
 
-void Utility::setInputShapePath(uint WId, const QPainterPath &path)
+void Utility::setShapePath(uint WId, const QPainterPath &path, bool onlyInput)
 {
+    if (path.isEmpty()) {
+        return setRectangles(WId, QVector<xcb_rectangle_t>(), onlyInput);
+    }
+
     QVector<xcb_rectangle_t> rectangles;
 
     foreach(const QPolygonF &polygon, path.toFillPolygons()) {
@@ -195,7 +206,7 @@ void Utility::setInputShapePath(uint WId, const QPainterPath &path)
         }
     }
 
-    setInputShapeRectangles(WId, rectangles);
+    setRectangles(WId, rectangles, onlyInput);
 }
 
 void Utility::sendMoveResizeMessage(uint WId, uint32_t action, QPoint globalPos, Qt::MouseButton qbutton)

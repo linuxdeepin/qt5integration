@@ -20,8 +20,8 @@ PUBLIC_CLASS(QNativeWindow, DPlatformWindowHook);
 QHash<const QPlatformWindow*, DPlatformWindowHook*> DPlatformWindowHook::mapped;
 
 DPlatformWindowHook::DPlatformWindowHook(QNativeWindow *window)
-    : nativeWindow(window)
-    , QObject(window->window())
+    : QObject(window->window())
+    , nativeWindow(window)
 {
     mapped[window] = this;
 
@@ -125,7 +125,7 @@ void DPlatformWindowHook::setMask(const QRegion &region)
 
     CALL::window()->setProperty(clipPath, QVariant::fromValue(path));
 //    CALL::setMask(tmp_region);
-    Utility::setInputShapeRectangles(CALL::winId(), tmp_region);
+    Utility::setRectangles(CALL::winId(), tmp_region);
 }
 
 #ifdef Q_OS_LINUX

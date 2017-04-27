@@ -13,13 +13,54 @@ Q_GLOBAL_STATIC(_DXcbWMSupport, globalXWMS)
 
 DXcbWMSupport::DXcbWMSupport()
 {
-    updateNetWMAtoms();
-    updateRootWindowProperties();
+    updateWMName(false);
 }
 
-void DXcbWMSupport::emitWMChanged()
+void DXcbWMSupport::updateWMName(bool emitSignal)
 {
-    emit windowManagerChanged();
+    _net_wm_deepin_blur_region_rounded_atom = Utility::internAtom(QT_STRINGIFY(_NET_WM_DEEPIN_BLUR_REGION_ROUNDED));
+    _net_wm_deepin_blur_region_mask = Utility::internAtom(QT_STRINGIFY(_NET_WM_DEEPIN_BLUR_REGION_MASK));
+    _kde_net_wm_blur_rehind_region_atom = Utility::internAtom(QT_STRINGIFY(_KDE_NET_WM_BLUR_BEHIND_REGION));
+
+    m_wmName.clear();
+
+    xcb_connection_t *xcb_connection = DPlatformIntegration::xcbConnection()->xcb_connection();
+    xcb_window_t root = DPlatformIntegration::xcbConnection()->primaryScreen()->root();
+
+    xcb_get_property_reply_t *reply =
+        xcb_get_property_reply(xcb_connection,
+            xcb_get_property_unchecked(xcb_connection, false, root,
+                             DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
+                             XCB_ATOM_WINDOW, 0, 1024), NULL);
+
+    if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
+        xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply));
+
+        if (windowManager != XCB_WINDOW_NONE) {
+            xcb_get_property_reply_t *windowManagerReply =
+                xcb_get_property_reply(xcb_connection,
+                    xcb_get_property_unchecked(xcb_connection, false, windowManager,
+                                     DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_NET_WM_NAME),
+                                     DPlatformIntegration::xcbConnection()->atom(QXcbAtom::UTF8_STRING), 0, 1024), NULL);
+            if (windowManagerReply && windowManagerReply->format == 8
+                    && windowManagerReply->type == DPlatformIntegration::xcbConnection()->atom(QXcbAtom::UTF8_STRING)) {
+                m_wmName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply), xcb_get_property_value_length(windowManagerReply));
+            }
+
+            free(windowManagerReply);
+        }
+    }
+    free(reply);
+
+    m_isDeepinWM = (m_wmName == QStringLiteral("Mutter(DeepinGala)"));
+    m_isKwin = !m_isDeepinWM && (m_wmName == QStringLiteral("KWin"));
+
+    updateNetWMAtoms();
+    updateRootWindowProperties();
+    updateHasComposite();
+
+    if (emitSignal)
+        emit windowManagerChanged();
 }
 
 void DXcbWMSupport::updateNetWMAtoms()
@@ -54,40 +95,6 @@ void DXcbWMSupport::updateNetWMAtoms()
 
         free(reply);
     } while (remaining > 0);
-
-    _net_wm_deepin_blur_region_rounded_atom = Utility::internAtom(QT_STRINGIFY(_NET_WM_DEEPIN_BLUR_REGION_ROUNDED));
-    _net_wm_deepin_blur_region_mask = Utility::internAtom(QT_STRINGIFY(_NET_WM_DEEPIN_BLUR_REGION_MASK));
-    _kde_net_wm_blur_rehind_region_atom = Utility::internAtom(QT_STRINGIFY(_KDE_NET_WM_BLUR_BEHIND_REGION));
-
-    m_wmName.clear();
-
-    xcb_get_property_reply_t *reply =
-        xcb_get_property_reply(xcb_connection,
-            xcb_get_property_unchecked(xcb_connection, false, root,
-                             DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK),
-                             XCB_ATOM_WINDOW, 0, 1024), NULL);
-
-    if (reply && reply->format == 32 && reply->type == XCB_ATOM_WINDOW) {
-        xcb_window_t windowManager = *((xcb_window_t *)xcb_get_property_value(reply));
-
-        if (windowManager != XCB_WINDOW_NONE) {
-            xcb_get_property_reply_t *windowManagerReply =
-                xcb_get_property_reply(xcb_connection,
-                    xcb_get_property_unchecked(xcb_connection, false, windowManager,
-                                     DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_NET_WM_NAME),
-                                     DPlatformIntegration::xcbConnection()->atom(QXcbAtom::UTF8_STRING), 0, 1024), NULL);
-            if (windowManagerReply && windowManagerReply->format == 8
-                    && windowManagerReply->type == DPlatformIntegration::xcbConnection()->atom(QXcbAtom::UTF8_STRING)) {
-                m_wmName = QString::fromUtf8((const char *)xcb_get_property_value(windowManagerReply), xcb_get_property_value_length(windowManagerReply));
-            }
-
-            free(windowManagerReply);
-        }
-    }
-    free(reply);
-
-    m_isDeepinWM = (m_wmName == "Mutter(DeepinGala)");
-    m_isKwin = !m_isDeepinWM && (m_wmName == "KWin");
 
     updateHasBlurWindow();
 }
@@ -125,6 +132,26 @@ void DXcbWMSupport::updateHasBlurWindow()
 
     m_hasBlurWindow = hasBlurWindow;
     emit hasBlurWindowChanged(hasBlurWindow);
+}
+
+void DXcbWMSupport::updateHasComposite()
+{
+    xcb_connection_t *xcb_connection = DPlatformIntegration::xcbConnection()->xcb_connection();
+    xcb_get_selection_owner_cookie_t cookit = xcb_get_selection_owner(xcb_connection, DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_NET_WM_CM_S0));
+    xcb_get_selection_owner_reply_t *reply = xcb_get_selection_owner_reply(xcb_connection, cookit, NULL);
+
+    if (!reply)
+        return;
+
+    bool hasComposite(reply->owner != XCB_NONE);
+
+    free(reply);
+
+    if (m_hasComposite == hasComposite)
+        return;
+
+    m_hasComposite = hasComposite;
+    emit hasCompositeChanged(hasComposite);
 }
 
 DXcbWMSupport *DXcbWMSupport::instance()
@@ -176,6 +203,11 @@ bool DXcbWMSupport::isContainsForRootWindow(xcb_atom_t atom) const
 bool DXcbWMSupport::hasBlurWindow() const
 {
     return m_hasBlurWindow;
+}
+
+bool DXcbWMSupport::hasComposite() const
+{
+    return m_hasComposite;
 }
 
 DPP_END_NAMESPACE

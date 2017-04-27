@@ -34,18 +34,23 @@ bool XcbNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *
     Q_UNUSED(eventType)
     Q_UNUSED(result)
 
-    xcb_xfixes_selection_notify_event_t *event = (xcb_xfixes_selection_notify_event_t *)reinterpret_cast<xcb_generic_event_t*>(message);
+    xcb_generic_event_t *event = reinterpret_cast<xcb_generic_event_t*>(message);
     uint response_type = event->response_type & ~0x80;
 
     if (response_type == m_connection->xfixes_first_event + XCB_XFIXES_SELECTION_NOTIFY) {
-        QXcbClipboard *xcbClipboard = m_connection->m_clipboard;
+        xcb_xfixes_selection_notify_event_t *xsn = (xcb_xfixes_selection_notify_event_t *)event;
 
-        QClipboard::Mode mode = clipboardModeForAtom(event->selection);
+        if (xsn->selection == DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_NET_WM_CM_S0)) {
+            DXcbWMSupport::instance()->updateHasComposite();
+        }
+
+        QClipboard::Mode mode = clipboardModeForAtom(xsn->selection);
         if (mode > QClipboard::Selection)
             return false;
 
         // here we care only about the xfixes events that come from non Qt processes
-        if (event->owner == XCB_NONE && event->subtype == XCB_XFIXES_SELECTION_EVENT_SET_SELECTION_OWNER) {
+        if (xsn->owner == XCB_NONE && xsn->subtype == XCB_XFIXES_SELECTION_EVENT_SET_SELECTION_OWNER) {
+            QXcbClipboard *xcbClipboard = m_connection->m_clipboard;
             xcbClipboard->emitChanged(mode);
         }
     } else if (response_type == XCB_PROPERTY_NOTIFY) {
@@ -54,10 +59,10 @@ bool XcbNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *
         if (pn->window != DPlatformIntegration::instance()->defaultConnection()->rootWindow())
             return false;
 
-        if (pn->atom == DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK)) {
+        if (pn->atom == DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTED)) {
             DXcbWMSupport::instance()->updateNetWMAtoms();
-            DXcbWMSupport::instance()->updateRootWindowProperties();
-            DXcbWMSupport::instance()->emitWMChanged();
+        } else if (pn->atom == DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK)) {
+            DXcbWMSupport::instance()->updateWMName();
         } else if (pn->atom == DXcbWMSupport::instance()->_kde_net_wm_blur_rehind_region_atom) {
             DXcbWMSupport::instance()->updateRootWindowProperties();
         }

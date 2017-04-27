@@ -476,6 +476,16 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
     m_windowHook = DPlatformWindowHook::getHookByWindow(window->handle());
     shadowPixmap.fill(Qt::transparent);
 
+#ifdef Q_OS_LINUX
+    m_enableShadow = DXcbWMSupport::instance()->hasComposite();
+
+    QObject::connect(DXcbWMSupport::instance(), &DXcbWMSupport::hasCompositeChanged,
+                     m_eventListener, [this, window] (bool hasComposite) {
+        m_enableShadow = hasComposite;
+        updateWindowMargins();
+    });
+#endif
+
     initUserPropertys();
     //! Warning: At this point you must be initialized window Margins and window Extents
     updateWindowMargins();
@@ -642,17 +652,14 @@ void DPlatformBackingStore::resize(const QSize &size, const QRegion &staticConte
 
         if (!m_windowClipPath.isEmpty())
             updateWindowBlurAreasForWM();
-
-        if (!m_autoInputMaskByClipPath)
-            updateInputShapeRegion();
     } else {
-        updateInputShapeRegion();
         updateWindowShadow();
 
         if (!m_blurAreaList.isEmpty() || !m_blurPathList.isEmpty() || m_enableBlurWindow)
             updateWindowBlurAreasForWM();
     }
 
+    updateInputShapeRegion();
     paintWindowShadow();
 }
 
@@ -706,10 +713,10 @@ bool DPlatformBackingStore::updateWindowMargins(bool repaintShadow)
     if (state == Qt::WindowMaximized || state == Qt::WindowFullScreen) {
         setWindowMargins(QMargins(0, 0, 0, 0));
     } else if (state != Qt::WindowMinimized) {
-        setWindowMargins(QMargins(qMax(m_shadowRadius - m_shadowOffset.x(), m_borderWidth),
-                                  qMax(m_shadowRadius - m_shadowOffset.y(), m_borderWidth),
-                                  qMax(m_shadowRadius + m_shadowOffset.x(), m_borderWidth),
-                                  qMax(m_shadowRadius + m_shadowOffset.y(), m_borderWidth)));
+        setWindowMargins(QMargins(qMax(getShadowRadius() - getShadowOffset().x(), m_borderWidth),
+                                  qMax(getShadowRadius() - getShadowOffset().y(), m_borderWidth),
+                                  qMax(getShadowRadius() + getShadowOffset().x(), m_borderWidth),
+                                  qMax(getShadowRadius() + getShadowOffset().y(), m_borderWidth)));
     }
 
     if (repaintShadow && old_margins != windowMargins) {
@@ -736,24 +743,45 @@ void DPlatformBackingStore::updateFrameExtents()
 
 void DPlatformBackingStore::updateInputShapeRegion()
 {
-    const int mouse_margins = canResize() ? MOUSE_MARGINS : 0;
+    if (!windowGeometry().isValid())
+        return;
 
-    if (m_autoInputMaskByClipPath && isUserSetClipPath) {
+    int mouse_margins;
+
+    if (m_enableShadow)
+        mouse_margins = canResize() ? MOUSE_MARGINS : 0;
+    else
+        mouse_margins = m_borderWidth;
+
+    // clear old state
+    Utility::setRectangles(window()->winId(), QRegion(), true);
+    Utility::setRectangles(window()->winId(), QRegion(), false);
+
+    if (m_autoInputMaskByClipPath) {
         QPainterPathStroker stroker;
         QPainterPath p;
 
         if (Q_LIKELY(mouse_margins > 0)) {
-            stroker.setWidth(mouse_margins);
+            stroker.setWidth(mouse_margins * 2);
             p = stroker.createStroke(m_windowClipPath);
-            p.addRect(m_windowClipPath.boundingRect());
+            p = p.united(m_windowClipPath);
+            p.translate(-0.5, -0.5);
         } else {
             p = m_windowClipPath;
         }
 
-        Utility::setInputShapePath(window()->winId(), p);
+        Utility::setShapePath(window()->winId(), p
+                      #ifdef Q_OS_LINUX
+                              , DXcbWMSupport::instance()->hasComposite()
+                      #endif
+                              );
     } else {
         QRegion region(windowGeometry().adjusted(-mouse_margins, -mouse_margins, mouse_margins, mouse_margins));
-        Utility::setInputShapeRectangles(window()->winId(), region);
+        Utility::setRectangles(window()->winId(), region
+                       #ifdef Q_OS_LINUX
+                               , DXcbWMSupport::instance()->hasComposite()
+                       #endif
+                               );
     }
 }
 
@@ -888,7 +916,9 @@ void DPlatformBackingStore::updateShadowRadius()
         m_shadowRadius = radius;
 
         updateWindowMargins();
-        doDelayedUpdateWindowShadow();
+
+        if (m_enableShadow)
+            doDelayedUpdateWindowShadow();
     }
 }
 
@@ -908,7 +938,9 @@ void DPlatformBackingStore::updateShadowOffset()
         m_shadowOffset = offset;
 
         updateWindowMargins();
-        doDelayedUpdateWindowShadow();
+
+        if (m_enableShadow)
+            doDelayedUpdateWindowShadow();
     }
 }
 
@@ -927,7 +959,8 @@ void DPlatformBackingStore::updateShadowColor()
     if (color.isValid() && m_shadowColor != color) {
         m_shadowColor = color;
 
-        doDelayedUpdateWindowShadow();
+        if (m_enableShadow)
+            doDelayedUpdateWindowShadow();
     }
 }
 
@@ -1124,7 +1157,6 @@ void DPlatformBackingStore::paintWindowShadow(QRegion region)
 void DPlatformBackingStore::repaintWindowShadow()
 {
     updateShadowTimer.stop();
-
     shadowPixmap = QPixmap();
 
     updateWindowShadow();
@@ -1156,25 +1188,31 @@ void DPlatformBackingStore::updateWindowShadow()
     }
 
     if (paintShadow) {
-        int shadowRadius = qMax(m_shadowRadius, m_borderWidth);
-
-        QPixmap pixmap(m_size - QSize(2 * shadowRadius, 2 * shadowRadius));
-
-        if (pixmap.isNull())
-            return;
-
-        pixmap.fill(Qt::transparent);
-
-        QPainter pa(&pixmap);
-
-        pa.fillPath(m_clipPath, m_shadowColor);
-        pa.end();
+        int shadow_radius = qMax(getShadowRadius(), m_borderWidth);
 
         QImage image;
 
-        image = Utility::dropShadow(pixmap, shadowRadius, m_shadowColor);
+        if (shadow_radius > m_borderWidth) {
+            QPixmap pixmap(m_size - QSize(2 * shadow_radius, 2 * shadow_radius));
+
+            if (pixmap.isNull())
+                return;
+
+            pixmap.fill(Qt::transparent);
+
+            QPainter pa(&pixmap);
+
+            pa.fillPath(m_clipPath, m_shadowColor);
+            pa.end();
+
+            image = Utility::dropShadow(pixmap, shadow_radius, m_shadowColor);
+        } else {
+            image = QImage(m_size, QImage::Format_ARGB32_Premultiplied);
+            image.fill(Qt::transparent);
+        }
 
         /// begin paint window border;
+        QPainter pa;
         pa.begin(&image);
 
         if (m_borderWidth > 0) {

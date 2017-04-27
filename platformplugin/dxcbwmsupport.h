@@ -17,6 +17,7 @@ class DXcbWMSupport : public QObject
     Q_OBJECT
 
     Q_PROPERTY(bool hasBlurWindow READ hasBlurWindow NOTIFY hasBlurWindowChanged)
+    Q_PROPERTY(bool hasComposite READ hasComposite NOTIFY hasCompositeChanged)
 
 public:
     static DXcbWMSupport *instance();
@@ -28,25 +29,29 @@ public:
     bool isSupportedByWM(xcb_atom_t atom) const;
     bool isContainsForRootWindow(xcb_atom_t atom) const;
     bool hasBlurWindow() const;
+    bool hasComposite() const;
 
     QString windowMaragerName() const;
 
 signals:
     void windowManagerChanged();
     void hasBlurWindowChanged(bool hasBlurWindow);
+    void hasCompositeChanged(bool hasComposite);
 
 protected:
     explicit DXcbWMSupport();
 
 private:
-    void emitWMChanged();
+    void updateWMName(bool emitSignal = true);
     void updateNetWMAtoms();
     void updateRootWindowProperties();
     void updateHasBlurWindow();
+    void updateHasComposite();
 
     bool m_isDeepinWM = false;
     bool m_isKwin = false;
     bool m_hasBlurWindow = false;
+    bool m_hasComposite = false;
 
     QString m_wmName;
 
