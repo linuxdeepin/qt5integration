@@ -33,7 +33,11 @@ SOURCES += \
     $$PWD/dplatformbackingstore.cpp \
     $$PWD/vtablehook.cpp \
     $$PWD/dplatformwindowhook.cpp \
-    $$PWD/dplatformnativeinterface.cpp
+    $$PWD/dplatformnativeinterface.cpp \
+    $$PWD/dframewindow.cpp \
+    $$PWD/dplatformwindowhelper.cpp \
+    $$PWD/dplatformbackingstorehelper.cpp \
+    $$PWD/dplatformopenglcontexthelper.cpp
 
 HEADERS += \
     $$PWD/dplatformintegration.h \
@@ -43,7 +47,11 @@ HEADERS += \
     $$PWD/utility.h \
     $$PWD/global.h \
     $$PWD/dplatformnativeinterface.h \
-    $$PWD/dforeignplatformwindow.h
+    $$PWD/dforeignplatformwindow.h \
+    $$PWD/dframewindow.h \
+    $$PWD/dplatformwindowhelper.h \
+    $$PWD/dplatformbackingstorehelper.h \
+    $$PWD/dplatformopenglcontexthelper.h
 
 DISTFILES += \
     $$PWD/dpp.json

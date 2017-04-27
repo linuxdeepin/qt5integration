@@ -36,7 +36,8 @@ bool VtableHook::clearGhostVtable(void *obj)
     quintptr *vtable = objToGhostVfptr.take(obj);
 
     if (vtable) {
-        objToOriginalVfptr.remove((quintptr**)obj);
+        quintptr **obj_ptr = (quintptr**)obj;
+        objToOriginalVfptr.remove(obj_ptr);
 
         delete[] vtable;
 

@@ -1,8 +1,10 @@
 #include "dplatformintegration.h"
 #include "dplatformbackingstore.h"
 #include "global.h"
-#include "dplatformwindowhook.h"
+#include "dplatformwindowhelper.h"
 #include "dforeignplatformwindow.h"
+#include "dplatformbackingstorehelper.h"
+#include "dplatformopenglcontexthelper.h"
 #ifdef Q_OS_LINUX
 #include "windoweventhook.h"
 #include "xcbnativeeventfilter.h"
@@ -30,7 +32,9 @@ DPlatformIntegration *DPlatformIntegration::m_instance = Q_NULLPTR;
 #endif
 
 DPlatformIntegration::DPlatformIntegration(const QStringList &parameters, int &argc, char **argv)
-    : QXcbIntegration(parameters, argc, argv)
+    : DPlatformIntegrationParent(parameters, argc, argv)
+    , m_storeHelper(new DPlatformBackingStoreHelper)
+    , m_contextHelper(new DPlatformOpenGLContextHelper)
 {
 #ifdef Q_OS_LINUX
 #if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
@@ -50,6 +54,9 @@ DPlatformIntegration::~DPlatformIntegration()
     qApp->removeNativeEventFilter(m_eventFilter);
     delete m_eventFilter;
 #endif
+
+    delete m_storeHelper;
+    delete m_contextHelper;
 }
 
 QPlatformWindow *DPlatformIntegration::createPlatformWindow(QWindow *window) const
@@ -75,11 +82,11 @@ QPlatformWindow *DPlatformIntegration::createPlatformWindow(QWindow *window) con
         }
     }
 
-    QPlatformWindow *w = QXcbIntegration::createPlatformWindow(window);
-    QXcbWindow *xw = static_cast<QXcbWindow*>(w);
+    QPlatformWindow *w = DPlatformIntegrationParent::createPlatformWindow(window);
+    QNativeWindow *xw = static_cast<QNativeWindow*>(w);
 
     if (isUseDxcb) {
-        Q_UNUSED(new DPlatformWindowHook(xw))
+        Q_UNUSED(new DPlatformWindowHelper(xw))
     }
 
 #ifdef Q_OS_LINUX
@@ -97,12 +104,21 @@ QPlatformBackingStore *DPlatformIntegration::createPlatformBackingStore(QWindow 
 {
     qDebug() << __FUNCTION__ << window << window->type() << window->parent();
 
-    QPlatformBackingStore *store = QXcbIntegration::createPlatformBackingStore(window);
+    QPlatformBackingStore *store = DPlatformIntegrationParent::createPlatformBackingStore(window);
 
     if (window->type() != Qt::Desktop && window->property(useDxcb).toBool())
-        return new DPlatformBackingStore(window, static_cast<QXcbBackingStore*>(store));
+        m_storeHelper->addBackingStore(store);
 
     return store;
+}
+
+QPlatformOpenGLContext *DPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
+{
+    QPlatformOpenGLContext *p_context = DPlatformIntegrationParent::createPlatformOpenGLContext(context);
+
+//    m_contextHelper->addOpenGLContext(context, p_context);
+
+    return p_context;
 }
 
 QPlatformNativeInterface *DPlatformIntegration::nativeInterface() const

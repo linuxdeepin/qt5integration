@@ -17,6 +17,8 @@ DPP_BEGIN_NAMESPACE
 
 class DPlatformWindowHook;
 class XcbNativeEventFilter;
+class DPlatformBackingStoreHelper;
+class DPlatformOpenGLContextHelper;
 
 class DPlatformIntegration : public DPlatformIntegrationParent
 {
@@ -26,6 +28,7 @@ public:
 
     QPlatformWindow *createPlatformWindow(QWindow *window) const Q_DECL_OVERRIDE;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const Q_DECL_OVERRIDE;
+    QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const Q_DECL_OVERRIDE;
 
     QPlatformNativeInterface *nativeInterface()const Q_DECL_OVERRIDE;
 
@@ -49,6 +52,8 @@ private:
 #endif
 private:
     QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
+    DPlatformBackingStoreHelper *m_storeHelper;
+    DPlatformOpenGLContextHelper *m_contextHelper;
 };
 
 DPP_END_NAMESPACE
