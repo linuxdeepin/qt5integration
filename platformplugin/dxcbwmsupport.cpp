@@ -175,6 +175,14 @@ bool DXcbWMSupport::connectHasBlurWindowChanged(QObject *object, std::function<v
     return QObject::connect(globalXWMS, &DXcbWMSupport::hasBlurWindowChanged, object, slot);
 }
 
+bool DXcbWMSupport::connectHasCompositeChanged(QObject *object, std::function<void ()> slot)
+{
+    if (!object)
+        return QObject::connect(globalXWMS, &DXcbWMSupport::hasCompositeChanged, slot);
+
+    return QObject::connect(globalXWMS, &DXcbWMSupport::hasCompositeChanged, object, slot);
+}
+
 QString DXcbWMSupport::windowMaragerName() const
 {
     return m_wmName;

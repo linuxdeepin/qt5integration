@@ -39,7 +39,9 @@ DEFINE_CONST_CHAR(setWmBlurWindowBackgroundArea);
 DEFINE_CONST_CHAR(setWmBlurWindowBackgroundPathList);
 DEFINE_CONST_CHAR(setWmBlurWindowBackgroundMaskImage);
 DEFINE_CONST_CHAR(hasBlurWindow);
+DEFINE_CONST_CHAR(hasComposite);
 DEFINE_CONST_CHAR(connectWindowManagerChangedSignal);
 DEFINE_CONST_CHAR(connectHasBlurWindowChanged);
+DEFINE_CONST_CHAR(connectHasCompositeChanged);
 
 #endif // GLOBAL_H

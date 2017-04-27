@@ -350,6 +350,11 @@ bool Utility::hasBlurWindow()
     return  DXcbWMSupport::instance()->hasBlurWindow();
 }
 
+bool Utility::hasComposite()
+{
+    return DXcbWMSupport::instance()->hasComposite();
+}
+
 bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &areas)
 {
     if (!hasBlurWindow())

@@ -26,14 +26,18 @@ QFunctionPointer DPlatformNativeInterface::platformFunction(const QByteArray &fu
         return reinterpret_cast<QFunctionPointer>(&Utility::blurWindowBackgroundByImage);
     } else if (function == hasBlurWindow) {
         return reinterpret_cast<QFunctionPointer>(&Utility::hasBlurWindow);
+    } else if (function == hasComposite) {
+        return reinterpret_cast<QFunctionPointer>(&Utility::hasComposite);
     } else if (function == connectWindowManagerChangedSignal) {
         return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectWindowManagerChangedSignal);
     } else if (function == connectHasBlurWindowChanged) {
         return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectHasBlurWindowChanged);
+    } else if (function == connectHasCompositeChanged) {
+        return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectHasCompositeChanged);
     }
 #endif
 
-    return QXcbNativeInterface::platformFunction(function);
+    return DPlatformNativeInterfaceParent::platformFunction(function);
 }
 #endif
 

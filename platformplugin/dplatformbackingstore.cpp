@@ -483,6 +483,7 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
                      m_eventListener, [this, window] (bool hasComposite) {
         m_enableShadow = hasComposite;
         updateWindowMargins();
+        doDelayedUpdateWindowShadow();
     });
 #endif
 
@@ -1226,6 +1227,12 @@ void DPlatformBackingStore::updateWindowShadow()
             transform.translate(windowMargins.left() + 2, windowMargins.top() + 2);
             transform.scale((clipRect.width() - 4) / clipRect.width(),
                             (clipRect.height() - 4) / clipRect.height());
+
+            QColor border_color = m_borderColor;
+#ifdef Q_OS_LINUX
+            if (!DXcbWMSupport::instance()->hasComposite())
+                border_color.setAlpha(255);
+#endif
 
     //        pa.setCompositionMode(QPainter::CompositionMode_Source);
             pa.setRenderHint(QPainter::Antialiasing);

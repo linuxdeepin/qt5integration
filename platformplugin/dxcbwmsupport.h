@@ -23,6 +23,7 @@ public:
     static DXcbWMSupport *instance();
     static bool connectWindowManagerChangedSignal(QObject *object, std::function<void()> slot);
     static bool connectHasBlurWindowChanged(QObject *object, std::function<void()> slot);
+    static bool connectHasCompositeChanged(QObject *object, std::function<void()> slot);
 
     bool isDeepinWM() const;
     bool isKwin() const;
