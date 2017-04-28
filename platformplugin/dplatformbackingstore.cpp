@@ -532,8 +532,13 @@ void DPlatformBackingStore::flush(QWindow *window, const QRegion &region, const 
     QPainter pa(m_proxy->paintDevice());
 
     pa.setCompositionMode(QPainter::CompositionMode_Source);
+#ifdef Q_OS_LINUX
+    if (DXcbWMSupport::instance()->hasComposite())
+#endif
     pa.setRenderHint(QPainter::Antialiasing);
-    pa.setClipPath(m_windowClipPath);
+
+    if (m_enableShadow)
+        pa.setClipPath(m_windowClipPath);
 
     for (const QRect &rect : region.rects()) {
         const QRect &tmp_rect = rect.translated(windowOffset);
@@ -1241,6 +1246,9 @@ void DPlatformBackingStore::updateWindowShadow()
 #endif
 
     //        pa.setCompositionMode(QPainter::CompositionMode_Source);
+#ifdef Q_OS_LINUX
+        if (DXcbWMSupport::instance()->hasComposite())
+#endif
             pa.setRenderHint(QPainter::Antialiasing);
             pa.fillPath(pathStroker.createStroke(m_windowClipPath), border_color);
             pa.setCompositionMode(QPainter::CompositionMode_Clear);
