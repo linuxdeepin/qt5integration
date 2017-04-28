@@ -1242,7 +1242,7 @@ void DPlatformBackingStore::updateWindowShadow()
 
     //        pa.setCompositionMode(QPainter::CompositionMode_Source);
             pa.setRenderHint(QPainter::Antialiasing);
-            pa.fillPath(pathStroker.createStroke(m_windowClipPath), m_borderColor);
+            pa.fillPath(pathStroker.createStroke(m_windowClipPath), border_color);
             pa.setCompositionMode(QPainter::CompositionMode_Clear);
             pa.setRenderHint(QPainter::Antialiasing, false);
             pa.setTransform(transform);
