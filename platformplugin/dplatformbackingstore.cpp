@@ -523,6 +523,9 @@ void DPlatformBackingStore::flush(QWindow *window, const QRegion &region, const 
 {
     Q_UNUSED(region)
 
+    if (!m_proxy->paintDevice())
+        return;
+
     const QPoint &windowOffset = this->windowOffset();
     QRegion tmp_region;
 
@@ -1128,6 +1131,9 @@ void DPlatformBackingStore::setClipPah(const QPainterPath &path)
 
 void DPlatformBackingStore::paintWindowShadow(QRegion region)
 {
+    if (!m_proxy->paintDevice())
+        return;
+
     QPainter pa;
 
     /// begin paint window drop shadow
