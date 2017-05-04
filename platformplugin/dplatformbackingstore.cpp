@@ -519,6 +519,23 @@ QPaintDevice *DPlatformBackingStore::paintDevice()
     return &m_image;
 }
 
+static QColor colorBlend(const QColor &color1, const QColor &color2)
+{
+    QColor c2 = color2.toRgb();
+
+    if (c2.alpha() >= 255)
+        return c2;
+
+    QColor c1 = color1.toRgb();
+    qreal c1_weight = 1 - c2.alphaF();
+
+    int r = c1_weight * c1.red() + c2.alphaF() * c2.red();
+    int g = c1_weight * c1.green() + c2.alphaF() * c2.green();
+    int b = c1_weight * c1.blue() + c2.alphaF() * c2.blue();
+
+    return QColor(r, g, b);
+}
+
 void DPlatformBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(region)
@@ -537,19 +554,36 @@ void DPlatformBackingStore::flush(QWindow *window, const QRegion &region, const 
 #endif
     pa.setRenderHint(QPainter::Antialiasing);
 
-    if (m_enableShadow)
+    if (m_enableShadow) {
         pa.setClipPath(m_windowClipPath);
 
-    for (const QRect &rect : region.rects()) {
-        const QRect &tmp_rect = rect.translated(windowOffset);
+        for (const QRect &rect : region.rects()) {
+            const QRect &tmp_rect = rect.translated(windowOffset);
 
-        pa.drawImage(tmp_rect, m_image, rect);
+            pa.drawImage(tmp_rect, m_image, rect);
 
-        if (tmp_rect.size() == m_size) {
-            tmp_region += QRect(QPoint(0, 0), m_size);
-        } else {
-            tmp_region += tmp_rect.united(QRect(windowOffset, m_image.size()));
+            if (tmp_rect.size() == m_size) {
+                tmp_region += QRect(QPoint(0, 0), m_size);
+            } else {
+                tmp_region += tmp_rect.united(QRect(windowOffset, m_image.size()));
+            }
         }
+    } else {
+        pa.setPen(m_borderColor);
+
+        QColor border_color = m_borderColor;
+
+#ifdef Q_OS_LINUX
+        if (!DXcbWMSupport::instance()->hasComposite())
+            border_color = colorBlend(QColor("#e0e0e0"), m_borderColor);
+#endif
+        tmp_region += QRect(QPoint(0, 0), m_size);
+        pa.fillRect(tmp_region.rects().first(), border_color);
+
+        if (m_borderWidth > 0)
+            pa.setClipPath(m_windowClipPath);
+
+        pa.drawImage(windowOffset, m_image);
     }
 
     pa.end();
@@ -1136,7 +1170,7 @@ void DPlatformBackingStore::setClipPah(const QPainterPath &path)
 
 void DPlatformBackingStore::paintWindowShadow(QRegion region)
 {
-    if (!m_proxy->paintDevice())
+    if (!m_proxy->paintDevice() || shadowPixmap.isNull())
         return;
 
     QPainter pa;
@@ -1174,7 +1208,8 @@ void DPlatformBackingStore::repaintWindowShadow()
     updateWindowShadow();
     paintWindowShadow(QRegion(0, 0, m_size.width(), m_size.height()));
 
-    flush(window(), QRect(QPoint(0, 0), m_windowSize), QPoint(0, 0));
+    if (!shadowPixmap.isNull())
+        flush(window(), QRect(QPoint(0, 0), m_windowSize), QPoint(0, 0));
 }
 
 inline QSize margins2Size(const QMargins &margins)
@@ -1185,7 +1220,7 @@ inline QSize margins2Size(const QMargins &margins)
 
 void DPlatformBackingStore::updateWindowShadow()
 {
-    if (m_image.isNull())
+    if (m_image.isNull() || !m_enableShadow)
         return;
 
     bool paintShadow = isUserSetClipPath || shadowPixmap.isNull();
@@ -1239,18 +1274,8 @@ void DPlatformBackingStore::updateWindowShadow()
             transform.scale((clipRect.width() - 4) / clipRect.width(),
                             (clipRect.height() - 4) / clipRect.height());
 
-            QColor border_color = m_borderColor;
-#ifdef Q_OS_LINUX
-            if (!DXcbWMSupport::instance()->hasComposite())
-                border_color.setAlpha(255);
-#endif
-
-    //        pa.setCompositionMode(QPainter::CompositionMode_Source);
-#ifdef Q_OS_LINUX
-        if (DXcbWMSupport::instance()->hasComposite())
-#endif
             pa.setRenderHint(QPainter::Antialiasing);
-            pa.fillPath(pathStroker.createStroke(m_windowClipPath), border_color);
+            pa.fillPath(pathStroker.createStroke(m_windowClipPath), m_borderColor);
             pa.setCompositionMode(QPainter::CompositionMode_Clear);
             pa.setRenderHint(QPainter::Antialiasing, false);
             pa.setTransform(transform);
