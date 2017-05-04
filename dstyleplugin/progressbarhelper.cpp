@@ -46,15 +46,35 @@ bool Style::drawProgressBarControl(const QStyleOption *option, QPainter *painter
     return true;
 }
 
-bool Style::drawProgressBarContentsControl(const QStyleOption *option, QPainter *painter, const QWidget *) const
+bool Style::drawProgressBarContentsControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
+    // QStyleSheetStyle won't draw progress bar groove which is necessary for us.
+    if (widget->style()->metaObject()->className() == QLatin1String("QStyleSheetStyle")) {
+        drawProgressBarGrooveControl(option, painter, widget);
+    }
+
     const QStyleOptionProgressBar* progressBarOption( qstyleoption_cast<const QStyleOptionProgressBar*>( option ) );
     if( !progressBarOption ) return false;
 
+    const bool horizontal( !progressBarOption || progressBarOption->orientation == Qt::Horizontal );
+
     // copy rect and palette
     const QPalette& palette( option->palette );
-    const QRect rect( option->rect );
     const qreal radius( GeometryUtils::frameRadius() );
+
+    // get progress and steps
+    const qreal progress( progressBarOption->progress - progressBarOption->minimum );
+    const int steps( qMax( progressBarOption->maximum  - progressBarOption->minimum, 1 ) );
+
+    //Calculate width fraction
+    const qreal widthFrac = qMin( qreal(1), progress/steps );
+
+    QRect rect( option->rect );
+
+    // convert the pixel width
+    const int indicatorSize( widthFrac*( horizontal ? rect.width():rect.height() ) );
+
+    rect.setWidth(indicatorSize);
 
     QPainterPath path;
     path.addRoundedRect(rect, radius, radius);
