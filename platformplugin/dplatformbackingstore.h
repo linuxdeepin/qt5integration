@@ -115,6 +115,8 @@ private:
     inline QPoint getShadowOffset() const
     { return m_shadowOffset;}
 
+    inline int getWindowRadius() const;
+
     bool canUseClipPath() const;
     bool canResize() const;
 
@@ -131,6 +133,7 @@ private:
     DPlatformWindowHook *m_windowHook = Q_NULLPTR;
 
     int m_windowRadius = 4;
+    bool isUserSetWindowRadius = false;
     int m_borderWidth = 1;
     bool isUserSetClipPath = false;
     QPainterPath m_clipPath;

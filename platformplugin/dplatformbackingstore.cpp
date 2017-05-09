@@ -483,6 +483,7 @@ DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *
                      m_eventListener, [this, window] (bool hasComposite) {
         m_enableShadow = hasComposite;
         updateWindowMargins();
+        updateClipPath();
         doDelayedUpdateWindowShadow();
     });
 #endif
@@ -800,7 +801,7 @@ void DPlatformBackingStore::updateInputShapeRegion()
     Utility::setRectangles(window()->winId(), QRegion(), true);
     Utility::setRectangles(window()->winId(), QRegion(), false);
 
-    if (m_autoInputMaskByClipPath) {
+    if (m_autoInputMaskByClipPath && (isUserSetClipPath || getWindowRadius() > 0)) {
         QPainterPathStroker stroker;
         QPainterPath p;
 
@@ -843,6 +844,7 @@ void DPlatformBackingStore::updateWindowRadius()
 
     if (ok && radius != m_windowRadius) {
         m_windowRadius = radius;
+        isUserSetWindowRadius = true;
 
         updateClipPath();
     }
@@ -919,7 +921,7 @@ void DPlatformBackingStore::updateClipPath()
         QPainterPath path;
 
         if (canUseClipPath())
-            path.addRoundedRect(QRect(QPoint(0, 0), m_windowSize), m_windowRadius, m_windowRadius);
+            path.addRoundedRect(QRect(QPoint(0, 0), m_windowSize), getWindowRadius(), getWindowRadius());
         else
             path.addRect(0, 0, m_windowSize.width(), m_windowSize.height());
 
@@ -1226,7 +1228,7 @@ void DPlatformBackingStore::updateWindowShadow()
     bool paintShadow = isUserSetClipPath || shadowPixmap.isNull();
 
     if (!paintShadow) {
-        QSize margins_size = margins2Size(windowMargins + m_windowRadius + m_borderWidth);
+        QSize margins_size = margins2Size(windowMargins + getWindowRadius() + m_borderWidth);
 
         if (margins_size.width() > qMin(m_size.width(), shadowPixmap.width())
                 || margins_size.height() > qMin(m_size.height(), shadowPixmap.height())) {
@@ -1287,7 +1289,7 @@ void DPlatformBackingStore::updateWindowShadow()
 
         shadowPixmap = QPixmap::fromImage(image);
     } else {
-        shadowPixmap = QPixmap::fromImage(Utility::borderImage(shadowPixmap, windowMargins + m_windowRadius, m_size));
+        shadowPixmap = QPixmap::fromImage(Utility::borderImage(shadowPixmap, windowMargins + getWindowRadius(), m_size));
     }
 }
 
@@ -1307,8 +1309,8 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
         area.y = windowValidRect.y();
         area.width = windowValidRect.width();
         area.height = windowValidRect.height();
-        area.xRadius = m_windowRadius;
-        area.yRaduis = m_windowRadius;
+        area.xRadius = getWindowRadius();
+        area.yRaduis = getWindowRadius();
 
         newAreas.append(std::move(area));
     } else {
@@ -1367,6 +1369,15 @@ bool DPlatformBackingStore::isWidgetWindow(const QWindow *window)
 QWidgetWindow *DPlatformBackingStore::widgetWindow() const
 {
     return static_cast<QWidgetWindow*>(window());
+}
+
+int DPlatformBackingStore::getWindowRadius() const
+{
+#ifdef Q_OS_LINUX
+    return (isUserSetWindowRadius || DXcbWMSupport::instance()->hasComposite()) ? m_windowRadius : 0;
+#else
+    return m_windowRadius;
+#endif
 }
 
 bool DPlatformBackingStore::canUseClipPath() const
