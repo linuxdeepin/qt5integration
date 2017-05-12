@@ -579,10 +579,15 @@ void DPlatformBackingStore::flush(QWindow *window, const QRegion &region, const 
             border_color = colorBlend(QColor("#e0e0e0"), m_borderColor);
 #endif
         tmp_region += QRect(QPoint(0, 0), m_size);
-        pa.fillRect(tmp_region.rects().first(), border_color);
 
-        if (m_borderWidth > 0)
+        if (m_borderWidth > 0) {
+            QPainterPath path;
+
+            path.addRect(tmp_region.rects().first());
+            path -= m_windowClipPath;
+            pa.fillPath(path, border_color);
             pa.setClipPath(m_windowClipPath);
+        }
 
         pa.drawImage(windowOffset, m_image);
     }
