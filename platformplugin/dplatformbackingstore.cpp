@@ -807,11 +807,12 @@ void DPlatformBackingStore::updateInputShapeRegion()
     Utility::setRectangles(window()->winId(), QRegion(), false);
 
     if (m_autoInputMaskByClipPath && (isUserSetClipPath || getWindowRadius() > 0)) {
-        QPainterPathStroker stroker;
         QPainterPath p;
 
         if (Q_LIKELY(mouse_margins > 0)) {
-            stroker.setWidth(mouse_margins * 2);
+            QPainterPathStroker stroker;
+            stroker.setJoinStyle(Qt::MiterJoin);
+            stroker.setWidth(2);
             p = stroker.createStroke(m_windowClipPath);
             p = p.united(m_windowClipPath);
             p.translate(-0.5, -0.5);
