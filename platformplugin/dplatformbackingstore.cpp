@@ -1213,6 +1213,9 @@ void DPlatformBackingStore::repaintWindowShadow()
     updateShadowTimer.stop();
     shadowPixmap = QPixmap();
 
+    if (windowMargins.isNull())
+        return;
+
     updateWindowShadow();
     paintWindowShadow(QRegion(0, 0, m_size.width(), m_size.height()));
 
