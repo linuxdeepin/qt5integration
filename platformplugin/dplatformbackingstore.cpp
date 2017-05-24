@@ -812,7 +812,7 @@ void DPlatformBackingStore::updateInputShapeRegion()
         if (Q_LIKELY(mouse_margins > 0)) {
             QPainterPathStroker stroker;
             stroker.setJoinStyle(Qt::MiterJoin);
-            stroker.setWidth(2);
+            stroker.setWidth(mouse_margins * 2);
             p = stroker.createStroke(m_windowClipPath);
             p = p.united(m_windowClipPath);
             p.translate(-0.5, -0.5);
