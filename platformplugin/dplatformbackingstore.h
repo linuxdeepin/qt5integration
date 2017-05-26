@@ -14,6 +14,7 @@
 QT_BEGIN_NAMESPACE
 class QXcbBackingStore;
 class QWidgetWindow;
+class QOpenGLTextureBlitter;
 QT_END_NAMESPACE
 
 struct xcb_property_notify_event_t;
@@ -40,6 +41,9 @@ public:
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                          QPlatformTextureList *textures, QOpenGLContext *context) Q_DECL_OVERRIDE;
 #else
+    void composeAndFlushHelper(QWindow *window, const QRegion &region, const QPoint &offset,
+                         QPlatformTextureList *textures, QOpenGLContext *context,
+                         bool translucentBackground);
     void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                          QPlatformTextureList *textures, QOpenGLContext *context,
                          bool translucentBackground) Q_DECL_OVERRIDE;
@@ -163,6 +167,14 @@ private:
     QBasicTimer updateShadowTimer;
 
     friend class WindowEventListener;
+
+#ifndef QT_NO_OPENGL
+    GLuint m_textureId;
+    QSize m_textureSize;
+    bool m_needsSwizzle;
+    bool m_premultiplied;
+    QOpenGLTextureBlitter *m_blitter;
+#endif
 };
 
 DPP_END_NAMESPACE

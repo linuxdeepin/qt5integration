@@ -24,6 +24,19 @@
 #else
 #include <private/qwidgetwindow_p.h>
 #endif
+
+#ifndef QT_NO_OPENGL
+#include <qopengl.h>
+#include <qopenglcontext.h>
+#include <QtGui/QMatrix4x4>
+#include <QtGui/QOpenGLShaderProgram>
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLFunctions>
+#include <QtGui/private/qopengltextureblitter_p.h>
+#include <QtGui/qpa/qplatformgraphicsbuffer.h>
+#include <QtGui/qpa/qplatformgraphicsbufferhelper.h>
+#endif
+
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -469,7 +482,11 @@ private:
 
 DPlatformBackingStore::DPlatformBackingStore(QWindow *window, QXcbBackingStore *proxy)
     : QPlatformBackingStore(window)
-    , m_proxy(proxy)
+    , m_proxy(proxy),
+#ifndef QT_NO_OPENGL
+    m_textureId(0),
+    m_blitter(0)
+#endif
 {
 
     m_eventListener = new WindowEventListener(this);
@@ -607,7 +624,72 @@ void DPlatformBackingStore::flush(QWindow *window, const QRegion &region, const 
         window_hook->setWindowMargins(windowMargins);
 }
 
+
+
 #ifndef QT_NO_OPENGL
+static inline QRect deviceRect(const QRect &rect, QWindow *window)
+{
+    QRect deviceRect(rect.topLeft() * window->devicePixelRatio(),
+                     rect.size() * window->devicePixelRatio());
+    return deviceRect;
+}
+
+static QRegion deviceRegion(const QRegion &region, QWindow *window, const QPoint &offset)
+{
+    if (offset.isNull() && window->devicePixelRatio() <= 1)
+        return region;
+
+    QVector<QRect> rects;
+    const QVector<QRect> regionRects = region.rects();
+    rects.reserve(regionRects.count());
+    foreach (const QRect &rect, regionRects)
+        rects.append(deviceRect(rect.translated(offset), window));
+
+    QRegion deviceRegion;
+    deviceRegion.setRects(rects.constData(), rects.count());
+    return deviceRegion;
+}
+
+static inline QRect toBottomLeftRect(const QRect &topLeftRect, int windowHeight)
+{
+    return QRect(topLeftRect.x(), windowHeight - topLeftRect.bottomRight().y() - 1,
+                 topLeftRect.width(), topLeftRect.height());
+}
+
+
+
+
+static void blitTextureForWidget(const QPlatformTextureList *textures, int idx,
+        QWindow *window, const QRect &deviceWindowRect,
+        QOpenGLTextureBlitter *blitter, const QPoint &offset)
+{
+    //orignal clipRect is wrong because of frame margins
+    //const QRect clipRect = textures->clipRect(idx);
+    QRect rectInWindow = textures->geometry(idx);
+
+    const QRect clipRect = QRect(QPoint(), rectInWindow.size());
+    if (clipRect.isEmpty())
+        return;
+
+    // relative to the TLW, not necessarily our window (if the flush is for a native child widget), have to adjust
+    rectInWindow.translate(-offset);
+
+    const QRect clippedRectInWindow = rectInWindow & clipRect.translated(rectInWindow.topLeft());
+    const QRect srcRect = toBottomLeftRect(clipRect, rectInWindow.height());
+
+    const QMatrix4x4 target = QOpenGLTextureBlitter::targetTransform(
+            deviceRect(clippedRectInWindow, window),
+            clippedRectInWindow);
+            //deviceWindowRect);
+
+    const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(deviceRect(srcRect, window),
+            deviceRect(rectInWindow, window).size(),
+            QOpenGLTextureBlitter::OriginBottomLeft);
+
+    blitter->blit(textures->textureId(idx), target, source);
+}
+
+
 #if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 void DPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                      QPlatformTextureList *textures, QOpenGLContext *context)
@@ -618,15 +700,140 @@ void DPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
     flush(window, region, offset);
 }
 #else
+void DPlatformBackingStore::composeAndFlushHelper(QWindow *window, const QRegion &region,
+        const QPoint &offset,
+        QPlatformTextureList *textures, QOpenGLContext *context,
+        bool translucentBackground)
+{
+    //if (!qt_window_private(window)->receivedExpose)
+        //return;
+
+    if (!context->makeCurrent(window)) {
+        qWarning("composeAndFlush: makeCurrent() failed");
+        return;
+    }
+
+    //QWindowPrivate::get(window)->lastComposeTime.start();
+
+    QPoint reversedOrigin(windowMargins.left(), windowMargins.bottom()); // reversed
+
+    QOpenGLFunctions *funcs = context->functions();
+    funcs->glViewport(reversedOrigin.x(), reversedOrigin.y(),
+            m_windowSize.width() * window->devicePixelRatio(),
+            m_windowSize.height() * window->devicePixelRatio());
+    funcs->glClearColor(0, 0, 0, translucentBackground ? 0 : 1);
+    funcs->glClear(GL_COLOR_BUFFER_BIT);
+
+    if (!m_blitter) {
+        m_blitter = new QOpenGLTextureBlitter;
+        m_blitter->create();
+    }
+
+    m_blitter->bind();
+
+    const QRect deviceWindowRect = deviceRect(QRect(windowOffset(), m_windowSize), window);
+
+    // Textures for renderToTexture widgets.
+    for (int i = 0; i < textures->count(); ++i) {
+        if (!textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop))
+            blitTextureForWidget(textures, i, window, deviceWindowRect, m_blitter, offset);
+    }
+
+    // Backingstore texture with the normal widgets.
+    GLuint textureId = 0;
+    QOpenGLTextureBlitter::Origin origin = QOpenGLTextureBlitter::OriginTopLeft;
+#if 0
+    if (QPlatformGraphicsBuffer *graphicsBuffer = this->graphicsBuffer()) {
+        if (graphicsBuffer->size() != m_textureSize) {
+            if (m_textureId)
+                funcs->glDeleteTextures(1, &m_textureId);
+            funcs->glGenTextures(1, &m_textureId);
+            funcs->glBindTexture(GL_TEXTURE_2D, m_textureId);
+            QOpenGLContext *ctx = QOpenGLContext::currentContext();
+            if (!ctx->isOpenGLES() || ctx->format().majorVersion() >= 3) {
+                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+            }
+            funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            funcs->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            if (QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &m_needsSwizzle, &m_premultiplied)) {
+                m_textureSize = graphicsBuffer->size();
+            } else {
+                m_textureSize = QSize(0,0);
+            }
+
+            graphicsBuffer->unlock();
+        } else if (!region.isEmpty()){
+            funcs->glBindTexture(GL_TEXTURE_2D, m_textureId);
+            QPlatformGraphicsBufferHelper::lockAndBindToTexture(graphicsBuffer, &m_needsSwizzle, &m_premultiplied);
+        }
+
+        if (graphicsBuffer->origin() == QPlatformGraphicsBuffer::OriginBottomLeft)
+            origin = QOpenGLTextureBlitter::OriginBottomLeft;
+        textureId = m_textureId;
+    } 
+    else 
+#endif
+    {
+        TextureFlags flags = 0;
+        //I don't know why region is empty
+        //textureId = toTexture(deviceRegion(region, window, offset + windowOffset()), &m_textureSize, &flags);
+        QRegion region(0, 0, m_windowSize.width(), m_windowSize.height());
+#if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
+    textureId = toTexture(deviceRegion(region, window, offset), &m_textureSize, false);
+#else
+    textureId = toTexture(deviceRegion(region, window, offset), &m_textureSize, &flags);
+#endif
+        m_needsSwizzle = (flags & TextureSwizzle) != 0;
+        m_premultiplied = (flags & TexturePremultiplied) != 0;
+        if (flags & TextureFlip)
+            origin = QOpenGLTextureBlitter::OriginBottomLeft;
+    }
+
+    funcs->glEnable(GL_BLEND);
+    if (m_premultiplied)
+        funcs->glBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+    else
+        funcs->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
+
+    if (textureId) {
+        if (m_needsSwizzle)
+            m_blitter->setSwizzleRB(true);
+        // The backingstore is for the entire tlw.
+        // In case of native children offset tells the position relative to the tlw.
+        // reverse translate backward for widgets 
+        const QRect srcRect = toBottomLeftRect(deviceWindowRect.translated(offset-windowOffset()), m_textureSize.height());
+        const QMatrix3x3 source = QOpenGLTextureBlitter::sourceTransform(srcRect,
+                                                                         m_textureSize,
+                                                                         origin);
+        m_blitter->blit(textureId, QMatrix4x4(), source);
+        if (m_needsSwizzle)
+            m_blitter->setSwizzleRB(false);
+    }
+
+    // Textures for renderToTexture widgets that have WA_AlwaysStackOnTop set.
+    for (int i = 0; i < textures->count(); ++i) {
+        if (textures->flags(i).testFlag(QPlatformTextureList::StacksOnTop))
+            blitTextureForWidget(textures, i, window, deviceWindowRect, m_blitter, offset);
+    }
+
+    funcs->glDisable(GL_BLEND);
+
+    m_blitter->release();
+
+    context->swapBuffers(window);
+}
+
 void DPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
                                        QPlatformTextureList *textures, QOpenGLContext *context,
                                        bool translucentBackground)
 {
-    Q_UNUSED(textures)
-    Q_UNUSED(context)
-    Q_UNUSED(translucentBackground)
-
-    flush(window, region, offset);
+    if (textures != nullptr) {
+        composeAndFlushHelper(window, region, offset, textures, context, translucentBackground);
+    }
 }
 #endif
 
@@ -643,12 +850,12 @@ GLuint DPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textu
 #elif QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
 GLuint DPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, bool *needsSwizzle) const
 {
-    return m_proxy->toTexture(dirtyRegion, textureSize, needsSwizzle);
+    return QPlatformBackingStore::toTexture(dirtyRegion, textureSize, needsSwizzle);
 }
 #else
 GLuint DPlatformBackingStore::toTexture(const QRegion &dirtyRegion, QSize *textureSize, TextureFlags *flags) const
 {
-    return m_proxy->toTexture(dirtyRegion, textureSize, flags);
+    return QPlatformBackingStore::toTexture(dirtyRegion, textureSize, flags);
 }
 #endif
 #endif
