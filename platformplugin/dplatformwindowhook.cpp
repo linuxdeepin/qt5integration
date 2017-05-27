@@ -27,7 +27,7 @@ DPlatformWindowHook::DPlatformWindowHook(QNativeWindow *window)
 
     HOOK_VFPTR(setGeometry);
     HOOK_VFPTR(geometry);
-//    HOOK_VFPTR(frameMargins);
+    HOOK_VFPTR(frameMargins);
 //    HOOK_VFPTR(setParent);
 //    HOOK_VFPTR(setWindowTitle);
 //    HOOK_VFPTR(setWindowIcon);
@@ -72,9 +72,7 @@ QRect DPlatformWindowHook::geometry() const
 
 QMargins DPlatformWindowHook::frameMargins() const
 {
-    QMargins margins = CALL::frameMargins();
-
-    return margins/* + me()->windowMargins*/;
+    return QMargins();
 }
 
 void DPlatformWindowHook::setParent(const QPlatformWindow *window)
