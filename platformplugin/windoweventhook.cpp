@@ -204,7 +204,12 @@ void WindowEventHook::handleFocusInEvent(const xcb_focus_in_event_t *event)
     if (relayFocusToModalWindow(w, xcbWindow->connection()))
         return;
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
+    xcbWindow->connection()->setFocusWindow(w);
+#else
     xcbWindow->connection()->setFocusWindow(static_cast<QXcbWindow *>(w->handle()));
+#endif
+
     QWindowSystemInterface::handleWindowActivated(w, Qt::ActiveWindowFocusReason);
 }
 
