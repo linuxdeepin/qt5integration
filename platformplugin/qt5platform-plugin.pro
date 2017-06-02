@@ -42,7 +42,8 @@ HEADERS += \
     $$PWD/dplatformwindowhook.h \
     $$PWD/utility.h \
     $$PWD/global.h \
-    $$PWD/dplatformnativeinterface.h
+    $$PWD/dplatformnativeinterface.h \
+    $$PWD/dforeignplatformwindow.h
 
 DISTFILES += \
     $$PWD/dpp.json

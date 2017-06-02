@@ -663,6 +663,8 @@ static void blitTextureForWidget(const QPlatformTextureList *textures, int idx,
         QWindow *window, const QRect &deviceWindowRect,
         QOpenGLTextureBlitter *blitter, const QPoint &offset)
 {
+    Q_UNUSED(deviceWindowRect)
+
     //orignal clipRect is wrong because of frame margins
     //const QRect clipRect = textures->clipRect(idx);
     QRect rectInWindow = textures->geometry(idx);
@@ -705,6 +707,7 @@ void DPlatformBackingStore::composeAndFlushHelper(QWindow *window, const QRegion
         QPlatformTextureList *textures, QOpenGLContext *context,
         bool translucentBackground)
 {
+    Q_UNUSED(region)
     //if (!qt_window_private(window)->receivedExpose)
         //return;
 

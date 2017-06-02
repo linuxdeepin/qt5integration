@@ -20,7 +20,8 @@ SOURCES += \
     $$PWD/windoweventhook.cpp \
     $$PWD/xcbnativeeventfilter.cpp \
     $$PWD/utility_x11.cpp \
-    $$PWD/dxcbwmsupport.cpp
+    $$PWD/dxcbwmsupport.cpp \
+    $$PWD/dforeignplatformwindow_x11.cpp
 
 INCLUDEPATH += $$PWD/libqt5xcbqpa-dev
 

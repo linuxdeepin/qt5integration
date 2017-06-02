@@ -24,6 +24,7 @@ public:
     static bool connectWindowManagerChangedSignal(QObject *object, std::function<void()> slot);
     static bool connectHasBlurWindowChanged(QObject *object, std::function<void()> slot);
     static bool connectHasCompositeChanged(QObject *object, std::function<void()> slot);
+    static bool connectWindowListChanged(QObject *object, std::function<void()> slot);
 
     bool isDeepinWM() const;
     bool isKwin() const;
@@ -32,12 +33,15 @@ public:
     bool hasBlurWindow() const;
     bool hasComposite() const;
 
-    QString windowMaragerName() const;
+    QString windowManagerName() const;
+
+    QVector<xcb_window_t> allWindow() const;
 
 signals:
     void windowManagerChanged();
     void hasBlurWindowChanged(bool hasBlurWindow);
     void hasCompositeChanged(bool hasComposite);
+    void windowListChanged();
 
 protected:
     explicit DXcbWMSupport();

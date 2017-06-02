@@ -43,5 +43,13 @@ DEFINE_CONST_CHAR(hasComposite);
 DEFINE_CONST_CHAR(connectWindowManagerChangedSignal);
 DEFINE_CONST_CHAR(connectHasBlurWindowChanged);
 DEFINE_CONST_CHAR(connectHasCompositeChanged);
+DEFINE_CONST_CHAR(getWindows);
+DEFINE_CONST_CHAR(getCurrentWorkspaceWindows);
+DEFINE_CONST_CHAR(connectWindowListChanged);
+
+// others
+DEFINE_CONST_CHAR(WmWindowTypes);
+DEFINE_CONST_CHAR(WmNetDesktop);
+DEFINE_CONST_CHAR(WmClass);
 
 #endif // GLOBAL_H

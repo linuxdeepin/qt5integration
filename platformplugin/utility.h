@@ -36,19 +36,19 @@ public:
     static QList<QRect> sudokuByRect(const QRect &rect, QMargins borders);
 
     static xcb_atom_t internAtom(const char *name);
-    static void startWindowSystemMove(uint WId);
-    static void cancelWindowMoveResize(uint WId);
-    static void setFrameExtents(uint WId, const QMargins &margins);
-    static void setRectangles(uint WId, const QRegion &region, bool onlyInput = true);
-    static void setRectangles(uint WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput = true);
-    static void setShapePath(uint WId, const QPainterPath &path, bool onlyInput = true);
-    static void startWindowSystemResize(uint WId, CornerEdge cornerEdge, const QPoint &globalPos = QPoint());
-    static bool setWindowCursor(uint WId, CornerEdge ce);
+    static void startWindowSystemMove(quint32 WId);
+    static void cancelWindowMoveResize(quint32 WId);
+    static void setFrameExtents(quint32 WId, const QMargins &margins);
+    static void setRectangles(quint32 WId, const QRegion &region, bool onlyInput = true);
+    static void setRectangles(quint32 WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput = true);
+    static void setShapePath(quint32 WId, const QPainterPath &path, bool onlyInput = true);
+    static void startWindowSystemResize(quint32 WId, CornerEdge cornerEdge, const QPoint &globalPos = QPoint());
+    static bool setWindowCursor(quint32 WId, CornerEdge ce);
 
     static QRegion regionAddMargins(const QRegion &region, const QMargins &margins, const QPoint &offset = QPoint(0, 0));
 
-    static QByteArray windowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, quint32 len);
-    static void setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len, uint8_t format = 8);
+    static QByteArray windowProperty(quint32 WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, quint32 len);
+    static void setWindowProperty(quint32 WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len, uint8_t format = 8);
 
     struct BlurArea {
         qint32 x;
@@ -62,12 +62,16 @@ public:
     // by Deepin Window Manager
     static bool hasBlurWindow();
     static bool hasComposite();
-    static bool blurWindowBackground(const uint WId, const QVector<BlurArea> &areas);
-    static bool blurWindowBackgroundByPaths(const uint WId, const QList<QPainterPath> &paths);
-    static bool blurWindowBackgroundByImage(const uint WId, const QRect &blurRect, const QImage &maskImage);
+    static bool blurWindowBackground(const quint32 WId, const QVector<BlurArea> &areas);
+    static bool blurWindowBackgroundByPaths(const quint32 WId, const QList<QPainterPath> &paths);
+    static bool blurWindowBackgroundByImage(const quint32 WId, const QRect &blurRect, const QImage &maskImage);
+
+    static quint32 getWorkspaceForWindow(quint32 WId);
+    static QVector<quint32> getWindows();
+    static QVector<quint32> getCurrentWorkspaceWindows();
 
 private:
-    static void sendMoveResizeMessage(uint WId, uint32_t action, QPoint globalPos = QPoint(), Qt::MouseButton qbutton = Qt::LeftButton);
+    static void sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalPos = QPoint(), Qt::MouseButton qbutton = Qt::LeftButton);
     static QVector<xcb_rectangle_t> qregion2XcbRectangles(const QRegion &region);
 };
 

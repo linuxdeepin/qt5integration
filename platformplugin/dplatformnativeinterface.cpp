@@ -34,6 +34,12 @@ QFunctionPointer DPlatformNativeInterface::platformFunction(const QByteArray &fu
         return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectHasBlurWindowChanged);
     } else if (function == connectHasCompositeChanged) {
         return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectHasCompositeChanged);
+    } else if (function == getWindows) {
+        return reinterpret_cast<QFunctionPointer>(&Utility::getWindows);
+    } else if (function == getCurrentWorkspaceWindows) {
+        return reinterpret_cast<QFunctionPointer>(&Utility::getCurrentWorkspaceWindows);
+    } else if (function == connectWindowListChanged) {
+        return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectWindowListChanged);
     }
 #endif
 

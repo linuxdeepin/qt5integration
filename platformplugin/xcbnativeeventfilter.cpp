@@ -65,6 +65,8 @@ bool XcbNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *
             DXcbWMSupport::instance()->updateWMName();
         } else if (pn->atom == DXcbWMSupport::instance()->_kde_net_wm_blur_rehind_region_atom) {
             DXcbWMSupport::instance()->updateRootWindowProperties();
+        } else if (pn->atom == Utility::internAtom("_NET_CLIENT_LIST_STACKING")) {
+            emit DXcbWMSupport::instance()->windowListChanged();
         }
     }
 

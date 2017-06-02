@@ -2,6 +2,7 @@
 #include "dplatformbackingstore.h"
 #include "global.h"
 #include "dplatformwindowhook.h"
+#include "dforeignplatformwindow.h"
 #ifdef Q_OS_LINUX
 #include "windoweventhook.h"
 #include "xcbnativeeventfilter.h"
@@ -54,6 +55,11 @@ DPlatformIntegration::~DPlatformIntegration()
 QPlatformWindow *DPlatformIntegration::createPlatformWindow(QWindow *window) const
 {
     qDebug() << __FUNCTION__ << window << window->type() << window->parent();
+
+    // handle foreign native window
+    if (window->type() == Qt::ForeignWindow && window->property("_q_foreignWinId").isValid()) {
+        return new DForeignPlatformWindow(window);
+    }
 
     bool isUseDxcb = window->type() != Qt::Desktop && window->property(useDxcb).toBool();
 

@@ -183,9 +183,53 @@ bool DXcbWMSupport::connectHasCompositeChanged(QObject *object, std::function<vo
     return QObject::connect(globalXWMS, &DXcbWMSupport::hasCompositeChanged, object, slot);
 }
 
-QString DXcbWMSupport::windowMaragerName() const
+bool DXcbWMSupport::connectWindowListChanged(QObject *object, std::function<void ()> slot)
+{
+    if (!object)
+        return QObject::connect(globalXWMS, &DXcbWMSupport::windowListChanged, slot);
+
+    return QObject::connect(globalXWMS, &DXcbWMSupport::windowListChanged, object, slot);
+}
+
+QString DXcbWMSupport::windowManagerName() const
 {
     return m_wmName;
+}
+
+QVector<xcb_window_t> DXcbWMSupport::allWindow() const
+{
+    QVector<xcb_window_t> window_list_stacking;
+
+    xcb_window_t root = DPlatformIntegration::xcbConnection()->primaryScreen()->root();
+    int offset = 0;
+    int remaining = 0;
+    xcb_connection_t *xcb_connection = DPlatformIntegration::xcbConnection()->xcb_connection();
+
+    do {
+        xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection, false, root,
+                                                            Utility::internAtom("_NET_CLIENT_LIST_STACKING"),
+                                                            XCB_ATOM_WINDOW, offset, 1024);
+        xcb_get_property_reply_t *reply = xcb_get_property_reply(xcb_connection, cookie, NULL);
+        if (!reply)
+            break;
+
+        remaining = 0;
+
+        if (reply->type == XCB_ATOM_WINDOW && reply->format == 32) {
+            int len = xcb_get_property_value_length(reply)/sizeof(xcb_window_t);
+            xcb_window_t *windows = (xcb_window_t *)xcb_get_property_value(reply);
+            int s = window_list_stacking.size();
+            window_list_stacking.resize(s + len);
+            memcpy(window_list_stacking.data() + s, windows, len*sizeof(xcb_window_t));
+
+            remaining = reply->bytes_after;
+            offset += len;
+        }
+
+        free(reply);
+    } while (remaining > 0);
+
+    return window_list_stacking;
 }
 
 bool DXcbWMSupport::isDeepinWM() const

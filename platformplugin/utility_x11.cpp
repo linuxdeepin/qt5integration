@@ -138,17 +138,17 @@ xcb_atom_t Utility::internAtom(const char *name)
     return atom;
 }
 
-void Utility::startWindowSystemMove(uint WId)
+void Utility::startWindowSystemMove(quint32 WId)
 {
     sendMoveResizeMessage(WId, _NET_WM_MOVERESIZE_MOVE);
 }
 
-void Utility::cancelWindowMoveResize(uint WId)
+void Utility::cancelWindowMoveResize(quint32 WId)
 {
     sendMoveResizeMessage(WId, _NET_WM_MOVERESIZE_CANCEL);
 }
 
-void Utility::setFrameExtents(uint WId, const QMargins &margins)
+void Utility::setFrameExtents(quint32 WId, const QMargins &margins)
 {
     xcb_atom_t frameExtents = internAtom("_GTK_FRAME_EXTENTS");
 
@@ -167,12 +167,12 @@ void Utility::setFrameExtents(uint WId, const QMargins &margins)
     xcb_change_property(QX11Info::connection(), XCB_PROP_MODE_REPLACE, WId, frameExtents, XCB_ATOM_CARDINAL, 32, 4, value);
 }
 
-void Utility::setRectangles(uint WId, const QRegion &region, bool onlyInput)
+void Utility::setRectangles(quint32 WId, const QRegion &region, bool onlyInput)
 {
     setRectangles(WId, qregion2XcbRectangles(region), onlyInput);
 }
 
-void Utility::setRectangles(uint WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput)
+void Utility::setRectangles(quint32 WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput)
 {
     if (rectangles.isEmpty()) {
         xcb_shape_mask(QX11Info::connection(), XCB_SHAPE_SO_SET,
@@ -185,7 +185,7 @@ void Utility::setRectangles(uint WId, const QVector<xcb_rectangle_t> &rectangles
                          XCB_CLIP_ORDERING_YX_BANDED, WId, 0, 0, rectangles.size(), rectangles.constData());
 }
 
-void Utility::setShapePath(uint WId, const QPainterPath &path, bool onlyInput)
+void Utility::setShapePath(quint32 WId, const QPainterPath &path, bool onlyInput)
 {
     if (path.isEmpty()) {
         return setRectangles(WId, QVector<xcb_rectangle_t>(), onlyInput);
@@ -209,7 +209,7 @@ void Utility::setShapePath(uint WId, const QPainterPath &path, bool onlyInput)
     setRectangles(WId, rectangles, onlyInput);
 }
 
-void Utility::sendMoveResizeMessage(uint WId, uint32_t action, QPoint globalPos, Qt::MouseButton qbutton)
+void Utility::sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalPos, Qt::MouseButton qbutton)
 {
     int xbtn = qbutton == Qt::LeftButton ? XCB_BUTTON_INDEX_1 :
                qbutton == Qt::RightButton ? XCB_BUTTON_INDEX_3 :
@@ -258,7 +258,7 @@ QVector<xcb_rectangle_t> Utility::qregion2XcbRectangles(const QRegion &region)
     return rectangles;
 }
 
-void Utility::startWindowSystemResize(uint WId, CornerEdge cornerEdge, const QPoint &globalPos)
+void Utility::startWindowSystemResize(quint32 WId, CornerEdge cornerEdge, const QPoint &globalPos)
 {
     sendMoveResizeMessage(WId, cornerEdge, globalPos);
 }
@@ -287,7 +287,7 @@ static xcb_cursor_t CornerEdge2Xcb_cursor_t(Utility::CornerEdge ce)
     }
 }
 
-bool Utility::setWindowCursor(uint WId, Utility::CornerEdge ce)
+bool Utility::setWindowCursor(quint32 WId, Utility::CornerEdge ce)
 {
     const auto display = QX11Info::display();
 
@@ -316,7 +316,7 @@ QRegion Utility::regionAddMargins(const QRegion &region, const QMargins &margins
     return tmp;
 }
 
-QByteArray Utility::windowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, quint32 len)
+QByteArray Utility::windowProperty(quint32 WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, quint32 len)
 {
     QByteArray data;
     xcb_connection_t* conn = QX11Info::connection();
@@ -338,7 +338,7 @@ QByteArray Utility::windowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typ
     return data;
 }
 
-void Utility::setWindowProperty(uint WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len, uint8_t format)
+void Utility::setWindowProperty(quint32 WId, xcb_atom_t propAtom, xcb_atom_t typeAtom, const void *data, quint32 len, uint8_t format)
 {
     xcb_connection_t* conn = QX11Info::connection();
     xcb_change_property(conn, XCB_PROP_MODE_REPLACE, WId, propAtom, typeAtom, format, len, data);
@@ -355,7 +355,7 @@ bool Utility::hasComposite()
     return DXcbWMSupport::instance()->hasComposite();
 }
 
-bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &areas)
+bool Utility::blurWindowBackground(const quint32 WId, const QVector<BlurArea> &areas)
 {
     if (!hasBlurWindow())
         return false;
@@ -403,7 +403,7 @@ bool Utility::blurWindowBackground(const uint WId, const QVector<BlurArea> &area
     return true;
 }
 
-bool Utility::blurWindowBackgroundByPaths(const uint WId, const QList<QPainterPath> &paths)
+bool Utility::blurWindowBackgroundByPaths(const quint32 WId, const QList<QPainterPath> &paths)
 {
     if (DXcbWMSupport::instance()->isDeepinWM()) {
         QRect boundingRect;
@@ -448,7 +448,7 @@ bool Utility::blurWindowBackgroundByPaths(const uint WId, const QList<QPainterPa
     return true;
 }
 
-bool Utility::blurWindowBackgroundByImage(const uint WId, const QRect &blurRect, const QImage &maskImage)
+bool Utility::blurWindowBackgroundByImage(const quint32 WId, const QRect &blurRect, const QImage &maskImage)
 {
     if (!DXcbWMSupport::instance()->isDeepinWM() || maskImage.format() != QImage::Format_Alpha8)
         return false;
@@ -468,6 +468,48 @@ bool Utility::blurWindowBackgroundByImage(const uint WId, const QRect &blurRect,
                       array.constData(), array.length(), 8);
 
     return true;
+}
+
+quint32 Utility::getWorkspaceForWindow(quint32 WId)
+{
+    xcb_get_property_cookie_t cookie = xcb_get_property(DPlatformIntegration::xcbConnection()->xcb_connection(), false, WId,
+                                                        Utility::internAtom("_NET_WM_DESKTOP"), XCB_ATOM_CARDINAL, 0, 1);
+    QScopedPointer<xcb_get_property_reply_t, QScopedPointerPodDeleter> reply(
+        xcb_get_property_reply(DPlatformIntegration::xcbConnection()->xcb_connection(), cookie, NULL));
+    if (reply && reply->type == XCB_ATOM_CARDINAL && reply->format == 32 && reply->value_len == 1) {
+        return *(quint32*)xcb_get_property_value(reply.data());
+    }
+
+    return 0;
+}
+
+QVector<uint> Utility::getWindows()
+{
+    return DXcbWMSupport::instance()->allWindow();
+}
+
+QVector<uint> Utility::getCurrentWorkspaceWindows()
+{
+    quint32 current_workspace = 0;
+
+    xcb_get_property_cookie_t cookie = xcb_get_property(DPlatformIntegration::xcbConnection()->xcb_connection(), false,
+                                                        DPlatformIntegration::xcbConnection()->rootWindow(),
+                                                        Utility::internAtom("_NET_CURRENT_DESKTOP"), XCB_ATOM_CARDINAL, 0, 1);
+    QScopedPointer<xcb_get_property_reply_t, QScopedPointerPodDeleter> reply(
+        xcb_get_property_reply(DPlatformIntegration::xcbConnection()->xcb_connection(), cookie, NULL));
+    if (reply && reply->type == XCB_ATOM_CARDINAL && reply->format == 32 && reply->value_len == 1) {
+        current_workspace = *(quint32*)xcb_get_property_value(reply.data());
+    }
+
+    QVector<uint> windows;
+
+    foreach (quint32 WId, getWindows()) {
+        if (getWorkspaceForWindow(WId) == current_workspace) {
+            windows << WId;
+        }
+    }
+
+    return windows;
 }
 
 DPP_END_NAMESPACE
