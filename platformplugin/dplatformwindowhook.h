@@ -49,6 +49,7 @@ public:
 #ifdef Q_OS_LINUX
     void setWindowState(Qt::WindowState state);
     void setVisible(bool visible);
+    void requestActivateWindow();
 #endif
 //    bool startSystemResize(const QPoint &pos, Qt::Corner corner);
 

@@ -6,6 +6,8 @@
 #include <private/qwindow_p.h>
 
 #ifdef Q_OS_LINUX
+#include "dxcbwmsupport.h"
+
 #include <QX11Info>
 #include <X11/Xlib.h>
 #endif
@@ -39,6 +41,7 @@ DPlatformWindowHook::DPlatformWindowHook(QNativeWindow *window)
     HOOK_VFPTR(setVisible);
 #endif
     HOOK_VFPTR(propagateSizeHints);
+    HOOK_VFPTR(requestActivateWindow);
 }
 
 DPlatformWindowHook::~DPlatformWindowHook()
@@ -278,6 +281,14 @@ void DPlatformWindowHook::setVisible(bool visible)
     CALL::setVisible(visible);
     // Fix the window can't show minimized if window is fixed size
     setMotifWmHints(window->connection(), window->m_window, mwmhints);
+}
+
+void DPlatformWindowHook::requestActivateWindow()
+{
+    if (!window()->isExposed() && !DXcbWMSupport::instance()->hasComposite())
+        Q_XCB_CALL(xcb_map_window(window()->xcb_connection(), window()->winId()));
+
+    CALL::requestActivateWindow();
 }
 #endif
 
