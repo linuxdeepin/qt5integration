@@ -90,7 +90,11 @@ void DForeignPlatformWindow::updateWmClass()
             xcb_get_property(xcb_connection(), 0, m_window, XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, 0L, 2048L), NULL);
     if (wm_class && wm_class->format == 8
             && wm_class->type == XCB_ATOM_STRING) {
-        window()->setProperty(WmClass, QString::fromLocal8Bit((const char *)xcb_get_property_value(wm_class), xcb_get_property_value_length(wm_class)));
+        const QByteArray wm_class_name((const char *)xcb_get_property_value(wm_class), xcb_get_property_value_length(wm_class));
+        const QList<QByteArray> wm_class_name_list = wm_class_name.split('\0');
+
+        if (!wm_class_name_list.isEmpty())
+            window()->setProperty(WmClass, QString::fromLocal8Bit(wm_class_name_list.first()));
     }
 
     free(wm_class);
@@ -158,6 +162,17 @@ void DForeignPlatformWindow::updateWindowTypes()
     window()->setProperty(WmWindowTypes, (quint32)window_types);
 }
 
+void DForeignPlatformWindow::updateProcessId()
+{
+    xcb_get_property_cookie_t cookie = xcb_get_property(xcb_connection(), false, m_window,
+                                                        atom(QXcbAtom::_NET_WM_PID), XCB_ATOM_CARDINAL, 0, 1);
+    QScopedPointer<xcb_get_property_reply_t, QScopedPointerPodDeleter> reply(
+        xcb_get_property_reply(xcb_connection(), cookie, NULL));
+    if (reply && reply->type == XCB_ATOM_CARDINAL && reply->format == 32 && reply->value_len == 1) {
+        window()->setProperty(ProcessId, *(quint32 *)xcb_get_property_value(reply.data()));
+    }
+}
+
 void DForeignPlatformWindow::init()
 {
     updateTitle();
@@ -165,6 +180,7 @@ void DForeignPlatformWindow::init()
     updateWindowTypes();
     updateWmClass();
     updateWmDesktop();
+    updateProcessId();
 
 //    m_mapped = Utility::getWindows().contains(m_window);
 //    qt_window_private(window())->visible = m_mapped;

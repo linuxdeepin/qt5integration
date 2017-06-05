@@ -51,5 +51,6 @@ DEFINE_CONST_CHAR(connectWindowListChanged);
 DEFINE_CONST_CHAR(WmWindowTypes);
 DEFINE_CONST_CHAR(WmNetDesktop);
 DEFINE_CONST_CHAR(WmClass);
+DEFINE_CONST_CHAR(ProcessId);
 
 #endif // GLOBAL_H

@@ -39,6 +39,7 @@ private:
     void updateWmDesktop();
     void updateWindowState();
     void updateWindowTypes();
+    void updateProcessId();
 
     void init();
 };
