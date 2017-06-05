@@ -27,7 +27,7 @@ enum Metrics
 
     // layout
     Layout_TopLevelMarginWidth = 10,
-    Layout_ChildMarginWidth = 6,
+    Layout_ChildMarginWidth = 4,
     Layout_DefaultSpacing = 6,
 
     // line editors

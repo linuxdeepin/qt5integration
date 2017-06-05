@@ -32,7 +32,8 @@
 #include <private/qdrawhelper_p.h>
 
 #include <DApplication>
-#include <dplatformwindowhandle.h>
+#include <DPlatformWindowHandle>
+#include <DWindowManagerHelper>
 
 DWIDGET_USE_NAMESPACE
 
@@ -465,7 +466,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
             DPlatformWindowHandle handle(const_cast<QWidget*>(widget));
 
             if (handle.enableBlurWindow()) {
-                menu_background_color.setAlphaF(DPlatformWindowHandle::hasBlurWindow() ? 0.6 : menu_background_color.alphaF());
+                menu_background_color.setAlphaF(DWindowManagerHelper::instance()->hasBlurWindow() ? 0.6 : menu_background_color.alphaF());
             }
 
             menu_background_brush.setColor(menu_background_color);
