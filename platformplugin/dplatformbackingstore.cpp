@@ -1550,6 +1550,16 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
         newAreas.reserve(m_blurAreaList.size());
 
         foreach (Utility::BlurArea area, m_blurAreaList) {
+            if (area.x < 0) {
+                area.width += area.x;
+                area.x = 0;
+            }
+
+            if (area.y < 0) {
+                area.height += area.y;
+                area.y = 0;
+            }
+
             area.x += windowValidRect.x();
             area.y += windowValidRect.y();
             area.width = qMin(area.x + area.width, windowValidRect.right() + 1) - area.x;
