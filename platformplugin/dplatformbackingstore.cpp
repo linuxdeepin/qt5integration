@@ -126,8 +126,10 @@ protected:
         case QEvent::MouseButtonRelease: {
             DQMouseEvent *e = static_cast<DQMouseEvent*>(event);
 
-            e->l -= m_store->windowOffset();
-            e->w -= m_store->windowOffset();
+            if (Q_LIKELY(e->source() != Qt::MouseEventSynthesizedByQt)) {
+                e->l -= m_store->windowOffset();
+                e->w -= m_store->windowOffset();
+            }
 
             if (window->flags().testFlag(Qt::Popup))
                 break;
