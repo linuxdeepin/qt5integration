@@ -131,7 +131,7 @@ protected:
                 e->w -= m_store->windowOffset();
             }
 
-            if (window->flags().testFlag(Qt::Popup))
+            if (window->flags().testFlag(Qt::Popup) || window->flags().testFlag(Qt::BypassWindowManagerHint))
                 break;
 
             const QRect &window_visible_rect = m_store->windowValidRect.translated(window_geometry.topLeft());
