@@ -1535,13 +1535,20 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
     if (windowValidRect.isEmpty())
         return false;
 
+    xcb_window_t top_level_w = Utility::getNativeTopLevelWindow(window()->winId());
+    QPoint offset;
+
+    if (top_level_w != window()->winId()) {
+        offset = Utility::translateCoordinates(QPoint(0, 0), window()->winId(), top_level_w);
+    }
+
     QVector<Utility::BlurArea> newAreas;
 
     if (m_enableBlurWindow) {
         Utility::BlurArea area;
 
-        area.x = windowValidRect.x();
-        area.y = windowValidRect.y();
+        area.x = windowValidRect.x() << offset.x();
+        area.y = windowValidRect.y() << offset.y();
         area.width = windowValidRect.width();
         area.height = windowValidRect.height();
         area.xRadius = getWindowRadius();
@@ -1566,6 +1573,8 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
             area.y += windowValidRect.y();
             area.width = qMin(area.x + area.width, windowValidRect.right() + 1) - area.x;
             area.height = qMin(area.y + area.height, windowValidRect.bottom() + 1) - area.y;
+            area.x += offset.x();
+            area.y += offset.y();
 
             newAreas.append(std::move(area));
         }
@@ -1578,9 +1587,9 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
 
         foreach (const QPainterPath &path, m_blurPathList) {
             if (m_windowClipPath.isEmpty())
-                newPathList << path.translated(windowValidRect.topLeft());
+                newPathList << path.translated(windowValidRect.topLeft() + offset);
             else
-                newPathList << path.translated(windowValidRect.topLeft()).intersected(m_windowClipPath);
+                newPathList << path.translated(windowValidRect.topLeft()).intersected(m_windowClipPath).translated(offset);
         }
 
         foreach (const Utility::BlurArea &area, newAreas) {
@@ -1591,13 +1600,13 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
             if (m_windowClipPath.isEmpty())
                 newPathList << path;
             else
-                newPathList << path.intersected(m_windowClipPath);
+                newPathList << path.intersected(m_windowClipPath.translated(offset));
         }
 
-        return Utility::blurWindowBackgroundByPaths(window()->winId(), newPathList);
+        return Utility::blurWindowBackgroundByPaths(top_level_w, newPathList);
     }
 
-    return Utility::blurWindowBackground(window()->winId(), newAreas);
+    return Utility::blurWindowBackground(top_level_w, newAreas);
 }
 
 void DPlatformBackingStore::doDelayedUpdateWindowShadow(int delaye)

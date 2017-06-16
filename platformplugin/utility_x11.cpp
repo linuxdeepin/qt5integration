@@ -167,12 +167,27 @@ void Utility::setFrameExtents(quint32 WId, const QMargins &margins)
     xcb_change_property(QX11Info::connection(), XCB_PROP_MODE_REPLACE, WId, frameExtents, XCB_ATOM_CARDINAL, 32, 4, value);
 }
 
-void Utility::setRectangles(quint32 WId, const QRegion &region, bool onlyInput)
+static QVector<xcb_rectangle_t> qregion2XcbRectangles(const QRegion &region)
 {
-    setRectangles(WId, qregion2XcbRectangles(region), onlyInput);
+    QVector<xcb_rectangle_t> rectangles;
+
+    rectangles.reserve(region.rectCount());
+
+    for (const QRect &rect : region.rects()) {
+        xcb_rectangle_t r;
+
+        r.x = rect.x();
+        r.y = rect.y();
+        r.width = rect.width();
+        r.height = rect.height();
+
+        rectangles << r;
+    }
+
+    return rectangles;
 }
 
-void Utility::setRectangles(quint32 WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput)
+static void setRectangles(quint32 WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput)
 {
     if (rectangles.isEmpty()) {
         xcb_shape_mask(QX11Info::connection(), XCB_SHAPE_SO_SET,
@@ -185,10 +200,15 @@ void Utility::setRectangles(quint32 WId, const QVector<xcb_rectangle_t> &rectang
                          XCB_CLIP_ORDERING_YX_BANDED, WId, 0, 0, rectangles.size(), rectangles.constData());
 }
 
+void Utility::setRectangles(quint32 WId, const QRegion &region, bool onlyInput)
+{
+    ::setRectangles(WId, qregion2XcbRectangles(region), onlyInput);
+}
+
 void Utility::setShapePath(quint32 WId, const QPainterPath &path, bool onlyInput)
 {
     if (path.isEmpty()) {
-        return setRectangles(WId, QVector<xcb_rectangle_t>(), onlyInput);
+        return ::setRectangles(WId, QVector<xcb_rectangle_t>(), onlyInput);
     }
 
     QVector<xcb_rectangle_t> rectangles;
@@ -206,7 +226,7 @@ void Utility::setShapePath(quint32 WId, const QPainterPath &path, bool onlyInput
         }
     }
 
-    setRectangles(WId, rectangles, onlyInput);
+    ::setRectangles(WId, rectangles, onlyInput);
 }
 
 void Utility::sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalPos, Qt::MouseButton qbutton)
@@ -236,26 +256,6 @@ void Utility::sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalP
                    (const char *)&xev);
 
     xcb_flush(QX11Info::connection());
-}
-
-QVector<xcb_rectangle_t> Utility::qregion2XcbRectangles(const QRegion &region)
-{
-    QVector<xcb_rectangle_t> rectangles;
-
-    rectangles.reserve(region.rectCount());
-
-    for (const QRect &rect : region.rects()) {
-        xcb_rectangle_t r;
-
-        r.x = rect.x();
-        r.y = rect.y();
-        r.width = rect.width();
-        r.height = rect.height();
-
-        rectangles << r;
-    }
-
-    return rectangles;
 }
 
 void Utility::startWindowSystemResize(quint32 WId, CornerEdge cornerEdge, const QPoint &globalPos)
@@ -481,6 +481,95 @@ quint32 Utility::getWorkspaceForWindow(quint32 WId)
     }
 
     return 0;
+}
+
+Utility::QtMotifWmHints Utility::getMotifWmHints(quint32 WId)
+{
+    xcb_connection_t *xcb_connect = DPlatformIntegration::xcbConnection()->xcb_connection();
+    QtMotifWmHints hints;
+
+    xcb_get_property_cookie_t get_cookie =
+        xcb_get_property_unchecked(xcb_connect, 0, WId, DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_MOTIF_WM_HINTS),
+                                   DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_MOTIF_WM_HINTS), 0, 20);
+
+    xcb_get_property_reply_t *reply =
+        xcb_get_property_reply(xcb_connect, get_cookie, NULL);
+
+    if (reply && reply->format == 32 && reply->type == DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_MOTIF_WM_HINTS)) {
+        hints = *((QtMotifWmHints *)xcb_get_property_value(reply));
+    } else {
+        hints.flags = 0L;
+        hints.functions = DXcbWMSupport::MWM_FUNC_ALL;
+        hints.decorations = DXcbWMSupport::MWM_DECOR_ALL;
+        hints.input_mode = 0L;
+        hints.status = 0L;
+    }
+
+    free(reply);
+
+    return hints;
+}
+
+void Utility::setMotifWmHints(quint32 WId, const Utility::QtMotifWmHints &hints)
+{
+    if (hints.flags != 0l) {
+        Q_XCB_CALL2(xcb_change_property(DPlatformIntegration::xcbConnection()->xcb_connection(),
+                                        XCB_PROP_MODE_REPLACE,
+                                        WId,
+                                        DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_MOTIF_WM_HINTS),
+                                        DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_MOTIF_WM_HINTS),
+                                        32,
+                                        5,
+                                        &hints), c);
+    } else {
+        Q_XCB_CALL2(xcb_delete_property(DPlatformIntegration::xcbConnection()->xcb_connection(), WId,
+                                        DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_MOTIF_WM_HINTS)),
+                                        DPlatformIntegration::xcbConnection()->xcb_connection());
+    }
+}
+
+quint32 Utility::getNativeTopLevelWindow(quint32 WId)
+{
+    xcb_connection_t *xcb_connection = DPlatformIntegration::xcbConnection()->xcb_connection();
+
+    do {
+        xcb_query_tree_cookie_t cookie = xcb_query_tree_unchecked(xcb_connection, WId);
+        xcb_query_tree_reply_t *reply = xcb_query_tree_reply(xcb_connection, cookie, NULL);
+
+        if (reply) {
+            if (reply->parent == reply->root)
+                break;
+
+            const QtMotifWmHints &hints = getMotifWmHints(WId);
+
+            if ((hints.decorations & DXcbWMSupport::MWM_DECOR_BORDER) == DXcbWMSupport::MWM_DECOR_BORDER)
+                break;
+
+            WId = reply->parent;
+            free(reply);
+        } else {
+            break;
+        }
+    } while (true);
+
+    return WId;
+}
+
+QPoint Utility::translateCoordinates(const QPoint &pos, quint32 src, quint32 dst)
+{
+    QPoint ret;
+    xcb_translate_coordinates_cookie_t cookie =
+        xcb_translate_coordinates(DPlatformIntegration::xcbConnection()->xcb_connection(), src, dst,
+                                  pos.x(), pos.y());
+    xcb_translate_coordinates_reply_t *reply =
+        xcb_translate_coordinates_reply(DPlatformIntegration::xcbConnection()->xcb_connection(), cookie, NULL);
+    if (reply) {
+        ret.setX(reply->dst_x);
+        ret.setY(reply->dst_y);
+        free(reply);
+    }
+
+    return ret;
 }
 
 QVector<uint> Utility::getWindows()

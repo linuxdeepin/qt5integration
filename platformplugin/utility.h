@@ -3,8 +3,6 @@
 
 #include <QImage>
 
-#include <xcb/xproto.h>
-
 #include "global.h"
 
 QT_BEGIN_NAMESPACE
@@ -40,7 +38,6 @@ public:
     static void cancelWindowMoveResize(quint32 WId);
     static void setFrameExtents(quint32 WId, const QMargins &margins);
     static void setRectangles(quint32 WId, const QRegion &region, bool onlyInput = true);
-    static void setRectangles(quint32 WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput = true);
     static void setShapePath(quint32 WId, const QPainterPath &path, bool onlyInput = true);
     static void startWindowSystemResize(quint32 WId, CornerEdge cornerEdge, const QPoint &globalPos = QPoint());
     static bool setWindowCursor(quint32 WId, CornerEdge ce);
@@ -70,9 +67,20 @@ public:
     static QVector<quint32> getWindows();
     static QVector<quint32> getCurrentWorkspaceWindows();
 
+    struct QtMotifWmHints {
+        quint32 flags, functions, decorations;
+        qint32 input_mode;
+        quint32 status;
+    };
+
+    static QtMotifWmHints getMotifWmHints(quint32 WId);
+    static void setMotifWmHints(quint32 WId, const QtMotifWmHints &hints);
+    static quint32 getNativeTopLevelWindow(quint32 WId);
+
+    static QPoint translateCoordinates(const QPoint &pos, quint32 src, quint32 dst);
+
 private:
     static void sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalPos = QPoint(), Qt::MouseButton qbutton = Qt::LeftButton);
-    static QVector<xcb_rectangle_t> qregion2XcbRectangles(const QRegion &region);
 };
 
 DPP_END_NAMESPACE

@@ -151,81 +151,6 @@ void DPlatformWindowHook::setWindowState(Qt::WindowState state)
     }
 }
 
-struct QtMotifWmHints {
-    quint32 flags, functions, decorations;
-    qint32 input_mode;
-    quint32 status;
-};
-
-enum {
-    MWM_HINTS_FUNCTIONS   = (1L << 0),
-
-    MWM_FUNC_ALL      = (1L << 0),
-    MWM_FUNC_RESIZE   = (1L << 1),
-    MWM_FUNC_MOVE     = (1L << 2),
-    MWM_FUNC_MINIMIZE = (1L << 3),
-    MWM_FUNC_MAXIMIZE = (1L << 4),
-    MWM_FUNC_CLOSE    = (1L << 5),
-
-    MWM_HINTS_DECORATIONS = (1L << 1),
-
-    MWM_DECOR_ALL      = (1L << 0),
-    MWM_DECOR_BORDER   = (1L << 1),
-    MWM_DECOR_RESIZEH  = (1L << 2),
-    MWM_DECOR_TITLE    = (1L << 3),
-    MWM_DECOR_MENU     = (1L << 4),
-    MWM_DECOR_MINIMIZE = (1L << 5),
-    MWM_DECOR_MAXIMIZE = (1L << 6),
-
-    MWM_HINTS_INPUT_MODE = (1L << 2),
-
-    MWM_INPUT_MODELESS                  = 0L,
-    MWM_INPUT_PRIMARY_APPLICATION_MODAL = 1L,
-    MWM_INPUT_FULL_APPLICATION_MODAL    = 3L
-};
-
-static QtMotifWmHints getMotifWmHints(QXcbConnection *c, xcb_window_t window)
-{
-    QtMotifWmHints hints;
-
-    xcb_get_property_cookie_t get_cookie =
-        xcb_get_property_unchecked(c->xcb_connection(), 0, window, c->atom(QXcbAtom::_MOTIF_WM_HINTS),
-                         c->atom(QXcbAtom::_MOTIF_WM_HINTS), 0, 20);
-
-    xcb_get_property_reply_t *reply =
-        xcb_get_property_reply(c->xcb_connection(), get_cookie, NULL);
-
-    if (reply && reply->format == 32 && reply->type == c->atom(QXcbAtom::_MOTIF_WM_HINTS)) {
-        hints = *((QtMotifWmHints *)xcb_get_property_value(reply));
-    } else {
-        hints.flags = 0L;
-        hints.functions = MWM_FUNC_ALL;
-        hints.decorations = MWM_DECOR_ALL;
-        hints.input_mode = 0L;
-        hints.status = 0L;
-    }
-
-    free(reply);
-
-    return hints;
-}
-
-static void setMotifWmHints(QXcbConnection *c, xcb_window_t window, const QtMotifWmHints &hints)
-{
-    if (hints.flags != 0l) {
-        Q_XCB_CALL2(xcb_change_property(c->xcb_connection(),
-                                       XCB_PROP_MODE_REPLACE,
-                                       window,
-                                       c->atom(QXcbAtom::_MOTIF_WM_HINTS),
-                                       c->atom(QXcbAtom::_MOTIF_WM_HINTS),
-                                       32,
-                                       5,
-                                       &hints), c);
-    } else {
-        Q_XCB_CALL2(xcb_delete_property(c->xcb_connection(), window, c->atom(QXcbAtom::_MOTIF_WM_HINTS)), c);
-    }
-}
-
 void DPlatformWindowHook::setVisible(bool visible)
 {
     if (!visible) {
@@ -235,52 +160,52 @@ void DPlatformWindowHook::setVisible(bool visible)
     // reupdate _MOTIF_WM_HINTS
     DQNativeWindow *window = static_cast<DQNativeWindow*>(this->window());
 
-    QtMotifWmHints mwmhints = getMotifWmHints(window->connection(), window->m_window);
+    Utility::QtMotifWmHints mwmhints = Utility::getMotifWmHints(window->m_window);
 
     if (window->window()->modality() != Qt::NonModal) {
         switch (window->window()->modality()) {
         case Qt::WindowModal:
-            mwmhints.input_mode = MWM_INPUT_PRIMARY_APPLICATION_MODAL;
+            mwmhints.input_mode = DXcbWMSupport::MWM_INPUT_PRIMARY_APPLICATION_MODAL;
             break;
         case Qt::ApplicationModal:
         default:
-            mwmhints.input_mode = MWM_INPUT_FULL_APPLICATION_MODAL;
+            mwmhints.input_mode = DXcbWMSupport::MWM_INPUT_FULL_APPLICATION_MODAL;
             break;
         }
-        mwmhints.flags |= MWM_HINTS_INPUT_MODE;
+        mwmhints.flags |= DXcbWMSupport::MWM_HINTS_INPUT_MODE;
     } else {
-        mwmhints.input_mode = MWM_INPUT_MODELESS;
-        mwmhints.flags &= ~MWM_HINTS_INPUT_MODE;
+        mwmhints.input_mode = DXcbWMSupport::MWM_INPUT_MODELESS;
+        mwmhints.flags &= ~DXcbWMSupport::MWM_HINTS_INPUT_MODE;
     }
 
     if (window->windowMinimumSize() == window->windowMaximumSize()) {
         // fixed size, remove the resize handle (since mwm/dtwm
         // isn't smart enough to do it itself)
-        mwmhints.flags |= MWM_HINTS_FUNCTIONS;
-        mwmhints.functions &= ~MWM_FUNC_RESIZE;
+        mwmhints.flags |= DXcbWMSupport::MWM_HINTS_FUNCTIONS;
+        mwmhints.functions &= ~DXcbWMSupport::MWM_FUNC_RESIZE;
 
-        if (mwmhints.decorations == MWM_DECOR_ALL) {
-            mwmhints.flags |= MWM_HINTS_DECORATIONS;
-            mwmhints.decorations = (MWM_DECOR_BORDER
-                                    | MWM_DECOR_TITLE
-                                    | MWM_DECOR_MENU);
+        if (mwmhints.decorations == DXcbWMSupport::MWM_DECOR_ALL) {
+            mwmhints.flags |= DXcbWMSupport::MWM_HINTS_DECORATIONS;
+            mwmhints.decorations = (DXcbWMSupport::MWM_DECOR_BORDER
+                                    | DXcbWMSupport::MWM_DECOR_TITLE
+                                    | DXcbWMSupport::MWM_DECOR_MENU);
         } else {
-            mwmhints.decorations &= ~MWM_DECOR_RESIZEH;
+            mwmhints.decorations &= ~DXcbWMSupport::MWM_DECOR_RESIZEH;
         }
     }
 
     if (window->window()->flags() & Qt::WindowMinimizeButtonHint) {
-        mwmhints.functions |= MWM_FUNC_MINIMIZE;
+        mwmhints.functions |= DXcbWMSupport::MWM_FUNC_MINIMIZE;
     }
     if (window->window()->flags() & Qt::WindowMaximizeButtonHint) {
-        mwmhints.functions |= MWM_FUNC_MAXIMIZE;
+        mwmhints.functions |= DXcbWMSupport::MWM_FUNC_MAXIMIZE;
     }
     if (window->window()->flags() & Qt::WindowCloseButtonHint)
-        mwmhints.functions |= MWM_FUNC_CLOSE;
+        mwmhints.functions |= DXcbWMSupport::MWM_FUNC_CLOSE;
 
     CALL::setVisible(visible);
     // Fix the window can't show minimized if window is fixed size
-    setMotifWmHints(window->connection(), window->m_window, mwmhints);
+    Utility::setMotifWmHints(window->m_window, mwmhints);
 }
 
 void DPlatformWindowHook::requestActivateWindow()
