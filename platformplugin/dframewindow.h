@@ -102,9 +102,13 @@ private:
     QTimer m_startAnimationTimer;
     QVariantAnimation m_cursorAnimation;
 
+    QWindow *m_contentWindow = Q_NULLPTR;
+
     friend class DPlatformWindowHelper;
     friend class DPlatformBackingStoreHelper;
     friend class DPlatformOpenGLContextHelper;
+    friend class DPlatformIntegration;
+    friend class WindowEventHook;
 };
 
 DPP_END_NAMESPACE

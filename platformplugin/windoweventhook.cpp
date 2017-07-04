@@ -10,6 +10,7 @@
 #include "windoweventhook.h"
 #include "vtablehook.h"
 #include "utility.h"
+#include "dframewindow.h"
 
 #define private public
 #define protected public
@@ -200,6 +201,9 @@ void WindowEventHook::handleFocusInEvent(const xcb_focus_in_event_t *event)
 
     QXcbWindow *xcbWindow = window();
     QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(xcbWindow->window()))->eventReceiver();
+
+    if (DFrameWindow *frame = qobject_cast<DFrameWindow*>(w))
+        w = frame->m_contentWindow;
 
     if (relayFocusToModalWindow(w, xcbWindow->connection()))
         return;

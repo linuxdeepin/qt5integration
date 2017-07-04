@@ -18,8 +18,6 @@
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
 
-#include <QApplication>
-
 DPP_BEGIN_NAMESPACE
 
 #define HOOK_VFPTR(Fun) VtableHook::overrideVfptrFun(window, &QPlatformWindow::Fun, this, &DPlatformWindowHelper::Fun)
@@ -48,6 +46,8 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
     m_frameWindow->setBorderColor(m_borderColor);
     m_frameWindow->setEnableSystemMove(m_enableSystemMove);
     m_frameWindow->setEnableSystemResize(m_enableSystemResize);
+
+    m_frameWindow->m_contentWindow = window->window();
 
     window->setParent(m_frameWindow->handle());
     window->window()->installEventFilter(this);
@@ -145,16 +145,43 @@ QMargins DPlatformWindowHelper::frameMargins() const
     return me()->m_frameWindow->handle()->frameMargins();
 }
 
+QWindow *topvelWindow(QWindow *w)
+{
+    QWindow *tw = w;
+
+    while (tw->parent())
+        tw = tw->parent();
+
+    DPlatformWindowHelper *helper = DPlatformWindowHelper::mapped.value(tw->handle());
+
+    return helper ? helper->m_frameWindow : tw;
+}
+
 void DPlatformWindowHelper::setVisible(bool visible)
 {
     DPlatformWindowHelper *helper = me();
 
-    helper->m_frameWindow->setVisible(visible);
-    helper->m_nativeWindow->QNativeWindow::setVisible(visible);
-
     if (visible) {
         helper->updateWindowBlurAreasForWM();
+
+        QWindow *tp = helper->m_nativeWindow->window()->transientParent();
+        helper->m_nativeWindow->window()->setTransientParent(helper->m_frameWindow);
+
+        if (tp)
+            helper->m_frameWindow->setTransientParent(topvelWindow(tp));
+
+        helper->m_frameWindow->setVisible(visible);
+        helper->m_nativeWindow->QNativeWindow::setVisible(visible);
+
+        // restore
+        if (tp)
+            helper->m_nativeWindow->window()->setTransientParent(tp);
+
+        return;
     }
+
+    helper->m_frameWindow->setVisible(visible);
+    helper->m_nativeWindow->QNativeWindow::setVisible(visible);
 }
 
 void DPlatformWindowHelper::setWindowFlags(Qt::WindowFlags flags)
@@ -219,7 +246,12 @@ void DPlatformWindowHelper::propagateSizeHints()
 
 void DPlatformWindowHelper::requestActivateWindow()
 {
-    me()->m_frameWindow->handle()->requestActivateWindow();
+    DPlatformWindowHelper *helper = me();
+
+    if (helper->m_nativeWindow->window()->isActive())
+        return;
+
+    helper->m_frameWindow->handle()->requestActivateWindow();
 }
 
 bool DPlatformWindowHelper::setKeyboardGrabEnabled(bool grab)
@@ -277,10 +309,10 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
             return true;
         case QEvent::FocusIn:
             QWindowSystemInterface::handleWindowActivated(m_nativeWindow->window(), static_cast<QFocusEvent*>(event)->reason());
-            break;
+            return true;
         case QEvent::WindowActivate:
             QWindowSystemInterface::handleWindowActivated(m_nativeWindow->window(), Qt::OtherFocusReason);
-            break;
+            return true;
         case QEvent::Resize:
             m_nativeWindow->window()->resize((m_frameWindow->geometry() - m_frameWindow->contentMarginsHint()).size());
             break;

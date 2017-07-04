@@ -5,6 +5,9 @@
 #include "dforeignplatformwindow.h"
 #include "dplatformbackingstorehelper.h"
 #include "dplatformopenglcontexthelper.h"
+#include "dframewindow.h"
+#include "vtablehook.h"
+
 #ifdef Q_OS_LINUX
 #include "windoweventhook.h"
 #include "xcbnativeeventfilter.h"
@@ -22,6 +25,8 @@
 
 #include <QWidget>
 #include <QGuiApplication>
+
+#include <private/qguiapplication_p.h>
 
 DPP_BEGIN_NAMESPACE
 
@@ -97,6 +102,15 @@ QPlatformWindow *DPlatformIntegration::createPlatformWindow(QWindow *window) con
     }
 #endif
 
+    QWindow *tp_for_window = window->transientParent();
+
+    if (tp_for_window) {
+        // reset transient parent
+        if (DPlatformWindowHelper *helper = DPlatformWindowHelper::mapped.value(tp_for_window->handle())) {
+            window->setTransientParent(helper->m_frameWindow);
+        }
+    }
+
     return xw;
 }
 
@@ -135,14 +149,26 @@ QStringList DPlatformIntegration::themeNames() const
     return list;
 }
 
-#ifdef Q_OS_LINUX
 void DPlatformIntegration::initialize()
 {
     QXcbIntegration::initialize();
 
+#ifdef Q_OS_LINUX
     m_eventFilter = new XcbNativeEventFilter(defaultConnection());
     qApp->installNativeEventFilter(m_eventFilter);
-}
 #endif
+
+    VtableHook::overrideVfptrFun(qApp->d_func(), &QGuiApplicationPrivate::isWindowBlocked,
+                                 this, &DPlatformIntegration::isWindowBlockedHandle);
+}
+
+bool DPlatformIntegration::isWindowBlockedHandle(QWindow *window, QWindow **blockingWindow)
+{
+    if (DFrameWindow *frame = qobject_cast<DFrameWindow*>(window)) {
+        return VtableHook::callOriginalFun(qApp->d_func(), &QGuiApplicationPrivate::isWindowBlocked, frame->m_contentWindow, blockingWindow);
+    }
+
+    return VtableHook::callOriginalFun(qApp->d_func(), &QGuiApplicationPrivate::isWindowBlocked, window, blockingWindow);
+}
 
 DPP_END_NAMESPACE

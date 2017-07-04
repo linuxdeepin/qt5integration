@@ -35,7 +35,7 @@ public:
         *(vfptr_t1 + fun1_offset / sizeof(quintptr)) = new_fun;
 
         // call
-        ReturnType &return_value = (obj->*fun)(std::forward<Args>(args)...);
+        const ReturnType &return_value = (obj->*fun)(std::forward<Args>(args)...);
 
         // reset to old_fun
         *(vfptr_t1 + fun1_offset / sizeof(quintptr)) = old_fun;

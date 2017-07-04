@@ -34,8 +34,9 @@ public:
 
     QStringList themeNames() const Q_DECL_OVERRIDE;
 
-#ifdef Q_OS_LINUX
     void initialize() Q_DECL_OVERRIDE;
+
+#ifdef Q_OS_LINUX
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
     static DPlatformIntegration *instance() { return m_instance; }
@@ -51,6 +52,9 @@ private:
     XcbNativeEventFilter *m_eventFilter = Q_NULLPTR;
 #endif
 private:
+    // handle the DFrameWindow modal blocked state
+    bool isWindowBlockedHandle(QWindow *window, QWindow **blockingWindow);
+
     QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
     DPlatformBackingStoreHelper *m_storeHelper;
     DPlatformOpenGLContextHelper *m_contextHelper;

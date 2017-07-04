@@ -138,6 +138,8 @@ private:
 
     friend class DPlatformBackingStoreHelper;
     friend class DPlatformOpenGLContextHelper;
+    friend class DPlatformIntegration;
+    friend QWindow *topvelWindow(QWindow *);
 };
 
 DPP_END_NAMESPACE
