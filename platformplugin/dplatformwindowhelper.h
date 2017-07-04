@@ -104,6 +104,8 @@ private:
     void updateWindowBlurPathsFromProperty();
     void updateAutoInputMaskByClipPathFromProperty();
 
+    void onFrameWindowContentMarginsHintChanged();
+
     static QHash<const QPlatformWindow*, DPlatformWindowHelper*> mapped;
 
     QNativeWindow *m_nativeWindow;

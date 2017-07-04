@@ -3,9 +3,7 @@
 #include "utility.h"
 #include "dplatformwindowhook.h"
 
-#ifdef Q_OS_LINUX
-#include "dxcbwmsupport.h"
-#endif
+#include "dwmsupport.h"
 
 DPP_BEGIN_NAMESPACE
 
@@ -17,7 +15,6 @@ DPlatformNativeInterface::DPlatformNativeInterface()
 #if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
 QFunctionPointer DPlatformNativeInterface::platformFunction(const QByteArray &function) const
 {
-#ifdef Q_OS_LINUX
     if (function == setWmBlurWindowBackgroundArea) {
         return reinterpret_cast<QFunctionPointer>(&Utility::blurWindowBackground);
     } else if (function == setWmBlurWindowBackgroundPathList) {
@@ -29,19 +26,18 @@ QFunctionPointer DPlatformNativeInterface::platformFunction(const QByteArray &fu
     } else if (function == hasComposite) {
         return reinterpret_cast<QFunctionPointer>(&Utility::hasComposite);
     } else if (function == connectWindowManagerChangedSignal) {
-        return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectWindowManagerChangedSignal);
+        return reinterpret_cast<QFunctionPointer>(&DWMSupport::connectWindowManagerChangedSignal);
     } else if (function == connectHasBlurWindowChanged) {
-        return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectHasBlurWindowChanged);
+        return reinterpret_cast<QFunctionPointer>(&DWMSupport::connectHasBlurWindowChanged);
     } else if (function == connectHasCompositeChanged) {
-        return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectHasCompositeChanged);
+        return reinterpret_cast<QFunctionPointer>(&DWMSupport::connectHasCompositeChanged);
     } else if (function == getWindows) {
         return reinterpret_cast<QFunctionPointer>(&Utility::getWindows);
     } else if (function == getCurrentWorkspaceWindows) {
         return reinterpret_cast<QFunctionPointer>(&Utility::getCurrentWorkspaceWindows);
     } else if (function == connectWindowListChanged) {
-        return reinterpret_cast<QFunctionPointer>(&DXcbWMSupport::connectWindowListChanged);
+        return reinterpret_cast<QFunctionPointer>(&DWMSupport::connectWindowListChanged);
     }
-#endif
 
     return DPlatformNativeInterfaceParent::platformFunction(function);
 }

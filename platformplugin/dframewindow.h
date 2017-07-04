@@ -42,6 +42,7 @@ public:
     void setContentRoundedRect(const QRect &rect, int radius = 0);
 
     QMargins contentMarginsHint() const;
+    QPoint contentOffsetHint() const;
 
     bool isClearContentAreaForShadowPixmap() const;
     void setClearContentAreaForShadowPixmap(bool clear);
@@ -67,6 +68,7 @@ private:
 
     void updateShadowPixmap();
     void updateContentMarginsHint();
+    void updateMask();
     inline int getShadowRadius() const
     { return m_enableShadow ? m_shadowRadius : 0;}
 
@@ -84,7 +86,7 @@ private:
 
     int m_borderWidth = 1;
     QColor m_borderColor = QColor(0, 0, 0, 255 * 0.15);
-    QPainterPath m_clipPath;
+    QPainterPath m_clipPathOfContent;
     QRect m_contentGeometry;
     QMargins m_contentMarginsHint;
     bool m_pathIsRoundedRect = true;

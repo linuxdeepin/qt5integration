@@ -9,14 +9,16 @@
 #include "dplatformwindowhelper.h"
 #include "dframewindow.h"
 #include "vtablehook.h"
+#include "dwmsupport.h"
 
 #ifdef Q_OS_LINUX
 #include "qxcbwindow.h"
-#include "dxcbwmsupport.h"
 #endif
 
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
+
+#include <QApplication>
 
 DPP_BEGIN_NAMESPACE
 
@@ -25,6 +27,7 @@ DPP_BEGIN_NAMESPACE
 
 PUBLIC_CLASS(QWindow, DPlatformWindowHelper);
 PUBLIC_CLASS(QMouseEvent, DPlatformWindowHelper);
+PUBLIC_CLASS(QDropEvent, DPlatformWindowHelper);
 
 QHash<const QPlatformWindow*, DPlatformWindowHelper*> DPlatformWindowHelper::mapped;
 
@@ -93,8 +96,8 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
     HOOK_VFPTR(setAlertState);
     HOOK_VFPTR(isAlertState);
 
-    connect(m_frameWindow, &DFrameWindow::contentMarginsHintChanged, this, &DPlatformWindowHelper::updateWindowBlurAreasForWM);
-    connect(m_frameWindow, &DFrameWindow::contentMarginsHintChanged, this, &DPlatformWindowHelper::updateSizeHints);
+    connect(m_frameWindow, &DFrameWindow::contentMarginsHintChanged,
+            this, &DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged);
 }
 
 DPlatformWindowHelper::~DPlatformWindowHelper()
@@ -118,9 +121,7 @@ void DPlatformWindowHelper::setGeometry(const QRect &rect)
 
     helper->m_frameWindow->setGeometry(rect + content_margins);
 
-    const QPoint window_offset(content_margins.left(), content_margins.top());
-
-    window()->QNativeWindow::setGeometry(QRect(window_offset, rect.size()));
+    window()->QNativeWindow::setGeometry(QRect(helper->m_frameWindow->contentOffsetHint(), rect.size()));
 }
 
 QRect DPlatformWindowHelper::geometry() const
@@ -146,11 +147,13 @@ QMargins DPlatformWindowHelper::frameMargins() const
 
 void DPlatformWindowHelper::setVisible(bool visible)
 {
-    me()->m_frameWindow->setVisible(visible);
-    window()->setVisible(visible);
+    DPlatformWindowHelper *helper = me();
+
+    helper->m_frameWindow->setVisible(visible);
+    helper->m_nativeWindow->QNativeWindow::setVisible(visible);
 
     if (visible) {
-        me()->updateWindowBlurAreasForWM();
+        helper->updateWindowBlurAreasForWM();
     }
 }
 
@@ -269,6 +272,7 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
         case QEvent::KeyPress:
         case QEvent::KeyRelease:
         case QEvent::Move:
+        case QEvent::WindowDeactivate:
             QCoreApplication::sendEvent(m_nativeWindow->window(), event);
             return true;
         case QEvent::FocusIn:
@@ -295,6 +299,16 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
             qt_window_private(m_nativeWindow->window())->windowState = m_frameWindow->windowState();
             QCoreApplication::sendEvent(m_nativeWindow->window(), event);
             break;
+        case QEvent::DragEnter:
+        case QEvent::DragMove:
+        case QEvent::DragLeave:
+        case QEvent::Drop: {
+            DQDropEvent *e = static_cast<DQDropEvent*>(event);
+            e->p -= m_frameWindow->contentOffsetHint();
+            QCoreApplication::sendEvent(m_nativeWindow->window(), event);
+            return true;
+        }
+        default: break;
         }
     } else if (watched == m_nativeWindow->window()) {
         switch ((int)event->type()) {
@@ -369,6 +383,7 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
                     updateWindowBlurAreasForWM();
             }
             break;
+        default: break;
         }
     }
 
@@ -394,14 +409,12 @@ void DPlatformWindowHelper::setClipPath(const QPainterPath &path)
 
     m_clipPath = path;
 
-    const QPoint window_offset(m_frameWindow->contentMarginsHint().left(), m_frameWindow->contentMarginsHint().top());
-
     if (m_isUserSetClipPath) {
         m_windowVaildGeometry = m_clipPath.boundingRect().toRect() & QRect(QPoint(0, 0), m_nativeWindow->window()->size());
-        m_frameWindow->setContentPath(m_clipPath.translated(window_offset));
+        m_frameWindow->setContentPath(m_clipPath);
         updateWindowBlurAreasForWM();
     } else {
-        m_frameWindow->setContentRoundedRect(m_windowVaildGeometry.translated(window_offset), getWindowRadius());
+        m_frameWindow->setContentRoundedRect(m_windowVaildGeometry, getWindowRadius());
     }
 }
 
@@ -416,7 +429,7 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
         return false;
 
     quint32 top_level_w = Utility::getNativeTopLevelWindow(m_frameWindow->winId());
-    QPoint offset(m_frameWindow->contentMarginsHint().left(), m_frameWindow->contentMarginsHint().top());
+    QPoint offset = m_frameWindow->contentOffsetHint();
 
     if (top_level_w != m_frameWindow->winId()) {
         offset += Utility::translateCoordinates(QPoint(0, 0), m_frameWindow->winId(), top_level_w);
@@ -505,11 +518,7 @@ void DPlatformWindowHelper::updateSizeHints()
 
 int DPlatformWindowHelper::getWindowRadius() const
 {
-#ifdef Q_OS_LINUX
-    return (m_isUserSetWindowRadius || DXcbWMSupport::instance()->hasComposite()) ? m_windowRadius : 0;
-#else
-    return m_windowRadius;
-#endif
+    return (m_isUserSetWindowRadius || DWMSupport::instance()->hasComposite()) ? m_windowRadius : 0;
 }
 
 void DPlatformWindowHelper::updateWindowRadiusFromProperty()
@@ -670,15 +679,13 @@ void DPlatformWindowHelper::updateEnableBlurWindowFromProperty()
     if (m_enableBlurWindow != v.toBool()) {
         m_enableBlurWindow = v.toBool();
 
-#ifdef Q_OS_LINUX
         if (m_enableBlurWindow) {
-            QObject::connect(DXcbWMSupport::instance(), &DXcbWMSupport::windowManagerChanged,
+            QObject::connect(DWMSupport::instance(), &DWMSupport::windowManagerChanged,
                              this, &DPlatformWindowHelper::updateWindowBlurAreasForWM);
         } else {
-            QObject::disconnect(DXcbWMSupport::instance(), &DXcbWMSupport::windowManagerChanged,
+            QObject::disconnect(DWMSupport::instance(), &DWMSupport::windowManagerChanged,
                                 this, &DPlatformWindowHelper::updateWindowBlurAreasForWM);
         }
-#endif
 
         updateWindowBlurAreasForWM();
     }
@@ -724,6 +731,17 @@ void DPlatformWindowHelper::updateAutoInputMaskByClipPathFromProperty()
     if (m_autoInputMaskByClipPath != v.toBool()) {
         m_autoInputMaskByClipPath = v.toBool();
     }
+}
+
+void DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged()
+{
+    updateWindowBlurAreasForWM();
+    updateSizeHints();
+
+    // update the content window gemetry
+    QRect old_rect = m_nativeWindow->QNativeWindow::geometry();
+    old_rect.moveTopLeft(m_frameWindow->contentOffsetHint());
+    m_nativeWindow->QNativeWindow::setGeometry(old_rect);
 }
 
 void DPlatformWindowHelper::updateClipPathFromProperty()

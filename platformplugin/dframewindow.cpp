@@ -9,7 +9,7 @@
 #include "dframewindow.h"
 
 #ifdef Q_OS_LINUX
-#include "dxcbwmsupport.h"
+#include "dwmsupport.h"
 #include "qxcbwindow.h"
 #endif
 
@@ -61,8 +61,6 @@ void DFrameWindow::setShadowRaduis(int radius)
     m_shadowRadius = radius;
 
     updateContentMarginsHint();
-    updateShadowPixmap();
-    update();
 }
 
 QPoint DFrameWindow::shadowOffset() const
@@ -78,8 +76,6 @@ void DFrameWindow::setShadowOffset(const QPoint &offset)
     m_shadowOffset = offset;
 
     updateContentMarginsHint();
-    updateShadowPixmap();
-    update();
 }
 
 QColor DFrameWindow::shadowColor() const
@@ -111,8 +107,6 @@ void DFrameWindow::setBorderWidth(int width)
     m_borderWidth = width;
 
     updateContentMarginsHint();
-    updateShadowPixmap();
-    update();
 }
 
 QColor DFrameWindow::borderColor() const
@@ -133,7 +127,7 @@ void DFrameWindow::setBorderColor(const QColor &color)
 
 QPainterPath DFrameWindow::contentPath() const
 {
-    return m_clipPath;
+    return m_clipPathOfContent;
 }
 
 inline static QSize margins2Size(const QMargins &margins)
@@ -152,13 +146,18 @@ void DFrameWindow::setContentRoundedRect(const QRect &rect, int radius)
     QPainterPath path;
 
     path.addRoundedRect(rect, radius, radius);
-    m_contentGeometry = rect;
+    m_contentGeometry = rect.translated(contentOffsetHint());
     setContentPath(path, true, radius);
 }
 
 QMargins DFrameWindow::contentMarginsHint() const
 {
     return m_contentMarginsHint;
+}
+
+QPoint DFrameWindow::contentOffsetHint() const
+{
+    return QPoint(m_contentMarginsHint.left(), m_contentMarginsHint.top());
 }
 
 bool DFrameWindow::isClearContentAreaForShadowPixmap() const
@@ -178,7 +177,7 @@ void DFrameWindow::setClearContentAreaForShadowPixmap(bool clear)
 
         pa.setCompositionMode(QPainter::CompositionMode_Clear);
         pa.setRenderHint(QPainter::Antialiasing);
-        pa.fillPath(m_clipPath.translated(QPoint(getShadowRadius(), getShadowRadius()) - m_shadowOffset), Qt::transparent);
+        pa.fillPath(m_clipPathOfContent.translated(QPoint(getShadowRadius(), getShadowRadius()) - m_shadowOffset), Qt::transparent);
         pa.end();
     }
 }
@@ -219,10 +218,7 @@ void DFrameWindow::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     QPainter pa(this);
-
-    QPoint offset = m_contentGeometry.topLeft();
-
-    offset -= QPoint(contentMarginsHint().left(), contentMarginsHint().top());
+    QPoint offset = m_contentGeometry.topLeft() - contentOffsetHint();
 
     pa.drawPixmap(offset, m_shadowPixmap);
 }
@@ -240,7 +236,7 @@ void DFrameWindow::showEvent(QShowEvent *event)
 void DFrameWindow::mouseMoveEvent(QMouseEvent *event)
 {
     if (event->source() == Qt::MouseEventSynthesizedByQt && qApp->mouseButtons() == Qt::LeftButton
-            && m_clipPath.contains(event->pos() - m_contentGeometry.topLeft())) {
+            && m_clipPathOfContent.contains(event->pos() - m_contentGeometry.topLeft())) {
         if (!m_enableSystemMove)
             return;
 
@@ -370,13 +366,13 @@ bool DFrameWindow::event(QEvent *event)
 
 void DFrameWindow::setContentPath(const QPainterPath &path, bool isRoundedRect, int radius)
 {
-    if (m_clipPath == path)
+    if (m_clipPathOfContent == path)
         return;
 
     if (!isRoundedRect)
-        m_contentGeometry = path.boundingRect().toRect();
+        m_contentGeometry = path.boundingRect().toRect().translated(contentOffsetHint());
 
-    m_clipPath = path.translated(-m_contentGeometry.topLeft());
+    m_clipPathOfContent = path;
 
     if (isRoundedRect && m_pathIsRoundedRect == isRoundedRect && m_roundedRectRadius == radius && !m_shadowPixmap.isNull()) {
         const QMargins margins(qMax(getShadowRadius() + radius + qAbs(m_shadowOffset.x()), m_borderWidth),
@@ -397,50 +393,7 @@ void DFrameWindow::setContentPath(const QPainterPath &path, bool isRoundedRect, 
         updateShadowPixmap();
     }
 
-    // Set window clip mask
-    int mouse_margins;
-
-    if (DXcbWMSupport::instance()->hasComposite())
-        mouse_margins = canResize() ? MOUSE_MARGINS : 0;
-    else
-        mouse_margins = m_borderWidth;
-
-    // clear old state
-    Utility::setRectangles(winId(), QRegion(), true);
-    Utility::setRectangles(winId(), QRegion(), false);
-
-    if (m_enableAutoInputMaskByContentPath && (!isRoundedRect || radius > 0)) {
-        QPainterPath p;
-
-        if (Q_LIKELY(mouse_margins > 0)) {
-            QPainterPathStroker stroker;
-            stroker.setJoinStyle(Qt::MiterJoin);
-            stroker.setWidth(mouse_margins * 2);
-            p = stroker.createStroke(path);
-            p = p.united(path);
-            p.translate(-0.5, -0.5);
-        } else {
-            p = path;
-        }
-
-        Utility::setShapePath(winId(), p
-                      #ifdef Q_OS_LINUX
-                              , DXcbWMSupport::instance()->hasComposite()
-                      #endif
-                              );
-    } else {
-        QRegion region(m_contentGeometry.adjusted(-mouse_margins, -mouse_margins, mouse_margins, mouse_margins));
-        Utility::setRectangles(winId(), region
-                       #ifdef Q_OS_LINUX
-                               , DXcbWMSupport::instance()->hasComposite()
-                       #endif
-                               );
-    }
-
-    if (isVisible()) {
-        // Set frame extents
-        Utility::setFrameExtents(winId(), contentMarginsHint());
-    }
+    updateMask();
 }
 
 void DFrameWindow::updateShadowPixmap()
@@ -462,7 +415,7 @@ void DFrameWindow::updateShadowPixmap()
 
         QPainter pa(&pixmap);
 
-        pa.fillPath(m_clipPath, m_shadowColor);
+        pa.fillPath(m_clipPathOfContent, m_shadowColor);
         pa.end();
 
         image = Utility::dropShadow(pixmap, shadow_radius, m_shadowColor);
@@ -481,12 +434,11 @@ void DFrameWindow::updateShadowPixmap()
         pathStroker.setWidth(m_borderWidth * 2);
 
         QColor border_color = m_borderColor;
-#ifdef Q_OS_LINUX
-        if (!DXcbWMSupport::instance()->hasComposite())
+
+        if (!DWMSupport::instance()->hasComposite())
             border_color.setAlpha(255);
-#endif
-        const QMargins &content_margins = contentMarginsHint();
-        const QPainterPath &border_path = pathStroker.createStroke(m_clipPath.translated(content_margins.left(), content_margins.top()));
+
+        const QPainterPath &border_path = pathStroker.createStroke(m_clipPathOfContent.translated(contentOffsetHint()));
 
         pa.setRenderHint(QPainter::Antialiasing);
         pa.fillPath(border_path, m_borderColor);
@@ -495,7 +447,7 @@ void DFrameWindow::updateShadowPixmap()
     }
 
     if (m_clearContent)
-        pa.fillPath(m_clipPath.translated(QPoint(getShadowRadius(), getShadowRadius()) - m_shadowOffset), Qt::transparent);
+        pa.fillPath(m_clipPathOfContent.translated(QPoint(getShadowRadius(), getShadowRadius()) - m_shadowOffset), Qt::transparent);
 
     pa.end();
     /// end
@@ -516,6 +468,53 @@ void DFrameWindow::updateContentMarginsHint()
         return;
 
     m_contentMarginsHint = margins;
+    m_contentGeometry.moveTopLeft(contentOffsetHint());
+
+    updateShadowPixmap();
+    update();
+
+    if (isVisible()) {
+        // Set frame extents
+        Utility::setFrameExtents(winId(), margins);
+    }
+
+    updateMask();
+}
+
+void DFrameWindow::updateMask()
+{
+    // Set window clip mask
+    int mouse_margins;
+
+    if (DWMSupport::instance()->hasComposite())
+        mouse_margins = canResize() ? MOUSE_MARGINS : 0;
+    else
+        mouse_margins = m_borderWidth;
+
+    // clear old state
+    Utility::setRectangles(winId(), QRegion(), true);
+    Utility::setRectangles(winId(), QRegion(), false);
+
+    if (m_enableAutoInputMaskByContentPath && (!m_pathIsRoundedRect || m_roundedRectRadius > 0)) {
+        QPainterPath p;
+        const QPainterPath &path = m_clipPathOfContent.translated(contentOffsetHint());
+
+        if (Q_LIKELY(mouse_margins > 0)) {
+            QPainterPathStroker stroker;
+            stroker.setJoinStyle(Qt::MiterJoin);
+            stroker.setWidth(mouse_margins * 2);
+            p = stroker.createStroke(path);
+            p = p.united(path);
+            p.translate(-0.5, -0.5);
+        } else {
+            p = path;
+        }
+
+        Utility::setShapePath(winId(), p, DWMSupport::instance()->hasComposite());
+    } else {
+        QRegion region(m_contentGeometry.adjusted(-mouse_margins, -mouse_margins, mouse_margins, mouse_margins));
+        Utility::setRectangles(winId(), region, DWMSupport::instance()->hasComposite());
+    }
 }
 
 bool DFrameWindow::canResize() const

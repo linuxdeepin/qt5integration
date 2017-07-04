@@ -51,7 +51,8 @@ HEADERS += \
     $$PWD/dframewindow.h \
     $$PWD/dplatformwindowhelper.h \
     $$PWD/dplatformbackingstorehelper.h \
-    $$PWD/dplatformopenglcontexthelper.h
+    $$PWD/dplatformopenglcontexthelper.h \
+    $$PWD/dwmsupport.h
 
 DISTFILES += \
     $$PWD/dpp.json
