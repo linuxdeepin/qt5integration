@@ -202,8 +202,12 @@ void WindowEventHook::handleFocusInEvent(const xcb_focus_in_event_t *event)
     QXcbWindow *xcbWindow = window();
     QWindow *w = static_cast<QWindowPrivate *>(QObjectPrivate::get(xcbWindow->window()))->eventReceiver();
 
-    if (DFrameWindow *frame = qobject_cast<DFrameWindow*>(w))
-        w = frame->m_contentWindow;
+    if (DFrameWindow *frame = qobject_cast<DFrameWindow*>(w)) {
+        if (frame->m_contentWindow)
+            w = frame->m_contentWindow;
+        else
+            return;
+    }
 
     if (relayFocusToModalWindow(w, xcbWindow->connection()))
         return;

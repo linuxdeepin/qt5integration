@@ -15,6 +15,7 @@
 #include <QRasterWindow>
 #include <QVariantAnimation>
 #include <QTimer>
+#include <QPointer>
 
 DPP_BEGIN_NAMESPACE
 
@@ -54,7 +55,7 @@ public:
 
 signals:
     void sizeChanged(const QSize &size);
-    void contentMarginsHintChanged() const;
+    void contentMarginsHintChanged(const QMargins &oldMargins) const;
 
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
@@ -102,7 +103,7 @@ private:
     QTimer m_startAnimationTimer;
     QVariantAnimation m_cursorAnimation;
 
-    QWindow *m_contentWindow = Q_NULLPTR;
+    QPointer<QWindow> m_contentWindow;
 
     friend class DPlatformWindowHelper;
     friend class DPlatformBackingStoreHelper;

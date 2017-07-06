@@ -467,6 +467,8 @@ void DFrameWindow::updateContentMarginsHint()
     if (margins == m_contentMarginsHint)
         return;
 
+    const QMargins old_margins = m_contentMarginsHint;
+
     m_contentMarginsHint = margins;
     m_contentGeometry.moveTopLeft(contentOffsetHint());
 
@@ -479,6 +481,8 @@ void DFrameWindow::updateContentMarginsHint()
     }
 
     updateMask();
+
+    emit contentMarginsHintChanged(old_margins);
 }
 
 void DFrameWindow::updateMask()

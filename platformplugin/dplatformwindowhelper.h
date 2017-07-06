@@ -86,11 +86,13 @@ private:
     void setClipPath(const QPainterPath &path);
     bool updateWindowBlurAreasForWM();
     void updateSizeHints();
+    void updateContentPathForFrameWindow();
 
     int getWindowRadius() const;
 
     // update propertys
     void updateClipPathFromProperty();
+    void updateFrameMaskFromProperty();
     void updateWindowRadiusFromProperty();
     void updateBorderWidthFromProperty();
     void updateBorderColorFromProperty();
@@ -104,7 +106,7 @@ private:
     void updateWindowBlurPathsFromProperty();
     void updateAutoInputMaskByClipPathFromProperty();
 
-    void onFrameWindowContentMarginsHintChanged();
+    void onFrameWindowContentMarginsHintChanged(const QMargins &old_margins);
 
     static QHash<const QPlatformWindow*, DPlatformWindowHelper*> mapped;
 
@@ -116,6 +118,8 @@ private:
     // propertys
     bool m_isUserSetClipPath = false;
     QPainterPath m_clipPath;
+
+    bool m_isUserSetFrameMask = false;
 
     int m_windowRadius = 4;
     bool m_isUserSetWindowRadius = false;
@@ -143,7 +147,5 @@ private:
 };
 
 DPP_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QPainterPath)
 
 #endif // DPLATFORMWINDOWHELPER_H

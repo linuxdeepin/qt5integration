@@ -18,6 +18,9 @@
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
 
+Q_DECLARE_METATYPE(QPainterPath)
+Q_DECLARE_METATYPE(QMargins)
+
 DPP_BEGIN_NAMESPACE
 
 #define HOOK_VFPTR(Fun) VtableHook::overrideVfptrFun(window, &QPlatformWindow::Fun, this, &DPlatformWindowHelper::Fun)
@@ -55,6 +58,7 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
     updateClipPathByWindowRadius(window->window()->size());
 
     updateClipPathFromProperty();
+    updateFrameMaskFromProperty();
     updateWindowRadiusFromProperty();
     updateBorderWidthFromProperty();
     updateBorderColorFromProperty();
@@ -388,6 +392,8 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
                 updateShadowColorFromProperty();
             } else if (e->propertyName() == clipPath) {
                 updateClipPathFromProperty();
+            } else if (e->propertyName() == frameMask) {
+                updateFrameMaskFromProperty();
             } else if (e->propertyName() == enableSystemResize) {
                 updateEnableSystemResizeFromProperty();
             } else if (e->propertyName() == enableSystemMove) {
@@ -443,11 +449,10 @@ void DPlatformWindowHelper::setClipPath(const QPainterPath &path)
 
     if (m_isUserSetClipPath) {
         m_windowVaildGeometry = m_clipPath.boundingRect().toRect() & QRect(QPoint(0, 0), m_nativeWindow->window()->size());
-        m_frameWindow->setContentPath(m_clipPath);
         updateWindowBlurAreasForWM();
-    } else {
-        m_frameWindow->setContentRoundedRect(m_windowVaildGeometry, getWindowRadius());
     }
+
+    updateContentPathForFrameWindow();
 }
 
 bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
@@ -546,6 +551,15 @@ void DPlatformWindowHelper::updateSizeHints()
     qt_window_private(m_frameWindow)->sizeIncrement = m_nativeWindow->window()->sizeIncrement();
 
     m_frameWindow->handle()->propagateSizeHints();
+}
+
+void DPlatformWindowHelper::updateContentPathForFrameWindow()
+{
+    if (m_isUserSetClipPath) {
+        m_frameWindow->setContentPath(m_clipPath);
+    } else {
+        m_frameWindow->setContentRoundedRect(m_windowVaildGeometry, getWindowRadius());
+    }
 }
 
 int DPlatformWindowHelper::getWindowRadius() const
@@ -765,15 +779,17 @@ void DPlatformWindowHelper::updateAutoInputMaskByClipPathFromProperty()
     }
 }
 
-void DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged()
+void DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged(const QMargins &oldMargins)
 {
     updateWindowBlurAreasForWM();
     updateSizeHints();
 
     // update the content window gemetry
-    QRect old_rect = m_nativeWindow->QNativeWindow::geometry();
-    old_rect.moveTopLeft(m_frameWindow->contentOffsetHint());
-    m_nativeWindow->QNativeWindow::setGeometry(old_rect);
+    QRect rect = m_nativeWindow->QNativeWindow::geometry();
+    rect.moveTopLeft(m_frameWindow->contentOffsetHint());
+    m_nativeWindow->window()->setProperty(::frameMargins, QVariant::fromValue(m_frameWindow->contentMarginsHint()));
+    m_nativeWindow->QNativeWindow::setGeometry(rect);
+    m_frameWindow->setGeometry(m_frameWindow->geometry() + m_frameWindow->contentMarginsHint() - oldMargins);
 }
 
 void DPlatformWindowHelper::updateClipPathFromProperty()
@@ -797,6 +813,22 @@ void DPlatformWindowHelper::updateClipPathFromProperty()
         setClipPath(path);
     else
         updateClipPathByWindowRadius(m_nativeWindow->window()->size());
+}
+
+void DPlatformWindowHelper::updateFrameMaskFromProperty()
+{
+    const QVariant &v = m_nativeWindow->window()->property(frameMask);
+
+    if (!v.isValid()) {
+        return;
+    }
+
+    QRegion region = qvariant_cast<QRegion>(v);
+
+    qDebug() << region.boundingRect() << m_frameWindow->contentMarginsHint() << m_frameWindow->geometry();
+
+    m_frameWindow->setMask(region);
+    m_isUserSetFrameMask = !region.isEmpty();
 }
 
 DPP_END_NAMESPACE
