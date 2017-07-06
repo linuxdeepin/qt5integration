@@ -42,11 +42,11 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
     m_frameWindow->setFlags((window->window()->flags() | Qt::FramelessWindowHint | Qt::CustomizeWindowHint) & ~Qt::WindowMinMaxButtonsHint);
     m_frameWindow->create();
     m_frameWindow->installEventFilter(this);
-    m_frameWindow->setShadowRaduis(m_shadowRadius);
+    m_frameWindow->setShadowRaduis(getShadowRadius());
     m_frameWindow->setShadowColor(m_shadowColor);
     m_frameWindow->setShadowOffset(m_shadowOffset);
     m_frameWindow->setBorderWidth(m_borderWidth);
-    m_frameWindow->setBorderColor(m_borderColor);
+    m_frameWindow->setBorderColor(getBorderColor());
     m_frameWindow->setEnableSystemMove(m_enableSystemMove);
     m_frameWindow->setEnableSystemResize(m_enableSystemResize);
 
@@ -102,6 +102,8 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
 
     connect(m_frameWindow, &DFrameWindow::contentMarginsHintChanged,
             this, &DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged);
+    connect(DWMSupport::instance(), &DXcbWMSupport::hasCompositeChanged,
+            this, &DPlatformWindowHelper::onWMHasCompositeChanged);
 }
 
 DPlatformWindowHelper::~DPlatformWindowHelper()
@@ -567,6 +569,33 @@ int DPlatformWindowHelper::getWindowRadius() const
     return (m_isUserSetWindowRadius || DWMSupport::instance()->hasComposite()) ? m_windowRadius : 0;
 }
 
+int DPlatformWindowHelper::getShadowRadius() const
+{
+    return DWMSupport::instance()->hasComposite() ? m_shadowRadius : 0;
+}
+
+static QColor colorBlend(const QColor &color1, const QColor &color2)
+{
+    QColor c2 = color2.toRgb();
+
+    if (c2.alpha() >= 255)
+        return c2;
+
+    QColor c1 = color1.toRgb();
+    qreal c1_weight = 1 - c2.alphaF();
+
+    int r = c1_weight * c1.red() + c2.alphaF() * c2.red();
+    int g = c1_weight * c1.green() + c2.alphaF() * c2.green();
+    int b = c1_weight * c1.blue() + c2.alphaF() * c2.blue();
+
+    return QColor(r, g, b);
+}
+
+QColor DPlatformWindowHelper::getBorderColor() const
+{
+    return DWMSupport::instance()->hasComposite() ? m_borderColor : colorBlend(QColor("#e0e0e0"), m_borderColor);
+}
+
 void DPlatformWindowHelper::updateWindowRadiusFromProperty()
 {
     const QVariant &v = m_nativeWindow->window()->property(windowRadius);
@@ -622,7 +651,7 @@ void DPlatformWindowHelper::updateBorderColorFromProperty()
 
     if (color.isValid() && m_borderColor != color) {
         m_borderColor = color;
-        m_frameWindow->setBorderColor(color);
+        m_frameWindow->setBorderColor(getBorderColor());
     }
 }
 
@@ -641,7 +670,9 @@ void DPlatformWindowHelper::updateShadowRadiusFromProperty()
 
     if (ok && radius != m_shadowRadius) {
         m_shadowRadius = radius;
-        m_frameWindow->setShadowRaduis(radius);
+
+        if (DWMSupport::instance()->hasComposite())
+            m_frameWindow->setShadowRaduis(radius);
     }
 }
 
@@ -790,6 +821,24 @@ void DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged(const QMargin
     m_nativeWindow->window()->setProperty(::frameMargins, QVariant::fromValue(m_frameWindow->contentMarginsHint()));
     m_nativeWindow->QNativeWindow::setGeometry(rect);
     m_frameWindow->setGeometry(m_frameWindow->geometry() + m_frameWindow->contentMarginsHint() - oldMargins);
+}
+
+void DPlatformWindowHelper::onWMHasCompositeChanged()
+{
+    const QSize &window_size = m_nativeWindow->window()->size();
+
+    updateWindowRadiusFromProperty();
+    updateClipPathByWindowRadius(window_size);
+
+    m_frameWindow->setShadowRaduis(getShadowRadius());
+    m_frameWindow->setBorderColor(getBorderColor());
+
+    if (m_nativeWindow->window()->inherits("QWidgetWindow")) {
+        QEvent event(QEvent::UpdateRequest);
+        qApp->sendEvent(m_nativeWindow->window(), &event);
+    } else {
+        QMetaObject::invokeMethod(m_nativeWindow->window(), "update");
+    }
 }
 
 void DPlatformWindowHelper::updateClipPathFromProperty()

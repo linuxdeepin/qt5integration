@@ -177,7 +177,7 @@ void DFrameWindow::setClearContentAreaForShadowPixmap(bool clear)
 
         pa.setCompositionMode(QPainter::CompositionMode_Clear);
         pa.setRenderHint(QPainter::Antialiasing);
-        pa.fillPath(m_clipPathOfContent.translated(QPoint(getShadowRadius(), getShadowRadius()) - m_shadowOffset), Qt::transparent);
+        pa.fillPath(m_clipPathOfContent.translated(QPoint(m_shadowRadius, m_shadowRadius) - m_shadowOffset), Qt::transparent);
         pa.end();
     }
 }
@@ -375,10 +375,10 @@ void DFrameWindow::setContentPath(const QPainterPath &path, bool isRoundedRect, 
     m_clipPathOfContent = path;
 
     if (isRoundedRect && m_pathIsRoundedRect == isRoundedRect && m_roundedRectRadius == radius && !m_shadowPixmap.isNull()) {
-        const QMargins margins(qMax(getShadowRadius() + radius + qAbs(m_shadowOffset.x()), m_borderWidth),
-                               qMax(getShadowRadius() + radius + qAbs(m_shadowOffset.y()), m_borderWidth),
-                               qMax(getShadowRadius() + radius + qAbs(m_shadowOffset.x()), m_borderWidth),
-                               qMax(getShadowRadius() + radius + qAbs(m_shadowOffset.y()), m_borderWidth));
+        const QMargins margins(qMax(m_shadowRadius + radius + qAbs(m_shadowOffset.x()), m_borderWidth),
+                               qMax(m_shadowRadius + radius + qAbs(m_shadowOffset.y()), m_borderWidth),
+                               qMax(m_shadowRadius + radius + qAbs(m_shadowOffset.x()), m_borderWidth),
+                               qMax(m_shadowRadius + radius + qAbs(m_shadowOffset.y()), m_borderWidth));
         const QSize &margins_size = margins2Size(margins);
 
         if (margins_size.width() > m_contentGeometry.width() || margins_size.height() > m_contentGeometry.height()) {
@@ -401,7 +401,7 @@ void DFrameWindow::updateShadowPixmap()
     if (m_contentGeometry.isEmpty())
         return;
 
-    int shadow_radius = qMax(getShadowRadius(), m_borderWidth);
+    int shadow_radius = qMax(m_shadowRadius, m_borderWidth);
 
     QImage image;
 
@@ -429,25 +429,21 @@ void DFrameWindow::updateShadowPixmap()
     pa.begin(&image);
 
     if (m_borderWidth > 0) {
-        QPainterPathStroker pathStroker;
+        QPen pen;
 
-        pathStroker.setWidth(m_borderWidth * 2);
+        pen.setColor(m_borderColor);
+        pen.setWidth(m_borderWidth * 2);
+        pen.setJoinStyle(Qt::MiterJoin);
 
-        QColor border_color = m_borderColor;
-
-        if (!DWMSupport::instance()->hasComposite())
-            border_color.setAlpha(255);
-
-        const QPainterPath &border_path = pathStroker.createStroke(m_clipPathOfContent.translated(contentOffsetHint()));
-
+        pa.setCompositionMode(QPainter::CompositionMode_Source);
+        pa.setPen(pen);
         pa.setRenderHint(QPainter::Antialiasing);
-        pa.fillPath(border_path, m_borderColor);
-        pa.setCompositionMode(QPainter::CompositionMode_Clear);
+        pa.drawPath(m_clipPathOfContent.translated(contentOffsetHint()));
         pa.setRenderHint(QPainter::Antialiasing, false);
     }
 
     if (m_clearContent)
-        pa.fillPath(m_clipPathOfContent.translated(QPoint(getShadowRadius(), getShadowRadius()) - m_shadowOffset), Qt::transparent);
+        pa.fillPath(m_clipPathOfContent.translated(QPoint(m_shadowRadius, m_shadowRadius) - m_shadowOffset), Qt::transparent);
 
     pa.end();
     /// end
@@ -459,10 +455,10 @@ void DFrameWindow::updateContentMarginsHint()
 {
     QMargins margins;
 
-    margins = QMargins(qMax(getShadowRadius() - m_shadowOffset.x(), m_borderWidth),
-                       qMax(getShadowRadius() - m_shadowOffset.y(), m_borderWidth),
-                       qMax(getShadowRadius() + m_shadowOffset.x(), m_borderWidth),
-                       qMax(getShadowRadius() + m_shadowOffset.y(), m_borderWidth));
+    margins = QMargins(qMax(m_shadowRadius - m_shadowOffset.x(), m_borderWidth),
+                       qMax(m_shadowRadius - m_shadowOffset.y(), m_borderWidth),
+                       qMax(m_shadowRadius + m_shadowOffset.x(), m_borderWidth),
+                       qMax(m_shadowRadius + m_shadowOffset.y(), m_borderWidth));
 
     if (margins == m_contentMarginsHint)
         return;

@@ -70,8 +70,6 @@ private:
     void updateShadowPixmap();
     void updateContentMarginsHint();
     void updateMask();
-    inline int getShadowRadius() const
-    { return m_enableShadow ? m_shadowRadius : 0;}
 
     bool canResize() const;
     void cancelAdsorbCursor();
@@ -93,7 +91,6 @@ private:
     bool m_pathIsRoundedRect = true;
     int m_roundedRectRadius = 0;
 
-    bool m_enableShadow = true;
     bool m_enableSystemResize = true;
     bool m_enableSystemMove = true;
     bool m_enableAutoInputMaskByContentPath = true;

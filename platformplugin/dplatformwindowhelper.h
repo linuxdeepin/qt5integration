@@ -89,6 +89,8 @@ private:
     void updateContentPathForFrameWindow();
 
     int getWindowRadius() const;
+    int getShadowRadius() const;
+    QColor getBorderColor() const;
 
     // update propertys
     void updateClipPathFromProperty();
@@ -107,6 +109,7 @@ private:
     void updateAutoInputMaskByClipPathFromProperty();
 
     void onFrameWindowContentMarginsHintChanged(const QMargins &old_margins);
+    void onWMHasCompositeChanged();
 
     static QHash<const QPlatformWindow*, DPlatformWindowHelper*> mapped;
 
