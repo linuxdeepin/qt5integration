@@ -1029,8 +1029,8 @@ void DPlatformBackingStore::updateInputShapeRegion()
         mouse_margins = m_borderWidth;
 
     // clear old state
-    Utility::setRectangles(window()->winId(), QRegion(), true);
-    Utility::setRectangles(window()->winId(), QRegion(), false);
+    Utility::setShapeRectangles(window()->winId(), QRegion(), true);
+    Utility::setShapeRectangles(window()->winId(), QRegion(), false);
 
     if (m_autoInputMaskByClipPath && (isUserSetClipPath || getWindowRadius() > 0)) {
         QPainterPath p;
@@ -1053,7 +1053,7 @@ void DPlatformBackingStore::updateInputShapeRegion()
                               );
     } else {
         QRegion region(windowGeometry().adjusted(-mouse_margins, -mouse_margins, mouse_margins, mouse_margins));
-        Utility::setRectangles(window()->winId(), region
+        Utility::setShapeRectangles(window()->winId(), region
                        #ifdef Q_OS_LINUX
                                , DXcbWMSupport::instance()->hasComposite()
                        #endif

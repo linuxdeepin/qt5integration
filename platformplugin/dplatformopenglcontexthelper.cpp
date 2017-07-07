@@ -10,6 +10,7 @@
 #include "vtablehook.h"
 #include "dplatformwindowhelper.h"
 #include "dframewindow.h"
+#include "dwmsupport.h"
 
 #include <qpa/qplatformsurface.h>
 #include <qpa/qplatformopenglcontext.h>
@@ -38,6 +39,9 @@ bool DPlatformOpenGLContextHelper::addOpenGLContext(QOpenGLContext *object, QPla
 
 void DPlatformOpenGLContextHelper::swapBuffers(QPlatformSurface *surface)
 {
+    if (!DWMSupport::instance()->hasComposite())
+        goto end;
+
     if (surface->surface()->surfaceClass() == QSurface::Window) {
         QWindow *window = static_cast<QWindow*>(surface->surface());
         DPlatformWindowHelper *window_helper = DPlatformWindowHelper::mapped.value(window->handle());

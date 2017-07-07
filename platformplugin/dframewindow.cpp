@@ -419,34 +419,34 @@ void DFrameWindow::updateShadowPixmap()
         pa.end();
 
         image = Utility::dropShadow(pixmap, shadow_radius, m_shadowColor);
+
+        /// begin paint window border;
+
+        pa.begin(&image);
+
+        if (m_borderWidth > 0) {
+            QPen pen;
+
+            pen.setColor(m_borderColor);
+            pen.setWidth(m_borderWidth * 2);
+            pen.setJoinStyle(Qt::MiterJoin);
+
+    //        pa.setCompositionMode(QPainter::CompositionMode_Source);
+            pa.setPen(pen);
+            pa.setRenderHint(QPainter::Antialiasing);
+            pa.drawPath(m_clipPathOfContent.translated(contentOffsetHint()));
+            pa.setRenderHint(QPainter::Antialiasing, false);
+        }
+
+        if (m_clearContent)
+            pa.fillPath(m_clipPathOfContent.translated(QPoint(m_shadowRadius, m_shadowRadius) - m_shadowOffset), Qt::transparent);
+
+        pa.end();
+        /// end
     } else {
         image = QImage((m_contentGeometry + contentMarginsHint()).size(), QImage::Format_ARGB32_Premultiplied);
-        image.fill(Qt::transparent);
+        image.fill(m_borderColor);
     }
-
-    /// begin paint window border;
-    QPainter pa;
-    pa.begin(&image);
-
-    if (m_borderWidth > 0) {
-        QPen pen;
-
-        pen.setColor(m_borderColor);
-        pen.setWidth(m_borderWidth * 2);
-        pen.setJoinStyle(Qt::MiterJoin);
-
-        pa.setCompositionMode(QPainter::CompositionMode_Source);
-        pa.setPen(pen);
-        pa.setRenderHint(QPainter::Antialiasing);
-        pa.drawPath(m_clipPathOfContent.translated(contentOffsetHint()));
-        pa.setRenderHint(QPainter::Antialiasing, false);
-    }
-
-    if (m_clearContent)
-        pa.fillPath(m_clipPathOfContent.translated(QPoint(m_shadowRadius, m_shadowRadius) - m_shadowOffset), Qt::transparent);
-
-    pa.end();
-    /// end
 
     m_shadowPixmap = QPixmap::fromImage(image);
 }
@@ -492,8 +492,8 @@ void DFrameWindow::updateMask()
         mouse_margins = m_borderWidth;
 
     // clear old state
-    Utility::setRectangles(winId(), QRegion(), true);
-    Utility::setRectangles(winId(), QRegion(), false);
+    Utility::setShapeRectangles(winId(), QRegion(), true);
+    Utility::setShapeRectangles(winId(), QRegion(), false);
 
     if (m_enableAutoInputMaskByContentPath && (!m_pathIsRoundedRect || m_roundedRectRadius > 0)) {
         QPainterPath p;
@@ -513,7 +513,7 @@ void DFrameWindow::updateMask()
         Utility::setShapePath(winId(), p, DWMSupport::instance()->hasComposite());
     } else {
         QRegion region(m_contentGeometry.adjusted(-mouse_margins, -mouse_margins, mouse_margins, mouse_margins));
-        Utility::setRectangles(winId(), region, DWMSupport::instance()->hasComposite());
+        Utility::setShapeRectangles(winId(), region, DWMSupport::instance()->hasComposite());
     }
 }
 

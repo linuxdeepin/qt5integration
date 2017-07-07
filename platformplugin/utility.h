@@ -37,7 +37,7 @@ public:
     static void startWindowSystemMove(quint32 WId);
     static void cancelWindowMoveResize(quint32 WId);
     static void setFrameExtents(quint32 WId, const QMargins &margins);
-    static void setRectangles(quint32 WId, const QRegion &region, bool onlyInput = true);
+    static void setShapeRectangles(quint32 WId, const QRegion &region, bool onlyInput = true);
     static void setShapePath(quint32 WId, const QPainterPath &path, bool onlyInput = true);
     static void startWindowSystemResize(quint32 WId, CornerEdge cornerEdge, const QPoint &globalPos = QPoint());
     static bool setWindowCursor(quint32 WId, CornerEdge ce);

@@ -414,13 +414,9 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
         }
         case QEvent::Resize:
             if (m_isUserSetClipPath) {
-                if (!m_clipPath.isEmpty())
-                    updateClipPathByWindowRadius(static_cast<QResizeEvent*>(event)->size());
+                m_windowVaildGeometry = m_clipPath.boundingRect().toRect() & QRect(QPoint(0, 0), static_cast<QResizeEvent*>(event)->size());
             } else {
                 updateClipPathByWindowRadius(static_cast<QResizeEvent*>(event)->size());
-
-                if (!m_blurAreaList.isEmpty() || !m_blurPathList.isEmpty() || m_enableBlurWindow)
-                    updateWindowBlurAreasForWM();
             }
             break;
         default: break;
@@ -435,9 +431,12 @@ void DPlatformWindowHelper::updateClipPathByWindowRadius(const QSize &windowSize
     if (!m_isUserSetClipPath) {
         m_windowVaildGeometry = QRect(QPoint(0, 0), windowSize);
 
+        int window_radius = getWindowRadius();
+
         QPainterPath path;
 
-        path.addRoundedRect(m_windowVaildGeometry, getWindowRadius(), getWindowRadius());
+        path.addRoundedRect(m_windowVaildGeometry, window_radius, window_radius);
+
         setClipPath(path);
     }
 }
@@ -451,17 +450,16 @@ void DPlatformWindowHelper::setClipPath(const QPainterPath &path)
 
     if (m_isUserSetClipPath) {
         m_windowVaildGeometry = m_clipPath.boundingRect().toRect() & QRect(QPoint(0, 0), m_nativeWindow->window()->size());
-        updateWindowBlurAreasForWM();
     }
 
+    Utility::setShapePath(m_nativeWindow->QNativeWindow::winId(), m_clipPath, true);
+
+    updateWindowBlurAreasForWM();
     updateContentPathForFrameWindow();
 }
 
 bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
 {
-    if (!m_frameWindow->isVisible())
-        return false;
-
     const QRect &windowValidRect = m_windowVaildGeometry;
 
     if (windowValidRect.isEmpty())
@@ -477,6 +475,14 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
     QVector<Utility::BlurArea> newAreas;
 
     if (m_enableBlurWindow) {
+        if (m_isUserSetClipPath) {
+            QList<QPainterPath> list;
+
+            list << m_clipPath.translated(offset);
+
+            return Utility::blurWindowBackgroundByPaths(top_level_w, list);
+        }
+
         Utility::BlurArea area;
 
         area.x = windowValidRect.x() + offset.x();
@@ -487,7 +493,14 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
         area.yRaduis = getWindowRadius();
 
         newAreas.append(std::move(area));
-    } else {
+
+        return Utility::blurWindowBackground(top_level_w, newAreas);
+    }
+
+    if (!m_isUserSetClipPath && m_windowRadius <=0 && m_blurPathList.isEmpty()) {
+        if (m_blurAreaList.isEmpty())
+            return true;
+
         newAreas.reserve(m_blurAreaList.size());
 
         foreach (Utility::BlurArea area, m_blurAreaList) {
@@ -501,8 +514,6 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
                 area.y = 0;
             }
 
-            area.x += windowValidRect.x();
-            area.y += windowValidRect.y();
             area.width = qMin(area.x + area.width, windowValidRect.right() + 1) - area.x;
             area.height = qMin(area.y + area.height, windowValidRect.bottom() + 1) - area.y;
             area.x += offset.x();
@@ -510,35 +521,35 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
 
             newAreas.append(std::move(area));
         }
+
+        return Utility::blurWindowBackground(top_level_w, newAreas);
     }
 
-    if ((m_isUserSetClipPath && !m_clipPath.isEmpty()) || !m_blurPathList.isEmpty()) {
-        QList<QPainterPath> newPathList;
+    QList<QPainterPath> newPathList;
 
-        newPathList.reserve(m_blurPathList.size());
+    newPathList.reserve(newAreas.size());
+
+    QPainterPath window_vaild_path = m_clipPath.translated(offset);
+
+    foreach (const Utility::BlurArea &area, m_blurAreaList) {
+        QPainterPath path;
+
+        path.addRoundedRect(area.x + offset.x(), area.y + offset.y(), area.width, area.height, area.xRadius, area.yRaduis);
+        newPathList << path.intersected(window_vaild_path);
+    }
+
+    if (!m_blurPathList.isEmpty()) {
+        newPathList.reserve(newPathList.size() + m_blurPathList.size());
 
         foreach (const QPainterPath &path, m_blurPathList) {
-            if (m_clipPath.isEmpty())
-                newPathList << path.translated(windowValidRect.topLeft() + offset);
-            else
-                newPathList << path.translated(windowValidRect.topLeft()).intersected(m_clipPath).translated(offset);
+            newPathList << path.translated(offset).intersected(window_vaild_path);
         }
-
-        foreach (const Utility::BlurArea &area, newAreas) {
-            QPainterPath path;
-
-            path.addRoundedRect(area.x, area.y, area.width, area.height, area.xRadius, area.yRaduis);
-
-            if (m_clipPath.isEmpty())
-                newPathList << path;
-            else
-                newPathList << path.intersected(m_clipPath.translated(offset));
-        }
-
-        return Utility::blurWindowBackgroundByPaths(top_level_w, newPathList);
     }
 
-    return Utility::blurWindowBackground(top_level_w, newAreas);
+    if (newPathList.isEmpty())
+        return true;
+
+    return Utility::blurWindowBackgroundByPaths(top_level_w, newPathList);
 }
 
 void DPlatformWindowHelper::updateSizeHints()
@@ -601,7 +612,7 @@ void DPlatformWindowHelper::updateWindowRadiusFromProperty()
     const QVariant &v = m_nativeWindow->window()->property(windowRadius);
 
     if (!v.isValid()) {
-        m_nativeWindow->window()->setProperty(windowRadius, getWindowRadius());
+        m_nativeWindow->window()->setProperty(windowRadius, m_windowRadius);
 
         return;
     }
@@ -827,7 +838,6 @@ void DPlatformWindowHelper::onWMHasCompositeChanged()
 {
     const QSize &window_size = m_nativeWindow->window()->size();
 
-    updateWindowRadiusFromProperty();
     updateClipPathByWindowRadius(window_size);
 
     m_frameWindow->setShadowRaduis(getShadowRadius());
@@ -873,8 +883,6 @@ void DPlatformWindowHelper::updateFrameMaskFromProperty()
     }
 
     QRegion region = qvariant_cast<QRegion>(v);
-
-    qDebug() << region.boundingRect() << m_frameWindow->contentMarginsHint() << m_frameWindow->geometry();
 
     m_frameWindow->setMask(region);
     m_isUserSetFrameMask = !region.isEmpty();

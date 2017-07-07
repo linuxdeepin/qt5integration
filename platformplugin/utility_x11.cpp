@@ -187,7 +187,7 @@ static QVector<xcb_rectangle_t> qregion2XcbRectangles(const QRegion &region)
     return rectangles;
 }
 
-static void setRectangles(quint32 WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput)
+static void setShapeRectangles(quint32 WId, const QVector<xcb_rectangle_t> &rectangles, bool onlyInput)
 {
     if (rectangles.isEmpty()) {
         xcb_shape_mask(QX11Info::connection(), XCB_SHAPE_SO_SET,
@@ -200,15 +200,15 @@ static void setRectangles(quint32 WId, const QVector<xcb_rectangle_t> &rectangle
                          XCB_CLIP_ORDERING_YX_BANDED, WId, 0, 0, rectangles.size(), rectangles.constData());
 }
 
-void Utility::setRectangles(quint32 WId, const QRegion &region, bool onlyInput)
+void Utility::setShapeRectangles(quint32 WId, const QRegion &region, bool onlyInput)
 {
-    ::setRectangles(WId, qregion2XcbRectangles(region), onlyInput);
+    ::setShapeRectangles(WId, qregion2XcbRectangles(region), onlyInput);
 }
 
 void Utility::setShapePath(quint32 WId, const QPainterPath &path, bool onlyInput)
 {
     if (path.isEmpty()) {
-        return ::setRectangles(WId, QVector<xcb_rectangle_t>(), onlyInput);
+        return ::setShapeRectangles(WId, QVector<xcb_rectangle_t>(), onlyInput);
     }
 
     QVector<xcb_rectangle_t> rectangles;
@@ -226,7 +226,7 @@ void Utility::setShapePath(quint32 WId, const QPainterPath &path, bool onlyInput
         }
     }
 
-    ::setRectangles(WId, rectangles, onlyInput);
+    ::setShapeRectangles(WId, rectangles, onlyInput);
 }
 
 void Utility::sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalPos, Qt::MouseButton qbutton)

@@ -10,6 +10,7 @@
 #include "vtablehook.h"
 #include "dplatformwindowhelper.h"
 #include "dframewindow.h"
+#include "dwmsupport.h"
 
 #include <qpa/qplatformbackingstore.h>
 
@@ -34,24 +35,26 @@ bool DPlatformBackingStoreHelper::addBackingStore(QPlatformBackingStore *store)
 
 void DPlatformBackingStoreHelper::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
-    DPlatformWindowHelper *window_helper = DPlatformWindowHelper::mapped.value(window->handle());
+    if (Q_LIKELY(DWMSupport::instance()->hasComposite())) {
+        DPlatformWindowHelper *window_helper = DPlatformWindowHelper::mapped.value(window->handle());
 
-    if (window_helper && (window_helper->m_isUserSetClipPath || window_helper->m_windowRadius > 0)) {
-        QPainterPath path;
+        if (window_helper && (window_helper->m_isUserSetClipPath || window_helper->m_windowRadius > 0)) {
+            QPainterPath path;
 
-        path.addRegion(region);
-        path -= window_helper->m_clipPath;
+            path.addRegion(region);
+            path -= window_helper->m_clipPath;
 
-        if (path.isEmpty())
-            goto end;
+            if (path.isEmpty())
+                goto end;
 
-        QPainter pa(backingStore()->paintDevice());
+            QPainter pa(backingStore()->paintDevice());
 
-        pa.setCompositionMode(QPainter::CompositionMode_Source);
-        pa.setRenderHints(QPainter::Antialiasing);
-        pa.setClipPath(path);
-        pa.drawPixmap(window_helper->m_windowVaildGeometry.topLeft(), window_helper->m_frameWindow->m_shadowPixmap, window_helper->m_frameWindow->m_contentGeometry);
-        pa.end();
+            pa.setCompositionMode(QPainter::CompositionMode_Source);
+            pa.setRenderHints(QPainter::Antialiasing);
+            pa.setClipPath(path);
+            pa.drawPixmap(window_helper->m_windowVaildGeometry.topLeft(), window_helper->m_frameWindow->m_shadowPixmap, window_helper->m_frameWindow->m_contentGeometry);
+            pa.end();
+        }
     }
 
 end:
