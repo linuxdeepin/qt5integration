@@ -466,7 +466,8 @@ void DFrameWindow::updateContentMarginsHint()
     const QMargins old_margins = m_contentMarginsHint;
 
     m_contentMarginsHint = margins;
-    m_contentGeometry.moveTopLeft(contentOffsetHint());
+    m_contentGeometry.translate(m_contentMarginsHint.left() - old_margins.left(),
+                                m_contentMarginsHint.top() - old_margins.top());
 
     updateShadowPixmap();
     update();

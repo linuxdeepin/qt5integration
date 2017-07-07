@@ -319,9 +319,18 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
         case QEvent::WindowActivate:
             QWindowSystemInterface::handleWindowActivated(m_nativeWindow->window(), Qt::OtherFocusReason);
             return true;
-        case QEvent::Resize:
-            m_nativeWindow->window()->resize((m_frameWindow->geometry() - m_frameWindow->contentMarginsHint()).size());
+        case QEvent::Resize: {
+            const QMargins &margins = m_frameWindow->contentMarginsHint();
+            const QSize size_dif(margins.left() + margins.right(), margins.top() + margins.bottom());
+            const QResizeEvent *e = static_cast<QResizeEvent*>(event);
+
+            QResizeEvent new_e(e->size() - size_dif, e->oldSize() - size_dif);
+
+            m_nativeWindow->window()->resize(new_e.size());
+            qApp->sendEvent(m_nativeWindow->window(), &new_e);
+
             break;
+        }
         case QEvent::MouseButtonPress:
         case QEvent::MouseButtonRelease: {
             DQMouseEvent *e = static_cast<DQMouseEvent*>(event);
