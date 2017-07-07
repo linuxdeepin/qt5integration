@@ -540,7 +540,12 @@ quint32 Utility::getNativeTopLevelWindow(quint32 WId)
             if (reply->parent == reply->root)
                 break;
 
-            const QtMotifWmHints &hints = getMotifWmHints(WId);
+            QtMotifWmHints hints = getMotifWmHints(reply->parent);
+
+            if (hints.flags == 0)
+                break;
+
+            hints = getMotifWmHints(WId);
 
             if ((hints.decorations & DXcbWMSupport::MWM_DECOR_BORDER) == DXcbWMSupport::MWM_DECOR_BORDER)
                 break;
