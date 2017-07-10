@@ -388,7 +388,8 @@ void DFrameWindow::setContentPath(const QPainterPath &path, bool isRoundedRect, 
                                qMax(m_shadowRadius + radius + qAbs(m_shadowOffset.y()), m_borderWidth));
         const QSize &margins_size = margins2Size(margins);
 
-        if (margins_size.width() > m_contentGeometry.width() || margins_size.height() > m_contentGeometry.height()) {
+        if (margins_size.width() > m_contentGeometry.width() || margins_size.height() > m_contentGeometry.height()
+                || margins_size.width() > m_shadowPixmap.width() || margins_size.height() > m_shadowPixmap.height()) {
             updateShadowPixmap();
         } else {
             m_shadowPixmap = QPixmap::fromImage(Utility::borderImage(m_shadowPixmap, margins, (m_contentGeometry + contentMarginsHint()).size()));
