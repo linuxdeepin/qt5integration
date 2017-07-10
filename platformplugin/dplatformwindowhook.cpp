@@ -210,8 +210,10 @@ void DPlatformWindowHook::setVisible(bool visible)
 
 void DPlatformWindowHook::requestActivateWindow()
 {
-    if (!window()->isExposed() && !DXcbWMSupport::instance()->hasComposite())
+    if (!window()->isExposed() && !DXcbWMSupport::instance()->hasComposite()
+            && window()->window()->windowState() == Qt::WindowMinimized) {
         Q_XCB_CALL(xcb_map_window(window()->xcb_connection(), window()->winId()));
+    }
 
     CALL::requestActivateWindow();
 }

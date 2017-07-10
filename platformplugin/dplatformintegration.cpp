@@ -7,6 +7,7 @@
 #include "dplatformopenglcontexthelper.h"
 #include "dframewindow.h"
 #include "vtablehook.h"
+#include "dplatformwindowhook.h"
 
 #ifdef Q_OS_LINUX
 #include "windoweventhook.h"
@@ -91,7 +92,11 @@ QPlatformWindow *DPlatformIntegration::createPlatformWindow(QWindow *window) con
     QNativeWindow *xw = static_cast<QNativeWindow*>(w);
 
     if (isUseDxcb) {
+#ifdef USE_NEW_IMPLEMENTING
         Q_UNUSED(new DPlatformWindowHelper(xw))
+#else
+        Q_UNUSED(new DPlatformWindowHook(xw))
+#endif
     }
 
 #ifdef Q_OS_LINUX
@@ -121,7 +126,11 @@ QPlatformBackingStore *DPlatformIntegration::createPlatformBackingStore(QWindow 
     QPlatformBackingStore *store = DPlatformIntegrationParent::createPlatformBackingStore(window);
 
     if (window->type() != Qt::Desktop && window->property(useDxcb).toBool())
+#ifdef USE_NEW_IMPLEMENTING
         m_storeHelper->addBackingStore(store);
+#else
+        return new DPlatformBackingStore(window, static_cast<QXcbBackingStore*>(store));
+#endif
 
     return store;
 }

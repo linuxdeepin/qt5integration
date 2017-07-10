@@ -9,6 +9,11 @@
 
 DPP_BEGIN_NAMESPACE
 
+static inline quintptr toQuintptr(void *ptr)
+{
+    return *(quintptr*)ptr;
+}
+
 template <typename ReturnType>
 struct _TMP
 {
@@ -22,7 +27,7 @@ public:
         if (!vfptr_t2)
             return (obj->*fun)(std::forward<Args>(args)...);
 
-        quintptr fun1_offset = *(quintptr *)&fun;
+        quintptr fun1_offset = toQuintptr(&fun);
 
         if (fun1_offset < 0 || fun1_offset > UINT_LEAST16_MAX)
             return (obj->*fun)(std::forward<Args>(args)...);
@@ -56,7 +61,7 @@ public:
         if (!vfptr_t2)
             return (obj->*fun)(std::forward<Args>(args)...);
 
-        quintptr fun1_offset = *(quintptr *)&fun;
+        quintptr fun1_offset = toQuintptr(&fun);
 
         if (fun1_offset < 0 || fun1_offset > UINT_LEAST16_MAX)
             return (obj->*fun)(std::forward<Args>(args)...);
@@ -89,8 +94,8 @@ public:
                       const typename QtPrivate::FunctionPointer<Fun2>::Object *t2, Fun2 fun2)
     {
         //! ({code}) in the form of a code is to eliminate - Wstrict - aliasing build warnings
-        quintptr fun1_offset = *(quintptr *)&fun1;
-        quintptr fun2_offset = *(quintptr *)&fun2;
+        quintptr fun1_offset = toQuintptr(&fun1);
+        quintptr fun2_offset = toQuintptr(&fun2);
 
         if (fun1_offset < 0 || fun1_offset > UINT_LEAST16_MAX)
             return false;
@@ -126,7 +131,7 @@ public:
         if (!vfptr_t2)
             return false;
 
-        quintptr fun1_offset = *(quintptr *)&fun1;
+        quintptr fun1_offset = toQuintptr(&fun1);
 
         if (fun1_offset < 0 || fun1_offset > UINT_LEAST16_MAX)
             return false;
