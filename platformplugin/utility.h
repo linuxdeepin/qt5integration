@@ -79,6 +79,10 @@ public:
 
     static QPoint translateCoordinates(const QPoint &pos, quint32 src, quint32 dst);
 
+#ifdef Q_OS_LINUX
+    static int XIconifyWindow(void *display, quint32 w, int screen_number);
+#endif
+
 private:
     static void sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalPos = QPoint(), Qt::MouseButton qbutton = Qt::LeftButton);
 };

@@ -7,6 +7,7 @@
  * (at your option) any later version.
  **/
 #include "dplatformwindowhelper.h"
+#include "dplatformintegration.h"
 #include "dframewindow.h"
 #include "vtablehook.h"
 #include "dwmsupport.h"
@@ -29,6 +30,7 @@ DPP_BEGIN_NAMESPACE
 PUBLIC_CLASS(QWindow, DPlatformWindowHelper);
 PUBLIC_CLASS(QMouseEvent, DPlatformWindowHelper);
 PUBLIC_CLASS(QDropEvent, DPlatformWindowHelper);
+PUBLIC_CLASS(QNativeWindow, DPlatformWindowHelper);
 
 QHash<const QPlatformWindow*, DPlatformWindowHelper*> DPlatformWindowHelper::mapped;
 
@@ -176,12 +178,65 @@ void DPlatformWindowHelper::setVisible(bool visible)
         if (tp)
             helper->m_frameWindow->setTransientParent(topvelWindow(tp));
 
+#ifdef Q_OS_LINUX
+        // reupdate _MOTIF_WM_HINTS
+        DQNativeWindow *window = static_cast<DQNativeWindow*>(helper->m_frameWindow->handle());
+
+        Utility::QtMotifWmHints mwmhints = Utility::getMotifWmHints(window->m_window);
+
+        if (window->window()->modality() != Qt::NonModal) {
+            switch (window->window()->modality()) {
+            case Qt::WindowModal:
+                mwmhints.input_mode = DXcbWMSupport::MWM_INPUT_PRIMARY_APPLICATION_MODAL;
+                break;
+            case Qt::ApplicationModal:
+            default:
+                mwmhints.input_mode = DXcbWMSupport::MWM_INPUT_FULL_APPLICATION_MODAL;
+                break;
+            }
+            mwmhints.flags |= DXcbWMSupport::MWM_HINTS_INPUT_MODE;
+        } else {
+            mwmhints.input_mode = DXcbWMSupport::MWM_INPUT_MODELESS;
+            mwmhints.flags &= ~DXcbWMSupport::MWM_HINTS_INPUT_MODE;
+        }
+
+        if (window->windowMinimumSize() == window->windowMaximumSize()) {
+            // fixed size, remove the resize handle (since mwm/dtwm
+            // isn't smart enough to do it itself)
+            mwmhints.flags |= DXcbWMSupport::MWM_HINTS_FUNCTIONS;
+            mwmhints.functions &= ~DXcbWMSupport::MWM_FUNC_RESIZE;
+
+            if (mwmhints.decorations == DXcbWMSupport::MWM_DECOR_ALL) {
+                mwmhints.flags |= DXcbWMSupport::MWM_HINTS_DECORATIONS;
+                mwmhints.decorations = (DXcbWMSupport::MWM_DECOR_BORDER
+                                        | DXcbWMSupport::MWM_DECOR_TITLE
+                                        | DXcbWMSupport::MWM_DECOR_MENU);
+            } else {
+                mwmhints.decorations &= ~DXcbWMSupport::MWM_DECOR_RESIZEH;
+            }
+        }
+
+        if (window->window()->flags() & Qt::WindowMinimizeButtonHint) {
+            mwmhints.functions |= DXcbWMSupport::MWM_FUNC_MINIMIZE;
+        }
+        if (window->window()->flags() & Qt::WindowMaximizeButtonHint) {
+            mwmhints.functions |= DXcbWMSupport::MWM_FUNC_MAXIMIZE;
+        }
+        if (window->window()->flags() & Qt::WindowCloseButtonHint)
+            mwmhints.functions |= DXcbWMSupport::MWM_FUNC_CLOSE;
+#endif
+
         helper->m_frameWindow->setVisible(visible);
         helper->m_nativeWindow->QNativeWindow::setVisible(visible);
 
         // restore
         if (tp)
             helper->m_nativeWindow->window()->setTransientParent(tp);
+
+#ifdef Q_OS_LINUX
+        // Fix the window can't show minimized if window is fixed size
+        Utility::setMotifWmHints(window->m_window, mwmhints);
+#endif
 
         return;
     }
@@ -197,7 +252,26 @@ void DPlatformWindowHelper::setWindowFlags(Qt::WindowFlags flags)
 
 void DPlatformWindowHelper::setWindowState(Qt::WindowState state)
 {
-    me()->m_frameWindow->setWindowState(state);
+#ifdef Q_OS_LINUX
+    DQNativeWindow *window = static_cast<DQNativeWindow*>(me()->m_frameWindow->handle());
+
+    if (window->m_windowState == state)
+        return;
+
+    if (state == Qt::WindowMinimized
+            && (window->m_windowState == Qt::WindowMaximized
+                || window->m_windowState == Qt::WindowFullScreen)) {
+        window->changeNetWmState(true, Utility::internAtom("_NET_WM_STATE_HIDDEN"));
+        Utility::XIconifyWindow(window->connection()->xlib_display(),
+                                window->m_window,
+                                window->connection()->primaryScreenNumber());
+        window->connection()->sync();
+        window->m_windowState = state;
+    } else
+#endif
+    {
+        me()->m_frameWindow->setWindowState(state);
+    }
 }
 
 WId DPlatformWindowHelper::winId() const
@@ -256,6 +330,13 @@ void DPlatformWindowHelper::requestActivateWindow()
 
     if (helper->m_nativeWindow->window()->isActive())
         return;
+
+#ifdef Q_OS_LINUX
+    if (helper->m_frameWindow->handle()->isExposed() && !DXcbWMSupport::instance()->hasComposite()
+            && helper->m_frameWindow->windowState() == Qt::WindowMinimized) {
+        Q_XCB_CALL(xcb_map_window(DPlatformIntegration::xcbConnection()->xcb_connection(), helper->m_frameWindow->winId()));
+    }
+#endif
 
     helper->m_frameWindow->handle()->requestActivateWindow();
 }
@@ -355,6 +436,14 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
             QCoreApplication::sendEvent(m_nativeWindow->window(), event);
             return true;
         }
+        case QEvent::PlatformSurface: {
+            const QPlatformSurfaceEvent *e = static_cast<QPlatformSurfaceEvent*>(event);
+
+            if (e->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
+                m_nativeWindow->window()->destroy();
+
+            break;
+        }
         default: break;
         }
     } else if (watched == m_nativeWindow->window()) {
@@ -383,7 +472,18 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
             }
             break;
         }
+        case QEvent::MouseButtonRelease: {
+            Utility::cancelWindowMoveResize(Utility::getNativeTopLevelWindow(m_frameWindow->winId()));
+            break;
+        }
+        case QEvent::PlatformSurface: {
+            const QPlatformSurfaceEvent *e = static_cast<QPlatformSurfaceEvent*>(event);
 
+            if (e->surfaceEventType() == QPlatformSurfaceEvent::SurfaceCreated)
+                m_frameWindow->create();
+
+            break;
+        }
         case QEvent::DynamicPropertyChange: {
             QDynamicPropertyChangeEvent *e = static_cast<QDynamicPropertyChangeEvent*>(event);
 

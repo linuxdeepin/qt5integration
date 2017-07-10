@@ -577,6 +577,11 @@ QPoint Utility::translateCoordinates(const QPoint &pos, quint32 src, quint32 dst
     return ret;
 }
 
+int Utility::XIconifyWindow(void *display, quint32 w, int screen_number)
+{
+    return ::XIconifyWindow(reinterpret_cast<Display*>(display), w, screen_number);
+}
+
 QVector<uint> Utility::getWindows()
 {
     return DXcbWMSupport::instance()->allWindow();

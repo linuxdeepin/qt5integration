@@ -340,6 +340,13 @@ skip_set_cursor:
     m_canAdsorbCursor = canResize();
 }
 
+void DFrameWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    Utility::cancelWindowMoveResize(Utility::getNativeTopLevelWindow(winId()));
+
+    return QRasterWindow::mouseReleaseEvent(event);
+}
+
 void DFrameWindow::resizeEvent(QResizeEvent *event)
 {
     emit sizeChanged(event->size());
