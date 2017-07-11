@@ -106,6 +106,8 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
             this, &DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged);
     connect(DWMSupport::instance(), &DXcbWMSupport::hasCompositeChanged,
             this, &DPlatformWindowHelper::onWMHasCompositeChanged);
+    connect(DWMSupport::instance(), &DXcbWMSupport::windowManagerChanged,
+            this, &DPlatformWindowHelper::updateWindowBlurAreasForWM);
 }
 
 DPlatformWindowHelper::~DPlatformWindowHelper()
