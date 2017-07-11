@@ -349,12 +349,7 @@ void DFrameWindow::mouseReleaseEvent(QMouseEvent *event)
 
 void DFrameWindow::resizeEvent(QResizeEvent *event)
 {
-    if (DWMSupport::instance()->hasComposite()) {
-        QRegion region(QRect(QPoint(0, 0), event->size()));
-
-        // ###(zccrs): xfwm4 window manager会自动给dock类型的窗口加上阴影， 所以在此裁掉窗口之外的内容
-        Utility::setShapeRectangles(winId(), region, false);
-    }
+    updateFrameMask();
 
     return QRasterWindow::resizeEvent(event);
 }
@@ -530,12 +525,27 @@ void DFrameWindow::updateMask()
         Utility::setShapeRectangles(winId(), region, DWMSupport::instance()->hasComposite());
     }
 
-    if (DWMSupport::instance()->hasComposite()) {
-        QRegion region(QRect(QPoint(0, 0), size()));
+    updateFrameMask();
+}
 
-        // ###(zccrs): xfwm4 window manager会自动给dock类型的窗口加上阴影， 所以在此裁掉窗口之外的内容
-        Utility::setShapeRectangles(winId(), region, false);
-    }
+void DFrameWindow::updateFrameMask()
+{
+#ifdef Q_OS_LINUX
+    QXcbWindow *xw = static_cast<QXcbWindow*>(handle());
+
+    if (!xw || !xw->wmWindowTypes().testFlag(QXcbWindowFunctions::Dock))
+        return;
+
+    if (!m_enableAutoFrameMask || !DWMSupport::instance()->hasComposite())
+        return;
+
+    const QRect rect(QRect(QPoint(0, 0), size()));
+
+    QRegion region(rect.united(m_contentGeometry + contentMarginsHint()));
+
+    // ###(zccrs): xfwm4 window manager会自动给dock类型的窗口加上阴影， 所以在此裁掉窗口之外的内容
+    setMask(region);
+#endif
 }
 
 bool DFrameWindow::canResize() const

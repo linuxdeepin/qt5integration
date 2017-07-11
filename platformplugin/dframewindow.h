@@ -70,6 +70,7 @@ private:
     void updateShadowPixmap();
     void updateContentMarginsHint();
     void updateMask();
+    void updateFrameMask();
 
     bool canResize() const;
     void cancelAdsorbCursor();
@@ -94,6 +95,7 @@ private:
     bool m_enableSystemResize = true;
     bool m_enableSystemMove = true;
     bool m_enableAutoInputMaskByContentPath = true;
+    bool m_enableAutoFrameMask = true;
 
     bool m_canAdsorbCursor = false;
     Utility::CornerEdge m_lastCornerEdge;

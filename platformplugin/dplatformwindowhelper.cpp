@@ -939,6 +939,8 @@ void DPlatformWindowHelper::updateAutoInputMaskByClipPathFromProperty()
     if (m_autoInputMaskByClipPath != v.toBool()) {
         m_autoInputMaskByClipPath = v.toBool();
     }
+
+    m_frameWindow->m_enableAutoInputMaskByContentPath = m_autoInputMaskByClipPath;
 }
 
 void DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged(const QMargins &oldMargins)
@@ -1006,6 +1008,7 @@ void DPlatformWindowHelper::updateFrameMaskFromProperty()
 
     m_frameWindow->setMask(region);
     m_isUserSetFrameMask = !region.isEmpty();
+    m_frameWindow->m_enableAutoFrameMask = !m_isUserSetFrameMask;
 }
 
 DPP_END_NAMESPACE
