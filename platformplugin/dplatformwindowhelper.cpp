@@ -41,7 +41,7 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
     mapped[window] = this;
 
     m_frameWindow = new DFrameWindow();
-    m_frameWindow->setFlags((window->window()->flags() | Qt::FramelessWindowHint | Qt::CustomizeWindowHint) & ~Qt::WindowMinMaxButtonsHint);
+    m_frameWindow->setFlags((window->window()->flags() | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::NoDropShadowWindowHint) & ~Qt::WindowMinMaxButtonsHint);
     m_frameWindow->create();
     m_frameWindow->installEventFilter(this);
     m_frameWindow->setShadowRaduis(getShadowRadius());
@@ -247,7 +247,7 @@ void DPlatformWindowHelper::setVisible(bool visible)
 
 void DPlatformWindowHelper::setWindowFlags(Qt::WindowFlags flags)
 {
-    me()->m_frameWindow->setFlags((flags | Qt::FramelessWindowHint | Qt::CustomizeWindowHint) & ~Qt::WindowMinMaxButtonsHint);
+    me()->m_frameWindow->setFlags((flags | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::NoDropShadowWindowHint) & ~Qt::WindowMinMaxButtonsHint);
 }
 
 void DPlatformWindowHelper::setWindowState(Qt::WindowState state)

@@ -54,7 +54,6 @@ public:
     void setEnableSystemMove(bool enable);
 
 signals:
-    void sizeChanged(const QSize &size);
     void contentMarginsHintChanged(const QMargins &oldMargins) const;
 
 protected:

@@ -349,7 +349,12 @@ void DFrameWindow::mouseReleaseEvent(QMouseEvent *event)
 
 void DFrameWindow::resizeEvent(QResizeEvent *event)
 {
-    emit sizeChanged(event->size());
+    if (DWMSupport::instance()->hasComposite()) {
+        QRegion region(QRect(QPoint(0, 0), event->size()));
+
+        // ###(zccrs): xfwm4 window manager会自动给dock类型的窗口加上阴影， 所以在此裁掉窗口之外的内容
+        Utility::setShapeRectangles(winId(), region, false);
+    }
 
     return QRasterWindow::resizeEvent(event);
 }
@@ -523,6 +528,13 @@ void DFrameWindow::updateMask()
     } else {
         QRegion region(m_contentGeometry.adjusted(-mouse_margins, -mouse_margins, mouse_margins, mouse_margins));
         Utility::setShapeRectangles(winId(), region, DWMSupport::instance()->hasComposite());
+    }
+
+    if (DWMSupport::instance()->hasComposite()) {
+        QRegion region(QRect(QPoint(0, 0), size()));
+
+        // ###(zccrs): xfwm4 window manager会自动给dock类型的窗口加上阴影， 所以在此裁掉窗口之外的内容
+        Utility::setShapeRectangles(winId(), region, false);
     }
 }
 
