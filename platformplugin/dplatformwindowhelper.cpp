@@ -416,12 +416,14 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
         case QEvent::MouseButtonRelease: {
             DQMouseEvent *e = static_cast<DQMouseEvent*>(event);
 
-            if (m_windowVaildGeometry.contains(e->pos())) {
+            if (m_windowVaildGeometry.contains(e->pos() - m_frameWindow->contentOffsetHint())) {
                 e->l = e->w = m_nativeWindow->window()->mapFromGlobal(e->globalPos());
                 qApp->sendEvent(m_nativeWindow->window(), e);
+
+                return true;
             }
 
-            return true;
+            break;
         }
         case QEvent::WindowStateChange:
             qt_window_private(m_nativeWindow->window())->windowState = m_frameWindow->windowState();
