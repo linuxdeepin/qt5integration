@@ -314,10 +314,17 @@ bool DPlatformWindowHelper::isExposed() const
     return me()->m_frameWindow->handle()->isExposed();
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
+bool DPlatformWindowHelper::isEmbedded() const
+{
+    return me()->m_frameWindow->handle()->isEmbedded();
+}
+#else
 bool DPlatformWindowHelper::isEmbedded(const QPlatformWindow *parentWindow) const
 {
     return me()->m_frameWindow->handle()->isEmbedded(parentWindow);
 }
+#endif
 
 void DPlatformWindowHelper::propagateSizeHints()
 {

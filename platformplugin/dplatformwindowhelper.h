@@ -60,7 +60,11 @@ public:
 
     bool isExposed() const;
     bool isActive() const;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
+    bool isEmbedded() const;
+#else
     bool isEmbedded(const QPlatformWindow *parentWindow = 0) const;
+#endif
 
     void propagateSizeHints();
 
