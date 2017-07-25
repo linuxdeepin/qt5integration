@@ -10,9 +10,9 @@ bool Style::drawIndicatorHeaderArrowPrimitive(const QStyleOption *option, QPaint
         QBrush brush;
 
         if (header->sortIndicator & QStyleOptionHeader::SortUp) {
-            brush = m_palette->brush(PaletteExtended::HeaderView_ArrowIndicatorUpIcon);
-        } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
             brush = m_palette->brush(PaletteExtended::HeaderView_ArrowIndicatorDownIcon);
+        } else if (header->sortIndicator & QStyleOptionHeader::SortDown) {
+            brush = m_palette->brush(PaletteExtended::HeaderView_ArrowIndicatorUpIcon);
         }
 
         if (brush.style() != Qt::TexturePattern)
