@@ -6,7 +6,7 @@
 
 QT        += core gui widgets widgets-private core-private gui-private
 CONFIG    += link_pkgconfig c++11
-PKGCONFIG += dtkbase dtkwidget dtkutil
+PKGCONFIG += dtkwidget
 
 TARGET = dstyleplugin
 TEMPLATE = lib
