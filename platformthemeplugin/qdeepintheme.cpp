@@ -148,6 +148,7 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         // TODO(hualet): Make ddark&dlight styles ready!
         // styleNames << QStringLiteral("dlight");
 #ifndef QT_NO_STYLE_GTK
+        styleNames << QStringLiteral("gtk2");
         styleNames << QStringLiteral("GTK+");
 #endif
         styleNames << QStringLiteral("fusion");
