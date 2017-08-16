@@ -13,6 +13,8 @@
 #include <X11/extensions/XI2proto.h>
 #include <X11/extensions/XInput2.h>
 
+#include <cmath>
+
 DPP_BEGIN_NAMESPACE
 
 XcbNativeEventFilter::XcbNativeEventFilter(QXcbConnection *connection)
@@ -110,18 +112,26 @@ bool XcbNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *
                 return false;
             }
 
+
             for (int c = 0; c < xiDeviceInfo->num_classes; ++c) {
                 if (xiDeviceInfo->classes[c]->type == XIScrollClass) {
                     XIScrollClassInfo *sci = reinterpret_cast<XIScrollClassInfo *>(xiDeviceInfo->classes[c]);
+
                     if (sci->scroll_type == XIScrollTypeVertical) {
+                        device->legacyOrientations = device->orientations;
                         device->orientations |= Qt::Vertical;
                         device->verticalIndex = sci->number;
-                        device->verticalIncrement = sci->increment;
+                        device->verticalIncrement = std::signbit(sci->increment)
+                                                    ? -std::abs(device->verticalIncrement)
+                                                    : std::abs(device->verticalIncrement);
                     }
                     else if (sci->scroll_type == XIScrollTypeHorizontal) {
+                        device->legacyOrientations = device->orientations;
                         device->orientations |= Qt::Horizontal;
                         device->horizontalIndex = sci->number;
-                        device->horizontalIncrement = sci->increment;
+                        device->horizontalIncrement = std::signbit(sci->increment)
+                                                    ? -std::abs(device->horizontalIncrement)
+                                                    : std::abs(device->horizontalIncrement);
                     }
                 }
             }
