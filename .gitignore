@@ -39,6 +39,3 @@ Makefile*
 
 # QtCtreator CMake
 CMakeLists.txt.user
-
-# Qt xcb header files
-platformplugin/libqt5xcbqpa-dev

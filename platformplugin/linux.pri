@@ -23,8 +23,6 @@ SOURCES += \
     $$PWD/dxcbwmsupport.cpp \
     $$PWD/dforeignplatformwindow_x11.cpp
 
-INCLUDEPATH += $$PWD/libqt5xcbqpa-dev
-
 contains(QT_CONFIG, xcb-xlib)|qtConfig(xcb-xlib) {
     DEFINES += XCB_USE_XLIB
     QMAKE_USE += xcb_xlib
@@ -65,12 +63,8 @@ contains(QT_CONFIG, xcb-qt) {
     DEFINES += XCB_USE_RENDER
 }
 
-exists($$PWD/libqt5xcbqpa-dev) {
-    !system(cd $$PWD/libqt5xcbqpa-dev && git checkout $$VERSION) {
-        !system(cd $$PWD/libqt5xcbqpa-dev && git fetch -p):error(update libqt5xcbqpa header sources failed)
-        !system(cd $$PWD/libqt5xcbqpa-dev && git checkout $$VERSION):error(Not support Qt Version: $$VERSION)
-    }
+exists($$PWD/libqt5xcbqpa-dev/$$VERSION) {
+    INCLUDEPATH += $$PWD/libqt5xcbqpa-dev/$$VERSION
 } else {
-    !system(git clone https://cr.deepin.io/libqt5xcbqpa-dev):error(clone libqt5xcbqpa header sources failed)
-    !system(cd $$PWD/libqt5xcbqpa-dev && git checkout $$VERSION):error(Not support Qt Version: $$VERSION)
+    error(Not support Qt Version: $$VERSION)
 }
