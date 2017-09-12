@@ -1,3 +1,10 @@
+/**
+ * Copyright (C) 2017 by Deepin Technology Co., Ltd.
+ *
+ * Use of this source code is governed by GPLv3
+ * that can be found in the LICENSE file.
+ **/
+
 #include "dxcbwmsupport.h"
 #include "dplatformintegration.h"
 #include "utility.h"
