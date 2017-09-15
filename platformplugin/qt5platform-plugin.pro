@@ -63,5 +63,5 @@ INSTALLS += target
 CONFIG(release, debug|release) {
     DEFINES += QT_NO_DEBUG_OUTPUT
 } else {
-    DEFINES += USE_NEW_IMPLEMENTING
+#    DEFINES += USE_NEW_IMPLEMENTING
 }

@@ -66,7 +66,6 @@ void DPlatformWindowHook::setGeometry(const QRect &rect)
 {
     const QMargins &margins = me()->windowMargins;
 
-//    qDebug() << __FUNCTION__ << rect << rect + margins;
     emit me()->windowGeometryAboutChanged(rect);
     CALL::setGeometry(rect + margins);
 }
@@ -238,8 +237,8 @@ void DPlatformWindowHook::propagateSizeHints()
     const QSize &marginSize = QSize(windowMargins.left() + windowMargins.right(),
                                     windowMargins.top() + windowMargins.bottom());
 
-    winp->minimumSize += marginSize;
-    winp->maximumSize += marginSize;
+    winp->minimumSize += marginSize / win->devicePixelRatio();
+    winp->maximumSize += marginSize / win->devicePixelRatio();
     winp->maximumSize.setWidth(qMin(QWINDOWSIZE_MAX, winp->maximumSize.width()));
     winp->maximumSize.setHeight(qMin(QWINDOWSIZE_MAX, winp->maximumSize.height()));
 

@@ -18,6 +18,7 @@
 #include <QCursor>
 #include <QDebug>
 #include <QtX11Extras/QX11Info>
+#include <QGuiApplication>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
 #include <QtWidgets/qtwidgetsglobal.h>
@@ -242,8 +243,9 @@ void Utility::sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalP
                qbutton == Qt::RightButton ? XCB_BUTTON_INDEX_3 :
                XCB_BUTTON_INDEX_ANY;
 
-    if (globalPos.isNull())
-        globalPos = QCursor::pos();
+    if (globalPos.isNull()) {
+        globalPos = QCursor::pos() * getWindowDevicePixelRatio(WId);
+    }
 
     xcb_client_message_event_t xev;
 
@@ -263,6 +265,25 @@ void Utility::sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalP
                    (const char *)&xev);
 
     xcb_flush(QX11Info::connection());
+}
+
+QWindow *Utility::getWindowById(quint32 WId)
+{
+    for (QWindow *w : qApp->allWindows()) {
+        if (w->winId() == WId) {
+            return w;
+        }
+    }
+
+    return Q_NULLPTR;
+}
+
+qreal Utility::getWindowDevicePixelRatio(quint32 WId)
+{
+    if (const QWindow *w = getWindowById(WId))
+        return w->devicePixelRatio();
+
+    return qApp->devicePixelRatio();
 }
 
 void Utility::startWindowSystemResize(quint32 WId, CornerEdge cornerEdge, const QPoint &globalPos)

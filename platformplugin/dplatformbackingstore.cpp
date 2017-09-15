@@ -123,7 +123,7 @@ protected:
             if (!window_geometry.contains(e->globalPos()))
                 return true;
 
-            e->p -= m_store->windowOffset();
+            e->p -= m_store->windowOffset() / window->devicePixelRatio();
 
             break;
         }
@@ -134,20 +134,21 @@ protected:
             DQMouseEvent *e = static_cast<DQMouseEvent*>(event);
 
             if (Q_LIKELY(e->source() != Qt::MouseEventSynthesizedByQt)) {
-                e->l -= m_store->windowOffset();
-                e->w -= m_store->windowOffset();
+                e->l -= m_store->windowOffset() / window->devicePixelRatio();
+                e->w -= m_store->windowOffset() / window->devicePixelRatio();
             }
 
             if (window->flags().testFlag(Qt::Popup) || window->flags().testFlag(Qt::BypassWindowManagerHint))
                 break;
 
-            const QRect &window_visible_rect = m_store->windowValidRect.translated(window_geometry.topLeft());
+            const QRect &window_visible_rect = QRect(m_store->windowValidRect.topLeft() + window_geometry.topLeft(),
+                                                     m_store->windowValidRect.size() / window->devicePixelRatio());
 
             if (window->minimumSize() == window->maximumSize() || !m_store->m_enableSystemResize)
                 goto skip_set_cursor;
 
             if (!leftButtonPressed && (!window_visible_rect.contains(e->globalPos())
-                    || !m_store->m_clipPath.contains(e->windowPos()))) {
+                    || !m_store->m_clipPath.contains(e->windowPos() * window->devicePixelRatio()))) {
                 if (event->type() == QEvent::MouseMove) {
                     bool isFixedWidth = window->minimumWidth() == window->maximumWidth();
                     bool isFixedHeight = window->minimumHeight() == window->maximumHeight();
@@ -220,7 +221,7 @@ set_cursor:
                     Utility::setWindowCursor(window->winId(), mouseCorner);
 
                     if (qApp->mouseButtons() == Qt::LeftButton) {
-                        Utility::startWindowSystemResize(window->winId(), mouseCorner, e->globalPos());
+                        Utility::startWindowSystemResize(window->winId(), mouseCorner);
 
                         cancelAdsorbCursor();
                     } else {
@@ -250,12 +251,17 @@ skip_set_cursor:
             break;
         }
         case QEvent::Resize: {
+            const QSize &old_size = window->property("_dxcb_window_old_size").toSize();
+            const QSize &new_size = window->handle()->geometry().size();
+
+            if (old_size == new_size)
+                return true;
+
+            window->setProperty("_dxcb_window_old_size", new_size);
+
             DQResizeEvent *e = static_cast<DQResizeEvent*>(event);
 
-            const QRect &rect = QRect(QPoint(0, 0), e->size());
-
-            e->s = (rect - m_store->windowMargins).size();
-
+            e->s = window->size();
             break;
         }
         case QEvent::Enter:
@@ -410,7 +416,8 @@ private:
     {
         QPoint cursorPos = QCursor::pos();
         QPoint toPos = cursorPos;
-        const QRect geometry = m_store->windowValidRect.translated(m_store->window()->position()).adjusted(-1, -1, 1, 1);
+        const QRect geometry = QRect(m_store->windowValidRect.topLeft() + m_store->window()->position(),
+                                     m_store->windowValidRect.size() / m_store->window()->devicePixelRatio()).adjusted(-1, -1, 1, 1);
 
         switch (lastCornerEdge) {
         case Utility::TopLeftCorner:
@@ -1151,7 +1158,7 @@ void DPlatformBackingStore::updateUserClipPath()
     if (path.isEmpty())
         updateClipPath();
     else
-        setClipPah(path);
+        setClipPah(path * window()->devicePixelRatio());
 }
 
 void DPlatformBackingStore::updateClipPath()
@@ -1550,6 +1557,7 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
     }
 
     QVector<Utility::BlurArea> newAreas;
+    qreal device_pixel_ratio = window()->devicePixelRatio();
 
     if (m_enableBlurWindow) {
         Utility::BlurArea area;
@@ -1566,6 +1574,8 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
         newAreas.reserve(m_blurAreaList.size());
 
         foreach (Utility::BlurArea area, m_blurAreaList) {
+            area *= device_pixel_ratio;
+
             if (area.x < 0) {
                 area.width += area.x;
                 area.x = 0;
@@ -1592,7 +1602,9 @@ bool DPlatformBackingStore::updateWindowBlurAreasForWM()
 
         newPathList.reserve(m_blurPathList.size());
 
-        foreach (const QPainterPath &path, m_blurPathList) {
+        foreach (QPainterPath path, m_blurPathList) {
+            path *= device_pixel_ratio;
+
             if (m_windowClipPath.isEmpty())
                 newPathList << path.translated(windowValidRect.topLeft() + offset);
             else

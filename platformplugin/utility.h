@@ -61,6 +61,30 @@ public:
         qint32 height;
         qint32 xRadius;
         qint32 yRaduis;
+
+        inline BlurArea operator *(qreal scale)
+        {
+            BlurArea new_area;
+
+            new_area.x = x * scale;
+            new_area.y = y * scale;
+            new_area.width = width * scale;
+            new_area.height = height * scale;
+            new_area.xRadius = xRadius;
+            new_area.yRaduis = yRaduis;
+
+            return new_area;
+        }
+
+        inline BlurArea &operator *=(qreal scale)
+        {
+            x *= scale;
+            y *= scale;
+            width *= scale;
+            height *= scale;
+
+            return *this;
+        }
     };
 
     // by Deepin Window Manager
@@ -92,6 +116,8 @@ public:
 
 private:
     static void sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalPos = QPoint(), Qt::MouseButton qbutton = Qt::LeftButton);
+    static QWindow *getWindowById(quint32 WId);
+    static qreal getWindowDevicePixelRatio(quint32 WId);
 };
 
 DPP_END_NAMESPACE
@@ -99,6 +125,31 @@ DPP_END_NAMESPACE
 QT_BEGIN_NAMESPACE
 DPP_USE_NAMESPACE
 QDebug operator<<(QDebug deg, const Utility::BlurArea &area);
+inline QPainterPath operator *(const QPainterPath &path, qreal scale)
+{
+    if (qFuzzyCompare(1.0, scale))
+        return path;
+
+    QPainterPath new_path = path;
+
+    for (int i = 0; i < path.elementCount(); ++i) {
+        const QPainterPath::Element &e = path.elementAt(i);
+
+        new_path.setElementPositionAt(i, e.x * scale, e.y * scale);
+    }
+
+    return new_path;
+}
+inline QPainterPath &operator *=(QPainterPath &path, qreal scale)
+{
+    for (int i = 0; i < path.elementCount(); ++i) {
+        const QPainterPath::Element &e = path.elementAt(i);
+
+        path.setElementPositionAt(i, e.x * scale, e.y * scale);
+    }
+
+    return path;
+}
 QT_END_NAMESPACE
 
 #endif // UTILITY_H
