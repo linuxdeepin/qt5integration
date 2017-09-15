@@ -88,6 +88,9 @@ public:
 
         inline BlurArea &operator *=(qreal scale)
         {
+            if (qFuzzyCompare(1.0, scale))
+                return *this;
+
             x *= scale;
             y *= scale;
             width *= scale;
@@ -152,6 +155,9 @@ inline QPainterPath operator *(const QPainterPath &path, qreal scale)
 }
 inline QPainterPath &operator *=(QPainterPath &path, qreal scale)
 {
+    if (qFuzzyCompare(1.0, scale))
+        return path;
+
     for (int i = 0; i < path.elementCount(); ++i) {
         const QPainterPath::Element &e = path.elementAt(i);
 
