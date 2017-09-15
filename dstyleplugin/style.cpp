@@ -1211,7 +1211,7 @@ void Style::fillBrush(QPainter *p, const QRect &rect, const QBrush &brush)
         const QPixmap &pixmap = brush.texture();
         QRect r = rect;
 
-        r.setSize(pixmap.size());
+        r.setSize(pixmap.size() / pixmap.devicePixelRatio());
         r.moveCenter(rect.center());
 
         p->drawPixmap(r, pixmap);

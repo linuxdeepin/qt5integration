@@ -14,6 +14,7 @@
 #include <QFile>
 #include <QStyleOption>
 #include <QDebug>
+#include <QApplication>
 
 #include <private/qcssparser_p.h>
 
@@ -140,7 +141,7 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name,  quint64 type, co
                     const QString &uri = declaration.uriValue();
 
                     if (!uri.isEmpty()) {
-                        brush.setTexture(QPixmap(uri));
+                        brush.setTexture(loadPixmap(uri));
                     }
                 }
 
@@ -277,6 +278,23 @@ void PaletteExtended::init(StyleType type)
     QCss::Parser parser(QString::fromLocal8Bit(file.readAll()));
 
     parser.parse(m_brushScheme);
+}
+
+QPixmap PaletteExtended::loadPixmap(const QString &fileName) const
+{
+    qreal sourceDevicePixelRatio = 1.0;
+    qreal devicePixelRatio = qApp->devicePixelRatio();
+    QString resolvedFileName = qt_findAtNxFile(fileName, devicePixelRatio, &sourceDevicePixelRatio);
+    QPixmap pixmap(resolvedFileName);
+    if (sourceDevicePixelRatio > 1.0) {
+        pixmap = pixmap.scaled(devicePixelRatio / sourceDevicePixelRatio * pixmap.width(),
+                               devicePixelRatio / sourceDevicePixelRatio * pixmap.height(),
+                               Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        pixmap.setDevicePixelRatio(devicePixelRatio);
+    } else {
+        pixmap.setDevicePixelRatio(sourceDevicePixelRatio);
+    }
+    return pixmap;
 }
 
 }
