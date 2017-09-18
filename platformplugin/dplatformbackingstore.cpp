@@ -1007,7 +1007,7 @@ bool DPlatformBackingStore::updateWindowMargins(bool repaintShadow)
     Qt::WindowState state = window()->windowState();
 
     const QMargins old_margins = windowMargins;
-    const QRect &window_geometry = window()->geometry();
+    const QRect &window_geometry = window()->handle()->geometry();
 
     if (state == Qt::WindowMaximized || state == Qt::WindowFullScreen) {
         setWindowMargins(QMargins(0, 0, 0, 0));
@@ -1195,7 +1195,7 @@ void DPlatformBackingStore::updateFrameMask()
 
     QRegion region = qvariant_cast<QRegion>(v);
 
-    static_cast<QXcbWindow*>(window()->handle())->QXcbWindow::setMask(region);
+    static_cast<QXcbWindow*>(window()->handle())->QXcbWindow::setMask(region * window()->devicePixelRatio());
 
     isUserSetFrameMask = !region.isEmpty();
 }

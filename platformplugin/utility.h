@@ -166,6 +166,21 @@ inline QPainterPath &operator *=(QPainterPath &path, qreal scale)
 
     return path;
 }
+inline QRectF operator *(const QRect &rect, qreal scale)
+{
+    return QRectF(rect.left() * scale, rect.top() * scale, rect.width() * scale, rect.height() * scale);
+}
+inline QRegion operator *(const QRegion &pointRegion, qreal scale)
+{
+    if (qFuzzyCompare(1.0, scale))
+        return pointRegion;
+
+    QRegion pixelRegon;
+    foreach (const QRect &rect, pointRegion.rects()) {
+        pixelRegon += (rect * scale).toRect();
+    }
+    return pixelRegon;
+}
 QT_END_NAMESPACE
 
 #endif // UTILITY_H
