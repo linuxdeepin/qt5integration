@@ -89,5 +89,15 @@
         <file>assets/dark/spinbox/spinbutton_up_insensitive.png</file>
         <file>assets/dark/spinbox/spinbutton_up_normal.png</file>
         <file>assets/dark/spinbox/spinbutton_up_press.png</file>
+        <file>assets/dark/slider/slider_handle_focus@2x.png</file>
+        <file>assets/dark/slider/slider_handle_insensitive@2x.png</file>
+        <file>assets/dark/slider/slider_handle_normal.png</file>
+        <file>assets/dark/slider/slider_handle_normal@2x.png</file>
+        <file>assets/dark/slider/slider_handle_press@2x.png</file>
+        <file>assets/dark/slider/slider_point_handle_focus@2x.png</file>
+        <file>assets/dark/slider/slider_point_handle_insensitive@2x.png</file>
+        <file>assets/dark/slider/slider_point_handle_normal.png</file>
+        <file>assets/dark/slider/slider_point_handle_normal@2x.png</file>
+        <file>assets/dark/slider/slider_point_handle_press@2x.png</file>
     </qresource>
 </RCC>

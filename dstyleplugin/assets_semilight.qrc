@@ -76,5 +76,15 @@
         <file>assets/semilight/slider/slider_point_handle_insensitive.png</file>
         <file>assets/semilight/slider/slider_point_handle_press.png</file>
         <file>assets/semilight/slider/slider_point_handle.png</file>
+        <file>assets/semilight/slider/slider_handle_focus@2x.png</file>
+        <file>assets/semilight/slider/slider_handle_insensitive@2x.png</file>
+        <file>assets/semilight/slider/slider_handle_normal.png</file>
+        <file>assets/semilight/slider/slider_handle_normal@2x.png</file>
+        <file>assets/semilight/slider/slider_handle_press@2x.png</file>
+        <file>assets/semilight/slider/slider_point_handle_focus@2x.png</file>
+        <file>assets/semilight/slider/slider_point_handle_insensitive@2x.png</file>
+        <file>assets/semilight/slider/slider_point_handle_normal.png</file>
+        <file>assets/semilight/slider/slider_point_handle_normal@2x.png</file>
+        <file>assets/semilight/slider/slider_point_handle_press@2x.png</file>
     </qresource>
 </RCC>
