@@ -29,6 +29,7 @@
 #include <QDebug>
 #include <QtX11Extras/QX11Info>
 #include <QGuiApplication>
+#include <qpa/qplatformwindow.h>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
 #include <QtWidgets/qtwidgetsglobal.h>
@@ -280,7 +281,7 @@ void Utility::sendMoveResizeMessage(quint32 WId, uint32_t action, QPoint globalP
 QWindow *Utility::getWindowById(quint32 WId)
 {
     for (QWindow *w : qApp->allWindows()) {
-        if (w->winId() == WId) {
+        if (w->handle() && w->handle()->winId() == WId) {
             return w;
         }
     }
