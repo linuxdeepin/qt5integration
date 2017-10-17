@@ -33,7 +33,8 @@ SOURCES += dstyleplugin.cpp \
     comboboxhelper.cpp \
     toolbuttonhelper.cpp \
     tabwidgethelper.cpp \
-    spinboxhelper.cpp
+    spinboxhelper.cpp \
+    hidpihelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \
@@ -43,7 +44,8 @@ HEADERS += dstyleplugin.h \
     paletteextended.h \
     commonhelper.h \
     painterhelper.h \
-    dstyleanimation.h
+    dstyleanimation.h \
+    hidpihelper.h
 
 DISTFILES += dstyleplugin.json
 

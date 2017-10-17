@@ -28,6 +28,8 @@
 #include <QImageReader>
 #include <private/qcssparser_p.h>
 
+#include "hidpihelper.h"
+
 QT_BEGIN_NAMESPACE
 QDebug operator<<(QDebug deg, const QCss::Value &value)
 {
@@ -151,7 +153,7 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name,  quint64 type, co
                     const QString &uri = declaration.uriValue();
 
                     if (!uri.isEmpty()) {
-                        brush.setTexture(loadPixmap(uri));
+                        brush.setTexture(HiDPIHelper::loadPixmap(uri));
                     }
                 }
 
@@ -288,27 +290,6 @@ void PaletteExtended::init(StyleType type)
     QCss::Parser parser(QString::fromLocal8Bit(file.readAll()));
 
     parser.parse(m_brushScheme);
-}
-
-QPixmap PaletteExtended::loadPixmap(const QString &fileName) const
-{
-    qreal sourceDevicePixelRatio = 1.0;
-    qreal devicePixelRatio = qApp->devicePixelRatio();
-    QPixmap pixmap;
-
-    if (!qFuzzyCompare(sourceDevicePixelRatio, devicePixelRatio)) {
-        QImageReader reader;
-        reader.setFileName(qt_findAtNxFile(fileName, devicePixelRatio, &sourceDevicePixelRatio));
-        if (reader.canRead()) {
-            reader.setScaledSize(reader.size() * (devicePixelRatio / sourceDevicePixelRatio));
-            pixmap = QPixmap::fromImage(reader.read());
-            pixmap.setDevicePixelRatio(devicePixelRatio);
-        }
-    } else {
-        pixmap.load(fileName);
-    }
-
-    return pixmap;
 }
 
 }

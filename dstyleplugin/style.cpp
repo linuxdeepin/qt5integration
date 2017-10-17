@@ -21,6 +21,7 @@
 #include "paletteextended.h"
 #include "commonhelper.h"
 #include "dstyleanimation.h"
+#include "hidpihelper.h"
 
 #include <QMenu>
 #include <QLineEdit>
@@ -1132,12 +1133,12 @@ void Style::drawDeepinStyleIcon(const QString &name, const QStyleOption *opt, QP
     QPixmap pixmap;
 
     foreach (const QString &format, formatList) {
-        pixmap = QPixmap(":/assets/" + style_name + "/" + name + icon_state + "." + format);
+        pixmap = HiDPIHelper::loadPixmap(":/assets/" + style_name + "/" + name + icon_state + "." + format);
 
         if (!pixmap.isNull())
             break;
 
-        pixmap = QPixmap(":/assets/" + style_name + "/" + name + "_normal." + format);
+        pixmap = HiDPIHelper::loadPixmap(":/assets/" + style_name + "/" + name + "_normal." + format);
 
         if (!pixmap.isNull())
             break;

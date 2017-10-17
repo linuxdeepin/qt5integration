@@ -1,11 +1,11 @@
 <RCC>
     <qresource prefix="/">
-        <file>assets/light/arrow-right_disabled.png</file>
-        <file>assets/light/arrow-right_selected.png</file>
-        <file>assets/light/arrow-right_normal.png</file>
-        <file>assets/light/check_disabled.png</file>
-        <file>assets/light/check_selected.png</file>
-        <file>assets/light/check_normal.png</file>
+        <file>assets/light/arrow-right_disabled.svg</file>
+        <file>assets/light/arrow-right_selected.svg</file>
+        <file>assets/light/arrow-right_normal.svg</file>
+        <file>assets/light/check_disabled.svg</file>
+        <file>assets/light/check_selected.svg</file>
+        <file>assets/light/check_normal.svg</file>
         <file>assets/light/checkbox/checkbox_checked_insensitive.png</file>
         <file>assets/light/checkbox/checkbox_checked_insensitive@2x.png</file>
         <file>assets/light/checkbox/checkbox_checked_focus.png</file>

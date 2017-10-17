@@ -161,8 +161,6 @@ private:
     QCss::StyleSheet *m_brushScheme;
     mutable QHash<QPair<BrushName, quint64>, QBrush> m_brushCache;
     static QList<PaletteExtended*> styleTypeToPaletteList;
-
-    QPixmap loadPixmap(const QString &fileName) const;
 };
 }
 
