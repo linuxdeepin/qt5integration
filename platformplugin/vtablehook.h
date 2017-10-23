@@ -140,6 +140,44 @@ public:
         return true;
     }
 
+    template<typename Func> struct FunctionPointer { };
+    template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...)>
+    {
+        typedef QtPrivate::List<Obj*, Args...> Arguments;
+    };
+    template<class Obj, typename Ret, typename... Args> struct FunctionPointer<Ret (Obj::*) (Args...) const>
+    {
+        typedef QtPrivate::List<Obj*, Args...> Arguments;
+    };
+    template<typename Fun1, typename Fun2>
+    static bool overrideVfptrFun(const typename QtPrivate::FunctionPointer<Fun1>::Object *t1, Fun1 fun1, Fun2 fun2)
+    {
+        //! ({code}) in the form of a code is to eliminate - Wstrict - aliasing build warnings
+        quintptr fun1_offset = toQuintptr(&fun1);
+        quintptr fun2_offset = toQuintptr(&fun2);
+
+        if (fun1_offset < 0 || fun1_offset > UINT_LEAST16_MAX)
+            return false;
+
+        if (!objToOriginalVfptr.contains((quintptr**)t1) && !copyVtable((quintptr**)t1))
+            return false;
+
+        typedef QtPrivate::FunctionPointer<Fun1> FunInfo1;
+        typedef QtPrivate::FunctionPointer<Fun2> FunInfo2;
+
+        Q_STATIC_ASSERT(!FunInfo2::IsPointerToMemberFunction);
+        //compilation error if the arguments does not match.
+        Q_STATIC_ASSERT_X((CheckCompatibleArguments<typename FunctionPointer<Fun1>::Arguments, typename FunInfo2::Arguments>::value),
+                          "Function1 and Function2 arguments are not compatible.");
+        Q_STATIC_ASSERT_X((CheckCompatibleArguments<QtPrivate::List<typename FunInfo1::ReturnType>, QtPrivate::List<typename FunInfo2::ReturnType>>::value),
+                          "Function1 and Function2 return type are not compatible..");
+
+        quintptr *vfptr_t1 = *(quintptr**)t1;
+        *(vfptr_t1 + fun1_offset / sizeof(quintptr)) = fun2_offset;
+
+        return true;
+    }
+
     template<typename Fun1>
     static bool resetVfptrFun(const typename QtPrivate::FunctionPointer<Fun1>::Object *t1, Fun1 fun1)
     {

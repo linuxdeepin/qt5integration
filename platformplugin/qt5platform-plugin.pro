@@ -65,3 +65,6 @@ CONFIG(release, debug|release) {
 } else {
 #    DEFINES += USE_NEW_IMPLEMENTING
 }
+
+RESOURCES += \
+    cursors/cursor.qrc

@@ -39,6 +39,7 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QDebug>
 
 #include "widgetgallery.h"
 
