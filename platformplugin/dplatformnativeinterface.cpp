@@ -54,6 +54,16 @@ QFunctionPointer DPlatformNativeInterface::platformFunction(const QByteArray &fu
         return reinterpret_cast<QFunctionPointer>(&Utility::getCurrentWorkspaceWindows);
     } else if (function == connectWindowListChanged) {
         return reinterpret_cast<QFunctionPointer>(&DWMSupport::connectWindowListChanged);
+    } else if (function == setMWMFunctions) {
+        return reinterpret_cast<QFunctionPointer>(&DWMSupport::setMWMFunctions);
+    } else if (function == getMWMFunctions) {
+        return reinterpret_cast<QFunctionPointer>(&DWMSupport::getMWMFunctions);
+    } else if (function == setMWMDecorations) {
+        return reinterpret_cast<QFunctionPointer>(&DWMSupport::setMWMDecorations);
+    } else if (function == getMWMDecorations) {
+        return reinterpret_cast<QFunctionPointer>(&DWMSupport::getMWMDecorations);
+    } else if (function == connectWindowMotifWMHintsChanged) {
+        return reinterpret_cast<QFunctionPointer>(&DWMSupport::connectWindowMotifWMHintsChanged);
     }
 
     return DPlatformNativeInterfaceParent::platformFunction(function);

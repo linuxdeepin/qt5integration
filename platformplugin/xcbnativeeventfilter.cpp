@@ -102,6 +102,8 @@ bool XcbNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *
             DXcbWMSupport::instance()->updateRootWindowProperties();
         } else if (pn->atom == Utility::internAtom("_NET_CLIENT_LIST_STACKING")) {
             emit DXcbWMSupport::instance()->windowListChanged();
+        } else if (pn->atom == DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_MOTIF_WM_HINTS)) {
+            emit DXcbWMSupport::instance()->windowMotifWMHintsChanged(pn->window);
         }
     }
     // 修复Qt程序对触摸板的自然滚动开关后不能实时生效

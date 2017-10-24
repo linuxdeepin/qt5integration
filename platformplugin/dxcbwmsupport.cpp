@@ -208,6 +208,54 @@ bool DXcbWMSupport::connectWindowListChanged(QObject *object, std::function<void
     return QObject::connect(globalXWMS, &DXcbWMSupport::windowListChanged, object, slot);
 }
 
+bool DXcbWMSupport::connectWindowMotifWMHintsChanged(QObject *object, std::function<void (quint32)> slot)
+{
+    if (!object)
+        return QObject::connect(globalXWMS, &DXcbWMSupport::windowMotifWMHintsChanged, slot);
+
+    return QObject::connect(globalXWMS, &DXcbWMSupport::windowMotifWMHintsChanged, object, slot);
+}
+
+void DXcbWMSupport::setMWMFunctions(quint32 winId, quint32 func)
+{
+    Utility::QtMotifWmHints hints = Utility::getMotifWmHints(winId);
+
+    hints.flags |= MWM_HINTS_FUNCTIONS;
+    hints.functions = func;
+
+    Utility::setMotifWmHints(winId, hints);
+}
+
+quint32 DXcbWMSupport::getMWMFunctions(quint32 winId)
+{
+    Utility::QtMotifWmHints hints = Utility::getMotifWmHints(winId);
+
+    if (hints.flags & MWM_HINTS_FUNCTIONS)
+        return hints.functions;
+
+    return MWM_FUNC_ALL;
+}
+
+void DXcbWMSupport::setMWMDecorations(quint32 winId, quint32 decor)
+{
+    Utility::QtMotifWmHints hints = Utility::getMotifWmHints(winId);
+
+    hints.flags |= MWM_HINTS_DECORATIONS;
+    hints.decorations = decor;
+
+    Utility::setMotifWmHints(winId, hints);
+}
+
+quint32 DXcbWMSupport::getMWMDecorations(quint32 winId)
+{
+    Utility::QtMotifWmHints hints = Utility::getMotifWmHints(winId);
+
+    if (hints.flags & MWM_HINTS_DECORATIONS)
+        return hints.decorations;
+
+    return MWM_DECOR_ALL;
+}
+
 QString DXcbWMSupport::windowManagerName() const
 {
     return m_wmName;

@@ -69,6 +69,12 @@ public:
     static bool connectHasBlurWindowChanged(QObject *object, std::function<void()> slot);
     static bool connectHasCompositeChanged(QObject *object, std::function<void()> slot);
     static bool connectWindowListChanged(QObject *object, std::function<void()> slot);
+    static bool connectWindowMotifWMHintsChanged(QObject *object, std::function<void(quint32 winId)> slot);
+
+    static void setMWMFunctions(quint32 winId, quint32 func);
+    static quint32 getMWMFunctions(quint32 winId);
+    static void setMWMDecorations(quint32 windId, quint32 decor);
+    static quint32 getMWMDecorations(quint32 winId);
 
     bool isDeepinWM() const;
     bool isKwin() const;
@@ -86,6 +92,7 @@ signals:
     void hasBlurWindowChanged(bool hasBlurWindow);
     void hasCompositeChanged(bool hasComposite);
     void windowListChanged();
+    void windowMotifWMHintsChanged(quint32 winId);
 
 protected:
     explicit DXcbWMSupport();

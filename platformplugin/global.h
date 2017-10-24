@@ -63,6 +63,11 @@ DEFINE_CONST_CHAR(connectHasCompositeChanged);
 DEFINE_CONST_CHAR(getWindows);
 DEFINE_CONST_CHAR(getCurrentWorkspaceWindows);
 DEFINE_CONST_CHAR(connectWindowListChanged);
+DEFINE_CONST_CHAR(setMWMFunctions);
+DEFINE_CONST_CHAR(getMWMFunctions);
+DEFINE_CONST_CHAR(setMWMDecorations);
+DEFINE_CONST_CHAR(getMWMDecorations);
+DEFINE_CONST_CHAR(connectWindowMotifWMHintsChanged);
 
 // others
 DEFINE_CONST_CHAR(WmWindowTypes);

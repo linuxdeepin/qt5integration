@@ -200,12 +200,21 @@ void DFrameWindow::setEnableSystemResize(bool enable)
 {
     m_enableSystemResize = enable;
 
-    if (!m_enableSystemMove)
+    if (!m_enableSystemResize)
         Utility::cancelWindowMoveResize(Utility::getNativeTopLevelWindow(winId()));
 }
 
 bool DFrameWindow::isEnableSystemMove() const
 {
+#ifdef Q_OS_LINUX
+    if (!m_enableSystemMove)
+        return false;
+
+    quint32 hints = DXcbWMSupport::getMWMFunctions(Utility::getNativeTopLevelWindow(winId()));
+
+    return (hints == DXcbWMSupport::MWM_FUNC_ALL || hints & DXcbWMSupport::MWM_FUNC_MOVE);
+#endif
+
     return m_enableSystemMove;
 }
 
@@ -246,7 +255,7 @@ void DFrameWindow::mouseMoveEvent(QMouseEvent *event)
 {
     if (event->source() == Qt::MouseEventSynthesizedByQt && qApp->mouseButtons() == Qt::LeftButton
             && m_clipPathOfContent.contains(event->pos() - m_contentGeometry.topLeft())) {
-        if (!m_enableSystemMove)
+        if (!isEnableSystemMove())
             return;
 
         ///TODO: Warning: System move finished no mouse release event
@@ -563,10 +572,21 @@ void DFrameWindow::updateFrameMask()
 
 bool DFrameWindow::canResize() const
 {
-    return m_enableSystemResize
+    bool ok = m_enableSystemResize
             && !flags().testFlag(Qt::Popup)
             && !flags().testFlag(Qt::BypassWindowManagerHint)
             && minimumSize() != maximumSize();
+
+#ifdef Q_OS_LINUX
+    if (!ok)
+        return false;
+
+    quint32 hints = DXcbWMSupport::getMWMFunctions(Utility::getNativeTopLevelWindow(winId()));
+
+    return (hints == DXcbWMSupport::MWM_FUNC_ALL || hints & DXcbWMSupport::MWM_FUNC_RESIZE);
+#endif
+
+    return ok;
 }
 
 void DFrameWindow::cancelAdsorbCursor()
