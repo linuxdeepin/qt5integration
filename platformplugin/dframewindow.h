@@ -34,6 +34,7 @@ class DFrameWindow : public QRasterWindow
 
 public:
     explicit DFrameWindow();
+    ~DFrameWindow();
 
     int shadowRadius() const;
     void setShadowRaduis(int radius);
@@ -86,6 +87,8 @@ private:
     void adsorbCursor(Utility::CornerEdge cornerEdge);
     void startCursorAnimation();
 
+    static QList<DFrameWindow*> frameWindowList;
+
     QPixmap m_shadowPixmap;
     bool m_clearContent = false;
 
@@ -118,6 +121,7 @@ private:
     friend class DPlatformOpenGLContextHelper;
     friend class DPlatformIntegration;
     friend class WindowEventHook;
+    friend class DXcbWMSupport;
 };
 
 DPP_END_NAMESPACE

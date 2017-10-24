@@ -104,6 +104,8 @@ private:
     void updateHasBlurWindow();
     void updateHasComposite();
 
+    static quint32 getRealWinId(quint32 winId);
+
     bool m_isDeepinWM = false;
     bool m_isKwin = false;
     bool m_hasBlurWindow = false;

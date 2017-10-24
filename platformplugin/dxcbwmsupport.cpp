@@ -18,9 +18,11 @@
 #include "dxcbwmsupport.h"
 #include "dplatformintegration.h"
 #include "utility.h"
+#include "dframewindow.h"
 
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
+#include "qxcbwindow.h"
 
 DPP_BEGIN_NAMESPACE
 
@@ -31,6 +33,17 @@ Q_GLOBAL_STATIC(_DXcbWMSupport, globalXWMS)
 DXcbWMSupport::DXcbWMSupport()
 {
     updateWMName(false);
+
+    connect(this, &DXcbWMSupport::windowMotifWMHintsChanged, this, [this] (quint32 winId) {
+        for (const DFrameWindow *frame : DFrameWindow::frameWindowList) {
+            if (frame->m_contentWindow && frame->m_contentWindow->handle()
+                    && static_cast<QXcbWindow*>(frame->m_contentWindow->handle())->QXcbWindow::winId() == winId) {
+                if (frame->handle())
+                    emit windowMotifWMHintsChanged(frame->handle()->winId());
+                break;
+            }
+        }
+    });
 }
 
 void DXcbWMSupport::updateWMName(bool emitSignal)
@@ -236,8 +249,22 @@ quint32 DXcbWMSupport::getMWMFunctions(quint32 winId)
     return MWM_FUNC_ALL;
 }
 
+quint32 DXcbWMSupport::getRealWinId(quint32 winId)
+{
+    for (const DFrameWindow *frame : DFrameWindow::frameWindowList) {
+        if (frame->handle() && frame->handle()->winId() == winId
+                && frame->m_contentWindow && frame->m_contentWindow->handle()) {
+            return static_cast<QXcbWindow*>(frame->m_contentWindow->handle())->QXcbWindow::winId();
+        }
+    }
+
+    return winId;
+}
+
 void DXcbWMSupport::setMWMDecorations(quint32 winId, quint32 decor)
 {
+    winId = getRealWinId(winId);
+
     Utility::QtMotifWmHints hints = Utility::getMotifWmHints(winId);
 
     hints.flags |= MWM_HINTS_DECORATIONS;
@@ -248,6 +275,8 @@ void DXcbWMSupport::setMWMDecorations(quint32 winId, quint32 decor)
 
 quint32 DXcbWMSupport::getMWMDecorations(quint32 winId)
 {
+    winId = getRealWinId(winId);
+
     Utility::QtMotifWmHints hints = Utility::getMotifWmHints(winId);
 
     if (hints.flags & MWM_HINTS_DECORATIONS)

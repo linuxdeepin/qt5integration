@@ -62,6 +62,7 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
     m_frameWindow->setEnableSystemResize(m_enableSystemResize);
 
     m_frameWindow->m_contentWindow = window->window();
+    m_frameWindow->setProperty("_d_real_content_window", (quintptr)m_frameWindow->m_contentWindow.data());
 
     window->setParent(m_frameWindow->handle());
     window->window()->installEventFilter(this);
@@ -269,6 +270,7 @@ void DPlatformWindowHelper::setVisible(bool visible)
 void DPlatformWindowHelper::setWindowFlags(Qt::WindowFlags flags)
 {
     me()->m_frameWindow->setFlags((flags | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::NoDropShadowWindowHint) & ~Qt::WindowMinMaxButtonsHint);
+    window()->QNativeWindow::setWindowFlags(flags);
 }
 
 void DPlatformWindowHelper::setWindowState(Qt::WindowState state)

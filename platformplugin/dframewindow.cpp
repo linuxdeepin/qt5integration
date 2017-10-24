@@ -31,6 +31,8 @@
 
 DPP_BEGIN_NAMESPACE
 
+QList<DFrameWindow*> DFrameWindow::frameWindowList;
+
 DFrameWindow::DFrameWindow()
     : QRasterWindow()
 {
@@ -55,6 +57,12 @@ DFrameWindow::DFrameWindow()
     updateContentMarginsHint();
 
     QGuiApplicationPrivate::window_list.removeAll(this);
+    frameWindowList.append(this);
+}
+
+DFrameWindow::~DFrameWindow()
+{
+    frameWindowList.removeOne(this);
 }
 
 int DFrameWindow::shadowRadius() const

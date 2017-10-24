@@ -91,19 +91,22 @@ bool XcbNativeEventFilter::nativeEventFilter(const QByteArray &eventType, void *
     } else if (response_type == XCB_PROPERTY_NOTIFY) {
         xcb_property_notify_event_t *pn = (xcb_property_notify_event_t *)event;
 
-        if (pn->window != DPlatformIntegration::instance()->defaultConnection()->rootWindow())
-            return false;
-
-        if (pn->atom == DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTED)) {
-            DXcbWMSupport::instance()->updateNetWMAtoms();
-        } else if (pn->atom == DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK)) {
-            DXcbWMSupport::instance()->updateWMName();
-        } else if (pn->atom == DXcbWMSupport::instance()->_kde_net_wm_blur_rehind_region_atom) {
-            DXcbWMSupport::instance()->updateRootWindowProperties();
-        } else if (pn->atom == Utility::internAtom("_NET_CLIENT_LIST_STACKING")) {
-            emit DXcbWMSupport::instance()->windowListChanged();
-        } else if (pn->atom == DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_MOTIF_WM_HINTS)) {
+        if (pn->atom == DPlatformIntegration::xcbConnection()->atom(QXcbAtom::_MOTIF_WM_HINTS)) {
             emit DXcbWMSupport::instance()->windowMotifWMHintsChanged(pn->window);
+        } else {
+            if (pn->window != DPlatformIntegration::instance()->defaultConnection()->rootWindow()) {
+                return false;
+            }
+
+            if (pn->atom == DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTED)) {
+                DXcbWMSupport::instance()->updateNetWMAtoms();
+            } else if (pn->atom == DPlatformIntegration::instance()->defaultConnection()->atom(QXcbAtom::_NET_SUPPORTING_WM_CHECK)) {
+                DXcbWMSupport::instance()->updateWMName();
+            } else if (pn->atom == DXcbWMSupport::instance()->_kde_net_wm_blur_rehind_region_atom) {
+                DXcbWMSupport::instance()->updateRootWindowProperties();
+            } else if (pn->atom == Utility::internAtom("_NET_CLIENT_LIST_STACKING")) {
+                emit DXcbWMSupport::instance()->windowListChanged();
+            }
         }
     }
     // 修复Qt程序对触摸板的自然滚动开关后不能实时生效
