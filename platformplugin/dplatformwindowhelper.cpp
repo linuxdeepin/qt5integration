@@ -197,8 +197,12 @@ void DPlatformWindowHelper::setVisible(bool visible)
         QWindow *tp = helper->m_nativeWindow->window()->transientParent();
         helper->m_nativeWindow->window()->setTransientParent(helper->m_frameWindow);
 
-        if (tp)
-            helper->m_frameWindow->setTransientParent(topvelWindow(tp));
+        if (tp) {
+            QWindow *tw = topvelWindow(tp);
+
+            if (tw != helper->m_frameWindow)
+                helper->m_frameWindow->setTransientParent(tw);
+        }
 
 #ifdef Q_OS_LINUX
         // reupdate _MOTIF_WM_HINTS
