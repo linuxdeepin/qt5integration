@@ -130,6 +130,7 @@ private:
     DFrameWindow *m_frameWindow;
 
     QRect m_windowVaildGeometry;
+    bool overrideSetGeometry = true;
 
     // propertys
     bool m_isUserSetClipPath = false;

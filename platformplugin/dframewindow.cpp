@@ -186,7 +186,7 @@ void DFrameWindow::setClearContentAreaForShadowPixmap(bool clear)
 
         pa.setCompositionMode(QPainter::CompositionMode_Clear);
         pa.setRenderHint(QPainter::Antialiasing);
-        pa.fillPath(m_clipPathOfContent.translated(QPoint(m_shadowRadius, m_shadowRadius) - m_shadowOffset), Qt::transparent);
+        pa.fillPath(m_clipPathOfContent.translated(QPoint(m_shadowRadius, m_shadowRadius) - m_shadowOffset) * devicePixelRatio(), Qt::transparent);
         pa.end();
     }
 }
@@ -235,7 +235,7 @@ void DFrameWindow::paintEvent(QPaintEvent *event)
 void DFrameWindow::showEvent(QShowEvent *event)
 {
     // Set frame extents
-    Utility::setFrameExtents(winId(), contentMarginsHint());
+    Utility::setFrameExtents(winId(), contentMarginsHint() * devicePixelRatio());
 
     updateShadowPixmap();
 
@@ -334,7 +334,7 @@ set_cursor:
     Utility::setWindowCursor(winId(), mouseCorner);
 
     if (qApp->mouseButtons() == Qt::LeftButton) {
-        Utility::startWindowSystemResize(Utility::getNativeTopLevelWindow(winId()), mouseCorner, event->globalPos());
+        Utility::startWindowSystemResize(Utility::getNativeTopLevelWindow(winId()), mouseCorner);
 
         cancelAdsorbCursor();
     } else {
@@ -401,7 +401,9 @@ void DFrameWindow::setContentPath(const QPainterPath &path, bool isRoundedRect, 
                 || margins_size.width() > m_shadowPixmap.width() || margins_size.height() > m_shadowPixmap.height()) {
             updateShadowPixmap();
         } else {
-            m_shadowPixmap = QPixmap::fromImage(Utility::borderImage(m_shadowPixmap, margins, (m_contentGeometry + contentMarginsHint()).size()));
+            m_shadowPixmap = QPixmap::fromImage(Utility::borderImage(m_shadowPixmap, margins * devicePixelRatio(),
+                                                                     (m_contentGeometry + contentMarginsHint()).size() * devicePixelRatio()));
+            m_shadowPixmap.setDevicePixelRatio(devicePixelRatio());
         }
     } else {
         m_pathIsRoundedRect = isRoundedRect;
@@ -423,7 +425,7 @@ void DFrameWindow::updateShadowPixmap()
     QImage image;
 
     if (shadow_radius > m_borderWidth) {
-        QPixmap pixmap(m_contentGeometry.size());
+        QPixmap pixmap(m_contentGeometry.size() * devicePixelRatio());
 
         if (pixmap.isNull())
             return;
@@ -432,10 +434,11 @@ void DFrameWindow::updateShadowPixmap()
 
         QPainter pa(&pixmap);
 
-        pa.fillPath(m_clipPathOfContent, m_shadowColor);
+        pa.fillPath(m_clipPathOfContent * devicePixelRatio(), m_shadowColor);
         pa.end();
 
-        image = Utility::dropShadow(pixmap, shadow_radius, m_shadowColor);
+        image = Utility::dropShadow(pixmap, shadow_radius * devicePixelRatio(), m_shadowColor);
+        image.setDevicePixelRatio(devicePixelRatio());
 
         /// begin paint window border;
 
@@ -461,11 +464,12 @@ void DFrameWindow::updateShadowPixmap()
         pa.end();
         /// end
     } else {
-        image = QImage((m_contentGeometry + contentMarginsHint()).size(), QImage::Format_ARGB32_Premultiplied);
+        image = QImage((m_contentGeometry + contentMarginsHint()).size() * devicePixelRatio(), QImage::Format_ARGB32_Premultiplied);
         image.fill(m_borderColor);
     }
 
     m_shadowPixmap = QPixmap::fromImage(image);
+    m_shadowPixmap.setDevicePixelRatio(devicePixelRatio());
 }
 
 void DFrameWindow::updateContentMarginsHint()
@@ -491,7 +495,7 @@ void DFrameWindow::updateContentMarginsHint()
 
     if (isVisible()) {
         // Set frame extents
-        Utility::setFrameExtents(winId(), margins);
+        Utility::setFrameExtents(winId(), margins * devicePixelRatio());
     }
 
     updateMask();
@@ -528,9 +532,9 @@ void DFrameWindow::updateMask()
             p = path;
         }
 
-        Utility::setShapePath(winId(), p, DWMSupport::instance()->hasComposite());
+        Utility::setShapePath(winId(), p * devicePixelRatio(), DWMSupport::instance()->hasComposite());
     } else {
-        QRegion region(m_contentGeometry.adjusted(-mouse_margins, -mouse_margins, mouse_margins, mouse_margins));
+        QRegion region((m_contentGeometry.adjusted(-mouse_margins, -mouse_margins, mouse_margins, mouse_margins) * devicePixelRatio()).toRect());
         Utility::setShapeRectangles(winId(), region, DWMSupport::instance()->hasComposite());
     }
 
@@ -550,7 +554,7 @@ void DFrameWindow::updateFrameMask()
 
     const QRect rect(QRect(QPoint(0, 0), size()));
 
-    QRegion region(rect.united(m_contentGeometry + contentMarginsHint()));
+    QRegion region((rect.united((m_contentGeometry + contentMarginsHint()))  * devicePixelRatio()).toRect());
 
     // ###(zccrs): xfwm4 window manager会自动给dock类型的窗口加上阴影， 所以在此裁掉窗口之外的内容
     setMask(region);

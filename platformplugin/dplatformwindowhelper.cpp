@@ -136,18 +136,28 @@ void DPlatformWindowHelper::setGeometry(const QRect &rect)
 {
     DPlatformWindowHelper *helper = me();
 
-    const QMargins &content_margins = helper->m_frameWindow->contentMarginsHint();
+    const QMargins &content_margins = helper->m_frameWindow->contentMarginsHint() * helper->m_frameWindow->devicePixelRatio();
+    const QPoint &content_offset = helper->m_frameWindow->contentOffsetHint() * helper->m_frameWindow->devicePixelRatio();
 
-    helper->m_frameWindow->setGeometry(rect + content_margins);
+    if (!helper->overrideSetGeometry) {
+        return window()->QNativeWindow::setGeometry(QRect(content_offset, rect.size()));
+    }
 
-    window()->QNativeWindow::setGeometry(QRect(helper->m_frameWindow->contentOffsetHint(), rect.size()));
+    qt_window_private(helper->m_frameWindow)->positionAutomatic = false;
+    qt_window_private(helper->m_frameWindow)->positionPolicy = QWindowPrivate::WindowFrameExclusive;
+    helper->m_frameWindow->handle()->setGeometry(rect + content_margins);
+    window()->QNativeWindow::setGeometry(QRect(content_offset, rect.size()));
 }
 
 QRect DPlatformWindowHelper::geometry() const
 {
     DPlatformWindowHelper *helper = me();
+    const QRect &geometry = helper->m_frameWindow->handle()->geometry();
 
-    QRect rect = helper->m_frameWindow->handle()->geometry() - helper->m_frameWindow->contentMarginsHint();
+    if (geometry.topLeft() == QPoint(0, 0) && geometry.size() == QSize(0, 0))
+        return geometry;
+
+    QRect rect = geometry - helper->m_frameWindow->contentMarginsHint() * helper->m_frameWindow->devicePixelRatio();
 
     rect.setSize(helper->m_nativeWindow->QNativeWindow::geometry().size());
 
@@ -425,7 +435,9 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
 
             QResizeEvent new_e(e->size() - size_dif, e->oldSize() - size_dif);
 
+            overrideSetGeometry = false;
             m_nativeWindow->window()->resize(new_e.size());
+            overrideSetGeometry = true;
             qApp->sendEvent(m_nativeWindow->window(), &new_e);
 
             break;
@@ -581,7 +593,7 @@ void DPlatformWindowHelper::setClipPath(const QPainterPath &path)
         m_windowVaildGeometry = m_clipPath.boundingRect().toRect() & QRect(QPoint(0, 0), m_nativeWindow->window()->size());
     }
 
-    Utility::setShapePath(m_nativeWindow->QNativeWindow::winId(), m_clipPath, true);
+    Utility::setShapePath(m_nativeWindow->QNativeWindow::winId(), m_clipPath * m_nativeWindow->window()->devicePixelRatio(), true);
 
     updateWindowBlurAreasForWM();
     updateContentPathForFrameWindow();
@@ -589,13 +601,14 @@ void DPlatformWindowHelper::setClipPath(const QPainterPath &path)
 
 bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
 {
-    const QRect &windowValidRect = m_windowVaildGeometry;
+    qreal device_pixel_ratio = m_nativeWindow->window()->devicePixelRatio();
+    const QRect &windowValidRect = (m_windowVaildGeometry * device_pixel_ratio).toRect();
 
     if (windowValidRect.isEmpty())
         return false;
 
     quint32 top_level_w = Utility::getNativeTopLevelWindow(m_frameWindow->winId());
-    QPoint offset = m_frameWindow->contentOffsetHint();
+    QPoint offset = m_frameWindow->contentOffsetHint() * device_pixel_ratio;
 
     if (top_level_w != m_frameWindow->winId()) {
         offset += Utility::translateCoordinates(QPoint(0, 0), m_frameWindow->winId(), top_level_w);
@@ -607,7 +620,7 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
         if (m_isUserSetClipPath) {
             QList<QPainterPath> list;
 
-            list << m_clipPath.translated(offset);
+            list << (m_clipPath * device_pixel_ratio).translated(offset);
 
             return Utility::blurWindowBackgroundByPaths(top_level_w, list);
         }
@@ -618,8 +631,8 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
         area.y = windowValidRect.y() + offset.y();
         area.width = windowValidRect.width();
         area.height = windowValidRect.height();
-        area.xRadius = getWindowRadius();
-        area.yRaduis = getWindowRadius();
+        area.xRadius = getWindowRadius() * device_pixel_ratio;
+        area.yRaduis = getWindowRadius() * device_pixel_ratio;
 
         newAreas.append(std::move(area));
 
@@ -633,6 +646,8 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
         newAreas.reserve(m_blurAreaList.size());
 
         foreach (Utility::BlurArea area, m_blurAreaList) {
+            area *= device_pixel_ratio;
+
             if (area.x < 0) {
                 area.width += area.x;
                 area.x = 0;
@@ -658,11 +673,12 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
 
     newPathList.reserve(newAreas.size());
 
-    QPainterPath window_vaild_path = m_clipPath.translated(offset);
+    QPainterPath window_vaild_path = (m_clipPath * device_pixel_ratio).translated(offset);
 
-    foreach (const Utility::BlurArea &area, m_blurAreaList) {
+    foreach (Utility::BlurArea area, m_blurAreaList) {
         QPainterPath path;
 
+        area *= device_pixel_ratio;
         path.addRoundedRect(area.x + offset.x(), area.y + offset.y(), area.width, area.height, area.xRadius, area.yRaduis);
         newPathList << path.intersected(window_vaild_path);
     }
@@ -671,7 +687,7 @@ bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
         newPathList.reserve(newPathList.size() + m_blurPathList.size());
 
         foreach (const QPainterPath &path, m_blurPathList) {
-            newPathList << path.translated(offset).intersected(window_vaild_path);
+            newPathList << (path * device_pixel_ratio).translated(offset).intersected(window_vaild_path);
         }
     }
 
@@ -959,7 +975,7 @@ void DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged(const QMargin
 
     // update the content window gemetry
     QRect rect = m_nativeWindow->QNativeWindow::geometry();
-    rect.moveTopLeft(m_frameWindow->contentOffsetHint());
+    rect.moveTopLeft(m_frameWindow->contentOffsetHint() * m_nativeWindow->window()->devicePixelRatio());
     m_nativeWindow->window()->setProperty(::frameMargins, QVariant::fromValue(m_frameWindow->contentMarginsHint()));
     m_nativeWindow->QNativeWindow::setGeometry(rect);
     m_frameWindow->setGeometry(m_frameWindow->geometry() + m_frameWindow->contentMarginsHint() - oldMargins);
@@ -1015,7 +1031,7 @@ void DPlatformWindowHelper::updateFrameMaskFromProperty()
 
     QRegion region = qvariant_cast<QRegion>(v);
 
-    m_frameWindow->setMask(region);
+    m_frameWindow->setMask(region * m_frameWindow->devicePixelRatio());
     m_isUserSetFrameMask = !region.isEmpty();
     m_frameWindow->m_enableAutoFrameMask = !m_isUserSetFrameMask;
 }

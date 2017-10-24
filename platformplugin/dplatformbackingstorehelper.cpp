@@ -48,20 +48,29 @@ void DPlatformBackingStoreHelper::flush(QWindow *window, const QRegion &region, 
         DPlatformWindowHelper *window_helper = DPlatformWindowHelper::mapped.value(window->handle());
 
         if (window_helper && (window_helper->m_isUserSetClipPath || window_helper->m_windowRadius > 0)) {
+            qreal device_pixel_ratio = window_helper->m_nativeWindow->window()->devicePixelRatio();
             QPainterPath path;
 
             path.addRegion(region);
-            path -= window_helper->m_clipPath;
+            path -= window_helper->m_clipPath * device_pixel_ratio;
 
             if (path.isEmpty())
                 goto end;
 
             QPainter pa(backingStore()->paintDevice());
 
+            if (!pa.isActive())
+                goto end;
+
             pa.setCompositionMode(QPainter::CompositionMode_Source);
             pa.setRenderHints(QPainter::Antialiasing);
             pa.setClipPath(path);
-            pa.drawPixmap(window_helper->m_windowVaildGeometry.topLeft(), window_helper->m_frameWindow->m_shadowPixmap, window_helper->m_frameWindow->m_contentGeometry);
+            qreal pixmap_pixel_ratio = window_helper->m_frameWindow->m_shadowPixmap.devicePixelRatio();
+            window_helper->m_frameWindow->m_shadowPixmap.setDevicePixelRatio(1);
+            pa.drawPixmap(window_helper->m_windowVaildGeometry.topLeft(),
+                          window_helper->m_frameWindow->m_shadowPixmap,
+                          window_helper->m_frameWindow->m_contentGeometry * device_pixel_ratio);
+            window_helper->m_frameWindow->m_shadowPixmap.setDevicePixelRatio(pixmap_pixel_ratio);
             pa.end();
         }
     }

@@ -61,9 +61,9 @@ target.path = $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
 
 CONFIG(release, debug|release) {
-    DEFINES += QT_NO_DEBUG_OUTPUT
+    DEFINES += QT_NO_DEBUG_OUTPUT USE_NEW_IMPLEMENTING
 } else {
-#    DEFINES += USE_NEW_IMPLEMENTING
+    DEFINES += USE_NEW_IMPLEMENTING
 }
 
 RESOURCES += \
