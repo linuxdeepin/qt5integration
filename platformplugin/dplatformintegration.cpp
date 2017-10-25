@@ -543,7 +543,11 @@ static void overrideChangeCursor(QPlatformCursor *cursorHandle, QCursor * cursor
             it = xcb_cursor->m_cursorHash.insert(key, overrideCreateFontCursor(xcb_cursor, cursor, widget));
         }
         c = it.value();
+#if QT_VERSION < QT_VERSION_CHECK(5, 7, 1)
         w->setCursor(c);
+#else
+        w->setCursor(c, false);
+#endif
     }
 
     VtableHook::callOriginalFun(cursorHandle, &QPlatformCursor::changeCursor, cursor, widget);
