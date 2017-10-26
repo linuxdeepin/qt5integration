@@ -1072,6 +1072,20 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
     return QCommonStyle::standardIcon(standardIcon, opt, widget);
 }
 
+void Style::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment, const QPixmap &pixmap) const
+{
+    if (!qFuzzyCompare(pixmap.devicePixelRatio(), 1.0)) {
+        if (!painter->testRenderHint(QPainter::SmoothPixmapTransform)) {
+            painter->setRenderHint(QPainter::SmoothPixmapTransform);
+            QCommonStyle::drawItemPixmap(painter, rect, alignment, pixmap);
+            painter->setRenderHint(QPainter::SmoothPixmapTransform, false);
+            return;
+        }
+    }
+
+    QCommonStyle::drawItemPixmap(painter, rect, alignment, pixmap);
+}
+
 void Style::drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt, QPainter *p, const QWidget *widget) const
 {
     if (opt->rect.width() <= 1 || opt->rect.height() <= 1)

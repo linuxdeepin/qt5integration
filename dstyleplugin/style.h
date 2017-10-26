@@ -55,6 +55,7 @@ public:
                            const QSize &size, const QWidget *widget) const Q_DECL_OVERRIDE;
 
     QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt, const QWidget *widget) const Q_DECL_OVERRIDE;
+    void drawItemPixmap(QPainter *painter, const QRect &rect, int alignment, const QPixmap &pixmap) const Q_DECL_OVERRIDE;
 
     // some function type alias.
     //    using SubControlRectFunc = QRect(*)(const QStyleOptionComplex *opt, SubControl sc, const QWidget *w);
