@@ -66,7 +66,6 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
 
     window->setParent(m_frameWindow->handle());
     window->window()->installEventFilter(this);
-    qt_window_private(window->window())->positionAutomatic = false;
     updateClipPathByWindowRadius(window->window()->size());
 
     updateClipPathFromProperty();
@@ -139,17 +138,29 @@ void DPlatformWindowHelper::setGeometry(const QRect &rect)
 {
     DPlatformWindowHelper *helper = me();
 
+    bool position_automatic = qt_window_private(helper->m_nativeWindow->window())->positionAutomatic;
+    QWindowPrivate::PositionPolicy position_policy = qt_window_private(helper->m_nativeWindow->window())->positionPolicy;
+
+    qt_window_private(helper->m_nativeWindow->window())->positionAutomatic = false;
+
     const QMargins &content_margins = helper->m_frameWindow->contentMarginsHint() * helper->m_frameWindow->devicePixelRatio();
     const QPoint &content_offset = helper->m_frameWindow->contentOffsetHint() * helper->m_frameWindow->devicePixelRatio();
 
     if (!helper->overrideSetGeometry) {
-        return window()->QNativeWindow::setGeometry(QRect(content_offset, rect.size()));
+        helper->m_nativeWindow->QNativeWindow::setGeometry(QRect(content_offset, rect.size()));
+        // reset
+        qt_window_private(helper->m_nativeWindow->window())->positionAutomatic = position_automatic;
+        qt_window_private(helper->m_nativeWindow->window())->positionPolicy = position_policy;
+        return;
     }
 
-    qt_window_private(helper->m_frameWindow)->positionAutomatic = false;
-    qt_window_private(helper->m_frameWindow)->positionPolicy = QWindowPrivate::WindowFrameExclusive;
+    qt_window_private(helper->m_frameWindow)->positionAutomatic = position_automatic;
+    qt_window_private(helper->m_frameWindow)->positionPolicy = position_policy;
     helper->m_frameWindow->handle()->setGeometry(rect + content_margins);
-    window()->QNativeWindow::setGeometry(QRect(content_offset, rect.size()));
+    helper->m_nativeWindow->QNativeWindow::setGeometry(QRect(content_offset, rect.size()));
+    // reset
+    qt_window_private(helper->m_nativeWindow->window())->positionAutomatic = position_automatic;
+    qt_window_private(helper->m_nativeWindow->window())->positionPolicy = position_policy;
 }
 
 QRect DPlatformWindowHelper::geometry() const
