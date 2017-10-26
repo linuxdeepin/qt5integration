@@ -118,6 +118,8 @@ DPlatformWindowHelper::DPlatformWindowHelper(QNativeWindow *window)
             this, &DPlatformWindowHelper::onWMHasCompositeChanged);
     connect(DWMSupport::instance(), &DXcbWMSupport::windowManagerChanged,
             this, &DPlatformWindowHelper::updateWindowBlurAreasForWM);
+
+    static_cast<QPlatformWindow*>(window)->propagateSizeHints();
 }
 
 DPlatformWindowHelper::~DPlatformWindowHelper()
@@ -226,13 +228,21 @@ void DPlatformWindowHelper::setVisible(bool visible)
             mwmhints.flags &= ~DXcbWMSupport::MWM_HINTS_INPUT_MODE;
         }
 
-        if (window->windowMinimumSize() == window->windowMaximumSize()) {
+        QWindow *content_window = helper->m_nativeWindow->window();
+        Utility::QtMotifWmHints cw_hints = Utility::getMotifWmHints(helper->m_nativeWindow->QNativeWindow::winId());
+        bool size_fixed = content_window->minimumSize() == content_window->maximumSize();
+
+        if (size_fixed) {
             // fixed size, remove the resize handle (since mwm/dtwm
             // isn't smart enough to do it itself)
             mwmhints.flags |= DXcbWMSupport::MWM_HINTS_FUNCTIONS;
-            mwmhints.functions &= ~DXcbWMSupport::MWM_FUNC_RESIZE;
+            if (mwmhints.functions & DXcbWMSupport::MWM_FUNC_ALL) {
+                mwmhints.functions = DXcbWMSupport::MWM_FUNC_MOVE;
+            } else {
+                mwmhints.functions &= ~DXcbWMSupport::MWM_FUNC_RESIZE;
+            }
 
-            if (mwmhints.decorations == DXcbWMSupport::MWM_DECOR_ALL) {
+            if (mwmhints.decorations & DXcbWMSupport::MWM_DECOR_ALL) {
                 mwmhints.flags |= DXcbWMSupport::MWM_HINTS_DECORATIONS;
                 mwmhints.decorations = (DXcbWMSupport::MWM_DECOR_BORDER
                                         | DXcbWMSupport::MWM_DECOR_TITLE
@@ -240,16 +250,30 @@ void DPlatformWindowHelper::setVisible(bool visible)
             } else {
                 mwmhints.decorations &= ~DXcbWMSupport::MWM_DECOR_RESIZEH;
             }
+
+            // set content window decoration hints
+            cw_hints.flags |= DXcbWMSupport::MWM_HINTS_DECORATIONS;
+            cw_hints.decorations = DXcbWMSupport::MWM_DECOR_MINIMIZE;
         }
 
-        if (window->window()->flags() & Qt::WindowMinimizeButtonHint) {
+        if (content_window->flags() & Qt::WindowMinimizeButtonHint) {
             mwmhints.functions |= DXcbWMSupport::MWM_FUNC_MINIMIZE;
         }
-        if (window->window()->flags() & Qt::WindowMaximizeButtonHint) {
+        if (content_window->flags() & Qt::WindowMaximizeButtonHint) {
             mwmhints.functions |= DXcbWMSupport::MWM_FUNC_MAXIMIZE;
+
+            if (!size_fixed)
+                cw_hints.decorations |= DXcbWMSupport::MWM_DECOR_MAXIMIZE;
         }
-        if (window->window()->flags() & Qt::WindowCloseButtonHint)
+        if (content_window->flags() & Qt::WindowCloseButtonHint) {
             mwmhints.functions |= DXcbWMSupport::MWM_FUNC_CLOSE;
+        }
+        if (content_window->flags() & Qt::WindowTitleHint) {
+            cw_hints.decorations |= DXcbWMSupport::MWM_DECOR_TITLE;
+        }
+        if (content_window->flags() & Qt::WindowSystemMenuHint) {
+            cw_hints.decorations |= DXcbWMSupport::MWM_DECOR_MENU;
+        }
 #endif
 
         helper->m_frameWindow->setVisible(visible);
@@ -262,6 +286,7 @@ void DPlatformWindowHelper::setVisible(bool visible)
 #ifdef Q_OS_LINUX
         // Fix the window can't show minimized if window is fixed size
         Utility::setMotifWmHints(window->m_window, mwmhints);
+        Utility::setMotifWmHints(helper->m_nativeWindow->QNativeWindow::winId(), cw_hints);
 #endif
 
         return;
@@ -356,6 +381,24 @@ bool DPlatformWindowHelper::isEmbedded(const QPlatformWindow *parentWindow) cons
 void DPlatformWindowHelper::propagateSizeHints()
 {
     me()->updateSizeHints();
+
+    const QWindow *window = this->window()->window();
+
+    if (window->maximumSize() == window->minimumSize()) {
+        Utility::QtMotifWmHints cw_hints = Utility::getMotifWmHints(this->window()->QNativeWindow::winId());
+
+        cw_hints.flags |= DXcbWMSupport::MWM_HINTS_DECORATIONS;
+        cw_hints.decorations = DXcbWMSupport::MWM_DECOR_MINIMIZE;
+
+        if (window->flags() & Qt::WindowTitleHint) {
+            cw_hints.decorations |= DXcbWMSupport::MWM_DECOR_TITLE;
+        }
+        if (window->flags() & Qt::WindowSystemMenuHint) {
+            cw_hints.decorations |= DXcbWMSupport::MWM_DECOR_MENU;
+        }
+
+        Utility::setMotifWmHints(this->window()->QNativeWindow::winId(), cw_hints);
+    }
 }
 
 void DPlatformWindowHelper::requestActivateWindow()
