@@ -110,6 +110,7 @@ private:
     bool m_enableAutoFrameMask = true;
 
     bool m_canAdsorbCursor = false;
+    bool m_isSystemMoveResizeState = false;
     Utility::CornerEdge m_lastCornerEdge;
     QTimer m_startAnimationTimer;
     QVariantAnimation m_cursorAnimation;

@@ -97,6 +97,7 @@ private:
 
     void updateClipPathByWindowRadius(const QSize &windowSize);
     void setClipPath(const QPainterPath &path);
+    void setWindowVaildGeometry(const QRect &geometry);
     bool updateWindowBlurAreasForWM();
     void updateSizeHints();
     void updateContentPathForFrameWindow();

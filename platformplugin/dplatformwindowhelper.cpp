@@ -205,8 +205,6 @@ void DPlatformWindowHelper::setVisible(bool visible)
     DPlatformWindowHelper *helper = me();
 
     if (visible) {
-        helper->updateWindowBlurAreasForWM();
-
         QWindow *tp = helper->m_nativeWindow->window()->transientParent();
         helper->m_nativeWindow->window()->setTransientParent(helper->m_frameWindow);
 
@@ -289,6 +287,7 @@ void DPlatformWindowHelper::setVisible(bool visible)
 
         helper->m_frameWindow->setVisible(visible);
         helper->m_nativeWindow->QNativeWindow::setVisible(visible);
+        helper->updateWindowBlurAreasForWM();
 
         // restore
         if (tp)
@@ -565,7 +564,11 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
             break;
         }
         case QEvent::MouseButtonRelease: {
-            Utility::cancelWindowMoveResize(Utility::getNativeTopLevelWindow(m_frameWindow->winId()));
+            if (m_frameWindow->m_isSystemMoveResizeState) {
+                Utility::cancelWindowMoveResize(Utility::getNativeTopLevelWindow(m_frameWindow->winId()));
+                m_frameWindow->m_isSystemMoveResizeState = false;
+            }
+
             break;
         }
         case QEvent::PlatformSurface: {
@@ -615,7 +618,7 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
         }
         case QEvent::Resize:
             if (m_isUserSetClipPath) {
-                m_windowVaildGeometry = m_clipPath.boundingRect().toRect() & QRect(QPoint(0, 0), static_cast<QResizeEvent*>(event)->size());
+                setWindowVaildGeometry(m_clipPath.boundingRect().toRect() & QRect(QPoint(0, 0), static_cast<QResizeEvent*>(event)->size()));
             } else {
                 updateClipPathByWindowRadius(static_cast<QResizeEvent*>(event)->size());
             }
@@ -630,7 +633,7 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
 void DPlatformWindowHelper::updateClipPathByWindowRadius(const QSize &windowSize)
 {
     if (!m_isUserSetClipPath) {
-        m_windowVaildGeometry = QRect(QPoint(0, 0), windowSize);
+        setWindowVaildGeometry(QRect(QPoint(0, 0), windowSize));
 
         int window_radius = getWindowRadius();
 
@@ -650,7 +653,7 @@ void DPlatformWindowHelper::setClipPath(const QPainterPath &path)
     m_clipPath = path;
 
     if (m_isUserSetClipPath) {
-        m_windowVaildGeometry = m_clipPath.boundingRect().toRect() & QRect(QPoint(0, 0), m_nativeWindow->window()->size());
+        setWindowVaildGeometry(m_clipPath.boundingRect().toRect() & QRect(QPoint(0, 0), m_nativeWindow->window()->size()));
     }
 
     Utility::setShapePath(m_nativeWindow->QNativeWindow::winId(), m_clipPath * m_nativeWindow->window()->devicePixelRatio(), true);
@@ -659,12 +662,22 @@ void DPlatformWindowHelper::setClipPath(const QPainterPath &path)
     updateContentPathForFrameWindow();
 }
 
+void DPlatformWindowHelper::setWindowVaildGeometry(const QRect &geometry)
+{
+    if (geometry == m_windowVaildGeometry)
+        return;
+
+    m_windowVaildGeometry = geometry;
+
+    updateWindowBlurAreasForWM();
+}
+
 bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
 {
     qreal device_pixel_ratio = m_nativeWindow->window()->devicePixelRatio();
     const QRect &windowValidRect = (m_windowVaildGeometry * device_pixel_ratio).toRect();
 
-    if (windowValidRect.isEmpty())
+    if (windowValidRect.isEmpty() || !m_nativeWindow->window()->isVisible())
         return false;
 
     quint32 top_level_w = Utility::getNativeTopLevelWindow(m_frameWindow->winId());

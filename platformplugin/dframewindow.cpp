@@ -268,6 +268,7 @@ void DFrameWindow::mouseMoveEvent(QMouseEvent *event)
 
         ///TODO: Warning: System move finished no mouse release event
         Utility::startWindowSystemMove(Utility::getNativeTopLevelWindow(winId()));
+        m_isSystemMoveResizeState = true;
 
         return;
     }
@@ -352,6 +353,7 @@ set_cursor:
 
     if (qApp->mouseButtons() == Qt::LeftButton) {
         Utility::startWindowSystemResize(Utility::getNativeTopLevelWindow(winId()), mouseCorner);
+        m_isSystemMoveResizeState = true;
 
         cancelAdsorbCursor();
     } else {
@@ -368,7 +370,10 @@ skip_set_cursor:
 
 void DFrameWindow::mouseReleaseEvent(QMouseEvent *event)
 {
-    Utility::cancelWindowMoveResize(Utility::getNativeTopLevelWindow(winId()));
+    if (m_isSystemMoveResizeState) {
+        Utility::cancelWindowMoveResize(Utility::getNativeTopLevelWindow(winId()));
+        m_isSystemMoveResizeState = false;
+    }
 
     return QRasterWindow::mouseReleaseEvent(event);
 }
