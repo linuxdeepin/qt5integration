@@ -231,7 +231,7 @@ void DFrameWindow::setEnableSystemMove(bool enable)
     m_enableSystemMove = enable;
 
     if (!m_enableSystemMove) {
-        qApp->setOverrideCursor(cursor());
+        setCursor(Qt::ArrowCursor);
 
         cancelAdsorbCursor();
         m_canAdsorbCursor = false;
@@ -276,7 +276,7 @@ void DFrameWindow::mouseMoveEvent(QMouseEvent *event)
     if (!canResize())
         return;
 
-    qApp->setOverrideCursor(cursor());
+    setCursor(Qt::ArrowCursor);
 
     if (qApp->mouseButtons() != Qt::LeftButton && m_contentGeometry.contains(event->pos())) {
         return;
@@ -362,7 +362,7 @@ set_cursor:
 
     return;
 skip_set_cursor:
-    qApp->setOverrideCursor(cursor());
+    setCursor(Qt::ArrowCursor);
 
     cancelAdsorbCursor();
     m_canAdsorbCursor = canResize();

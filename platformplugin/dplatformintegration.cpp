@@ -568,6 +568,7 @@ void DPlatformIntegration::initialize()
     m_eventFilter = new XcbNativeEventFilter(defaultConnection());
     qApp->installNativeEventFilter(m_eventFilter);
 
+    if (!qEnvironmentVariableIsSet("DXCB_DISABLE_HOOK_CURSOR")) {
 #if defined(XCB_USE_XLIB) && !defined(QT_NO_LIBRARY)
     static bool function_ptrs_not_initialized = true;
     if (function_ptrs_not_initialized) {
@@ -598,6 +599,7 @@ void DPlatformIntegration::initialize()
 
     QObject::connect(qApp, &QGuiApplication::screenAdded, qApp, &hookXcbCursor);
 #endif
+    }
 
     VtableHook::overrideVfptrFun(qApp->d_func(), &QGuiApplicationPrivate::isWindowBlocked,
                                  this, &DPlatformIntegration::isWindowBlockedHandle);
