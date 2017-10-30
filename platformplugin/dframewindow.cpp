@@ -435,6 +435,7 @@ void DFrameWindow::setContentPath(const QPainterPath &path, bool isRoundedRect, 
     }
 
     updateMask();
+    update();
 }
 
 void DFrameWindow::updateShadowPixmap()
