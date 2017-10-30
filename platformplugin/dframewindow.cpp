@@ -443,11 +443,12 @@ void DFrameWindow::updateShadowPixmap()
         return;
 
     int shadow_radius = qMax(m_shadowRadius, m_borderWidth);
+    qreal device_pixel_ratio = devicePixelRatio();
 
     QImage image;
 
     if (shadow_radius > m_borderWidth) {
-        QPixmap pixmap(m_contentGeometry.size() * devicePixelRatio());
+        QPixmap pixmap(m_contentGeometry.size() * device_pixel_ratio);
 
         if (pixmap.isNull())
             return;
@@ -456,11 +457,11 @@ void DFrameWindow::updateShadowPixmap()
 
         QPainter pa(&pixmap);
 
-        pa.fillPath(m_clipPathOfContent * devicePixelRatio(), m_shadowColor);
+        pa.fillPath(m_clipPathOfContent * device_pixel_ratio, m_shadowColor);
         pa.end();
 
-        image = Utility::dropShadow(pixmap, shadow_radius * devicePixelRatio(), m_shadowColor);
-        image.setDevicePixelRatio(devicePixelRatio());
+        image = Utility::dropShadow(pixmap, shadow_radius * device_pixel_ratio, m_shadowColor);
+        image.setDevicePixelRatio(device_pixel_ratio);
 
         /// begin paint window border;
 
@@ -470,7 +471,7 @@ void DFrameWindow::updateShadowPixmap()
             QPen pen;
 
             pen.setColor(m_borderColor);
-            pen.setWidth(m_borderWidth * 2);
+            pen.setWidthF(m_borderWidth * 2 / device_pixel_ratio);
             pen.setJoinStyle(Qt::MiterJoin);
 
     //        pa.setCompositionMode(QPainter::CompositionMode_Source);
@@ -486,12 +487,12 @@ void DFrameWindow::updateShadowPixmap()
         pa.end();
         /// end
     } else {
-        image = QImage((m_contentGeometry + contentMarginsHint()).size() * devicePixelRatio(), QImage::Format_ARGB32_Premultiplied);
+        image = QImage((m_contentGeometry + contentMarginsHint()).size() * device_pixel_ratio, QImage::Format_ARGB32_Premultiplied);
         image.fill(m_borderColor);
     }
 
     m_shadowPixmap = QPixmap::fromImage(image);
-    m_shadowPixmap.setDevicePixelRatio(devicePixelRatio());
+    m_shadowPixmap.setDevicePixelRatio(device_pixel_ratio);
 }
 
 void DFrameWindow::updateContentMarginsHint()
