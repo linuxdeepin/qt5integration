@@ -39,6 +39,7 @@ DThemeSettings::DThemeSettings(QObject *parent)
                QSettings::UserScope,
                "deepin", "qt-theme")
 {
+    settings.setIniCodec("utf-8");
     settings.beginGroup("Theme");
 
     QStringList list;
