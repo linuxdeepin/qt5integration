@@ -31,7 +31,7 @@ class DThemeSettings : public QObject
     Q_PROPERTY(QString iconThemeName READ iconThemeName NOTIFY iconThemeNameChanged)
     Q_PROPERTY(QString fallbackIconThemeName READ fallbackIconThemeName NOTIFY fallbackIconThemeNameChanged)
     Q_PROPERTY(QString systemFont READ systemFont NOTIFY systemFontChanged)
-    Q_PROPERTY(int systemFontPixelSize READ systemFontPixelSize NOTIFY systemFontPixelSizeChanged)
+    Q_PROPERTY(qreal systemFontPointSize READ systemFontPointSize NOTIFY systemFontPointSizeChanged)
     Q_PROPERTY(QStringList styleNames READ styleNames NOTIFY styleNamesChanged)
 
 public:
@@ -49,7 +49,7 @@ public:
     bool isSetStyleNames() const;
     QStringList styleNames() const;
     bool isSetSystemFontPixelSize() const;
-    int systemFontPixelSize() const;
+    qreal systemFontPointSize() const;
 
 signals:
     void valueChanged(const QString &key, const QVariant &oldValue, const QVariant &newValue);
@@ -57,7 +57,7 @@ signals:
     void fallbackIconThemeNameChanged(QString fallbackIconThemeName);
     void systemFontChanged(QString systemFont);
     void styleNamesChanged(QStringList styleNames);
-    void systemFontPixelSizeChanged(int systemFontPixelSize);
+    void systemFontPointSizeChanged(qreal systemFontPointSize);
 
 private:
     QSettings settings;

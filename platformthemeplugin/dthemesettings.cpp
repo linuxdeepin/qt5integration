@@ -20,17 +20,18 @@
  */
 #include "dthemesettings.h"
 
-#include <QFileSystemWatcher>
 #include <QFile>
 #include <QTimer>
-#include <QCoreApplication>
-#include <QDebug>
+
+#include <DFileWatcherManager>
 
 #define ICON_THEME_NAME QStringLiteral("IconThemeName")
 #define F_ICON_THEME_NAME QStringLiteral("FallBackIconThemeName")
 #define STYLE_NAMES QStringLiteral("StyleNames")
-#define SYSTEM_FONT QStringLiteral("SystemFont")
-#define SYSTEM_FONT_PIXEL_SIZE QStringLiteral("SystemFontPixelSize")
+#define SYSTEM_FONT QStringLiteral("Font")
+#define SYSTEM_FONT_POINT_SIZE QStringLiteral("FontSize")
+
+DCORE_USE_NAMESPACE
 
 DThemeSettings::DThemeSettings(QObject *parent)
     : QObject(parent)
@@ -38,12 +39,16 @@ DThemeSettings::DThemeSettings(QObject *parent)
                QSettings::UserScope,
                "deepin", "qt-theme")
 {
+    settings.beginGroup("Theme");
+
     QStringList list;
 
     list << settings.fileName();
     list << QSettings(QSettings::IniFormat,
                       QSettings::SystemScope,
                       "deepin", "qt-theme").fileName();
+
+    DFileWatcherManager *watcher = new DFileWatcherManager(this);
 
     for (const QString &path : list) {
         QFile file(path);
@@ -52,11 +57,11 @@ DThemeSettings::DThemeSettings(QObject *parent)
             file.open(QFile::WriteOnly);
             file.close();
         }
+
+        watcher->add(path);
     }
 
-    QFileSystemWatcher *watcher = new QFileSystemWatcher(this);
-
-    connect(watcher, &QFileSystemWatcher::fileChanged, this, &DThemeSettings::onConfigChanged);
+    connect(watcher, &DFileWatcherManager::fileModified, this, &DThemeSettings::onConfigChanged);
 }
 
 bool DThemeSettings::contains(const QString &key) const
@@ -111,12 +116,12 @@ QStringList DThemeSettings::styleNames() const
 
 bool DThemeSettings::isSetSystemFontPixelSize() const
 {
-    return contains(SYSTEM_FONT_PIXEL_SIZE);
+    return contains(SYSTEM_FONT_POINT_SIZE);
 }
 
-int DThemeSettings::systemFontPixelSize() const
+qreal DThemeSettings::systemFontPointSize() const
 {
-    return value(SYSTEM_FONT_PIXEL_SIZE, 12).toInt();
+    return value(SYSTEM_FONT_POINT_SIZE, 9.0).toDouble();
 }
 
 void DThemeSettings::onConfigChanged()
@@ -142,8 +147,8 @@ void DThemeSettings::onConfigChanged()
                 emit systemFontChanged(new_value.toString());
             else if (v == STYLE_NAMES)
                 emit styleNamesChanged(new_value.toStringList());
-            else if (v == SYSTEM_FONT_PIXEL_SIZE)
-                emit systemFontPixelSizeChanged(new_value.toInt());
+            else if (v == SYSTEM_FONT_POINT_SIZE)
+                emit systemFontPointSizeChanged(new_value.toInt());
 
             emit valueChanged(v, old_value, new_value);
         }

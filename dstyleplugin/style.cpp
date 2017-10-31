@@ -117,6 +117,12 @@ void StylePrivate::_q_removeAnimation()
 }
 #endif
 
+void StylePrivate::_q_updateAppFont()
+{
+    if (qApp->desktopSettingsAware())
+        qApp->setFont(QGuiApplication::font());
+}
+
 Style::Style(StyleType style)
     : QCommonStyle(*new StylePrivate())
     , m_type(style)
@@ -209,6 +215,21 @@ void Style::polish(QWidget *w)
     w->setPalette(palette);
 }
 
+static QObject *themeSettings()
+{
+    return reinterpret_cast<QObject*>(qvariant_cast<quintptr>(qApp->property("_d_theme_settings_object")));
+}
+
+void Style::polish(QApplication *app)
+{
+    if (QObject *obj = themeSettings()) {
+        connect(obj, SIGNAL(systemFontChanged(QString)), this, SLOT(_q_updateAppFont()));
+        connect(obj, SIGNAL(systemFontPointSizeChanged(qreal)), this, SLOT(_q_updateAppFont()));
+    }
+
+    QCommonStyle::polish(app);
+}
+
 void Style::unpolish(QWidget *w)
 {
     if (qobject_cast<QPushButton *>(w)
@@ -230,6 +251,16 @@ void Style::unpolish(QWidget *w)
         w->setFont(font);
         w->setAttribute(Qt::WA_SetFont, false);
     }
+}
+
+void Style::unpolish(QApplication *app)
+{
+    if (QObject *obj = themeSettings()) {
+        disconnect(obj, SIGNAL(systemFontChanged(QString)), this, SLOT(_q_updateAppFont()));
+        disconnect(obj, SIGNAL(systemFontPointSizeChanged(qreal)), this, SLOT(_q_updateAppFont()));
+    }
+
+    QCommonStyle::unpolish(app);
 }
 
 int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, const QWidget *widget) const

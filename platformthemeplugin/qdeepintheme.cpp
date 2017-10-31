@@ -207,7 +207,7 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
 
             if (!settings()->systemFont().isEmpty()) {
                 system_font->setFamily(settings()->systemFont());
-                system_font->setPixelSize(settings()->systemFontPixelSize());
+                system_font->setPointSizeF(settings()->systemFontPointSize());
             }
 
             return system_font;
@@ -226,6 +226,8 @@ DThemeSettings *QDeepinTheme::settings() const
     if (!m_settings) {
         m_settings = new DThemeSettings();
 
+        qApp->setProperty("_d_theme_settings_object", (quintptr)m_settings);
+
         if (qApp->inherits("Dtk::Widget::DApplication")) {
             QObject::connect(m_settings, SIGNAL(iconThemeNameChanged(QString)),
                              qApp, SLOT(iconThemeChanged()), Qt::UniqueConnection);
@@ -233,12 +235,10 @@ DThemeSettings *QDeepinTheme::settings() const
 
         auto updateSystemFont = [this] {
             qApp->setFont(*font(QPlatformTheme::SystemFont));
-            QEvent event(QEvent::ApplicationFontChange);
-            qApp->sendEvent(qApp, &event);
         };
 
         QObject::connect(m_settings, &DThemeSettings::systemFontChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
-        QObject::connect(m_settings, &DThemeSettings::systemFontPixelSizeChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
+        QObject::connect(m_settings, &DThemeSettings::systemFontPointSizeChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
     }
 
     return m_settings;

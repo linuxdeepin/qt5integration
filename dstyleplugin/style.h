@@ -37,7 +37,9 @@ public:
 
     void polish(QPalette &p) Q_DECL_OVERRIDE;
     void polish(QWidget *w) Q_DECL_OVERRIDE;
+    void polish(QApplication *app) Q_DECL_OVERRIDE;
     void unpolish(QWidget *w) Q_DECL_OVERRIDE;
+    void unpolish(QApplication *app) Q_DECL_OVERRIDE;
 
     int pixelMetric(PixelMetric m, const QStyleOption *opt = Q_NULLPTR, const QWidget *widget = Q_NULLPTR) const Q_DECL_OVERRIDE;
 
@@ -152,6 +154,7 @@ private:
     friend class ScrollBarHelper;
 
     Q_PRIVATE_SLOT(d_func(), void _q_removeAnimation())
+    Q_PRIVATE_SLOT(d_func(), void _q_updateAppFont())
 
     Q_DECLARE_PRIVATE(Style)
 };
@@ -183,6 +186,8 @@ public:
 
     void _q_removeAnimation();
 #endif
+
+    void _q_updateAppFont();
 
     Q_DECLARE_PUBLIC(Style)
 
