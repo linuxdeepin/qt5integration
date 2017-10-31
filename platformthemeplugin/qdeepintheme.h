@@ -24,6 +24,7 @@
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformnativeinterface.h>
 
+class DThemeSettings;
 class QDeepinTheme : public QGenericUnixTheme
 {
 public:
@@ -44,12 +45,15 @@ public:
 #endif
 
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    const QFont *font(Font type) const Q_DECL_OVERRIDE;
+    DThemeSettings *settings() const;
 
     static const char *name;
 
 private:
     static bool m_usePlatformNativeDialog;
     static QMimeDatabase m_mimeDatabase;
+    static DThemeSettings *m_settings;
 
     friend class QDeepinFileDialogHelper;
     friend class QDeepinPlatformMenu;

@@ -19,9 +19,11 @@
 #include "qdeepinfiledialoghelper.h"
 #include "diconproxyengine.h"
 #include "filedialogmanager_interface.h"
+#include "dthemesettings.h"
 
 #include <QVariant>
 #include <QDebug>
+#include <QGuiApplication>
 
 #include <XdgIcon>
 
@@ -38,6 +40,7 @@ QT_BEGIN_NAMESPACE
 const char *QDeepinTheme::name = "deepin";
 bool QDeepinTheme::m_usePlatformNativeDialog = true;
 QMimeDatabase QDeepinTheme::m_mimeDatabase;
+DThemeSettings *QDeepinTheme::m_settings = 0;
 
 static QString gtkSetting(const gchar *propertyName)
 {
@@ -161,6 +164,9 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
     case QPlatformTheme::StyleNames: {
+        if (settings()->isSetStyleNames() && !settings()->styleNames().isEmpty())
+            return settings()->styleNames();
+
         QStringList styleNames;
         // TODO(hualet): Make ddark&dlight styles ready!
         // styleNames << QStringLiteral("dlight");
@@ -172,8 +178,14 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(styleNames);
     }
     case QPlatformTheme::SystemIconThemeName:
+        if (settings()->isSetIconThemeName())
+            return settings()->iconThemeName();
+
         return QVariant(gtkSetting("gtk-icon-theme-name"));
     case QPlatformTheme::SystemIconFallbackThemeName:
+        if (settings()->isSetFallbackIconThemeName())
+            return settings()->fallbackIconThemeName();
+
         return QVariant(gtkSetting("gtk-fallback-icon-theme"));
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(QGenericUnixTheme::xdgIconThemePaths() << QDir::homePath() + "/.local/share/icons");
@@ -184,6 +196,52 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     }
 
     return QGenericUnixTheme::themeHint(hint);
+}
+
+const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
+{
+    switch (type) {
+    case SystemFont:
+        if (qApp->desktopSettingsAware() && settings()->isSetSystemFont()) {
+            static QFont *system_font = new QFont("");
+
+            if (!settings()->systemFont().isEmpty()) {
+                system_font->setFamily(settings()->systemFont());
+                system_font->setPixelSize(settings()->systemFontPixelSize());
+            }
+
+            return system_font;
+        }
+
+        break;
+    default:
+        break;
+    }
+
+    return QGenericUnixTheme::font(type);
+}
+
+DThemeSettings *QDeepinTheme::settings() const
+{
+    if (!m_settings) {
+        m_settings = new DThemeSettings();
+
+        if (qApp->inherits("Dtk::Widget::DApplication")) {
+            QObject::connect(m_settings, SIGNAL(iconThemeNameChanged(QString)),
+                             qApp, SLOT(iconThemeChanged()), Qt::UniqueConnection);
+        }
+
+        auto updateSystemFont = [this] {
+            qApp->setFont(*font(QPlatformTheme::SystemFont));
+            QEvent event(QEvent::ApplicationFontChange);
+            qApp->sendEvent(qApp, &event);
+        };
+
+        QObject::connect(m_settings, &DThemeSettings::systemFontChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
+        QObject::connect(m_settings, &DThemeSettings::systemFontPixelSizeChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
+    }
+
+    return m_settings;
 }
 
 QT_END_NAMESPACE

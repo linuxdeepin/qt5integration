@@ -28,11 +28,13 @@ DESTDIR = $$_PRO_FILE_PWD_/../bin/plugins/platformthemes
 SOURCES += qdeepintheme.cpp \
     main.cpp \
     qdeepinfiledialoghelper.cpp \
-    diconproxyengine.cpp
+    diconproxyengine.cpp \
+    dthemesettings.cpp
 
 HEADERS += qdeepintheme.h \
     qdeepinfiledialoghelper.h \
-    diconproxyengine.h
+    diconproxyengine.h \
+    dthemesettings.h
 
 DISTFILES += \
     deepin.json
