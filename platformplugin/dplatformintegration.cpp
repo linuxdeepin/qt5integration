@@ -128,12 +128,9 @@ QPlatformWindow *DPlatformIntegration::createPlatformWindow(QWindow *window) con
     }
 
 #ifdef Q_OS_LINUX
-    qDebug() << window << window->type();
-
     if (window->type() == Qt::Widget
             || window->type() == Qt::Window
-            || window->type() == Qt::Dialog
-            || window->type() == Qt::Popup) {
+            || window->type() == Qt::Dialog) {
         Q_UNUSED(new WindowEventHook(xw))
     }
 #endif
