@@ -200,9 +200,12 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 
 const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
 {
+    if (!qApp->desktopSettingsAware())
+        return QGenericUnixTheme::font(type);
+
     switch (type) {
     case SystemFont:
-        if (qApp->desktopSettingsAware() && settings()->isSetSystemFont()) {
+        if (settings()->isSetSystemFont()) {
             static QFont *system_font = new QFont("");
 
             if (!settings()->systemFont().isEmpty()) {
@@ -212,7 +215,18 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
 
             return system_font;
         }
+        break;
+    case FixedFont:
+        if (settings()->isSetSystemFixedFont()) {
+            static QFont *fixed_font = new QFont("");
 
+            if (!settings()->systemFixedFont().isEmpty()) {
+                fixed_font->setFamily(settings()->systemFixedFont());
+                fixed_font->setPointSizeF(settings()->systemFontPointSize());
+            }
+
+            return fixed_font;
+        }
         break;
     default:
         break;

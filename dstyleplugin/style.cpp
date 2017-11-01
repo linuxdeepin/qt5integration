@@ -119,8 +119,16 @@ void StylePrivate::_q_removeAnimation()
 
 void StylePrivate::_q_updateAppFont()
 {
-    if (qApp->desktopSettingsAware())
+    if (qApp->desktopSettingsAware()) {
         qApp->setFont(QGuiApplication::font());
+
+        for (QWidget *w : qApp->allWidgets()) {
+            if (!w->isWindow() && w->testAttribute(Qt::WA_StyleSheet)) {
+                QEvent e(QEvent::ApplicationFontChange);
+                qApp->sendEvent(w, &e);
+            }
+        }
+    }
 }
 
 Style::Style(StyleType style)

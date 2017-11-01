@@ -29,6 +29,7 @@
 #define F_ICON_THEME_NAME QStringLiteral("FallBackIconThemeName")
 #define STYLE_NAMES QStringLiteral("StyleNames")
 #define SYSTEM_FONT QStringLiteral("Font")
+#define SYSTEM_FIXED_FONT QStringLiteral("MonoFont")
 #define SYSTEM_FONT_POINT_SIZE QStringLiteral("FontSize")
 
 DCORE_USE_NAMESPACE
@@ -125,6 +126,16 @@ qreal DThemeSettings::systemFontPointSize() const
     return value(SYSTEM_FONT_POINT_SIZE, 9.0).toDouble();
 }
 
+bool DThemeSettings::isSetSystemFixedFont() const
+{
+    return contains(SYSTEM_FIXED_FONT);
+}
+
+QString DThemeSettings::systemFixedFont() const
+{
+    return value(SYSTEM_FIXED_FONT).toString();
+}
+
 void DThemeSettings::onConfigChanged()
 {
     QVariantMap config;
@@ -148,6 +159,8 @@ void DThemeSettings::onConfigChanged()
                 emit systemFontChanged(new_value.toString());
             else if (v == STYLE_NAMES)
                 emit styleNamesChanged(new_value.toStringList());
+            else if (v == SYSTEM_FIXED_FONT)
+                emit systemFixedFontChanged(new_value.toString());
             else if (v == SYSTEM_FONT_POINT_SIZE)
                 emit systemFontPointSizeChanged(new_value.toInt());
 
