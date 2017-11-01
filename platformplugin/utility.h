@@ -74,12 +74,15 @@ public:
 
         inline BlurArea operator *(qreal scale)
         {
+            if (qFuzzyCompare(1.0, scale))
+                return *this;
+
             BlurArea new_area;
 
-            new_area.x = x * scale;
-            new_area.y = y * scale;
-            new_area.width = width * scale;
-            new_area.height = height * scale;
+            new_area.x = qRound64(x * scale);
+            new_area.y = qRound64(y * scale);
+            new_area.width = qRound64(width * scale);
+            new_area.height = qRound64(height * scale);
             new_area.xRadius = xRadius;
             new_area.yRaduis = yRaduis;
 
@@ -88,15 +91,7 @@ public:
 
         inline BlurArea &operator *=(qreal scale)
         {
-            if (qFuzzyCompare(1.0, scale))
-                return *this;
-
-            x *= scale;
-            y *= scale;
-            width *= scale;
-            height *= scale;
-
-            return *this;
+            return *this = *this * scale;
         }
     };
 
@@ -122,6 +117,7 @@ public:
     static quint32 getNativeTopLevelWindow(quint32 WId);
 
     static QPoint translateCoordinates(const QPoint &pos, quint32 src, quint32 dst);
+    static QRect windowGeometry(quint32 WId);
 
 #ifdef Q_OS_LINUX
     static int XIconifyWindow(void *display, quint32 w, int screen_number);
@@ -148,7 +144,7 @@ inline QPainterPath operator *(const QPainterPath &path, qreal scale)
     for (int i = 0; i < path.elementCount(); ++i) {
         const QPainterPath::Element &e = path.elementAt(i);
 
-        new_path.setElementPositionAt(i, e.x * scale, e.y * scale);
+        new_path.setElementPositionAt(i, qRound(e.x * scale), qRound(e.y * scale));
     }
 
     return new_path;
@@ -161,14 +157,23 @@ inline QPainterPath &operator *=(QPainterPath &path, qreal scale)
     for (int i = 0; i < path.elementCount(); ++i) {
         const QPainterPath::Element &e = path.elementAt(i);
 
-        path.setElementPositionAt(i, e.x * scale, e.y * scale);
+        path.setElementPositionAt(i, qRound(e.x * scale), qRound(e.y * scale));
     }
 
     return path;
 }
-inline QRectF operator *(const QRect &rect, qreal scale)
+inline QRect operator *(const QRect &rect, qreal scale)
 {
-    return QRectF(rect.left() * scale, rect.top() * scale, rect.width() * scale, rect.height() * scale);
+    if (qFuzzyCompare(1.0, scale))
+        return rect;
+
+    return QRect(qRound(rect.left() * scale), qRound(rect.top() * scale),
+                 qRound(rect.width() * scale), qRound(rect.height() * scale));
+}
+inline QMargins operator -(const QRect &r1, const QRect &r2)
+{
+    return QMargins(r2.left() - r1.left(), r2.top() - r1.top(),
+                    r1.right() - r2.right(), r1.bottom() - r2.bottom());
 }
 inline QRegion operator *(const QRegion &pointRegion, qreal scale)
 {
@@ -177,7 +182,7 @@ inline QRegion operator *(const QRegion &pointRegion, qreal scale)
 
     QRegion pixelRegon;
     foreach (const QRect &rect, pointRegion.rects()) {
-        pixelRegon += (rect * scale).toRect();
+        pixelRegon += rect * scale;
     }
     return pixelRegon;
 }

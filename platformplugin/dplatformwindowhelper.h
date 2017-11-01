@@ -129,6 +129,7 @@ private:
 
     QNativeWindow *m_nativeWindow;
     DFrameWindow *m_frameWindow;
+    QSize m_frameWindowSize;
 
     QRect m_windowVaildGeometry;
     bool overrideSetGeometry = true;

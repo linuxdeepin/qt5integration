@@ -616,6 +616,34 @@ QPoint Utility::translateCoordinates(const QPoint &pos, quint32 src, quint32 dst
     return ret;
 }
 
+QRect Utility::windowGeometry(quint32 WId)
+{
+    xcb_get_geometry_reply_t *geom =
+        xcb_get_geometry_reply(
+            DPlatformIntegration::xcbConnection()->xcb_connection(),
+            xcb_get_geometry(DPlatformIntegration::xcbConnection()->xcb_connection(), WId),
+            NULL);
+
+    QRect rect;
+
+    if (geom) {
+        // --
+        // add the border_width for the window managers frame... some window managers
+        // do not use a border_width of zero for their frames, and if we the left and
+        // top strut, we ensure that pos() is absolutely correct.  frameGeometry()
+        // will still be incorrect though... perhaps i should have foffset as well, to
+        // indicate the frame offset (equal to the border_width on X).
+        // - Brad
+        // -- copied from qwidget_x11.cpp
+
+        rect = QRect(geom->x, geom->y, geom->width, geom->height);
+
+        free(geom);
+    }
+
+    return rect;
+}
+
 int Utility::XIconifyWindow(void *display, quint32 w, int screen_number)
 {
     return ::XIconifyWindow(reinterpret_cast<Display*>(display), w, screen_number);

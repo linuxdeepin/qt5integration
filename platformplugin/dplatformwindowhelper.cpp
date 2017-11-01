@@ -154,6 +154,9 @@ void DPlatformWindowHelper::setGeometry(const QRect &rect)
         return;
     }
 
+    // save new size
+    helper->m_frameWindowSize =(rect + content_margins).size() / helper->m_frameWindow->devicePixelRatio();
+
     qt_window_private(helper->m_frameWindow)->positionAutomatic = position_automatic;
     qt_window_private(helper->m_frameWindow)->positionPolicy = position_policy;
     helper->m_frameWindow->handle()->setGeometry(rect + content_margins);
@@ -267,6 +270,8 @@ void DPlatformWindowHelper::setVisible(bool visible)
 
         if (content_window->flags() & Qt::WindowMinimizeButtonHint) {
             mwmhints.functions |= DXcbWMSupport::MWM_FUNC_MINIMIZE;
+
+            cw_hints.decorations |= DXcbWMSupport::MWM_DECOR_MINIMIZE;
         }
         if (content_window->flags() & Qt::WindowMaximizeButtonHint) {
             mwmhints.functions |= DXcbWMSupport::MWM_FUNC_MAXIMIZE;
@@ -488,9 +493,16 @@ bool DPlatformWindowHelper::eventFilter(QObject *watched, QEvent *event)
             QWindowSystemInterface::handleWindowActivated(m_nativeWindow->window(), Qt::OtherFocusReason);
             return true;
         case QEvent::Resize: {
+            const QResizeEvent *e = static_cast<QResizeEvent*>(event);
+
+            if (m_frameWindowSize == e->size()) {
+                break;
+            } else {
+                m_frameWindowSize = e->size();
+            }
+
             const QMargins &margins = m_frameWindow->contentMarginsHint();
             const QSize size_dif(margins.left() + margins.right(), margins.top() + margins.bottom());
-            const QResizeEvent *e = static_cast<QResizeEvent*>(event);
 
             QResizeEvent new_e(e->size() - size_dif, e->oldSize() - size_dif);
 
@@ -675,7 +687,7 @@ void DPlatformWindowHelper::setWindowVaildGeometry(const QRect &geometry)
 bool DPlatformWindowHelper::updateWindowBlurAreasForWM()
 {
     qreal device_pixel_ratio = m_nativeWindow->window()->devicePixelRatio();
-    const QRect &windowValidRect = (m_windowVaildGeometry * device_pixel_ratio).toRect();
+    const QRect &windowValidRect = m_windowVaildGeometry * device_pixel_ratio;
 
     if (windowValidRect.isEmpty() || !m_nativeWindow->window()->isVisible())
         return false;
@@ -1051,6 +1063,7 @@ void DPlatformWindowHelper::onFrameWindowContentMarginsHintChanged(const QMargin
     rect.moveTopLeft(m_frameWindow->contentOffsetHint() * m_nativeWindow->window()->devicePixelRatio());
     m_nativeWindow->window()->setProperty(::frameMargins, QVariant::fromValue(m_frameWindow->contentMarginsHint()));
     m_nativeWindow->QNativeWindow::setGeometry(rect);
+    m_frameWindowSize = (m_frameWindow->geometry() + m_frameWindow->contentMarginsHint() - oldMargins).size();
     m_frameWindow->setGeometry(m_frameWindow->geometry() + m_frameWindow->contentMarginsHint() - oldMargins);
 }
 
