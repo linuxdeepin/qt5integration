@@ -75,14 +75,14 @@ void DPlatformOpenGLContextHelper::swapBuffers(QPlatformSurface *surface)
 
         window_helper->m_frameWindow->setClearContentAreaForShadowPixmap(true);
 
-        pa_device.drawPixmap(window_helper->m_windowVaildGeometry.topLeft(),
-                             window_helper->m_frameWindow->m_shadowPixmap,
-                             window_helper->m_frameWindow->m_contentGeometry);
+        pa_device.drawImage(window_helper->m_windowVaildGeometry.topLeft(),
+                            window_helper->m_frameWindow->m_shadowImage,
+                            window_helper->m_frameWindow->m_contentGeometry);
         pa_device.setCompositionMode(QPainter::CompositionMode_Source);
         pa_device.setClipPath(path);
-        pa_device.drawPixmap(window_helper->m_windowVaildGeometry.topLeft(),
-                             window_helper->m_frameWindow->m_shadowPixmap,
-                             window_helper->m_frameWindow->m_contentGeometry);
+        pa_device.drawImage(window_helper->m_windowVaildGeometry.topLeft(),
+                            window_helper->m_frameWindow->m_shadowImage,
+                            window_helper->m_frameWindow->m_contentGeometry);
         pa_device.end();
     }
 

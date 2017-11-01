@@ -21,14 +21,18 @@
 #include "global.h"
 #include "utility.h"
 
-#include <QRasterWindow>
+#include <QPaintDeviceWindow>
 #include <QVariantAnimation>
 #include <QTimer>
 #include <QPointer>
 
+QT_BEGIN_NAMESPACE
+class QPlatformBackingStore;
+QT_END_NAMESPACE
+
 DPP_BEGIN_NAMESPACE
 
-class DFrameWindow : public QRasterWindow
+class DFrameWindow : public QPaintDeviceWindow
 {
     Q_OBJECT
 
@@ -67,7 +71,7 @@ signals:
     void contentMarginsHintChanged(const QMargins &oldMargins) const;
 
 protected:
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
     void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
@@ -75,9 +79,11 @@ protected:
     bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 private:
+    QPaintDevice *redirected(QPoint *) const Q_DECL_OVERRIDE;
+
     void setContentPath(const QPainterPath &path, bool isRoundedRect, int radius = 0);
 
-    void updateShadowPixmap();
+    void updateShadow();
     void updateContentMarginsHint();
     void updateMask();
     void updateFrameMask();
@@ -89,7 +95,9 @@ private:
 
     static QList<DFrameWindow*> frameWindowList;
 
-    QPixmap m_shadowPixmap;
+    QPlatformBackingStore *platformBackingStore;
+
+    QImage m_shadowImage;
     bool m_clearContent = false;
 
     int m_shadowRadius = 60;
@@ -123,6 +131,7 @@ private:
     friend class DPlatformIntegration;
     friend class WindowEventHook;
     friend class DXcbWMSupport;
+    friend class DFrameWindowPrivate;
 };
 
 DPP_END_NAMESPACE

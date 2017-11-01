@@ -65,12 +65,9 @@ void DPlatformBackingStoreHelper::flush(QWindow *window, const QRegion &region, 
             pa.setCompositionMode(QPainter::CompositionMode_Source);
             pa.setRenderHints(QPainter::Antialiasing);
             pa.setClipPath(path);
-            qreal pixmap_pixel_ratio = window_helper->m_frameWindow->m_shadowPixmap.devicePixelRatio();
-            window_helper->m_frameWindow->m_shadowPixmap.setDevicePixelRatio(1);
-            pa.drawPixmap(window_helper->m_windowVaildGeometry.topLeft(),
-                          window_helper->m_frameWindow->m_shadowPixmap,
-                          window_helper->m_frameWindow->m_contentGeometry * device_pixel_ratio);
-            window_helper->m_frameWindow->m_shadowPixmap.setDevicePixelRatio(pixmap_pixel_ratio);
+            pa.drawImage(window_helper->m_windowVaildGeometry.topLeft(),
+                         window_helper->m_frameWindow->platformBackingStore->toImage(),
+                         window_helper->m_frameWindow->m_contentGeometry * device_pixel_ratio);
             pa.end();
         }
     }

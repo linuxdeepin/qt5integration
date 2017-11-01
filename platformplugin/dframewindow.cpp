@@ -23,19 +23,54 @@
 #endif
 
 #include <QPainter>
-#include <QPaintEvent>
 #include <QGuiApplication>
 #include <QDebug>
 
 #include <private/qguiapplication_p.h>
+#include <private/qpaintdevicewindow_p.h>
+#include <qpa/qplatformbackingstore.h>
+#include <qpa/qplatformintegration.h>
 
 DPP_BEGIN_NAMESPACE
+
+class DFrameWindowPrivate : public QPaintDeviceWindowPrivate
+{
+    Q_DECLARE_PUBLIC(DFrameWindow)
+public:
+    void beginPaint(const QRegion &region) Q_DECL_OVERRIDE
+    {
+        Q_Q(DFrameWindow);
+        if (size != q->size()) {
+            size = q->size();
+            q->platformBackingStore->resize(size * q->devicePixelRatio(), QRegion());
+            markWindowAsDirty();
+        }
+        q->platformBackingStore->beginPaint(region * q->devicePixelRatio());
+    }
+
+    void endPaint() Q_DECL_OVERRIDE
+    {
+        Q_Q(DFrameWindow);
+        q->platformBackingStore->endPaint();
+    }
+
+    void flush(const QRegion &region) Q_DECL_OVERRIDE
+    {
+        Q_Q(DFrameWindow);
+        q->platformBackingStore->flush(q, region * q->devicePixelRatio(), QPoint());
+    }
+
+    QSize size;
+};
 
 QList<DFrameWindow*> DFrameWindow::frameWindowList;
 
 DFrameWindow::DFrameWindow()
-    : QRasterWindow()
+    : QPaintDeviceWindow(*new DFrameWindowPrivate, 0)
+    , platformBackingStore(QGuiApplicationPrivate::platformIntegration()->createPlatformBackingStore(this))
 {
+    setSurfaceType(QSurface::RasterSurface);
+
     QSurfaceFormat f = this->format();
     f.setAlphaBufferSize(8);
     setFormat(f);
@@ -107,8 +142,7 @@ void DFrameWindow::setShadowColor(const QColor &color)
 
     m_shadowColor = color;
 
-    updateShadowPixmap();
-    update();
+    updateShadow();
 }
 
 int DFrameWindow::borderWidth() const
@@ -138,8 +172,7 @@ void DFrameWindow::setBorderColor(const QColor &color)
 
     m_borderColor = color;
 
-    updateShadowPixmap();
-    update();
+    updateShadow();
 }
 
 QPainterPath DFrameWindow::contentPath() const
@@ -189,8 +222,8 @@ void DFrameWindow::setClearContentAreaForShadowPixmap(bool clear)
 
     m_clearContent = clear;
 
-    if (clear && !m_shadowPixmap.isNull()) {
-        QPainter pa(&m_shadowPixmap);
+    if (clear && !m_shadowImage.isNull()) {
+        QPainter pa(&m_shadowImage);
 
         pa.setCompositionMode(QPainter::CompositionMode_Clear);
         pa.setRenderHint(QPainter::Antialiasing);
@@ -240,23 +273,32 @@ void DFrameWindow::setEnableSystemMove(bool enable)
     }
 }
 
-void DFrameWindow::paintEvent(QPaintEvent *event)
+void DFrameWindow::paintEvent(QPaintEvent *)
 {
-    Q_UNUSED(event);
-    QPainter pa(this);
-    QPoint offset = m_contentGeometry.topLeft() - contentOffsetHint();
+    const QPoint &offset = m_contentGeometry.topLeft() - contentOffsetHint();
 
-    pa.drawPixmap(offset, m_shadowPixmap);
+    QPainter pa(this);
+
+    pa.drawImage(offset, m_shadowImage);
+
+    if (m_borderWidth > 0) {
+        QPen pen;
+
+        pen.setWidthF(m_borderWidth * 2);
+        pen.setColor(m_borderColor);
+        pen.setJoinStyle(Qt::MiterJoin);
+
+        pa.setPen(pen);
+        pa.setRenderHint(QPainter::Antialiasing);
+        pa.drawPath(m_clipPathOfContent.translated(m_contentGeometry.topLeft()) * devicePixelRatio());
+    }
 }
 
 void DFrameWindow::showEvent(QShowEvent *event)
 {
     // Set frame extents
     Utility::setFrameExtents(winId(), contentMarginsHint() * devicePixelRatio());
-
-    updateShadowPixmap();
-
-    return QRasterWindow::showEvent(event);
+    QPaintDeviceWindow::showEvent(event);
 }
 
 void DFrameWindow::mouseMoveEvent(QMouseEvent *event)
@@ -375,14 +417,14 @@ void DFrameWindow::mouseReleaseEvent(QMouseEvent *event)
         m_isSystemMoveResizeState = false;
     }
 
-    return QRasterWindow::mouseReleaseEvent(event);
+    return QPaintDeviceWindow::mouseReleaseEvent(event);
 }
 
 void DFrameWindow::resizeEvent(QResizeEvent *event)
 {
     updateFrameMask();
 
-    return QRasterWindow::resizeEvent(event);
+    return QPaintDeviceWindow::resizeEvent(event);
 }
 
 bool DFrameWindow::event(QEvent *event)
@@ -399,7 +441,12 @@ bool DFrameWindow::event(QEvent *event)
         break;
     }
 
-    return QRasterWindow::event(event);
+    return QPaintDeviceWindow::event(event);
+}
+
+QPaintDevice *DFrameWindow::redirected(QPoint *) const
+{
+    return platformBackingStore->paintDevice();
 }
 
 void DFrameWindow::setContentPath(const QPainterPath &path, bool isRoundedRect, int radius)
@@ -412,89 +459,52 @@ void DFrameWindow::setContentPath(const QPainterPath &path, bool isRoundedRect, 
 
     m_clipPathOfContent = path;
 
-    if (isRoundedRect && m_pathIsRoundedRect == isRoundedRect && m_roundedRectRadius == radius && !m_shadowPixmap.isNull()) {
+    if (isRoundedRect && m_pathIsRoundedRect == isRoundedRect && m_roundedRectRadius == radius && !m_shadowImage.isNull()) {
         const QMargins margins(qMax(m_shadowRadius + radius + qAbs(m_shadowOffset.x()), m_borderWidth),
                                qMax(m_shadowRadius + radius + qAbs(m_shadowOffset.y()), m_borderWidth),
                                qMax(m_shadowRadius + radius + qAbs(m_shadowOffset.x()), m_borderWidth),
                                qMax(m_shadowRadius + radius + qAbs(m_shadowOffset.y()), m_borderWidth));
         const QSize &margins_size = margins2Size(margins);
-        const QSize &shadow_size = m_shadowPixmap.size() / devicePixelRatio();
+        const QSize &shadow_size = m_shadowImage.size() / devicePixelRatio();
 
         if (margins_size.width() > m_contentGeometry.width() || margins_size.height() > m_contentGeometry.height()
                 || margins_size.width() > shadow_size.width() || margins_size.height() > shadow_size.height()) {
-            updateShadowPixmap();
+            updateShadow();
         } else {
-            m_shadowPixmap = QPixmap::fromImage(Utility::borderImage(m_shadowPixmap, margins * devicePixelRatio(),
-                                                                     (m_contentGeometry + contentMarginsHint()).size() * devicePixelRatio()));
-            m_shadowPixmap.setDevicePixelRatio(devicePixelRatio());
+            m_shadowImage = Utility::borderImage(QPixmap::fromImage(m_shadowImage), margins * devicePixelRatio(),
+                                                 (m_contentGeometry + contentMarginsHint()).size() * devicePixelRatio());
+            update();
         }
     } else {
         m_pathIsRoundedRect = isRoundedRect;
         m_roundedRectRadius = radius;
 
-        updateShadowPixmap();
+        updateShadow();
     }
 
     updateMask();
-    update();
 }
 
-void DFrameWindow::updateShadowPixmap()
+void DFrameWindow::updateShadow()
 {
     if (m_contentGeometry.isEmpty())
         return;
 
-    int shadow_radius = qMax(m_shadowRadius, m_borderWidth);
     qreal device_pixel_ratio = devicePixelRatio();
+    QPixmap pixmap(m_contentGeometry.size() * device_pixel_ratio);
 
-    QImage image;
+    if (pixmap.isNull())
+        return;
 
-    if (shadow_radius > m_borderWidth) {
-        QPixmap pixmap(m_contentGeometry.size() * device_pixel_ratio);
+    pixmap.fill(Qt::transparent);
 
-        if (pixmap.isNull())
-            return;
+    QPainter pa(&pixmap);
 
-        pixmap.fill(Qt::transparent);
+    pa.fillPath(m_clipPathOfContent * device_pixel_ratio, m_shadowColor);
+    pa.end();
 
-        QPainter pa(&pixmap);
-
-        pa.fillPath(m_clipPathOfContent * device_pixel_ratio, m_shadowColor);
-        pa.end();
-
-        image = Utility::dropShadow(pixmap, shadow_radius * device_pixel_ratio, m_shadowColor);
-
-        /// begin paint window border;
-        pa.begin(&image);
-
-        if (m_borderWidth > 0) {
-            QPen pen;
-
-            pen.setColor(m_borderColor);
-            pen.setWidthF(m_borderWidth * 2);
-            pen.setJoinStyle(Qt::MiterJoin);
-
-    //        pa.setCompositionMode(QPainter::CompositionMode_Source);
-            pa.setPen(pen);
-            pa.setRenderHint(QPainter::Antialiasing);
-            pa.drawPath(m_clipPathOfContent.translated(contentOffsetHint()) * device_pixel_ratio);
-            pa.setRenderHint(QPainter::Antialiasing, false);
-        }
-
-        image.setDevicePixelRatio(device_pixel_ratio);
-
-        if (m_clearContent)
-            pa.fillPath(m_clipPathOfContent.translated(QPoint(m_shadowRadius, m_shadowRadius) - m_shadowOffset), Qt::transparent);
-
-        pa.end();
-        /// end
-    } else {
-        image = QImage((m_contentGeometry + contentMarginsHint()).size() * device_pixel_ratio, QImage::Format_ARGB32_Premultiplied);
-        image.fill(m_borderColor);
-    }
-
-    m_shadowPixmap = QPixmap::fromImage(image);
-    m_shadowPixmap.setDevicePixelRatio(device_pixel_ratio);
+    m_shadowImage = Utility::dropShadow(pixmap, m_shadowRadius * device_pixel_ratio, m_shadowColor);
+    update();
 }
 
 void DFrameWindow::updateContentMarginsHint()
@@ -515,8 +525,7 @@ void DFrameWindow::updateContentMarginsHint()
     m_contentGeometry.translate(m_contentMarginsHint.left() - old_margins.left(),
                                 m_contentMarginsHint.top() - old_margins.top());
 
-    updateShadowPixmap();
-    update();
+    updateShadow();
 
     if (isVisible()) {
         // Set frame extents
