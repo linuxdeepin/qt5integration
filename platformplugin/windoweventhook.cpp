@@ -183,7 +183,11 @@ void WindowEventHook::handleClientMessageEvent(const xcb_client_message_event_t 
 
         // reset
         drag->target_time = XCB_CURRENT_TIME;
+    } else if (event->type == me->atom(QXcbAtom::_XEMBED)) {
+        qDebug() << event->data.data32[1] << hex << event->window;
     } else {
+        qDebug() << event->type;
+
         me->QXcbWindow::handleClientMessageEvent(event);
     }
 }
