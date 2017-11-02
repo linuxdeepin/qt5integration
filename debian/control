@@ -6,7 +6,7 @@ Build-Depends: debhelper (>=9), qt5-default, qtbase5-dev,
     qtbase5-private-dev, libqt5xdg-dev, libdtkwidget-dev,
     pkg-config, libgtk2.0-dev, libqt5x11extras5-dev,
     libfontconfig1-dev, libfreetype6-dev, libglib2.0-dev,
-    libqt5svg5-dev, libqt5xdgiconloader-dev
+    libqt5svg5-dev, libqt5xdgiconloader-dev, libmtdev-dev
 Standards-Version: 3.9.8
 
 Package: dde-qt5integration
