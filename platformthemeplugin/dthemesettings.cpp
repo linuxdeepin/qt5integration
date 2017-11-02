@@ -60,7 +60,8 @@ DThemeSettings::DThemeSettings(QObject *parent)
             file.close();
         }
 
-        watcher->add(path);
+        if (QFile::exists(path))
+            watcher->add(path);
     }
 
     connect(watcher, &DFileWatcherManager::fileModified, this, &DThemeSettings::onConfigChanged);
