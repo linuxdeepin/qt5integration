@@ -91,7 +91,6 @@ DFrameWindow::DFrameWindow()
 
     updateContentMarginsHint();
 
-    QGuiApplicationPrivate::window_list.removeAll(this);
     frameWindowList.append(this);
 }
 
