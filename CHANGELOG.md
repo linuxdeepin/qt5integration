@@ -1,4 +1,14 @@
 <a name=""></a>
+##  0.2.8.1 (2017-11-02)
+
+
+#### Bug Fixes
+
+*   remove libqt5dxcb-dev for "Conflicts" and "Provides" ([4d38dbca](https://github.com/linuxdeepin/qt5integration/commit/4d38dbcac71375f96469cfdda2b4bad0124c7b16))
+
+
+
+<a name=""></a>
 ##  0.2.8 (2017-11-02)
 
 
