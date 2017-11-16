@@ -105,7 +105,7 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
                         nativeDialog->activateWindow();
                 });
                 connect(nativeDialog, &DFileDialogHandle::windowActiveChanged, this, [this] {
-                    if (qApp->platformName() != "dxcb")
+                    if (qApp->platformName() != "dxcb" && !qApp->property("_d_isDxcb").toBool())
                         return;
 
                     QWindow *focus_window = qApp->focusWindow();
