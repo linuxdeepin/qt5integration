@@ -63,14 +63,8 @@
         <file>assets/dark/checkbox/radio_unchecked_hover_dark@2x.png</file>
         <file>assets/dark/checkbox/radio_unchecked_press_dark.png</file>
         <file>assets/dark/checkbox/radio_unchecked_press_dark@2x.png</file>
-        <file>assets/dark/slider/slider_handle_focus.png</file>
-        <file>assets/dark/slider/slider_handle_insensitive.png</file>
         <file>assets/dark/header_arrow_down.png</file>
         <file>assets/dark/header_arrow_up.png</file>
-        <file>assets/dark/slider/slider_handle_press.png</file>
-        <file>assets/dark/slider/slider_point_handle_focus.png</file>
-        <file>assets/dark/slider/slider_point_handle_insensitive.png</file>
-        <file>assets/dark/slider/slider_point_handle_press.png</file>
         <file>assets/dark/spinbox/spinbutton_minus_hover.png</file>
         <file>assets/dark/spinbox/spinbutton_minus_insensitive.png</file>
         <file>assets/dark/spinbox/spinbutton_minus_normal.png</file>
@@ -87,15 +81,17 @@
         <file>assets/dark/spinbox/spinbutton_up_insensitive.png</file>
         <file>assets/dark/spinbox/spinbutton_up_normal.png</file>
         <file>assets/dark/spinbox/spinbutton_up_press.png</file>
-        <file>assets/dark/slider/slider_handle_focus@2x.png</file>
-        <file>assets/dark/slider/slider_handle_insensitive@2x.png</file>
-        <file>assets/dark/slider/slider_handle.png</file>
-        <file>assets/dark/slider/slider_handle@2x.png</file>
-        <file>assets/dark/slider/slider_handle_press@2x.png</file>
+        <file>assets/dark/slider/slider_handle_focus.svg</file>
+        <file>assets/dark/slider/slider_handle_insensitive.svg</file>
+        <file>assets/dark/slider/slider_handle_normal.svg</file>
+        <file>assets/dark/slider/slider_handle_press.svg</file>
+        <file>assets/dark/slider/slider_point_handle_focus.png</file>
         <file>assets/dark/slider/slider_point_handle_focus@2x.png</file>
+        <file>assets/dark/slider/slider_point_handle_insensitive.png</file>
         <file>assets/dark/slider/slider_point_handle_insensitive@2x.png</file>
+        <file>assets/dark/slider/slider_point_handle_press.png</file>
+        <file>assets/dark/slider/slider_point_handle_press@2x.png</file>
         <file>assets/dark/slider/slider_point_handle.png</file>
         <file>assets/dark/slider/slider_point_handle@2x.png</file>
-        <file>assets/dark/slider/slider_point_handle_press@2x.png</file>
     </qresource>
 </RCC>

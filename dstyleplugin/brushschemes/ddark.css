@@ -19,14 +19,14 @@ QPalette:disabled {
 Slider {
     GrooveColor: rgba(255, 255, 255, 0.2);
     GrooveHighlightColor: "#2ca7f8";
-    HandleBrush: url(:/assets/dark/slider/slider_handle.png);
+    HandleBrush: url(:/assets/dark/slider/slider_handle_normal.svg);
     VernierHandleBrush: url(:/assets/dark/slider/slider_point_handle.png);
     HandleBorderColor: transparent;
     TickmarkColor: rgba(255,255,255,0.6);
 }
 
 Slider:focus {
-    HandleBrush: url(:/assets/dark/slider/slider_handle_focus.png);
+    HandleBrush: url(:/assets/dark/slider/slider_handle_focus.svg);
     VernierHandleBrush: url(:/assets/dark/slider/slider_point_handle_focus.png);
     HandleBorderColor: "#2ca7f8";
 }
@@ -34,13 +34,13 @@ Slider:focus {
 Slider:disabled {
     GrooveColor: rgba(255, 255, 255, 0.08);
     GrooveHighlightColor: "#0d4265";
-    HandleBrush: url(:/assets/dark/slider/slider_handle_insensitive.png);
+    HandleBrush: url(:/assets/dark/slider/slider_handle_insensitive.svg);
     VernierHandleBrush: url(:/assets/dark/slider/slider_point_handle_insensitive.png);
     HandleBorderColor: rgba(0, 0, 0, 0.1);
 }
 
 Slider:pressed {
-    HandleBrush: url(:/assets/dark/slider/slider_handle_press.png);
+    HandleBrush: url(:/assets/dark/slider/slider_handle_press.svg);
     VernierHandleBrush: url(:/assets/dark/slider/slider_point_handle_press.png);
 }
 

@@ -66,16 +66,8 @@
         <file>assets/light/checkbox/radio_unchecked_hover@2x.png</file>
         <file>assets/light/checkbox/radio_unchecked_press.png</file>
         <file>assets/light/checkbox/radio_unchecked_press@2x.png</file>
-        <file>assets/light/slider/slider_handle.png</file>
-        <file>assets/light/slider/slider_handle_focus.png</file>
-        <file>assets/light/slider/slider_handle_insensitive.png</file>
         <file>assets/light/header_arrow_down.png</file>
         <file>assets/light/header_arrow_up.png</file>
-        <file>assets/light/slider/slider_handle_press.png</file>
-        <file>assets/light/slider/slider_point_handle_focus.png</file>
-        <file>assets/light/slider/slider_point_handle_insensitive.png</file>
-        <file>assets/light/slider/slider_point_handle_press.png</file>
-        <file>assets/light/slider/slider_point_handle.png</file>
         <file>assets/light/spinbox/spinbutton_minus_hover.png</file>
         <file>assets/light/spinbox/spinbutton_minus_insensitive.png</file>
         <file>assets/light/spinbox/spinbutton_minus_normal.png</file>
@@ -92,13 +84,17 @@
         <file>assets/light/spinbox/spinbutton_up_insensitive.png</file>
         <file>assets/light/spinbox/spinbutton_up_normal.png</file>
         <file>assets/light/spinbox/spinbutton_up_press.png</file>
-        <file>assets/light/slider/slider_handle@2x.png</file>
-        <file>assets/light/slider/slider_handle_focus@2x.png</file>
-        <file>assets/light/slider/slider_handle_insensitive@2x.png</file>
-        <file>assets/light/slider/slider_handle_press@2x.png</file>
-        <file>assets/light/slider/slider_point_handle@2x.png</file>
+        <file>assets/light/slider/slider_handle_focus.svg</file>
+        <file>assets/light/slider/slider_handle_insensitive.svg</file>
+        <file>assets/light/slider/slider_handle_normal.svg</file>
+        <file>assets/light/slider/slider_handle_press.svg</file>
+        <file>assets/light/slider/slider_point_handle_focus.png</file>
         <file>assets/light/slider/slider_point_handle_focus@2x.png</file>
+        <file>assets/light/slider/slider_point_handle_insensitive.png</file>
         <file>assets/light/slider/slider_point_handle_insensitive@2x.png</file>
+        <file>assets/light/slider/slider_point_handle_press.png</file>
         <file>assets/light/slider/slider_point_handle_press@2x.png</file>
+        <file>assets/light/slider/slider_point_handle.png</file>
+        <file>assets/light/slider/slider_point_handle@2x.png</file>
     </qresource>
 </RCC>

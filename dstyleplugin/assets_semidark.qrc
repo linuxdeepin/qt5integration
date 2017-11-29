@@ -63,23 +63,19 @@
         <file>assets/semidark/checkbox/radio_unchecked_hover_dark@2x.png</file>
         <file>assets/semidark/checkbox/radio_unchecked_press_dark.png</file>
         <file>assets/semidark/checkbox/radio_unchecked_press_dark@2x.png</file>
-        <file>assets/semidark/slider/slider_handle.png</file>
-        <file>assets/semidark/slider/slider_handle_focus.png</file>
-        <file>assets/semidark/slider/slider_handle_insensitive.png</file>
         <file>assets/semidark/header_arrow_down.png</file>
         <file>assets/semidark/header_arrow_up.png</file>
-        <file>assets/semidark/slider/slider_handle_press.png</file>
+        <file>assets/semidark/slider/slider_handle_focus.svg</file>
+        <file>assets/semidark/slider/slider_handle_insensitive.svg</file>
+        <file>assets/semidark/slider/slider_handle_normal.svg</file>
+        <file>assets/semidark/slider/slider_handle_press.svg</file>
         <file>assets/semidark/slider/slider_point_handle_focus.png</file>
-        <file>assets/semidark/slider/slider_point_handle_insensitive.png</file>
-        <file>assets/semidark/slider/slider_point_handle_press.png</file>
-        <file>assets/semidark/slider/slider_point_handle.png</file>
-        <file>assets/semidark/slider/slider_handle_focus@2x.png</file>
-        <file>assets/semidark/slider/slider_handle_insensitive@2x.png</file>
-        <file>assets/semidark/slider/slider_handle_press@2x.png</file>
-        <file>assets/semidark/slider/slider_handle@2x.png</file>
         <file>assets/semidark/slider/slider_point_handle_focus@2x.png</file>
+        <file>assets/semidark/slider/slider_point_handle_insensitive.png</file>
         <file>assets/semidark/slider/slider_point_handle_insensitive@2x.png</file>
+        <file>assets/semidark/slider/slider_point_handle_press.png</file>
         <file>assets/semidark/slider/slider_point_handle_press@2x.png</file>
+        <file>assets/semidark/slider/slider_point_handle.png</file>
         <file>assets/semidark/slider/slider_point_handle@2x.png</file>
     </qresource>
 </RCC>
