@@ -100,8 +100,9 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
             QGuiApplicationPrivate::showModalWindow(auxiliaryWindow);
 
             if (modality == Qt::ApplicationModal) {
-                connect(qApp, &QGuiApplication::applicationStateChanged, this, [this] {
-                    if (qApp->applicationState() == Qt::ApplicationActive)
+                connect(qApp, &QGuiApplication::applicationStateChanged,
+                        this, [this] (Qt::ApplicationState state) {
+                    if (state == Qt::ApplicationActive)
                         nativeDialog->activateWindow();
                 });
                 connect(nativeDialog, &DFileDialogHandle::windowActiveChanged, this, [this] {
@@ -125,6 +126,16 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
                 });
             }
         }
+
+        Qt::WindowFlags nd_flags = static_cast<Qt::WindowFlags>(nativeDialog->windowFlags());
+        Qt::WindowFlags need_flags = Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                        | Qt::WindowMinMaxButtonsHint | Qt::WindowContextHelpButtonHint
+                                        | Qt::WindowStaysOnTopHint | Qt::WindowTransparentForInput
+                                        | Qt::WindowDoesNotAcceptFocus | Qt::WindowStaysOnBottomHint
+                                        | Qt::WindowCloseButtonHint;
+
+        if (flags & need_flags)
+            nativeDialog->setWindowFlags(nd_flags | (flags & need_flags));
     } else {
         qtDialog->setAttribute(Qt::WA_NativeWindow);
 
