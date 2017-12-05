@@ -28,7 +28,7 @@ bool Style::drawRubberBandControl(const QStyleOption *option, QPainter *painter,
     const QBrush &backgroundBrush = m_palette->brush(PaletteExtended::RubberBand_BackgroundBrush, option);
     const QBrush &borderBrush = m_palette->brush(PaletteExtended::RubberBand_BorderBrush, option);
 
-    PainterHelper::drawRect(painter, option->rect.adjusted(0, 0, -1, -1),
+    PainterHelper::drawRect(painter, option->rect.adjusted(1, 1, -1, -1),
                             backgroundBrush, Metrics::Painter_PenWidth, borderBrush);
 
     return true;
