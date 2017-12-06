@@ -32,7 +32,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
     painter->save();
     // Draws one item in a popup menu.
     if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-        QColor highlightOutline = d->highlightedOutline(option->palette);
+//        QColor highlightOutline = d->highlightedOutline(option->palette);
         QColor highlight = option->palette.highlight().color();
         if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
             int w = 0;
@@ -54,8 +54,8 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
         if (selected) {
             QRect r = option->rect;
             painter->fillRect(r, highlight);
-            painter->setPen(QPen(highlightOutline));
-            painter->drawRect(QRectF(r));
+//            painter->setPen(QPen(highlightOutline));
+//            painter->drawRect(QRectF(r));
         }
         bool checkable = menuItem->checkType != QStyleOptionMenuItem::NotCheckable;
         bool checked = menuItem->checked;
