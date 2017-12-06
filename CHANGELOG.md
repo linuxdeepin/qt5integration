@@ -1,4 +1,14 @@
 <a name=""></a>
+##  0.2.8.3 (2017-12-06)
+
+
+#### Bug Fixes
+
+* **style:**  visable bottom lines on QMenu when hover item ([c8eb56b7](https://github.com/linuxdeepin/qt5integration/commit/c8eb56b7cadb8f7a3d95207bf6ff7a7048a89706))
+
+
+
+<a name=""></a>
 ##  0.2.8.2 (2017-12-06)
 
 
