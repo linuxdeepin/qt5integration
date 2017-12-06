@@ -1,4 +1,22 @@
 <a name=""></a>
+##  0.2.8.2 (2017-12-06)
+
+
+#### Features
+
+* **theme:**  set window flags for native dialog ([3ec67bf0](https://github.com/linuxdeepin/qt5integration/commit/3ec67bf01fead41dbac5a4b096622f7ca50d685c))
+
+#### Bug Fixes
+
+*   is dxcb platform if the "_d_isDxcb" property is true of QCoreApplication ([714b5f78](https://github.com/linuxdeepin/qt5integration/commit/714b5f78b98f7e63757db15ab84a8eb653c36b31))
+* **style:**
+  *  visable left/top lines on draw rubber band control ([9c06e770](https://github.com/linuxdeepin/qt5integration/commit/9c06e7709b99958e6ebb98714fbbfa2a61d7a0a5))
+  *  bottom/right visible lines on draw rubber band rect for QListView ([1177381a](https://github.com/linuxdeepin/qt5integration/commit/1177381ae5914188ca4236e993475367071d66bd))
+  *  slider icons ([dae8caa6](https://github.com/linuxdeepin/qt5integration/commit/dae8caa6ec73b95b3781ebe6ecd6da0b359a189f))
+
+
+
+<a name=""></a>
 ##  0.2.8.1 (2017-11-02)
 
 
