@@ -40,6 +40,7 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QFileInfo>
 
 #include "widgetgallery.h"
 
@@ -47,11 +48,11 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(styles);
 
-    QApplication app(argc, argv);
-
     QStringList paths = QApplication::libraryPaths();
-    paths.prepend(app.applicationDirPath() + "/plugins/");
+    paths.prepend(QFileInfo(QString::fromUtf8(argv[0])).path() + "/plugins/");
     QApplication::setLibraryPaths(paths);
+
+    QApplication app(argc, argv);
 
     WidgetGallery gallery;
     gallery.show();

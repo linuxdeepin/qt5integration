@@ -140,6 +140,11 @@ private:
     // tab widget
     bool drawFrameTabWidgetPrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
 
+    // tab bar
+    bool drawFrameTabBarBasePrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
+    bool drawTabBarTabLabelControl(const QStyleOption* option, QPainter* p, const QWidget* widget) const;
+    bool drawTabBarTabShapeControl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+
     // spin box
     bool drawSpinBoxComplexControl( const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget ) const;
     QRect spinboxSubControlRect(const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget) const;

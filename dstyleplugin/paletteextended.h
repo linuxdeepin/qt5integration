@@ -89,7 +89,13 @@ public:
         SpinBox_PlusBrush,
         SpinBox_DownBrush,
         SpinBox_UpBrush,
-        SpinBox_BorderColor
+        SpinBox_BorderColor,
+
+        TabBar_BackgroundBrush,
+        TabBar_BorderBrush,
+        TabBarTab_BackgroundBrush,
+        TabBarTab_BorderBrush,
+        TabBarTab_TextColor
     };
 #if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
     Q_ENUMS(BrushName)

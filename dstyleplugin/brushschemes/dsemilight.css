@@ -287,3 +287,14 @@ SpinBox:hover {
     DownBrush: url(:/assets/light/spinbox/spinbutton_down_hover.png);
     UpBrush: url(:/assets/light/spinbox/spinbutton_up_hover.png);
 }
+
+TabBarTab {
+    BackgroundBrush: rgba(0,0,0,0.1);
+    BorderBrush: rgba(0,0,0,0.1);
+    TextColor: rgb(25,25,25);
+}
+
+TabBarTab:selected {
+    BackgroundBrush: transparent;
+    TextColor: "#2ca7f8";
+}

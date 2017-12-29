@@ -34,7 +34,8 @@ SOURCES += dstyleplugin.cpp \
     toolbuttonhelper.cpp \
     tabwidgethelper.cpp \
     spinboxhelper.cpp \
-    hidpihelper.cpp
+    hidpihelper.cpp \
+    tabbarhelper.cpp
 
 HEADERS += dstyleplugin.h \
     style.h \

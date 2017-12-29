@@ -449,8 +449,8 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         //        case CE_SizeGrip: fcn = &Style::emptyControl; break;
         //        case CE_HeaderSection: fcn = &Style::drawHeaderSectionControl; break;
         //        case CE_HeaderEmptyArea: fcn = &Style::drawHeaderEmptyAreaControl; break;
-        //        case CE_TabBarTabLabel: fcn = &Style::drawTabBarTabLabelControl; break;
-        //        case CE_TabBarTabShape: fcn = &Style::drawTabBarTabShapeControl; break;
+    case CE_TabBarTabLabel: fcn = &Style::drawTabBarTabLabelControl; break;
+    case CE_TabBarTabShape: fcn = &Style::drawTabBarTabShapeControl; break;
         //        case CE_ToolBoxTabLabel: fcn = &Style::drawToolBoxTabLabelControl; break;
         //        case CE_ToolBoxTabShape: fcn = &Style::drawToolBoxTabShapeControl; break;
         //        case CE_DockWidgetTitle: fcn = &Style::drawDockWidgetTitleControl; break;
@@ -562,7 +562,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     case PE_FrameLineEdit: fcn = &Style::drawFrameLineEditPrimitive; break;
         //    case PE_FrameGroupBox: fcn = &Style::drawFrameGroupBoxPrimitive; break;
     case PE_FrameTabWidget: fcn = &Style::drawFrameTabWidgetPrimitive; break;
-        //    case PE_FrameTabBarBase: fcn = &Style::drawFrameTabBarBasePrimitive; break;
+    case PE_FrameTabBarBase: fcn = &Style::drawFrameTabBarBasePrimitive; break;
         //    case PE_FrameWindow: fcn = &Style::drawFrameWindowPrimitive; break;
     case PE_FrameFocusRect: fcn = &Style::drawFrameFocusRectPrimitive; break;
 

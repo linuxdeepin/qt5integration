@@ -285,3 +285,14 @@ SpinBox:hover {
     DownBrush: url(:/assets/dark/spinbox/spinbutton_down_hover.png);
     UpBrush: url(:/assets/dark/spinbox/spinbutton_up_hover.png);
 }
+
+TabBarTab {
+    BackgroundBrush: rgba(0,0,0,0.1);
+    BorderBrush: rgba(0,0,0,0.1);
+    TextColor: white;
+}
+
+TabBarTab:selected {
+    BackgroundBrush: "#202020";
+    TextColor: rgba(43,167,248,0.6);
+}
