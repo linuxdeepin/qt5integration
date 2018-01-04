@@ -23,9 +23,18 @@
 #include "paletteextended.h"
 #include "painterhelper.h"
 
+#include <dtkwidget_config.h>
+#ifdef DTKWIDGET_CLASS_DTabBar
+#include <DTabBar>
+DWIDGET_USE_NAMESPACE
+#endif
+
 #include <QStyleOptionTab>
 #include <QStyleOptionTabBarBase>
+#include <QStyleOptionToolButton>
 #include <QPainter>
+#include <QToolButton>
+#include <QDebug>
 
 namespace dstyle {
 static void tabLayout(const QStyle *proxyStyle, const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect)
@@ -277,29 +286,23 @@ bool Style::drawTabBarTabShapeControl(const QStyleOption *opt, QPainter *p, cons
     case QTabBar::RoundedNorth:
     case QTabBar::RoundedSouth: {
         const QRect &border_rect = tab->rect.adjusted(0, 0, 1, 1);
-        p->fillRect(tab->rect, p->brush());
 
-        if (selected) {
-            p->drawLine(border_rect.topLeft(), border_rect.bottomLeft());
+        p->fillRect(tab->rect, p->brush());
+        p->drawLine(border_rect.topLeft(), border_rect.bottomLeft());
+
+        if (Q_UNLIKELY(tab->position == QStyleOptionTab::End))
             p->drawLine(border_rect.topRight(), border_rect.bottomRight());
 
-            if (tab->shape == QTabBar::RoundedSouth) {
-                p->drawLine(border_rect.bottomLeft(), border_rect.bottomRight());
-                p->drawLine(border_rect.topLeft(), border_rect.topLeft());
+        if (Q_UNLIKELY(selected)) {
+            QRect active_rect = tab->rect;
+
+            if (Q_LIKELY(tab->shape == QTabBar::RoundedNorth)) {
+                active_rect.setTop(active_rect.bottom() - qMin(10, active_rect.height() / 10) + 1);
             } else {
-                p->drawLine(border_rect.topLeft(), border_rect.topRight());
-                p->drawLine(border_rect.bottomLeft(), border_rect.bottomLeft());
-            }
-        } else {
-            if (tab->selectedPosition != QStyleOptionTab::NextIsSelected) {
-                p->drawLine(border_rect.topRight() + QPoint(0, 4), border_rect.bottomRight() - QPoint(0, 4));
+                active_rect.setBottom(active_rect.top() + qMin(10, active_rect.height() / 10) + 1);
             }
 
-            if (tab->shape == QTabBar::RoundedSouth) {
-                p->drawLine(border_rect.topLeft(), border_rect.topRight());
-            } else {
-                p->drawLine(border_rect.bottomLeft(), border_rect.bottomRight());
-            }
+            p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
         }
 
         break;
@@ -307,35 +310,157 @@ bool Style::drawTabBarTabShapeControl(const QStyleOption *opt, QPainter *p, cons
     case QTabBar::RoundedEast:
     case QTabBar::RoundedWest: {
         const QRect &border_rect = tab->rect.adjusted(0, 0, 1, 1);
+
         p->fillRect(tab->rect, p->brush());
+        p->drawLine(border_rect.topLeft(), border_rect.topRight());
 
-        if (selected) {
+        if (Q_UNLIKELY(tab->position == QStyleOptionTab::End))
             p->drawLine(border_rect.bottomLeft(), border_rect.bottomRight());
-            p->drawLine(border_rect.topLeft(), border_rect.topRight());
 
-            if (tab->shape == QTabBar::RoundedEast) {
-                p->drawLine(border_rect.bottomRight(), border_rect.topRight());
-                p->drawLine(border_rect.bottomLeft(), border_rect.bottomLeft());
+        if (Q_UNLIKELY(selected)) {
+            QRect active_rect = tab->rect;
+
+            if (Q_LIKELY(tab->shape == QTabBar::RoundedWest)) {
+                active_rect.setLeft(active_rect.right() - qMin(10, active_rect.width() / 10) + 1);
             } else {
-                p->drawLine(border_rect.bottomLeft(), border_rect.topLeft());
-                p->drawLine(border_rect.bottomRight(), border_rect.bottomRight());
-            }
-        } else {
-            if (tab->selectedPosition != QStyleOptionTab::NextIsSelected) {
-                p->drawLine(border_rect.topLeft() + QPoint(4, 0), border_rect.topRight() - QPoint(4, 0));
+                active_rect.setRight(active_rect.left() + qMin(10, active_rect.width() / 10) + 1);
             }
 
-            if (tab->shape == QTabBar::RoundedEast) {
-                p->drawLine(border_rect.bottomLeft(), border_rect.topLeft());
-            } else {
-                p->drawLine(border_rect.bottomRight(), border_rect.topRight());
-            }
+            p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
         }
 
         break;
     }
     }
     p->restore();
+
+    return true;
+}
+
+bool Style::drawTabBarAddButtonControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+{
+    painter->fillRect(option->rect, m_palette->brush(PaletteExtended::TabBarAddButton_BackgroundBrush, option));
+    fillBrush(painter, option->rect, m_palette->brush(widget, PaletteExtended::TabBarAddButton_Icon, option));
+
+#ifdef DTKWIDGET_CLASS_DTabBar
+    if (const DTabBar *tb = qobject_cast<const DTabBar*>(widget->parent())) {
+        painter->setPen(QPen(m_palette->brush(PaletteExtended::TabBarTab_BorderBrush, option), 1));
+
+        QRect rect = option->rect.adjusted(0, 0, 1, 1);
+
+        switch (tb->shape()) {
+        case QTabBar::RoundedNorth:
+        case QTabBar::RoundedSouth:
+            painter->drawLine(rect.topRight(), rect.bottomRight());
+            break;
+        case QTabBar::RoundedEast:
+        case QTabBar::RoundedWest:
+            painter->drawLine(rect.topLeft(), rect.topRight());
+            break;
+        default:
+            break;
+        }
+    }
+#endif
+
+    return true;
+}
+
+class DQTabBar : public QTabBar {
+    friend class Style;
+};
+
+bool Style::drawIndicatorTabClosePrimitive(const QStyleOption *opt, QPainter *p, const QWidget *widget) const
+{
+    if (const QTabBar *tb = qobject_cast<QTabBar*>(widget->parent())) {
+        bool ok = false;
+        int index = widget->property("_d_dstyle_tab_index").toInt(&ok);
+
+        if (Q_UNLIKELY(!ok)) {
+            for (int i = 0; i < tb->count(); ++i) {
+                if (Q_LIKELY(tb->tabButton(i, QTabBar::LeftSide) != widget
+                             && tb->tabButton(i, QTabBar::RightSide) != widget)) {
+                    continue;
+                }
+
+                index = i;
+                ok = true;
+                const_cast<QWidget*>(widget)->setProperty("_d_dstyle_tab_index", index);
+                break;
+            }
+        }
+
+        if (Q_UNLIKELY(!ok))
+            return true;
+
+        QStyleOptionTab tab;
+
+        static_cast<const DQTabBar*>(tb)->initStyleOption(&tab, index);
+
+        if (Q_LIKELY((tab.state | QStyle::State_MouseOver) != tab.state))
+            return true;
+
+        fillBrush(p, opt->rect, m_palette->brush(PaletteExtended::TabBarTab_CloseIcon, opt));
+    }
+
+    return true;
+}
+
+bool Style::drawScrollButtonPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+{
+    Q_UNUSED(widget)
+
+    fillBrush(painter, option->rect, m_palette->brush(PaletteExtended::TabBarScrollButton_BackgroundBrush, option));
+
+#ifdef DTKWIDGET_CLASS_DTabBar
+    if (const DTabBar *tb = qobject_cast<const DTabBar*>(widget->parent())) {
+        if (const QToolButton *button = qobject_cast<const QToolButton*>(widget)) {
+            if (button->arrowType() == Qt::RightArrow || button->arrowType() == Qt::UpArrow)
+                return true;
+        } else {
+            return true;
+        }
+
+        painter->setPen(QPen(m_palette->brush(PaletteExtended::TabBarTab_BorderBrush, option), 1));
+
+        switch (tb->shape()) {
+        case QTabBar::RoundedNorth:
+        case QTabBar::RoundedSouth:
+            painter->drawLine(option->rect.topLeft(), option->rect.bottomLeft());
+            break;
+        case QTabBar::RoundedEast:
+        case QTabBar::RoundedWest:
+            painter->drawLine(option->rect.bottomLeft(), option->rect.bottomRight());
+            break;
+        default:
+            break;
+        }
+    }
+#endif
+
+    return true;
+}
+
+bool Style::drawScrollButtonLabelControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+{
+    const QStyleOptionToolButton* toolButtonOption( qstyleoption_cast<const QStyleOptionToolButton*>(option) );
+
+    switch( toolButtonOption->arrowType )
+    {
+    case Qt::LeftArrow:
+        fillBrush(painter, option->rect, m_palette->brush(widget, PaletteExtended::TabBarScrollButton_UpIcon, option));
+        break;
+    case Qt::RightArrow:
+        fillBrush(painter, option->rect, m_palette->brush(widget, PaletteExtended::TabBarScrollButton_DownIcon, option));
+        break;
+    case Qt::UpArrow:
+        fillBrush(painter, option->rect, m_palette->brush(widget, PaletteExtended::TabBarScrollButton_UpIcon, option), 90);
+        break;
+    case Qt::DownArrow:
+        fillBrush(painter, option->rect, m_palette->brush(widget, PaletteExtended::TabBarScrollButton_DownIcon, option), 90);
+        break;
+    default: break;
+    }
 
     return true;
 }

@@ -43,6 +43,11 @@
 #include <DApplication>
 #include <DPlatformWindowHandle>
 #include <DWindowManagerHelper>
+#include <dtkwidget_global.h>
+
+#ifdef DTKWIDGET_CLASS_DTabBar
+#include <DTabBar>
+#endif
 
 DWIDGET_USE_NAMESPACE
 
@@ -160,7 +165,9 @@ void Style::polish(QWidget *w)
             || qobject_cast<QCheckBox*>(w)
             || qobject_cast<QRadioButton*>(w)
             || qobject_cast<QToolButton*>(w)
-            || qobject_cast<QAbstractSpinBox*>(w))
+            || qobject_cast<QAbstractSpinBox*>(w)
+            || qobject_cast<QTabBar*>(w)
+            || isTabBarToolButton(w))
         w->setAttribute(Qt::WA_Hover, true);
 
     if (qobject_cast<QScrollBar *>(w)) {
@@ -246,7 +253,9 @@ void Style::unpolish(QWidget *w)
             || qobject_cast<QCheckBox*>(w)
             || qobject_cast<QRadioButton*>(w)
             || qobject_cast<QToolButton*>(w)
-            || qobject_cast<QAbstractSpinBox*>(w))
+            || qobject_cast<QAbstractSpinBox*>(w)
+            || qobject_cast<QTabBar*>(w)
+            || isTabBarToolButton(w))
         w->setAttribute(Qt::WA_Hover, false);
 
     if (qobject_cast<QScrollBar *>(w)) {
@@ -374,7 +383,13 @@ int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, c
 
     case PM_SplitterWidth: return Metrics::Splitter_SplitterWidth;
     case PM_DockWidgetSeparatorExtent: return Metrics::Splitter_SplitterWidth;
-
+#ifdef DTKWIDGET_CLASS_DTabBar
+    case PM_TabBarScrollButtonWidth: {
+        if (qobject_cast<DTabBar*>(widget->parent())) {
+            return 0;
+        }
+    }
+#endif
         // fallback
     default: return QCommonStyle::pixelMetric( metric, option, widget );
 
@@ -451,11 +466,11 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         //        case CE_HeaderEmptyArea: fcn = &Style::drawHeaderEmptyAreaControl; break;
     case CE_TabBarTabLabel: fcn = &Style::drawTabBarTabLabelControl; break;
     case CE_TabBarTabShape: fcn = &Style::drawTabBarTabShapeControl; break;
+    case CE_CustomBase + 1: fcn = &Style::drawTabBarAddButtonControl; break;
         //        case CE_ToolBoxTabLabel: fcn = &Style::drawToolBoxTabLabelControl; break;
         //        case CE_ToolBoxTabShape: fcn = &Style::drawToolBoxTabShapeControl; break;
         //        case CE_DockWidgetTitle: fcn = &Style::drawDockWidgetTitleControl; break;
         //        case CE_CapacityBar: fcn = &Style::drawProgressBarControl; break;
-
         // fallback
     default: {
         // TODO: move this bare number comparison to some more human friendly form.
@@ -534,7 +549,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
         fillBrush(painter, option->rect, m_palette->brush(PaletteExtended::RadioButton_BackgroundBrush, option));
         return;
         //    case PE_IndicatorButtonDropDown: fcn = &Style::drawIndicatorButtonDropDownPrimitive; break;
-        //    case PE_IndicatorTabClose: fcn = &Style::drawIndicatorTabClosePrimitive; break;
+    case PE_IndicatorTabClose: fcn = &Style::drawIndicatorTabClosePrimitive; break;
         //    case PE_IndicatorTabTear: fcn = &Style::drawIndicatorTabTearPrimitive; break;
     case PE_IndicatorArrowDown:
         return drawStandardIcon(QStyle::SP_ArrowDown, option, painter, widget);
@@ -1125,6 +1140,28 @@ void Style::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment, 
     QCommonStyle::drawItemPixmap(painter, rect, alignment, pixmap);
 }
 
+bool Style::isTabBarToolButton(const QWidget *button) const
+{
+    if (Q_UNLIKELY(qobject_cast<QTabBar*>(button->parent())
+#ifdef DTKWIDGET_CLASS_DTabBar
+                   || qobject_cast<DTabBar*>(button->parent())
+#endif
+                   )) {
+        if (auto *b = qobject_cast<const QToolButton*>(button)) {
+            if (b->arrowType() != Qt::NoArrow && b->icon().isNull())
+                return true;
+
+#ifdef DTKWIDGET_CLASS_DTabBar
+            if (qobject_cast<DTabBar*>(button->parent())
+                    && button->objectName() == "AddButton")
+                return true;
+#endif
+        }
+    }
+
+    return false;
+}
+
 void Style::drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt, QPainter *p, const QWidget *widget) const
 {
     if (opt->rect.width() <= 1 || opt->rect.height() <= 1)
@@ -1144,7 +1181,9 @@ void Style::drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt,
     else if (hasFocus)
         mode = QIcon::Selected;
 
-    QPixmap pixmap = standardIcon(sp, opt, widget).pixmap(size, size, mode, sunken ? QIcon::On : QIcon::Off);
+    QPixmap pixmap = standardIcon(sp, opt, widget).pixmap(widget->window()->windowHandle(),
+                                                          QSize(size, size), mode,
+                                                          sunken ? QIcon::On : QIcon::Off);
 
     int xOffset = r.x() + (r.width() - size)/2;
     int yOffset = r.y() + (r.height() - size)/2;
@@ -1269,13 +1308,20 @@ QPixmap Style::colorizedImage(const QString &fileName, const QColor &color, int 
     return pixmap;
 }
 
-void Style::fillBrush(QPainter *p, const QRect &rect, const QBrush &brush)
+void Style::fillBrush(QPainter *p, const QRect &rect, const QBrush &brush, qreal rotate)
 {
     if (brush.style() == Qt::TexturePattern) {
-        const QPixmap &pixmap = brush.texture();
+        QPixmap pixmap = brush.texture();
+        qreal device_ratio = pixmap.devicePixelRatio();
+
+        if (!qFuzzyCompare(rotate, 0)) {
+            pixmap = pixmap.transformed(QTransform().rotate(rotate));
+            pixmap.setDevicePixelRatio(device_ratio);
+        }
+
         QRect r = rect;
 
-        r.setSize(pixmap.size() / pixmap.devicePixelRatio());
+        r.setSize(pixmap.size() / device_ratio);
         r.moveCenter(rect.center());
 
         p->drawPixmap(r, pixmap);

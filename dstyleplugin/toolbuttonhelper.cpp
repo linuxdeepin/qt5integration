@@ -31,6 +31,11 @@ QRect centerRect(const QRect &rect, const QSize& size )
 
 bool Style::drawToolButtonLabelControl( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
 {
+    if (isTabBarToolButton(widget)) {
+
+        return drawScrollButtonLabelControl(option, painter, widget);
+    }
+
     // cast option and check
     const QStyleOptionToolButton* toolButtonOption( qstyleoption_cast<const QStyleOptionToolButton*>(option) );
 
@@ -152,6 +157,10 @@ bool Style::drawToolButtonLabelControl( const QStyleOption* option, QPainter* pa
 
 bool Style::drawPanelButtonToolPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
+    if (isTabBarToolButton(widget)) {
+        return drawScrollButtonPrimitive(option, painter, widget);
+    }
+
     // rect and palette
     const QRect& rect( option->rect );
 

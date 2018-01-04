@@ -66,6 +66,8 @@ public:
     using DrawControlFunc = bool(Style::*)(const QStyleOption*, QPainter*, const QWidget*) const;
 
 private:
+    bool isTabBarToolButton(const QWidget *button) const;
+
     // frame
     bool drawFramePrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
     bool drawFrameFocusRectPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
@@ -107,7 +109,7 @@ private:
     static QWindow *qt_getWindow(const QWidget *widget);
     static QColor mergedColors(const QColor &colorA, const QColor &colorB, int factor = 50);
     static QPixmap colorizedImage(const QString &fileName, const QColor &color, int rotation = 0);
-    static void fillBrush(QPainter *p, const QRect &rect, const QBrush &brush);
+    static void fillBrush(QPainter *p, const QRect &rect, const QBrush &brush, qreal rotate = 0);
 
     // progress bar
     bool drawProgressBarControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
@@ -144,6 +146,10 @@ private:
     bool drawFrameTabBarBasePrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
     bool drawTabBarTabLabelControl(const QStyleOption* option, QPainter* p, const QWidget* widget) const;
     bool drawTabBarTabShapeControl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+    bool drawTabBarAddButtonControl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+    bool drawIndicatorTabClosePrimitive(const QStyleOption *opt, QPainter *p, const QWidget *widget) const;
+    bool drawScrollButtonPrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
+    bool drawScrollButtonLabelControl( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
 
     // spin box
     bool drawSpinBoxComplexControl( const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget ) const;

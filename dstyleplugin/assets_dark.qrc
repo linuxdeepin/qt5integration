@@ -93,5 +93,19 @@
         <file>assets/dark/slider/slider_point_handle_press@2x.png</file>
         <file>assets/dark/slider/slider_point_handle.png</file>
         <file>assets/dark/slider/slider_point_handle@2x.png</file>
+        <file>assets/dark/tabbar/add_hover.svg</file>
+        <file>assets/dark/tabbar/add_normal.svg</file>
+        <file>assets/dark/tabbar/add_press.svg</file>
+        <file>assets/dark/tabbar/pagedown_hover.svg</file>
+        <file>assets/dark/tabbar/pagedown_insensitive.svg</file>
+        <file>assets/dark/tabbar/pagedown_normal.svg</file>
+        <file>assets/dark/tabbar/pagedown_press.svg</file>
+        <file>assets/dark/tabbar/pageup_hover.svg</file>
+        <file>assets/dark/tabbar/pageup_insensitive.svg</file>
+        <file>assets/dark/tabbar/pageup_normal.svg</file>
+        <file>assets/dark/tabbar/pageup_press.svg</file>
+        <file>assets/dark/tabbar/tab_close_hover.svg</file>
+        <file>assets/dark/tabbar/tab_close_normal.svg</file>
+        <file>assets/dark/tabbar/tab_close_press.svg</file>
     </qresource>
 </RCC>

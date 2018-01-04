@@ -6,10 +6,12 @@
 
 namespace dstyle {
 
-QPixmap HiDPIHelper::loadPixmap(const QString &fileName)
+QPixmap HiDPIHelper::loadPixmap(const QString &fileName, qreal devicePixelRatio)
 {
+    if (qFuzzyCompare(devicePixelRatio, 0))
+        devicePixelRatio = qGuiApp->devicePixelRatio();
+
     qreal sourceDevicePixelRatio = 1.0;
-    qreal devicePixelRatio = qApp->devicePixelRatio();
     QPixmap pixmap;
 
     if (!qFuzzyCompare(sourceDevicePixelRatio, devicePixelRatio)) {

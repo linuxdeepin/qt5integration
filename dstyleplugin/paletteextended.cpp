@@ -100,7 +100,7 @@ static quint64 preprocessClass(qint64 classs)
     return classs;
 }
 
-QBrush PaletteExtended::brush(PaletteExtended::BrushName name,  quint64 type, const QBrush &defaultBrush) const
+QBrush PaletteExtended::brush(const QWidget *widget, PaletteExtended::BrushName name,  quint64 type, const QBrush &defaultBrush) const
 {
     const QPair<BrushName, quint64> &key = qMakePair(name, type);
 
@@ -153,7 +153,7 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name,  quint64 type, co
                     const QString &uri = declaration.uriValue();
 
                     if (!uri.isEmpty()) {
-                        brush.setTexture(HiDPIHelper::loadPixmap(uri));
+                        brush.setTexture(HiDPIHelper::loadPixmap(uri, widget ? widget->devicePixelRatioF() : 0));
                     }
                 }
 
@@ -211,16 +211,16 @@ static quint64 pseudoClass(QStyle::State state)
 }
 
 #define RETURN_BRUSH(Type) {\
-    const QBrush &d = brush(name, PseudoClass_##Type, normal);\
-    return extraTypes ? brush(name, PseudoClass_##Type | extraTypes, d) : d;\
+    const QBrush &d = brush(widget, name, PseudoClass_##Type, normal);\
+    return extraTypes ? brush(widget, name, PseudoClass_##Type | extraTypes, d) : d;\
 }
 
-QBrush PaletteExtended::brush(PaletteExtended::BrushName name, const QStyleOption *option, quint64 extraTypes, const QBrush &defaultBrush) const
+QBrush PaletteExtended::brush(const QWidget *widget, PaletteExtended::BrushName name, const QStyleOption *option, quint64 extraTypes, const QBrush &defaultBrush) const
 {
-    QBrush normal = brush(name, PseudoClass_Unspecified, defaultBrush);
+    QBrush normal = brush(widget, name, PseudoClass_Unspecified, defaultBrush);
 
     if (extraTypes)
-        normal = brush(name, extraTypes, normal);
+        normal = brush(widget, name, extraTypes, normal);
 
     extraTypes |= pseudoClass(option->state);
 
@@ -233,7 +233,7 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, const QStyleOptio
     }
 
     if (extraTypes)
-        normal = brush(name, extraTypes, normal);
+        normal = brush(widget, name, extraTypes, normal);
 
     if (!(option->state & QStyle::State_Enabled))
         RETURN_BRUSH(Disabled)
@@ -245,6 +245,16 @@ QBrush PaletteExtended::brush(PaletteExtended::BrushName name, const QStyleOptio
         RETURN_BRUSH(Focus)
 
     return normal;
+}
+
+QBrush PaletteExtended::brush(PaletteExtended::BrushName name, quint64 type, const QBrush &defaultBrush) const
+{
+    return brush(0, name, type, defaultBrush);
+}
+
+QBrush PaletteExtended::brush(PaletteExtended::BrushName name, const QStyleOption *option, quint64 extraTypes, const QBrush &defaultBrush) const
+{
+    return brush(0, name, option, extraTypes, defaultBrush);
 }
 
 void PaletteExtended::polish(QPalette &p)

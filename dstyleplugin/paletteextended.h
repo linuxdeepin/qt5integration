@@ -95,7 +95,14 @@ public:
         TabBar_BorderBrush,
         TabBarTab_BackgroundBrush,
         TabBarTab_BorderBrush,
-        TabBarTab_TextColor
+        TabBarTab_TextColor,
+        TabBarTab_ActiveColor,
+        TabBarTab_CloseIcon,
+        TabBarScrollButton_BackgroundBrush,
+        TabBarScrollButton_UpIcon,
+        TabBarScrollButton_DownIcon,
+        TabBarAddButton_BackgroundBrush,
+        TabBarAddButton_Icon
     };
 #if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
     Q_ENUMS(BrushName)
@@ -154,6 +161,8 @@ public:
         PseudoClass_Any              = Q_UINT64_C(0x0000ffffffffffff)
     };
 
+    QBrush brush(const QWidget *widget, BrushName name, quint64 type = PseudoClass_Unspecified, const QBrush &defaultBrush = Qt::NoBrush) const;
+    QBrush brush(const QWidget *widget, BrushName name, const QStyleOption *option, quint64 extraTypes = PseudoClass_Unknown, const QBrush &defaultBrush = Qt::NoBrush) const;
     QBrush brush(BrushName name, quint64 type = PseudoClass_Unspecified, const QBrush &defaultBrush = Qt::NoBrush) const;
     QBrush brush(BrushName name, const QStyleOption *option, quint64 extraTypes = PseudoClass_Unknown, const QBrush &defaultBrush = Qt::NoBrush) const;
 
