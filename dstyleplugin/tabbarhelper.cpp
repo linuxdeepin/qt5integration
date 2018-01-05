@@ -297,9 +297,9 @@ bool Style::drawTabBarTabShapeControl(const QStyleOption *opt, QPainter *p, cons
             QRect active_rect = tab->rect;
 
             if (Q_LIKELY(tab->shape == QTabBar::RoundedNorth)) {
-                active_rect.setTop(active_rect.bottom() - qMin(10, active_rect.height() / 10) + 1);
+                active_rect.setTop(active_rect.bottom() - qMin(3, active_rect.height() / 10) + 1);
             } else {
-                active_rect.setBottom(active_rect.top() + qMin(10, active_rect.height() / 10) + 1);
+                active_rect.setBottom(active_rect.top() + qMin(3, active_rect.height() / 10) + 1);
             }
 
             p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
@@ -321,9 +321,9 @@ bool Style::drawTabBarTabShapeControl(const QStyleOption *opt, QPainter *p, cons
             QRect active_rect = tab->rect;
 
             if (Q_LIKELY(tab->shape == QTabBar::RoundedWest)) {
-                active_rect.setLeft(active_rect.right() - qMin(10, active_rect.width() / 10) + 1);
+                active_rect.setLeft(active_rect.right() - qMin(3, active_rect.width() / 10) + 1);
             } else {
-                active_rect.setRight(active_rect.left() + qMin(10, active_rect.width() / 10) + 1);
+                active_rect.setRight(active_rect.left() + qMin(3, active_rect.width() / 10) + 1);
             }
 
             p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));

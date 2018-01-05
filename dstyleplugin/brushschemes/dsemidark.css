@@ -286,13 +286,57 @@ SpinBox:hover {
     UpBrush: url(:/assets/dark/spinbox/spinbutton_up_hover.png);
 }
 
-TabBarTab {
-    BackgroundBrush: rgba(0,0,0,0.1);
-    BorderBrush: rgba(0,0,0,0.1);
-    TextColor: "#dcdcdc";
+TabBarScrollButton {
+    BackgroundBrush: transparent;
+    UpIcon: url(:/assets/dark/tabbar/pageup_normal.svg);
+    DownIcon: url(:/assets/dark/tabbar/pagedown_normal.svg);
 }
 
-TabBarTab:selected {
+TabBarScrollButton:disabled {
+    UpIcon: url(:/assets/dark/tabbar/pageup_insensitive.svg);
+    DownIcon: url(:/assets/dark/tabbar/pagedown_insensitive.svg);
+}
+
+TabBarScrollButton:pressed {
+    UpIcon: url(:/assets/dark/tabbar/pageup_press.svg);
+    DownIcon: url(:/assets/dark/tabbar/pagedown_press.svg);
+}
+
+TabBarScrollButton:hover {
+    UpIcon: url(:/assets/dark/tabbar/pageup_hover.svg);
+    DownIcon: url(:/assets/dark/tabbar/pagedown_hover.svg);
+}
+
+TabBarAddButton {
     BackgroundBrush: transparent;
-    TextColor: "#2ca7f8";
+    Icon: url(:/assets/dark/tabbar/add_normal.svg);
+}
+
+TabBarAddButton:pressed {
+    Icon: url(:/assets/dark/tabbar/add_press.svg);
+}
+
+TabBarAddButton:hover {
+    Icon: url(:/assets/dark/tabbar/add_hover.svg);
+}
+
+TabBarTab {
+    TextColor: "#c0c0c0";
+    BackgroundBrush: transparent;
+    BorderBrush: rgba(0,0,0,0.1);
+    ActiveColor: "#2ca7f8";
+    CloseIcon: url(:/assets/dark/tabbar/tab_close_normal.svg);
+}
+
+TabBarTab:disabled {
+    TextColor: "#949494";
+}
+
+TabBarTab:pressed {
+    CloseIcon: url(:/assets/dark/tabbar/tab_close_press.svg);
+}
+
+TabBarTab:hover {
+    BackgroundBrush: rgba(255, 255, 255, 0.05);
+    CloseIcon: url(:/assets/dark/tabbar/tab_close_hover.svg);
 }

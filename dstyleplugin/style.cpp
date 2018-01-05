@@ -1319,12 +1319,12 @@ void Style::fillBrush(QPainter *p, const QRect &rect, const QBrush &brush, qreal
             pixmap.setDevicePixelRatio(device_ratio);
         }
 
-        QRect r = rect;
+        QRectF r = rect;
 
-        r.setSize(pixmap.size() / device_ratio);
-        r.moveCenter(rect.center());
+        r.setSize(QSizeF(pixmap.size()) / device_ratio);
+        r.moveCenter(QRectF(rect).center());
 
-        p->drawPixmap(r, pixmap);
+        p->drawPixmap(r, pixmap, QRectF(QPointF(0, 0), pixmap.size()));
     } else {
         p->fillRect(rect, brush);
     }
