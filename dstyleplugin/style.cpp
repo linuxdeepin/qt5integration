@@ -552,12 +552,52 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     case PE_IndicatorTabClose: fcn = &Style::drawIndicatorTabClosePrimitive; break;
         //    case PE_IndicatorTabTear: fcn = &Style::drawIndicatorTabTearPrimitive; break;
     case PE_IndicatorArrowDown:
+        if (isTabBarToolButton(widget)) {
+            QStyleOptionToolButton sotb;
+
+            sotb.QStyleOption::operator =(*option);
+            sotb.arrowType = Qt::DownArrow;
+
+            if (Q_LIKELY(drawScrollButtonLabelControl(&sotb, painter, widget)))
+                return;
+        }
+
         return drawStandardIcon(QStyle::SP_ArrowDown, option, painter, widget);
     case PE_IndicatorArrowLeft:
+        if (isTabBarToolButton(widget)) {
+            QStyleOptionToolButton sotb;
+
+            sotb.QStyleOption::operator =(*option);
+            sotb.arrowType = Qt::LeftArrow;
+
+            if (Q_LIKELY(drawScrollButtonLabelControl(&sotb, painter, widget)))
+                return;
+        }
+
         return drawStandardIcon(QStyle::SP_ArrowLeft, option, painter, widget);
     case PE_IndicatorArrowRight:
+        if (isTabBarToolButton(widget)) {
+            QStyleOptionToolButton sotb;
+
+            sotb.QStyleOption::operator =(*option);
+            sotb.arrowType = Qt::RightArrow;
+
+            if (Q_LIKELY(drawScrollButtonLabelControl(&sotb, painter, widget)))
+                return;
+        }
+
         return drawStandardIcon(QStyle::SP_ArrowRight, option, painter, widget);
     case PE_IndicatorArrowUp:
+        if (isTabBarToolButton(widget)) {
+            QStyleOptionToolButton sotb;
+
+            sotb.QStyleOption::operator =(*option);
+            sotb.arrowType = Qt::UpArrow;
+
+            if (Q_LIKELY(drawScrollButtonLabelControl(&sotb, painter, widget)))
+                return;
+        }
+
         return drawStandardIcon(QStyle::SP_ArrowUp, option, painter, widget);
     case PE_IndicatorHeaderArrow: fcn = &Style::drawIndicatorHeaderArrowPrimitive; break;
     case PE_IndicatorSpinDown:

@@ -372,44 +372,52 @@ class DQTabBar : public QTabBar {
 
 bool Style::drawIndicatorTabClosePrimitive(const QStyleOption *opt, QPainter *p, const QWidget *widget) const
 {
-    if (const QTabBar *tb = qobject_cast<QTabBar*>(widget->parent())) {
-        bool ok = false;
-        int index = widget->property("_d_dstyle_tab_index").toInt(&ok);
+    const QTabBar *tb = qobject_cast<QTabBar*>(widget->parent());
 
-        if (Q_UNLIKELY(!ok)) {
-            for (int i = 0; i < tb->count(); ++i) {
-                if (Q_LIKELY(tb->tabButton(i, QTabBar::LeftSide) != widget
-                             && tb->tabButton(i, QTabBar::RightSide) != widget)) {
-                    continue;
-                }
+    if (!tb) {
+        if (const QWidget *w = dynamic_cast<const QWidget*>(p->device()))
+            widget = w;
 
-                index = i;
-                ok = true;
-                const_cast<QWidget*>(widget)->setProperty("_d_dstyle_tab_index", index);
-                break;
-            }
-        }
-
-        if (Q_UNLIKELY(!ok))
-            return true;
-
-        QStyleOptionTab tab;
-
-        static_cast<const DQTabBar*>(tb)->initStyleOption(&tab, index);
-
-        if (Q_LIKELY((tab.state | QStyle::State_MouseOver) != tab.state))
-            return true;
-
-        fillBrush(p, opt->rect, m_palette->brush(PaletteExtended::TabBarTab_CloseIcon, opt));
+        tb = qobject_cast<QTabBar*>(widget->parent());
     }
+
+    if (Q_UNLIKELY(!tb))
+        return false;
+
+    bool ok = false;
+    int index = widget->property("_d_dstyle_tab_index").toInt(&ok);
+
+    if (Q_UNLIKELY(!ok)) {
+        for (int i = 0; i < tb->count(); ++i) {
+            if (Q_LIKELY(tb->tabButton(i, QTabBar::LeftSide) != widget
+                         && tb->tabButton(i, QTabBar::RightSide) != widget)) {
+                continue;
+            }
+
+            index = i;
+            ok = true;
+            const_cast<QWidget*>(widget)->setProperty("_d_dstyle_tab_index", index);
+            break;
+        }
+    }
+
+    if (Q_UNLIKELY(!ok))
+        return true;
+
+    QStyleOptionTab tab;
+
+    static_cast<const DQTabBar*>(tb)->initStyleOption(&tab, index);
+
+    if (Q_LIKELY((tab.state | QStyle::State_MouseOver) != tab.state))
+        return true;
+
+    fillBrush(p, opt->rect, m_palette->brush(PaletteExtended::TabBarTab_CloseIcon, opt));
 
     return true;
 }
 
 bool Style::drawScrollButtonPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
-    Q_UNUSED(widget)
-
     fillBrush(painter, option->rect, m_palette->brush(PaletteExtended::TabBarScrollButton_BackgroundBrush, option));
 
 #ifdef DTKWIDGET_CLASS_DTabBar
