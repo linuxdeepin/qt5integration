@@ -384,32 +384,28 @@ bool Style::drawIndicatorTabClosePrimitive(const QStyleOption *opt, QPainter *p,
     if (Q_UNLIKELY(!tb))
         return false;
 
-    bool ok = false;
-    int index = widget->property("_d_dstyle_tab_index").toInt(&ok);
+    int index = -1;
 
-    if (Q_UNLIKELY(!ok)) {
-        for (int i = 0; i < tb->count(); ++i) {
-            if (Q_LIKELY(tb->tabButton(i, QTabBar::LeftSide) != widget
-                         && tb->tabButton(i, QTabBar::RightSide) != widget)) {
-                continue;
-            }
-
-            index = i;
-            ok = true;
-            const_cast<QWidget*>(widget)->setProperty("_d_dstyle_tab_index", index);
-            break;
+    for (int i = 0; i < tb->count(); ++i) {
+        if (Q_LIKELY(tb->tabButton(i, QTabBar::LeftSide) != widget
+                     && tb->tabButton(i, QTabBar::RightSide) != widget)) {
+            continue;
         }
+
+        index = i;
+        break;
     }
 
-    if (Q_UNLIKELY(!ok))
+    if (Q_UNLIKELY(index < 0))
         return true;
 
     QStyleOptionTab tab;
 
     static_cast<const DQTabBar*>(tb)->initStyleOption(&tab, index);
 
-    if (Q_LIKELY((tab.state | QStyle::State_MouseOver) != tab.state))
-        return true;
+    if (Q_LIKELY((tab.state | QStyle::State_MouseOver) != tab.state)) {
+         return true;
+    }
 
     fillBrush(p, opt->rect, m_palette->brush(PaletteExtended::TabBarTab_CloseIcon, opt));
 
