@@ -121,7 +121,7 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
         iconSize = buttonOption->iconSize;
         if( !iconSize.isValid() )
         {
-            const int metric( widget->style()->pixelMetric( QStyle::PM_SmallIconSize, option, widget ) );
+            const int metric( proxy()->pixelMetric( QStyle::PM_SmallIconSize, option, widget ) );
             iconSize = QSize( metric, metric );
         }
     }
@@ -150,8 +150,8 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
     }
 
     // handle right to left
-    if( iconRect.isValid() ) iconRect = widget->style()->visualRect( option->direction, option->rect, iconRect );
-    if( textRect.isValid() ) textRect = widget->style()->visualRect( option->direction, option->rect, textRect );
+    if( iconRect.isValid() ) iconRect = proxy()->visualRect( option->direction, option->rect, iconRect );
+    if( textRect.isValid() ) textRect = proxy()->visualRect( option->direction, option->rect, textRect );
 
     // make sure there is enough room for icon
     if( iconRect.isValid() ) iconRect = GeometryUtils::centerRect( iconRect, iconSize );
