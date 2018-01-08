@@ -1182,6 +1182,9 @@ void Style::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment, 
 
 bool Style::isTabBarToolButton(const QWidget *button) const
 {
+    if (Q_UNLIKELY(!button))
+        return false;
+
     if (Q_UNLIKELY(qobject_cast<QTabBar*>(button->parent())
 #ifdef DTKWIDGET_CLASS_DTabBar
                    || qobject_cast<DTabBar*>(button->parent())
@@ -1221,7 +1224,7 @@ void Style::drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt,
     else if (hasFocus)
         mode = QIcon::Selected;
 
-    QPixmap pixmap = standardIcon(sp, opt, widget).pixmap(widget->window()->windowHandle(),
+    QPixmap pixmap = standardIcon(sp, opt, widget).pixmap(widget ? widget->window()->windowHandle() : 0,
                                                           QSize(size, size), mode,
                                                           sunken ? QIcon::On : QIcon::Off);
 
