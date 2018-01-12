@@ -7,7 +7,7 @@ SOURCES += main.cpp \
            qsvgiconengine.cpp
 OTHER_FILES += qsvgiconengine.json
 
-CONFIG += link_pkgconfig
+CONFIG += c++11 link_pkgconfig
 PKGCONFIG += dtkwidget
 
 QT += gui-private

@@ -48,6 +48,7 @@ PushButton {
     BackgroundBrush: rgba(255, 255, 255, 0.15);
     TextColor: "#dcdcdc";
     BorderBrush: transparent;
+    SuggestButtonColor: "#0084FF";
 }
 
 PushButton:disabled {
@@ -340,4 +341,3 @@ TabBarTab:hover {
     BackgroundBrush: rgba(255, 255, 255, 0.05);
     CloseIcon: url(:/assets/dark/tabbar/tab_close_hover.svg);
 }
-

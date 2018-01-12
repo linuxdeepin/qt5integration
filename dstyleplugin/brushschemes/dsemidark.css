@@ -48,6 +48,7 @@ PushButton {
     BackgroundBrush: rgba(255, 255, 255, 0.15);
     TextColor: "white";
     BorderBrush: transparent;
+    SuggestButtonColor: "#0084FF";
 }
 
 PushButton:disabled {

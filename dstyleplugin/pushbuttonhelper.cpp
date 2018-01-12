@@ -22,6 +22,12 @@
 #include "painterhelper.h"
 #include "paletteextended.h"
 
+#include <dtkwidget_global.h>
+#ifdef DTKWIDGET_CLASS_DSuggestButton
+#include <DStyleOption>
+#include <DSuggestButton>
+#endif
+
 #include <QDebug>
 #include <QStyleOptionButton>
 
@@ -49,7 +55,15 @@ bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, c
     } else {
         // TODO(hualet): update button color from palette in case button is default
         const QColor shadow( Qt::transparent );
-        const QBrush outline(m_palette->brush(PaletteExtended::PushButton_BorderBrush, option));
+        const QBrush outline(
+#ifdef DTKWIDGET_CLASS_DSuggestButton
+                    (buttonOption->features & DStyleOptionSuggestButton::SuggestButton) ?
+                        m_palette->brush(PaletteExtended::PushButton_SuggestButtonColor, option) :
+                        m_palette->brush(PaletteExtended::PushButton_BorderBrush, option)
+#else
+                    m_palette->brush(PaletteExtended::PushButton_BorderBrush, option)
+#endif
+                    );
         const QBrush background(m_palette->brush(PaletteExtended::PushButton_BackgroundBrush, option));
 
         // render
@@ -83,6 +97,13 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
     const bool mouseOver(option->state & QStyle::State_MouseOver);
     const bool hasFocus(option->state & QStyle::State_HasFocus);
     const bool flat( buttonOption->features & QStyleOptionButton::Flat );
+    const bool suggest(
+#ifdef DTKWIDGET_CLASS_DSuggestButton
+                buttonOption->features & DStyleOptionSuggestButton::SuggestButton
+#else
+                false
+#endif
+                );
 
     // content
     const bool hasText( !buttonOption->text.isEmpty() );
@@ -174,7 +195,12 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
 
     // render text
     if( hasText && textRect.isValid() ) {
-        painter->setPen(m_palette->brush(PaletteExtended::PushButton_TextColor, option).color());
+        if (suggest) {
+            painter->setPen(m_palette->brush(PaletteExtended::PushButton_SuggestButtonColor, option).color());
+        } else {
+            painter->setPen(m_palette->brush(PaletteExtended::PushButton_TextColor, option).color());
+        }
+
         if (buttonOption->features & QStyleOptionButton::HasMenu)
             textRect = textRect.adjusted(0, 0, -proxy()->pixelMetric(PM_MenuButtonIndicator, buttonOption, widget), 0);
         painter->drawText(textRect, textFlags, buttonOption->text);

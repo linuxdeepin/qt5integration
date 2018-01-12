@@ -68,6 +68,7 @@ public:
         PushButton_BackgroundBrush,
         PushButton_TextColor,
         PushButton_BorderBrush,
+        PushButton_SuggestButtonColor,
 
         LineEdit_BorderBrush,
         LineEdit_BackgroundBrush,

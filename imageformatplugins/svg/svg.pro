@@ -7,7 +7,7 @@ SOURCES += main.cpp \
            qsvgiohandler.cpp
 OTHER_FILES += svg.json
 
-CONFIG += link_pkgconfig
+CONFIG += c++11 link_pkgconfig
 PKGCONFIG += dtkwidget
 
 DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/imageformats/
