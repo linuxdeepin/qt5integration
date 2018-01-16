@@ -40,6 +40,7 @@ enum Metrics
 
     // line editors
     LineEdit_FrameWidth = 2,
+    LineEdit_LeftMargin = 3,
 
     // combobox
     ComboBox_FrameWidth = 6,

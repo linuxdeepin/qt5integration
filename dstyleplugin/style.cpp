@@ -428,6 +428,7 @@ QRect Style::subElementRect(QStyle::SubElement r, const QStyleOption *opt, const
     case SE_ProgressBarContents: return progressBarContentsRect( opt, widget );
     case SE_ProgressBarLabel: return progressBarLabelRect( opt, widget );
     case SE_HeaderArrow: return headerArrowRect( opt, widget );
+    case SE_LineEditContents: return QCommonStyle::subElementRect(r, opt, widget).adjusted(LineEdit_LeftMargin, 0, 0, 0);
     default:
         break;
     }
