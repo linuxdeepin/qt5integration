@@ -157,7 +157,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
                                       QRect(menuitem->rect.x() + 4, menuitem->rect.y(),
                                             checkcol, menuitem->rect.height()));
         // NOTE: If widget is QLineEdit and qApp is DApplication, will hide menu icon
-        if (!menuItem->icon.isNull() && isVisibleMenuIcon() && !isEdit(widget)) {
+        if (!menuItem->icon.isNull() && (!isEdit(widget) || isVisibleMenuIcon())) {
             QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
             if (act && !dis)
                 mode = QIcon::Active;
