@@ -7,12 +7,12 @@ to make make DDE more Qt5 Apps friendly.
 
 ### Build dependencies
 
-* qmake (>= 5.3)
+* Qt (>= 5.6)
 * gtk+-2.0
 * mtdev
 * [dtk](https://github.com/linuxdeepin/deepin-tool-kit)
 * [libqtxdg](https://github.com/lxde/libqtxdg)
-* Qt5 (>= 5.3)
+* Qt5 (>= 5.6)
   * Qt5-Core
   * Qt5-Gui
   * Qt5-Widgets
