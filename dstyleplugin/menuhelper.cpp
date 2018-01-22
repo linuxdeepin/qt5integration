@@ -23,8 +23,53 @@
 #include <QStyleOptionMenuItem>
 #include <QComboBox>
 #include <QDebug>
+#include <DApplication>
+#include <QLineEdit>
+#include <QTextEdit>
+#include <QPlainTextEdit>
+
+DWIDGET_USE_NAMESPACE
 
 namespace dstyle {
+bool Style::isVisibleMenuShortText() const {
+    DApplication *app = qobject_cast<DApplication*>(qApp);
+
+    if (!app) {
+        return true;
+    }
+
+    const QVariant propertyValue = app->property("visibleMenuShortcutText").toBool();
+    return propertyValue.isValid() ? propertyValue.toBool() : false;
+}
+
+bool Style::isVisibleMenuCheckBox() const {
+    DApplication *app = qobject_cast<DApplication*>(qApp);
+
+    if (!app) {
+        return true;
+    }
+
+    const QVariant propertyValue = app->property("visibleMenuCheckboxWidget").toBool();
+    return propertyValue.isValid() ? propertyValue.toBool() : false;
+}
+
+bool Style::isVisibleMenuIcon() const {
+    DApplication *app = qobject_cast<DApplication*>(qApp);
+
+    if (!app) {
+        return true;
+    }
+
+    const QVariant propertyValue = app->property("visibleMenuIcon").toBool();
+    return propertyValue.isValid() ? propertyValue.toBool() : false;
+}
+
+bool isEdit(const QWidget *widget) {
+    return qobject_cast<const QLineEdit*>(widget) ||
+           qobject_cast<const QTextEdit*>(widget) ||
+           qobject_cast<const QPlainTextEdit*>(widget);
+}
+
 bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
     Q_D(const Style);
@@ -74,9 +119,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
             QRect checkRect(option->rect.left() + 10, option->rect.center().y() - 4, 14, 14);
             checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);
             if (checkable) {
-                bool _d_drawMenuCheckBox = widget->property(QT_STRINGIFY(_d_drawMenuCheckBox)).toBool();
-
-                if (!_d_drawMenuCheckBox || (menuItem->checkType & QStyleOptionMenuItem::Exclusive)) {
+                if (!isVisibleMenuCheckBox() || (menuItem->checkType & QStyleOptionMenuItem::Exclusive)) {
                     // Radio button
                     if (checked/* || sunken*/) {
                         QStyleOptionMenuItem newMI = *menuItem;
@@ -113,7 +156,8 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
         QRect vCheckRect = visualRect(opt->direction, menuitem->rect,
                                       QRect(menuitem->rect.x() + 4, menuitem->rect.y(),
                                             checkcol, menuitem->rect.height()));
-        if (!menuItem->icon.isNull()) {
+        // NOTE: If widget is QLineEdit and qApp is DApplication, will hide menu icon
+        if (!menuItem->icon.isNull() && isVisibleMenuIcon() && !isEdit(widget)) {
             QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
             if (act && !dis)
                 mode = QIcon::Active;
@@ -187,7 +231,8 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
                 text_flags |= Qt::TextHideMnemonic;
             text_flags |= Qt::AlignLeft;
 
-            if (t >= 0 && !widget->property(QT_STRINGIFY(_d_hideShortcutText)).toBool()) {
+            // NOTE: hide short text
+            if (t >= 0 && isVisibleMenuShortText()) {
                 QRect vShortcutRect = visualRect(opt->direction, menuitem->rect,
                                                  QRect(textRect.topRight(), QPoint(menuitem->rect.right(), textRect.bottom())));
                 if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {

@@ -208,10 +208,6 @@ void Style::polish(QWidget *w)
         }
     }
 
-    // ###(zccrs): If the application is DApplication or derived class of it then not draw shortcut text
-    w->setProperty(QT_STRINGIFY(_d_hideShortcutText), (bool)qobject_cast<DApplication*>(qApp));
-    w->setProperty(QT_STRINGIFY(_d_drawMenuCheckBox), !(bool)qobject_cast<DApplication*>(qApp));
-
     QPalette palette = w->palette();
 
     if (w->testAttribute(Qt::WA_SetStyle)) {
@@ -713,7 +709,7 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             int w = newSize.width();
-            bool hideShortcutText = widget->property(QT_STRINGIFY(_d_hideShortcutText)).toBool();
+            bool hideShortcutText = !isVisibleMenuShortText();
 
             if (hideShortcutText) {
                 w -= menuItem->tabWidth;

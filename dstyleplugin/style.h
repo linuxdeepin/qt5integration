@@ -85,6 +85,9 @@ private:
 
     // menu
     bool drawMenuItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+    bool isVisibleMenuShortText() const;
+    bool isVisibleMenuIcon() const;
+    bool isVisibleMenuCheckBox() const;
 
     // menu bar
     bool drawMenuBarItemControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
