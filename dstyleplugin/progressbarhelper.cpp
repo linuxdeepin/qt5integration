@@ -57,7 +57,10 @@ bool Style::drawProgressBarControl(const QStyleOption *option, QPainter *painter
 bool Style::drawProgressBarContentsControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
     // QStyleSheetStyle won't draw progress bar groove which is necessary for us.
-    if (widget->style()->metaObject()->className() == QLatin1String("QStyleSheetStyle")) {
+    if (widget &&
+        widget->style() &&
+        widget->style()->metaObject() &&
+        widget->style()->metaObject()->className() == QLatin1String("QStyleSheetStyle")) {
         drawProgressBarGrooveControl(option, painter, widget);
     }
 
