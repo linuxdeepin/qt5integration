@@ -219,7 +219,7 @@ bool Style::drawPushButtonFrame( QPainter* painter, const QRect& rect, const QBr
     const qreal radius( GeometryUtils::frameRadius() );
 
     QPainterPath path;
-    path.addRoundedRect(rect, radius, radius);
+    path.addRoundedRect(QRectF(rect).adjusted(0.5, 0.5, -0.5, -0.5), radius, radius);
 
     // ButtonTuples are QPushButton groups that needs to be taken care of,
     // the right corners of the LeftButton are not rounded, and the left
