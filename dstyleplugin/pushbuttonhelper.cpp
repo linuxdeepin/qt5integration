@@ -196,7 +196,7 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
     // render text
     if( hasText && textRect.isValid() ) {
         if (suggest) {
-            painter->setPen(m_palette->brush(PaletteExtended::PushButton_SuggestButtonColor, option).color());
+            painter->setPen(m_palette->brush(PaletteExtended::PushButton_SuggestTextColor, option).color());
         } else {
             painter->setPen(m_palette->brush(PaletteExtended::PushButton_TextColor, option).color());
         }

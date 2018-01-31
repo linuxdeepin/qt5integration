@@ -47,46 +47,58 @@ Slider:pressed {
 PushButton {
     BackgroundBrush: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
     TextColor: "#000";
+    SuggestTextColor: rgba(0, 132, 255, 1);
     BorderBrush: rgba(0,0,0,0.1);
-    SuggestButtonColor: "#0084FF";
+    SuggestButtonColor: rgba(0, 132, 255, 0.4);
 }
 
 PushButton:disabled {
     BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 rgba(255, 255, 255, 0.4), stop:1 rgba(253, 253, 253, 0.4));
     TextColor: "#AEAEAE";
+    SuggestTextColor: "#AEAEAE";
     BorderBrush: rgba(0,0,0,0.04);
+    SuggestButtonColor: rgba(0,0,0,0.04);
 }
 
 PushButton:hover {
     BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 "#8ccfff", stop:1 "#4bb8ff");
     TextColor: "#fff";
+    SuggestTextColor: "#fff";
     BorderBrush: rgba(0, 117, 243, 0.2);
+    SuggestButtonColor: rgba(0, 117, 243, 0.2);
 }
 
 PushButton:pressed {
     BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 "#0b8cff", stop:1 "#0aa1ff");
     TextColor: "#fff";
+    SuggestTextColor: "#fff";
     BorderBrush: rgba(29, 129, 255, 0.3);
+    SuggestButtonColor: rgba(29, 129, 255, 0.3);
 }
 
 PushButton:focus {
     BorderBrush: "#2ca7f8";
+    SuggestButtonColor: "#2ca7f8";
 }
 
 PushButton:flat {
-    TextColor: "#0082fa"
+    TextColor: "#0082fa";
+    SuggestTextColor: "#0082fa";
 }
 
 PushButton:flat:disabled {
-    TextColor: "#0060b9"
+    TextColor: "#0060b9";
+    SuggestTextColor: "#0060b9";
 }
 
 PushButton:flat:hover {
-    TextColor: "#16b8ff"
+    TextColor: "#16b8ff";
+    SuggestTextColor: "#16b8ff";
 }
 
 PushButton:flat:pressed {
-    TextColor: "#0082fa"
+    TextColor: "#0082fa";
+    SuggestTextColor: "#0082fa";
 }
 
 LineEdit {

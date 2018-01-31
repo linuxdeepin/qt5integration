@@ -47,42 +47,53 @@ Slider:pressed {
 PushButton {
     BackgroundBrush: rgba(255, 255, 255, 0.15);
     TextColor: "#dcdcdc";
+    SuggestTextColor: rgba(0, 132, 255, 1);
     BorderBrush: transparent;
-    SuggestButtonColor: "#0084FF";
+    SuggestButtonColor: rgba(0, 132, 255, 0.4);
 }
 
 PushButton:disabled {
     BackgroundBrush: rgba(255, 255, 255, 0.06);
     TextColor: "#40dcdcdc";
+    SuggestTextColor: "#40dcdcdc";
     BorderBrush: transparent;
+    SuggestTextColor: transparent;
 }
 
 PushButton:hover {
     BackgroundBrush: rgba(255, 255, 255, 0.3);
     TextColor: white;
+    SuggestTextColor: white;
     BorderBrush: transparent;
+    SuggestTextColor: transparent;
 }
 
 PushButton:pressed {
     BackgroundBrush: rgba(255,255,255,0.1);
     TextColor: "#2ca7f8";
+    SuggestTextColor: "#2ca7f8";
     BorderBrush: transparent;
+    SuggestTextColor: transparent;
 }
 
 PushButton:focus {
     BorderBrush: "#2ca7f8";
+    SuggestTextColor: "#2ca7f8";
 }
 
 PushButton:flat {
-    TextColor: "#0082fa"
+    TextColor: "#0082fa";
+    SuggestTextColor: "#0082fa";
 }
 
 PushButton:flat:disabled {
-    TextColor: "#0060b9"
+    TextColor: "#0060b9";
+    SuggestTextColor: "#0060b9";
 }
 
 PushButton:flat:hover {
-    TextColor: "#16b8ff"
+    TextColor: "#16b8ff";
+    SuggestTextColor: "#16b8ff";
 }
 
 LineEdit {
