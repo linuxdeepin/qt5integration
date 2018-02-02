@@ -78,7 +78,7 @@ PushButton:pressed {
 
 PushButton:focus {
     BorderBrush: "#2ca7f8";
-    SuggestButtonColor: "#2ca7f8";
+    SuggestButtonColor: rgba(0, 132, 255, 0.4);
 }
 
 PushButton:flat {
