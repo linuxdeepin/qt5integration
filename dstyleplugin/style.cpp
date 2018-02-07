@@ -1360,8 +1360,15 @@ void Style::fillBrush(QPainter *p, const QRect &rect, const QBrush &brush, qreal
         }
 
         QRectF r = rect;
+        QSizeF pixmap_size = QSizeF(pixmap.size());
 
-        r.setSize(QSizeF(pixmap.size()) / device_ratio);
+        if (pixmap_size.width() > rect.width() * device_ratio
+                || pixmap_size.height() > rect.height() * device_ratio) {
+            p->setRenderHint(QPainter::SmoothPixmapTransform);
+            pixmap_size.scale(rect.size() * device_ratio, Qt::KeepAspectRatio);
+        }
+
+        r.setSize(pixmap_size / device_ratio);
         r.moveCenter(QRectF(rect).center());
 
         p->drawPixmap(r, pixmap, QRectF(QPointF(0, 0), pixmap.size()));
