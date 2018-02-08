@@ -100,6 +100,7 @@ public:
         TabBarTab_TextColor,
         TabBarTab_ActiveColor,
         TabBarTab_CloseIcon,
+        TabBarTab_CloseIconBackground,
         TabBarScrollButton_BackgroundBrush,
         TabBarScrollButton_UpIcon,
         TabBarScrollButton_DownIcon,

@@ -338,6 +338,7 @@ TabBarTab {
     BorderBrush: rgba(0,0,0,0.1);
     ActiveColor: "#2ca7f8";
     CloseIcon: url(:/assets/dark/tabbar/tab_close_normal.svg);
+    CloseIconBackground: "#2a2a2a";
 }
 
 TabBarTab:disabled {
@@ -351,4 +352,8 @@ TabBarTab:pressed {
 TabBarTab:hover {
     BackgroundBrush: rgba(255, 255, 255, 0.05);
     CloseIcon: url(:/assets/dark/tabbar/tab_close_hover.svg);
+}
+
+TabBarTab:selected {
+    TextColor: "#2ca7f8";
 }

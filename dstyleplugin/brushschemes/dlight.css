@@ -342,6 +342,7 @@ TabBarTab {
     TextColor: black;
     ActiveColor: "#2ca7f8";
     CloseIcon: url(:/assets/light/tabbar/tab_close_normal.svg);
+    CloseIconBackground: "#f3f3f3";
 }
 
 TabBarTab:disabled {
@@ -355,4 +356,8 @@ TabBarTab:pressed {
 TabBarTab:hover {
     BackgroundBrush: rgba(0, 0, 0, 0.05);
     CloseIcon: url(:/assets/light/tabbar/tab_close_hover.svg);
+}
+
+TabBarTab:selected {
+    TextColor: "#2ca7f8";
 }
