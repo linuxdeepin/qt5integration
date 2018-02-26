@@ -72,7 +72,7 @@ PushButton:pressed {
     BackgroundBrush: qlineargradient(x1: 0, y1: 0 x2: 0, y2: 1, stop:0 "#0b8cff", stop:1 "#0aa1ff");
     TextColor: "#fff";
     SuggestTextColor: "#fff";
-    BorderBrush: rgba(29, 129, 255, 0.3);
+    BorderBrush: rgba(0, 0, 0, 0.05);
     SuggestButtonColor: rgba(29, 129, 255, 0.3);
 }
 
