@@ -157,7 +157,10 @@ enum Metrics
     Shadow_Overlap = 2,
 
     // group box
-    GroupBox_TopMargin = 3
+    GroupBox_TopMargin = 3,
+
+    // progress bar
+    ProgressBar_BorderWidth = 1
 };
 
 //* corners

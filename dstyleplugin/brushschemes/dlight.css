@@ -44,6 +44,13 @@ Slider:pressed {
     VernierHandleBrush: url(:/assets/light/slider/slider_point_handle_press.png);
 }
 
+ProgressBar {
+    GrooveBackground: rgba(0, 0, 0, 0.05);
+    GrooveBorder: rgba(255, 255, 255, 0.05);
+    ContentBackground: "#2ca7f8";
+    ContentBorder: "#378cfa";
+}
+
 PushButton {
     BackgroundBrush: qlineargradient(x1:0, y1:0 x2:0, y2:1, stop:0 "#fff", stop:1 "#fdfdfd");
     TextColor: "#000";

@@ -70,22 +70,21 @@ bool Style::drawProgressBarContentsControl(const QStyleOption *option, QPainter 
     const bool horizontal( !progressBarOption || progressBarOption->orientation == Qt::Horizontal );
 
     // copy rect and palette
-    const QPalette& palette( option->palette );
-    const qreal radius( GeometryUtils::frameRadius() );
+    const qreal radius( (horizontal ? option->rect.height() : option->rect.width()) / 2.0 );
 
     // get progress and steps
-    const qreal progress( progressBarOption->progress - progressBarOption->minimum );
-    const int steps( qMax( progressBarOption->maximum  - progressBarOption->minimum, 1 ) );
+//    const qreal progress( progressBarOption->progress - progressBarOption->minimum );
+//    const int steps( qMax( progressBarOption->maximum  - progressBarOption->minimum, 1 ) );
 
     //Calculate width fraction
-    const qreal widthFrac = qMin( qreal(1), progress/steps );
+//    const qreal widthFrac = qMin( qreal(1), progress/steps );
 
     QRect rect( option->rect );
 
     // convert the pixel width
-    const int indicatorSize( widthFrac*( horizontal ? rect.width():rect.height() ) );
+//    const int indicatorSize( widthFrac*( horizontal ? rect.width():rect.height() ) );
 
-    rect.setWidth(indicatorSize);
+//    rect.setWidth(indicatorSize);
 
     QPainterPath path;
     path.addRoundedRect(rect, radius, radius);
@@ -93,7 +92,8 @@ bool Style::drawProgressBarContentsControl(const QStyleOption *option, QPainter 
     painter->save();
     painter->setRenderHints(painter->renderHints() | QPainter::Antialiasing);
     painter->setClipPath(path);
-    painter->fillRect(rect, palette.highlight());
+    painter->fillRect(rect, m_palette->brush(PaletteExtended::ProgressBar_ContentBackground, option));
+    painter->strokePath(path, QPen(m_palette->brush(PaletteExtended::ProgressBar_ContentBorder), ProgressBar_BorderWidth));
     painter->restore();
 
     return true;
@@ -103,11 +103,15 @@ bool Style::drawProgressBarGrooveControl(const QStyleOption *option, QPainter *p
 {
     Q_UNUSED(widget)
 
+    const QStyleOptionProgressBar* progressBarOption( qstyleoption_cast<const QStyleOptionProgressBar*>( option ) );
+    if( !progressBarOption ) return false;
+    const bool horizontal( !progressBarOption || progressBarOption->orientation == Qt::Horizontal );
+
     const QRect rect( option->rect );
-    const qreal radius( GeometryUtils::frameRadius() );
+    const qreal radius( (horizontal ? rect.height() : rect.height()) / 2.0 );
 
     const PaletteExtended *plExt = m_palette;
-    const QBrush brush( plExt->brush(PaletteExtended::PushButton_BackgroundBrush, option) );
+    const QBrush brush( plExt->brush(PaletteExtended::ProgressBar_GrooveBackground, option) );
 
     QPainterPath path;
     path.addRoundedRect(rect, radius, radius);
@@ -116,6 +120,7 @@ bool Style::drawProgressBarGrooveControl(const QStyleOption *option, QPainter *p
     painter->setRenderHints(painter->renderHints() | QPainter::Antialiasing);
     painter->setClipPath(path);
     painter->fillRect(rect, brush);
+    painter->strokePath(path, QPen(plExt->brush(PaletteExtended::ProgressBar_GrooveBorder), ProgressBar_BorderWidth));
     painter->restore();
 
     return true;

@@ -65,6 +65,11 @@ public:
         Slider_HandleBorderColor,
         Slider_TickmarkColor,
 
+        ProgressBar_GrooveBackground,
+        ProgressBar_GrooveBorder,
+        ProgressBar_ContentBackground,
+        ProgressBar_ContentBorder,
+
         PushButton_BackgroundBrush,
         PushButton_TextColor,
         PushButton_BorderBrush,
