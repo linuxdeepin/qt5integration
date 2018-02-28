@@ -160,7 +160,8 @@ enum Metrics
     GroupBox_TopMargin = 3,
 
     // progress bar
-    ProgressBar_BorderWidth = 1
+    ProgressBar_BorderWidth = 1,
+    ProgressBar_Radius = 4
 };
 
 //* corners

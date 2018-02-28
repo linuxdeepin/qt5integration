@@ -420,8 +420,8 @@ QRect Style::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex
 QRect Style::subElementRect(QStyle::SubElement r, const QStyleOption *opt, const QWidget *widget) const
 {
     switch (r) {
-    case SE_ProgressBarGroove: return progressBarGrooveRect( opt, widget );
-    case SE_ProgressBarContents: return progressBarContentsRect( opt, widget );
+    case SE_ProgressBarGroove:  // deliberate
+    case SE_ProgressBarContents: return progressBarGrooveRect( opt, widget );
     case SE_ProgressBarLabel: return progressBarLabelRect( opt, widget );
     case SE_HeaderArrow: return headerArrowRect( opt, widget );
     case SE_LineEditContents: return QCommonStyle::subElementRect(r, opt, widget).adjusted(LineEdit_LeftMargin, 0, 0, 0);
