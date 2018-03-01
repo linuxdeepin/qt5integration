@@ -66,7 +66,28 @@ DFileDialogManager *QDeepinFileDialogHelper::manager = Q_NULLPTR;
 
 QDeepinFileDialogHelper::QDeepinFileDialogHelper()
 {
+    connect(this, &QDeepinFileDialogHelper::accept, this, [this] {
+        if (sourceDialog && nativeDialog) {
+            const QMap<QString, QVariant> &map_lineedit = nativeDialog->allCustomWidgetsValue(LineEditType);
+            const QMap<QString, QVariant> &map_combobox = nativeDialog->allCustomWidgetsValue(ComboBoxType);
 
+            auto map_eidt_begin = map_lineedit.constBegin();
+
+            while (map_eidt_begin != map_lineedit.constEnd()) {
+                sourceDialog->setProperty(QString("_dtk_widget_lineedit_%1_value").arg(map_eidt_begin.key()).toUtf8(),
+                                          map_eidt_begin.value());
+                ++map_eidt_begin;
+            }
+
+            auto map_combobox_begion = map_combobox.constBegin();
+
+            while (map_combobox_begion != map_combobox.constEnd()) {
+                sourceDialog->setProperty(QString("_dtk_widget_combobox_%1_value").arg(map_combobox_begion.key()).toUtf8(),
+                                          map_combobox_begion.value());
+                ++map_combobox_begion;
+            }
+        }
+    });
 }
 
 QDeepinFileDialogHelper::~QDeepinFileDialogHelper()
@@ -383,6 +404,25 @@ void QDeepinFileDialogHelper::applyOptions()
         selectFile(filename);
 
     selectNameFilter(options->initiallySelectedNameFilter());
+
+    if (!sourceDialog) {
+        sourceDialog = reinterpret_cast<QFileDialog*>(qvariant_cast<quintptr>(property("_dtk_widget_QFileDialog")));
+
+        if (sourceDialog && nativeDialog) {
+            const QStringList lineedit_list = sourceDialog->property("_dtk_widget_custom_lineedit_list").toStringList();
+            const QStringList combobox_list = sourceDialog->property("_dtk_widget_custom_combobox_list").toStringList();
+
+            nativeDialog->beginAddCustomWidget();
+
+            for (const QString &i : lineedit_list)
+                nativeDialog->addCustomWidget(LineEditType, i);
+
+            for (const QString &i : combobox_list)
+                nativeDialog->addCustomWidget(ComboBoxType, i);
+
+            nativeDialog->endAddCustomWidget();
+        }
+    }
 }
 
 QT_END_NAMESPACE

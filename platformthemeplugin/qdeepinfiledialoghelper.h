@@ -32,6 +32,11 @@ typedef ComDeepinFilemanagerFiledialogmanagerInterface DFileDialogManager;
 class QDeepinFileDialogHelper : public QPlatformFileDialogHelper
 {
 public:
+    enum CustomWidgetType {
+        LineEditType = 0,
+        ComboBoxType = 1
+    };
+
     QDeepinFileDialogHelper();
     ~QDeepinFileDialogHelper();
 
@@ -55,6 +60,7 @@ private:
     mutable QPointer<QWindow> auxiliaryWindow;
     mutable QPointer<QFileDialog> qtDialog;
     QPointer<QWindow> activeWindow;
+    QPointer<QFileDialog> sourceDialog;
     static DFileDialogManager *manager;
 
     void ensureDialog() const;
