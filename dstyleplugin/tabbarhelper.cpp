@@ -34,6 +34,7 @@ DWIDGET_USE_NAMESPACE
 #include <QStyleOptionToolButton>
 #include <QPainter>
 #include <QToolButton>
+#include <QLinearGradient>
 #include <QDebug>
 
 namespace dstyle {
@@ -156,7 +157,40 @@ bool Style::drawTabBarTabLabelControl(const QStyleOption *opt, QPainter *p, cons
         p->drawPixmap(iconRect.x(), iconRect.y(), tabIcon);
     }
 
-    p->setPen(QPen(m_palette->brush(PaletteExtended::TabBarTab_TextColor, opt), 1));
+    bool visible_close_button = false;
+
+    if (const QTabBar *tb = qobject_cast<const QTabBar*>(widget)) {
+        visible_close_button = tb->tabsClosable();
+    }
+
+#ifdef DTKWIDGET_CLASS_DTabBar
+    if (const DTabBar *tb = qobject_cast<const DTabBar*>(widget)) {
+        visible_close_button = tb->tabsClosable();
+    }
+
+    visible_close_button = visible_close_button && (opt->state & QStyle::State_MouseOver);
+#endif
+
+    if (visible_close_button) {
+        QRect text_rect = opt->fontMetrics.boundingRect(tr, alignment, tab->text);
+
+        QBrush brush = m_palette->brush(PaletteExtended::TabBarTab_TextColor, opt);
+        QLinearGradient lg(0, 0, 1, 0);
+        QGradientStops stops;
+        qreal stop = qreal(tr.right() - 35 - text_rect.x()) / text_rect.width();
+
+        stops << QGradientStop{0, brush.color()};
+        stops << QGradientStop{stop, brush.color()};
+        stops << QGradientStop{stop, QColor(brush.color().red(), brush.color().green(), brush.color().blue(), 200)};
+        stops << QGradientStop{1, Qt::transparent};
+
+        lg.setCoordinateMode(QLinearGradient::ObjectBoundingMode);
+        lg.setStops(stops);
+        p->setPen(QPen(QBrush(lg), 1));
+    } else {
+        p->setPen(QPen(m_palette->brush(PaletteExtended::TabBarTab_TextColor, opt), 1));
+    }
+
     p->drawText(tr, alignment, tab->text);
 
     if (verticalTabs)
@@ -409,7 +443,6 @@ bool Style::drawIndicatorTabClosePrimitive(const QStyleOption *opt, QPainter *p,
          return true;
     }
 
-    p->fillRect(opt->rect, m_palette->brush(PaletteExtended::TabBarTab_CloseIconBackground, opt));
     fillBrush(p, opt->rect, m_palette->brush(PaletteExtended::TabBarTab_CloseIcon, opt));
 
     return true;
