@@ -107,12 +107,12 @@ QRect Style::scrollbarSubControlRect(const QStyleOptionComplex *opt, QStyle::Sub
         case SC_ScrollBarSlider:
             if (scrollbar->orientation == Qt::Horizontal) {
                 if (mouseOver && enabled)
-                    ret.setRect(sliderstart, 1, sliderlen, scrollBarRect.height() - 2);
+                    ret.setRect(sliderstart, 0, sliderlen, scrollBarRect.height());
                 else
                     ret.setRect(sliderstart, scrollBarRect.height() / 4, sliderlen, scrollBarRect.height() / 2);
             } else {
                 if (mouseOver && enabled)
-                    ret.setRect(1, sliderstart, scrollBarRect.width() - 2, sliderlen);
+                    ret.setRect(0, sliderstart, scrollBarRect.width(), sliderlen);
                 else
                     ret.setRect(scrollBarRect.width() / 4, sliderstart, scrollBarRect.width() / 2, sliderlen);
             }
@@ -217,9 +217,6 @@ bool Style::drawScrollBarSliderControl(const QStyleOption *option, QPainter *pai
     painter->setRenderHint(QPainter::Antialiasing);
 
     QRectF rect = option->rect;
-
-    if (option->state & QStyle::State_Sunken)
-        rect.adjust(0.5, 0.5, 0, 0);
 
     const QBrush &background = m_palette->brush(PaletteExtended::ScrollBar_HandleBrush, option, 0, Qt::lightGray);
     const QBrush &border = m_palette->brush(PaletteExtended::ScrollBar_HandleBorderBrush, option, 0, background);
