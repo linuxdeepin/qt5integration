@@ -107,14 +107,14 @@ QRect Style::scrollbarSubControlRect(const QStyleOptionComplex *opt, QStyle::Sub
         case SC_ScrollBarSlider:
             if (scrollbar->orientation == Qt::Horizontal) {
                 if (mouseOver && enabled)
-                    ret.setRect(sliderstart, 0, sliderlen, scrollBarRect.height());
+                    ret.setRect(sliderstart, 2, sliderlen, scrollBarRect.height() - 4);
                 else
-                    ret.setRect(sliderstart, scrollBarRect.height() / 4, sliderlen, scrollBarRect.height() / 2);
+                    ret.setRect(sliderstart, scrollBarRect.height() / 3, sliderlen, scrollBarRect.height() / 3);
             } else {
                 if (mouseOver && enabled)
-                    ret.setRect(0, sliderstart, scrollBarRect.width(), sliderlen);
+                    ret.setRect(2, sliderstart, scrollBarRect.width() - 4, sliderlen);
                 else
-                    ret.setRect(scrollBarRect.width() / 4, sliderstart, scrollBarRect.width() / 2, sliderlen);
+                    ret.setRect(scrollBarRect.width() / 3, sliderstart, scrollBarRect.width() / 3, sliderlen);
             }
             break;
         default:
@@ -219,8 +219,9 @@ bool Style::drawScrollBarSliderControl(const QStyleOption *option, QPainter *pai
     QRectF rect = option->rect;
 
     const QBrush &background = m_palette->brush(PaletteExtended::ScrollBar_HandleBrush, option, 0, Qt::lightGray);
-    const QBrush &border = m_palette->brush(PaletteExtended::ScrollBar_HandleBorderBrush, option, 0, background);
-    PainterHelper::drawRoundedRect(painter, rect, 3, 3, Qt::AbsoluteSize, background, Metrics::Painter_PenWidth, border);
+    const QBrush &border = m_palette->brush(PaletteExtended::ScrollBar_HandleBorderBrush, option, 0, Qt::transparent);
+    qreal radius = scrollBar->orientation == Qt::Horizontal ? rect.height() / 2.0 : rect.width() / 2.0;
+    PainterHelper::drawRoundedRect(painter, rect, radius, radius, Qt::AbsoluteSize, background, Metrics::Painter_PenWidth, border);
 
     return true;
 }

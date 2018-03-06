@@ -56,11 +56,10 @@ void drawPath(QPainter *painter, const QPainterPath &path, const QBrush &backgro
 {
     painter->fillPath(path, background);
 
-    if (qFuzzyIsNull(borderWidth) || background == border)
+    if (qFuzzyIsNull(borderWidth) || border == Qt::transparent)
         return;
 
     painter->save();
-    painter->setBrush(background);
     painter->setPen(QPen(border, borderWidth));
     painter->drawPath(path);
     painter->restore();

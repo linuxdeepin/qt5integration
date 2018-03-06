@@ -92,7 +92,7 @@ enum Metrics
     MenuBarItem_MarginHeight = 6,
 
     // scrollbars
-    ScrollBar_Extend = 8,
+    ScrollBar_Extend = 12,
     ScrollBar_SliderWidth = 15,
     ScrollBar_MinSliderHeight = 40,
     ScrollBar_NoButtonHeight = (ScrollBar_Extend-ScrollBar_SliderWidth)/2,

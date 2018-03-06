@@ -31,6 +31,8 @@
 #include <QDebug>
 #include <QStyleOptionButton>
 
+DWIDGET_USE_NAMESPACE
+
 namespace dstyle {
 
 bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
