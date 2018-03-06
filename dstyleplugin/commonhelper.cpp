@@ -45,7 +45,7 @@ void CommonHelper::renderFrame(QPainter *painter, const QRect &rect, const QBrus
     painter->setBrush( brush );
 
     // render
-    painter->drawRoundedRect( frameRect, radius, radius );
+    painter->drawRoundedRect( frameRect.adjusted(0.5, 0.5, -0.5, -0.5), radius, radius );
 }
 
 Style *CommonHelper::widgetStyle(const QWidget *widget)

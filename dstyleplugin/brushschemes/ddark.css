@@ -106,6 +106,7 @@ PushButton:flat:hover {
 LineEdit {
     BackgroundBrush: rgba(255,255,255,0.15);
     BorderBrush: transparent;
+    AlertBorderBrush: "#FF8F00";
 }
 
 LineEdit:disabled {

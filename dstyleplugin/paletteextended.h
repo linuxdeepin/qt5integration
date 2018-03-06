@@ -77,6 +77,7 @@ public:
         PushButton_SuggestTextColor,
 
         LineEdit_BorderBrush,
+        LineEdit_AlertBorderBrush,
         LineEdit_BackgroundBrush,
 
         Menu_SeparatorColor,

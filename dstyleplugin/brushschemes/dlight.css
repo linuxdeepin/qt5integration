@@ -111,6 +111,7 @@ PushButton:flat:pressed {
 LineEdit {
     BackgroundBrush: rgb(255,255,255);
     BorderBrush: rgba(0,0,0,0.1);
+    AlertBorderBrush: "#FF8F00";
 }
 
 LineEdit:disabled {

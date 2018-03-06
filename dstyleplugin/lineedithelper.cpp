@@ -20,6 +20,15 @@
 #include "style.h"
 #include "paletteextended.h"
 
+#include <dtkwidget_config.h>
+#ifdef DTKWIDGET_CLASS_DStyleOptionLineEdit
+#include <DStyleOptionLineEdit>
+#include <DLineEdit>
+
+DWIDGET_USE_NAMESPACE
+#endif
+
+
 namespace dstyle {
 
 bool Style::drawFrameLineEditPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
@@ -30,8 +39,29 @@ bool Style::drawFrameLineEditPrimitive(const QStyleOption *option, QPainter *pai
 
     // render
     const QBrush background(m_palette->brush(PaletteExtended::LineEdit_BackgroundBrush, option) );
-    const QBrush outline(m_palette->brush(PaletteExtended::LineEdit_BorderBrush, option) );
-    CommonHelper::renderFrame( painter, rect, background, outline );
+    QBrush outline(m_palette->brush(PaletteExtended::LineEdit_BorderBrush, option) );
+
+#ifdef DTKWIDGET_CLASS_DLineEdit
+    if (const DLineEdit *edit = qobject_cast<const DLineEdit*>(widget)) {
+        DStyleOptionLineEdit edit_option;
+        edit_option.init(const_cast<DLineEdit*>(edit));
+
+        if (edit_option.features.testFlag(DStyleOptionLineEdit::Alert))
+            outline = m_palette->brush(PaletteExtended::LineEdit_AlertBorderBrush, option, PaletteExtended::PseudoClass_Unknown, outline);
+
+        CommonHelper::renderFrame( painter, rect, background, outline );
+
+        if (edit_option.features.testFlag(DStyleOptionLineEdit::IconButton)) {
+            painter->save();
+            painter->setPen(QPen(outline, Metrics::Painter_PenWidth));
+            painter->drawLine(QPointF(edit_option.iconButtonRect.topLeft()) - QPointF(0.5, 0), QPointF(edit_option.iconButtonRect.bottomLeft()) + QPoint(-0.5, 1));
+            painter->restore();
+        }
+    } else
+#endif
+    {
+        CommonHelper::renderFrame( painter, rect, background, outline );
+    }
 
     return true;
 }
