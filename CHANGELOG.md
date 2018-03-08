@@ -1,4 +1,40 @@
 <a name=""></a>
+##  0.2.9 (2018-03-08)
+
+
+#### Bug Fixes
+
+*   set the progress bar widget radius to 4 ([3cc29bbf](https://github.com/linuxdeepin/qt5integration/commit/3cc29bbf49d93d48ec3027a35721f4ccfa6af1cb))
+*   progress bar border color ([7da33a5d](https://github.com/linuxdeepin/qt5integration/commit/7da33a5d5882debae5448a24fc01200b4a390e56))
+*   button border color in pressed state ([578948d4](https://github.com/linuxdeepin/qt5integration/commit/578948d4d1a22521f8c39d2f89914761af4a0c20))
+*   Style::fullBrush filled icon is not the right size ([fb785a3f](https://github.com/linuxdeepin/qt5integration/commit/fb785a3fa6fabc82117846eeca64a3ee479077f8))
+*   drawProgressBarContentsControl crash if widget is nullptr ([1494cff6](https://github.com/linuxdeepin/qt5integration/commit/1494cff6247968025c3c0750f30cb4f186acafcd))
+*   crash at drawPushButtonLabel ([795e9fb6](https://github.com/linuxdeepin/qt5integration/commit/795e9fb65f7fb88fc414fb33b230396db7e4ffb4))
+*   crash at drawStandardIcon/isTabBarToolButton ([45a305fd](https://github.com/linuxdeepin/qt5integration/commit/45a305fd5919525b8dc6cc9dc0234f242cf00874))
+*   tab of QTabBar close button visible position is wrong on after tabs move ([6049831b](https://github.com/linuxdeepin/qt5integration/commit/6049831bc14a0a39aa15d3189b1ab35155e20d0f))
+*   not visible close button on tab when QTabBar style is QStyleSheetStyle ([0ca51e06](https://github.com/linuxdeepin/qt5integration/commit/0ca51e0651972ebbf26d14cbbeb0528cf2e2df79))
+* **dstyle:**  button border corner offset ([2c74e56e](https://github.com/linuxdeepin/qt5integration/commit/2c74e56e9d75adab5b4a8853043af596abdf2710))
+* **style:**
+  *  set the scroll bar padding to 2px ([8cf9a91a](https://github.com/linuxdeepin/qt5integration/commit/8cf9a91ad77c90684e2da9412810b37dbcc6be64))
+  *  scroll bar border color on dark style ([0b3472b0](https://github.com/linuxdeepin/qt5integration/commit/0b3472b048cc20803b8c468c60662de477d3a2c5))
+
+#### Features
+
+*   support add custom widgets to deepin file chooser dialog ([63caf8ff](https://github.com/linuxdeepin/qt5integration/commit/63caf8ff553c3951ff91af12792f3c40be1eba61))
+*   add split line for DTabBar add button ([31730a0b](https://github.com/linuxdeepin/qt5integration/commit/31730a0b2285504cbb3d803655ad55adae545187))
+*   add dark style for QTabBar/DTabBar ([7c811b44](https://github.com/linuxdeepin/qt5integration/commit/7c811b440b6fafa1233261690b03abc81645011d))
+*   draw QTabBar widget ([9da78b60](https://github.com/linuxdeepin/qt5integration/commit/9da78b6088596da68e800a048a47d6264642ee01))
+* **dstyle:**
+  *  hide menu icon with DApplication and QLineEdit ([291c7292](https://github.com/linuxdeepin/qt5integration/commit/291c7292ff6f49349e3591835962bb1c715e8972))
+  *  support SuggestButtonColor ([a644e697](https://github.com/linuxdeepin/qt5integration/commit/a644e697d47573ee8d5dc907c9d21411d925fd99))
+* **style:**
+  *  draw alert border on DLineEdit ([810ebeda](https://github.com/linuxdeepin/qt5integration/commit/810ebedad0c50610aee6edd8507858931bfc954d))
+  *  the tab bar tab text below the close button increases the transparency gradient ([83bdc592](https://github.com/linuxdeepin/qt5integration/commit/83bdc59210366ac53a41f7397dbc32c22d364d65))
+  *  lineedit left padding to 3px ([e56ae93c](https://github.com/linuxdeepin/qt5integration/commit/e56ae93c32f3020d528e7cd780d544c63fea3ab5))
+
+
+
+<a name=""></a>
 ##  0.2.8.3 (2017-12-06)
 
 
