@@ -1,3 +1,13 @@
+<a name="0.2.10"></a>
+### 0.2.10 (2018-03-14)
+
+
+#### Bug Fixes
+
+*   the line edit widget border color on focus state ([4718470d](https://github.com/linuxdeepin/qt5integration/commit/4718470d0b31b28d67b71c1a77d05a0443fcaa21))
+
+
+
 <a name=""></a>
 ##  0.2.9 (2018-03-08)
 
