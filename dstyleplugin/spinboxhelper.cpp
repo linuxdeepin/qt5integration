@@ -23,6 +23,8 @@
 #include <QDebug>
 
 namespace dstyle {
+extern PaletteExtended::PseudoClassType lineEditStateToPseudoClassType(QStyle::State state);
+
 bool Style::drawSpinBoxComplexControl( const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget ) const
 {
     const QStyleOptionSpinBox *sb( qstyleoption_cast<const QStyleOptionSpinBox*>( option ) );
@@ -117,7 +119,7 @@ bool Style::drawSpinBoxComplexControl( const QStyleOptionComplex* option, QPaint
         proxy()->drawPrimitive(pe, &copy, painter, widget);
     }
 
-    painter->setPen(QPen(m_palette->brush(PaletteExtended::SpinBox_BorderColor, option), Metrics::Painter_PenWidth));
+    painter->setPen(QPen(m_palette->brush(PaletteExtended::SpinBox_BorderColor, lineEditStateToPseudoClassType(option->state)), Metrics::Painter_PenWidth));
     QRect lineEditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget).adjusted(0, -1, 0, 1);
     painter->drawLine(lineEditRect.topRight(), lineEditRect.bottomRight());
 

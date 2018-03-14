@@ -27,9 +27,27 @@
 
 DWIDGET_USE_NAMESPACE
 #endif
+#include <QDebug>
 
 
 namespace dstyle {
+
+PaletteExtended::PseudoClassType lineEditStateToPseudoClassType(QStyle::State state)
+{
+    if (!state.testFlag(QStyle::State_Enabled)) {
+        return PaletteExtended::PseudoClass_Disabled;
+    }
+
+    if (state.testFlag(QStyle::State_ReadOnly)) {
+        return PaletteExtended::PseudoClass_ReadOnly;
+    }
+
+    if (state.testFlag(QStyle::State_HasFocus)) {
+        return PaletteExtended::PseudoClass_Focus;
+    }
+
+    return PaletteExtended::PseudoClass_Unspecified;
+}
 
 bool Style::drawFrameLineEditPrimitive(const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
@@ -38,8 +56,8 @@ bool Style::drawFrameLineEditPrimitive(const QStyleOption *option, QPainter *pai
     const QRect& rect( option->rect );
 
     // render
-    const QBrush background(m_palette->brush(PaletteExtended::LineEdit_BackgroundBrush, option) );
-    QBrush outline(m_palette->brush(PaletteExtended::LineEdit_BorderBrush, option) );
+    const QBrush background(m_palette->brush(PaletteExtended::LineEdit_BackgroundBrush, lineEditStateToPseudoClassType(option->state)) );
+    QBrush outline(m_palette->brush(PaletteExtended::LineEdit_BorderBrush, lineEditStateToPseudoClassType(option->state)) );
 
 #ifdef DTKWIDGET_CLASS_DLineEdit
     if (const DLineEdit *edit = qobject_cast<const DLineEdit*>(widget)) {

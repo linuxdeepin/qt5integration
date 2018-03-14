@@ -27,6 +27,7 @@
 #include "geometryutils.h"
 
 namespace dstyle {
+extern PaletteExtended::PseudoClassType lineEditStateToPseudoClassType(QStyle::State state);
 
 void Style::drawComboBoxPopupFramePrimitive(const QStyleOption *option, QPainter *painter) const {
     const QRect rect( option->rect );
@@ -58,7 +59,7 @@ bool Style::drawComboBox(const QStyleOptionComplex *option, QPainter *painter, c
     {
 
         if( editable ) {
-            flat |= ( rect.height() <= 2*Metrics::Frame_FrameWidth + Metrics::MenuButton_IndicatorWidth );
+            /*flat |= ( rect.height() <= 2*Metrics::Frame_FrameWidth + Metrics::MenuButton_IndicatorWidth );
 
             if ( flat ) {
                 const QColor background( palette.color( QPalette::Base ) );
@@ -66,7 +67,7 @@ bool Style::drawComboBox(const QStyleOptionComplex *option, QPainter *painter, c
                 painter->setBrush( background );
                 painter->setPen( Qt::NoPen );
                 painter->drawRect( rect );
-            } else {
+            } else*/ {
                 proxy()->drawPrimitive( PE_FrameLineEdit, option, painter, widget );
             }
 
@@ -95,6 +96,11 @@ bool Style::drawComboBox(const QStyleOptionComplex *option, QPainter *painter, c
         QRect arrowRect( proxy()->subControlRect( CC_ComboBox, option, SC_ComboBoxArrow, widget ) );
 
         fillBrush(painter, arrowRect, brush);
+
+        if (editable) {
+            painter->setPen(QPen(m_palette->brush(PaletteExtended::LineEdit_BorderBrush, lineEditStateToPseudoClassType(option->state)), 1));
+            painter->drawLine(arrowRect.topLeft() - QPoint(1, 1), arrowRect.bottomLeft() + QPoint(-1, 1));
+        }
     }
 
     return option->subControls & (SC_ComboBoxFrame | SC_ComboBoxArrow);
