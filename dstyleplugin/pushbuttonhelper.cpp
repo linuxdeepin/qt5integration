@@ -211,7 +211,7 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
     return true;
 }
 
-bool Style::drawPushButtonFrame( QPainter* painter, const QRect& rect, const QBrush& brush, const QBrush& outline, const QColor& shadow, const QWidget *widget) const
+bool Style::drawPushButtonFrame(QPainter* painter, const QRect& rect, const QBrush& brush, const QBrush& outline, const QColor& shadow, const QWidget *widget) const
 {
     Q_UNUSED(shadow)
 
@@ -219,22 +219,24 @@ bool Style::drawPushButtonFrame( QPainter* painter, const QRect& rect, const QBr
     painter->setRenderHint( QPainter::Antialiasing, true );
 
     const qreal radius( GeometryUtils::frameRadius() );
+    const QMarginsF margins(0.5, 0.5, 0.5, 0.5);
 
     QPainterPath path;
-    path.addRoundedRect(QRectF(rect).adjusted(0.5, 0.5, -0.5, -0.5), radius, radius);
+    path.addRoundedRect(QRectF(rect).marginsRemoved(margins), radius, radius);
 
     // ButtonTuples are QPushButton groups that needs to be taken care of,
     // the right corners of the LeftButton are not rounded, and the left
     // corners of the RightButton are not rounded either.
     if (widget) {
         const QString className = widget->metaObject()->className();
+        const QRectF rf = QRectF(rect);
         if (className == "dcc::widgets::LeftButton") {
             QPainterPath rightHalf;
-            rightHalf.addRect(rect.x() + rect.width() / 2, rect.y(), rect.width(), rect.height());
+            rightHalf.addRect(rf.right() - radius, rf.y() + margins.top(), radius, rf.height() - margins.top() - margins.bottom());
             path = path.united(rightHalf);
         } else if (className == "dcc::widgets::RightButton") {
             QPainterPath leftHalf;
-            leftHalf.addRect(rect.x(), rect.y(), rect.width() / 2, rect.height());
+            leftHalf.addRect(rf.left(), rf.y() + margins.top(), radius, rf.height() - margins.top() - margins.bottom());
             path = path.united(leftHalf);
         }
     }
