@@ -113,7 +113,6 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
 
     // contents
     QRect contentsRect( rect );
-    if( sunken && !flat ) contentsRect.translate( 1, 1 );
 
     // menu arrow
     /*
