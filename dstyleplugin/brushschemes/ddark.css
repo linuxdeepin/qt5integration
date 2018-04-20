@@ -269,8 +269,8 @@ RubberBand {
 }
 
 HeaderView {
-    ArrowIndicatorUpIcon: url(:/assets/dark/header_arrow_up.png);
-    ArrowIndicatorDownIcon: url(:/assets/dark/header_arrow_down.png);
+    ArrowIndicatorUpIcon: url(:/assets/dark/header_arrow_up.svg);
+    ArrowIndicatorDownIcon: url(:/assets/dark/header_arrow_down.svg);
 }
 
 SpinBox {
