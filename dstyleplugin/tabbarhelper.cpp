@@ -114,6 +114,18 @@ bool Style::drawFrameTabBarBasePrimitive( const QStyleOption* option, QPainter* 
     return true;
 }
 
+const QWidget *findDTabBar(const QWidget *widget)
+{
+    do {
+        if (qobject_cast<const DTabBar*>(widget))
+            return widget;
+
+        widget = widget->parentWidget();
+    } while(widget);
+
+    return nullptr;
+}
+
 bool Style::drawTabBarTabLabelControl(const QStyleOption *opt, QPainter *p, const QWidget *widget) const
 {
     auto tab = static_cast<const QStyleOptionTab*>(opt);
@@ -171,10 +183,18 @@ bool Style::drawTabBarTabLabelControl(const QStyleOption *opt, QPainter *p, cons
     visible_close_button = visible_close_button && (opt->state & QStyle::State_MouseOver);
 #endif
 
+    QBrush text_brush;
+    // TODO(zccrs): 临时解决方案，用于支持应用程序中自定义DTabBar的被选中Tab的文本颜色
+    if (opt->state.testFlag(QStyle::State_Selected)) {
+        text_brush = findDTabBar(widget)->palette().brush(QPalette::Active, QPalette::Text);
+    } else {
+        text_brush = m_palette->brush(PaletteExtended::TabBarTab_TextColor, opt);
+    }
+
     if (visible_close_button) {
         QRect text_rect = opt->fontMetrics.boundingRect(tr, alignment, tab->text);
 
-        QBrush brush = m_palette->brush(PaletteExtended::TabBarTab_TextColor, opt);
+        const QBrush &brush = text_brush;
         QLinearGradient lg(0, 0, 1, 0);
         QGradientStops stops;
         qreal stop = qreal(tr.right() - 35 - text_rect.x()) / text_rect.width();
@@ -188,7 +208,7 @@ bool Style::drawTabBarTabLabelControl(const QStyleOption *opt, QPainter *p, cons
         lg.setStops(stops);
         p->setPen(QPen(QBrush(lg), 1));
     } else {
-        p->setPen(QPen(m_palette->brush(PaletteExtended::TabBarTab_TextColor, opt), 1));
+        p->setPen(QPen(text_brush, 1));
     }
 
     p->drawText(tr, alignment, tab->text);
@@ -337,7 +357,9 @@ bool Style::drawTabBarTabShapeControl(const QStyleOption *opt, QPainter *p, cons
                 active_rect.setBottom(active_rect.top() + qMin(3, active_rect.height() / 10) + 1);
             }
 
-            p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
+            // TODO(zccrs): 临时解决方案，用于支持应用程序中自定义DTabBar的被选中Tab的文本颜色
+            p->fillRect(active_rect, findDTabBar(widget)->palette().brush(QPalette::Active, QPalette::Text));
+            //            p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
         }
 
         break;
@@ -362,7 +384,9 @@ bool Style::drawTabBarTabShapeControl(const QStyleOption *opt, QPainter *p, cons
                 active_rect.setRight(active_rect.left() + qMin(3, active_rect.width() / 10) + 1);
             }
 
-            p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
+            // TODO(zccrs): 临时解决方案，用于支持应用程序中自定义DTabBar的被选中Tab的文本颜色
+            p->fillRect(active_rect, findDTabBar(widget)->palette().brush(QPalette::Active, QPalette::Text));
+            //            p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
         }
 
         break;

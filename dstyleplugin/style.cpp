@@ -223,6 +223,14 @@ void Style::polish(QWidget *w)
                                                                 palette.brush(QPalette::Background)));
     }
 
+    // TODO(zccrs): 临时解决方案，用于支持应用程序中自定义DTabBar的被选中Tab的文本颜色
+    DTabBar *tabBar = qobject_cast<DTabBar*>(w);
+
+    if (tabBar) {
+        if (!tabBar->testAttribute(Qt::WA_SetPalette))
+            palette.setBrush(QPalette::Active, QPalette::Text, m_palette->brush(PaletteExtended::TabBarTab_TextColor, PaletteExtended::PseudoClass_Selected));
+    }
+
     w->setPalette(palette);
 }
 
