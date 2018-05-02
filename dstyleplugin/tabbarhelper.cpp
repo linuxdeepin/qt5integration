@@ -185,8 +185,9 @@ bool Style::drawTabBarTabLabelControl(const QStyleOption *opt, QPainter *p, cons
 
     QBrush text_brush;
     // TODO(zccrs): 临时解决方案，用于支持应用程序中自定义DTabBar的被选中Tab的文本颜色
-    if (opt->state.testFlag(QStyle::State_Selected)) {
-        text_brush = findDTabBar(widget)->palette().brush(QPalette::Active, QPalette::Text);
+    const QWidget *tab_bar = findDTabBar(widget);
+    if (opt->state.testFlag(QStyle::State_Selected) && tab_bar) {
+        text_brush = tab_bar->palette().brush(QPalette::Active, QPalette::Text);
     } else {
         text_brush = m_palette->brush(PaletteExtended::TabBarTab_TextColor, opt);
     }
@@ -358,8 +359,10 @@ bool Style::drawTabBarTabShapeControl(const QStyleOption *opt, QPainter *p, cons
             }
 
             // TODO(zccrs): 临时解决方案，用于支持应用程序中自定义DTabBar的被选中Tab的文本颜色
-            p->fillRect(active_rect, findDTabBar(widget)->palette().brush(QPalette::Active, QPalette::Text));
-            //            p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
+            if (const QWidget *tab_bar = findDTabBar(widget))
+                p->fillRect(active_rect, tab_bar->palette().brush(QPalette::Active, QPalette::Text));
+            else
+                p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
         }
 
         break;
@@ -385,8 +388,10 @@ bool Style::drawTabBarTabShapeControl(const QStyleOption *opt, QPainter *p, cons
             }
 
             // TODO(zccrs): 临时解决方案，用于支持应用程序中自定义DTabBar的被选中Tab的文本颜色
-            p->fillRect(active_rect, findDTabBar(widget)->palette().brush(QPalette::Active, QPalette::Text));
-            //            p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
+            if (const QWidget *tab_bar = findDTabBar(widget))
+                p->fillRect(active_rect, tab_bar->palette().brush(QPalette::Active, QPalette::Text));
+            else
+                p->fillRect(active_rect, m_palette->brush(PaletteExtended::TabBarTab_ActiveColor, opt));
         }
 
         break;
