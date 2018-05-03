@@ -208,6 +208,19 @@ void Style::polish(QWidget *w)
         }
     }
 
+    // NOTE(lxz): QLineEdit not refresh style after theme changed
+    if (QLineEdit *edit = qobject_cast<QLineEdit*>(w)) {
+        bool clear_button_visible = edit->isClearButtonEnabled();
+
+        if (clear_button_visible) {
+            const QList<QAction*> &actions = edit->findChildren<QAction*>("_q_qlineeditclearaction");
+
+            if (!actions.isEmpty()) {
+                actions.first()->setIcon(standardIcon(QStyle::SP_LineEditClearButton, nullptr, w));
+            }
+        }
+    }
+
     QPalette palette = w->palette();
 
     if (w->testAttribute(Qt::WA_SetStyle)) {
@@ -1157,9 +1170,9 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
         icon.addFile(QString(":/assets/icons/window_option_press_%1.png").arg(themeType), QSize(), QIcon::Active, QIcon::On);
         break;
     case SP_LineEditClearButton:
-        icon.addFile(QLatin1String(":/assets/icons/input_clear_normal.svg"));
-        icon.addFile(QLatin1String(":/assets/icons/input_clear_hover.svg"), QSize(), QIcon::Active);
-        icon.addFile(QLatin1String(":/assets/icons/input_clear_press.svg"), QSize(), QIcon::Active, QIcon::On);
+        icon.addFile(QString(":/assets/%1/input/input_clear_normal.svg").arg(themeType), QSize(), QIcon::Normal);
+        icon.addFile(QString(":/assets/%1/input/input_clear_hover.svg").arg(themeType), QSize(), QIcon::Active);
+        icon.addFile(QString(":/assets/%1/input/input_clear_press.svg").arg(themeType), QSize(), QIcon::Selected);
         break;
     default:
         break;

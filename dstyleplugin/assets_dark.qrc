@@ -107,5 +107,8 @@
         <file>assets/dark/tabbar/tab_close_press.svg</file>
         <file>assets/dark/header_arrow_up.svg</file>
         <file>assets/dark/header_arrow_down.svg</file>
+        <file>assets/dark/input/input_clear_hover.svg</file>
+        <file>assets/dark/input/input_clear_normal.svg</file>
+        <file>assets/dark/input/input_clear_press.svg</file>
     </qresource>
 </RCC>

@@ -110,5 +110,8 @@
         <file>assets/light/tabbar/tab_close_hover.svg</file>
         <file>assets/light/tabbar/tab_close_normal.svg</file>
         <file>assets/light/tabbar/tab_close_press.svg</file>
+        <file>assets/light/input/input_clear_hover.svg</file>
+        <file>assets/light/input/input_clear_normal.svg</file>
+        <file>assets/light/input/input_clear_press.svg</file>
     </qresource>
 </RCC>
