@@ -161,6 +161,7 @@ bool Style::drawComboBoxLabelControl(const QStyleOption *option, QPainter *paint
     const bool mouseOver(option->state & QStyle::State_MouseOver);
     const bool hasFocus(option->state & QStyle::State_HasFocus);
     const bool flat(!cb->frame);
+    const bool editable(cb->editable);
 
     // content
     const bool hasText( !cb->currentText.isEmpty() );
@@ -229,7 +230,7 @@ bool Style::drawComboBoxLabelControl(const QStyleOption *option, QPainter *paint
     }
 
     // render text
-    if( hasText && textRect.isValid() ) {
+    if( hasText && textRect.isValid() && !editable) {
         textRect.setLeft(textRect.left() + Metrics::Layout_ChildMarginWidth);
 
         painter->setPen(m_palette->brush(PaletteExtended::PushButton_TextColor, option).color());
