@@ -468,7 +468,10 @@ bool Style::drawIndicatorTabClosePrimitive(const QStyleOption *opt, QPainter *p,
 
     static_cast<const DQTabBar*>(tb)->initStyleOption(&tab, index);
 
-    if (Q_LIKELY((tab.state | QStyle::State_MouseOver) != tab.state)) {
+    if (Q_LIKELY((tab.state | QStyle::State_MouseOver) != tab.state
+                 // 关闭标签时标签栏会重新布局，此时鼠标没有移动，但是标签item相对于鼠标的位置发生了变化
+                 // 如果鼠标落在了标签页关闭按钮右边位置，则这个标签页的state中不会包含MouseOver状态
+                 && !tb->tabRect(index).contains(tb->mapFromGlobal(QCursor::pos())))) {
          return true;
     }
 
