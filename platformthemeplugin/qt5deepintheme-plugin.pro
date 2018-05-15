@@ -1,8 +1,3 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2016-08-09T14:24:29
-#
-#-------------------------------------------------
 
 QT       += dbus x11extras
 QT       += core-private gui-private
@@ -11,6 +6,17 @@ greaterThan(QT_MAJOR_VERSION, 4) {
   # Qt >= 5.8
   greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 7): QT += theme_support-private
   else: QT += platformsupport-private
+}
+
+# Test using dthemed_icon_lookup
+load(configure)
+qtCompileTest(dthemed_icon_lookup) {
+    DEFINES += DTHEMED_ICON_LOOKUP
+    LIBS += -lthemed_icon_lookup
+    PKGCONFIG += dtkwidget
+
+    SOURCES += diconengine.cpp
+    HEADERS += diconengine.h
 }
 
 TARGET = qdeepin

@@ -20,6 +20,7 @@
 #include "diconproxyengine.h"
 #include "filedialogmanager_interface.h"
 #include "dthemesettings.h"
+#include "diconengine.h"
 
 #include <QVariant>
 #include <QDebug>
@@ -125,12 +126,17 @@ QPlatformDialogHelper *QDeepinTheme::createPlatformDialogHelper(DialogType type)
 
 QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 {
+#ifdef DTHEMED_ICON_LOOKUP
+    return new DIconEngine(iconName);
+#else
+
     QIcon icon = XdgIcon::fromTheme(iconName);
 
     if (icon.availableSizes().isEmpty())
         return QGenericUnixTheme::createIconEngine(iconName);
 
     return icon.data_ptr()->engine->clone();
+#endif
 }
 
 QPixmap QDeepinTheme::standardPixmap(QPlatformTheme::StandardPixmap sp, const QSizeF &size) const
