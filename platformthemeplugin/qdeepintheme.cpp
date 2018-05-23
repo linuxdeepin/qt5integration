@@ -127,7 +127,11 @@ QPlatformDialogHelper *QDeepinTheme::createPlatformDialogHelper(DialogType type)
 QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 {
 #ifdef DTHEMED_ICON_LOOKUP
-    return new DIconEngine(iconName);
+    if (iconName.contains("/"))
+        // handle Qt-standard paths.
+        return QGenericUnixTheme::createIconEngine(iconName);
+    else
+        return new DIconEngine(iconName);
 #else
 
     QIcon icon = XdgIcon::fromTheme(iconName);

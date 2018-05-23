@@ -22,7 +22,6 @@ public:
 
 private:
     const QString m_iconName;
-    char *m_szIconFilePath;
 };
 
 #endif // DICONENGINE_H
