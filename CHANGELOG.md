@@ -1,3 +1,21 @@
+<a name="0.3.0"></a>
+## 0.3.0 (2018-05-24)
+
+
+#### Features
+
+* **style:**  use QPalette active text brush on DTabBar tab widget ([d8ee34e6](https://github.com/linuxdeepin/qt5integration/commit/d8ee34e6efeda4faa3a953849d2b5e5a6a183985))
+
+#### Bug Fixes
+
+*   crash on paint QTabBar ([8d74156e](https://github.com/linuxdeepin/qt5integration/commit/8d74156e4fc07eecc86bf992a9a2a05370f2756d))
+*   the line edit widget border color on focus state ([4718470d](https://github.com/linuxdeepin/qt5integration/commit/4718470d0b31b28d67b71c1a77d05a0443fcaa21))
+* **QLineEdit:**  not refresh close button after theme changed ([7aca7279](https://github.com/linuxdeepin/qt5integration/commit/7aca72794235f9345c916102f5ed9a2666c3e61f))
+* **combox:**  don't render text when edit state ([2f558376](https://github.com/linuxdeepin/qt5integration/commit/2f558376d7788cadf27e280eed01c174435d1262))
+* **style:**  DTabBar close button cannot visible ([399ad32d](https://github.com/linuxdeepin/qt5integration/commit/399ad32d4facfc73574d4a56551309f3f7c28e6b))
+
+
+
 <a name="0.2.10"></a>
 ### 0.2.10 (2018-03-14)
 
