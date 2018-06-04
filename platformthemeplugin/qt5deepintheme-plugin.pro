@@ -25,6 +25,9 @@ CONFIG += plugin link_pkgconfig c++11
 
 PKGCONFIG += mtdev Qt5Xdg gtk+-2.0 x11 Qt5XdgIconLoader dtkcore
 
+PKG_CONFIG = $$pkgConfigExecutable()
+INCLUDEPATH += $$system($$PKG_CONFIG --variable includedir Qt5XdgIconLoader)/qt5xdgiconloader/$$system($$PKG_CONFIG --modversion Qt5XdgIconLoader)
+
 PLUGIN_TYPE = platformthemes
 PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QDeepinTheme

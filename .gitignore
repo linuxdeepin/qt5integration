@@ -39,3 +39,5 @@ Makefile*
 
 # QtCtreator CMake
 CMakeLists.txt.user
+
+platformthemeplugin/NUL

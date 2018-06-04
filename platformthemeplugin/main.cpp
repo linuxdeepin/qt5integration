@@ -18,7 +18,7 @@
 #include <qpa/qplatformthemeplugin.h>
 #include "qdeepintheme.h"
 
-#include <qt5xdgiconloader/2.0.0/private/xdgiconloader/xdgiconloader_p.h>
+#include <private/xdgiconloader/xdgiconloader_p.h>
 
 QT_BEGIN_NAMESPACE
 
