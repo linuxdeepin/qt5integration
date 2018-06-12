@@ -8,20 +8,19 @@ greaterThan(QT_MAJOR_VERSION, 4) {
   else: QT += platformsupport-private
 }
 
+TARGET = qdeepin
+TEMPLATE = lib
+CONFIG += plugin link_pkgconfig c++11
+
 # Test using dthemed_icon_lookup
 load(configure)
 qtCompileTest(dthemed_icon_lookup) {
     DEFINES += DTHEMED_ICON_LOOKUP
-    LIBS += -lthemed_icon_lookup
-    PKGCONFIG += dtkwidget
+    PKGCONFIG += dtkwidget til
 
     SOURCES += diconengine.cpp
     HEADERS += diconengine.h
 }
-
-TARGET = qdeepin
-TEMPLATE = lib
-CONFIG += plugin link_pkgconfig c++11
 
 PKGCONFIG += mtdev Qt5Xdg gtk+-2.0 x11 Qt5XdgIconLoader dtkcore
 

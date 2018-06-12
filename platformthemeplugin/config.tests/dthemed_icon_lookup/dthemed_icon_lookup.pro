@@ -4,10 +4,10 @@ QT -= gui
 CONFIG += c++11
 
 TARGET = dthemed_icon_lookup
-CONFIG += console
+CONFIG += console link_pkgconfig
 CONFIG -= app_bundle
 
-LIBS += -lthemed_icon_lookup
+PKGCONFIG += til
 
 TEMPLATE = app
 
