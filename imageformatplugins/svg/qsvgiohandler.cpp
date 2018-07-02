@@ -172,12 +172,16 @@ bool QSvgIOHandler::read(QImage *image)
             t.translate(tr1.x(), tr1.y());
             bounds = t.mapRect(bounds);
         }
-        *image = QImage(finalSize, QImage::Format_ARGB32_Premultiplied);
         if (!finalSize.isEmpty()) {
-            image->fill(d->backColor.rgba());
-            QPainter p(image);
-            d->r.render(&p, bounds);
-            p.end();
+            if (bounds.isEmpty() && d->backColor.alpha() == 0) {
+                *image = d->r.toImage(finalSize);
+            } else {
+                *image = QImage(finalSize, QImage::Format_ARGB32_Premultiplied);
+                image->fill(d->backColor.rgba());
+                QPainter p(image);
+                d->r.render(&p, bounds);
+                p.end();
+            }
         }
         d->readDone = true;
         return true;

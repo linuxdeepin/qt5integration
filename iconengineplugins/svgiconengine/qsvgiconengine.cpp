@@ -178,12 +178,7 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
     if (actualSize.isEmpty())
         return QPixmap();
 
-    QImage img(actualSize, QImage::Format_ARGB32_Premultiplied);
-    img.fill(0x00000000);
-    QPainter p(&img);
-    renderer.render(&p);
-    p.end();
-    pm = QPixmap::fromImage(img);
+    pm = QPixmap::fromImage(renderer.toImage(actualSize));
     if (qobject_cast<QGuiApplication *>(QCoreApplication::instance())) {
         const QPixmap generated = QGuiApplicationPrivate::instance()->applyQIconStyleHelper(mode, pm);
         if (!generated.isNull())
