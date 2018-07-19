@@ -1,3 +1,17 @@
+<a name="0.3.1"></a>
+## 0.3.1 (2018-07-19)
+
+
+#### Bug Fixes
+
+*   can not build if the "Qt5Xdg" package version is not 2.0.0 ([444f3a47](https://github.com/linuxdeepin/qt5integration/commit/444f3a47cec873010c254c726249b476dd29c8fc))
+
+#### Features
+
+* **DIconEngine:**  bypass some path which contains '/' ([0c6a7496](https://github.com/linuxdeepin/qt5integration/commit/0c6a7496ec64348fde628866c5d42b493aa7cdd7))
+
+
+
 <a name="0.3.0"></a>
 ### 0.3.0 (2018-05-24)
 
