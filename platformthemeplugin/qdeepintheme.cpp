@@ -32,7 +32,6 @@
 #include <private/qiconloader_p.h>
 
 #undef signals
-#include <gtk/gtk.h>
 
 #include <X11/Xlib.h>
 
@@ -43,19 +42,9 @@ bool QDeepinTheme::m_usePlatformNativeDialog = true;
 QMimeDatabase QDeepinTheme::m_mimeDatabase;
 DThemeSettings *QDeepinTheme::m_settings = 0;
 
-static QString gtkSetting(const gchar *propertyName)
-{
-    GtkSettings *settings = gtk_settings_get_default();
-    gchararray value;
-    g_object_get(settings, propertyName, &value, NULL);
-    QString str = QString::fromUtf8(value);
-    g_free(value);
-    return str;
-}
-
 extern void updateXdgIconSystemTheme();
 
-static void gtkIconThemeSetCallback()
+static void onIconThemeSetCallback()
 {
     QIconLoader::instance()->updateSystemTheme();
     updateXdgIconSystemTheme();
@@ -68,23 +57,7 @@ static void gtkIconThemeSetCallback()
 
 QDeepinTheme::QDeepinTheme()
 {
-    // gtk_init will reset the Xlib error handler, and that causes
-    // Qt applications to quit on X errors. Therefore, we need to manually restore it.
-    int (*oldErrorHandler)(Display *, XErrorEvent *) = XSetErrorHandler(NULL);
-
-    gtk_init(0, 0);
-
-    XSetErrorHandler(oldErrorHandler);
-
-    static GtkSettings *settings = Q_NULLPTR;
-
-    if (!settings) {
-        settings = gtk_settings_get_default();
-
-        if (settings) {
-            g_signal_connect(settings, "notify::gtk-icon-theme-name", G_CALLBACK(gtkIconThemeSetCallback), 0);
-        }
-    }
+    QObject::connect(settings(), &DThemeSettings::iconThemeNameChanged, &onIconThemeSetCallback);
 }
 
 QDeepinTheme::~QDeepinTheme()
@@ -191,12 +164,12 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         if (settings()->isSetIconThemeName())
             return settings()->iconThemeName();
 
-        return QVariant(gtkSetting("gtk-icon-theme-name"));
+        return QVariant();
     case QPlatformTheme::SystemIconFallbackThemeName:
         if (settings()->isSetFallbackIconThemeName())
             return settings()->fallbackIconThemeName();
 
-        return QVariant(gtkSetting("gtk-fallback-icon-theme"));
+        return QVariant("deepin");
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(QGenericUnixTheme::xdgIconThemePaths() << QDir::homePath() + "/.local/share/icons");
     case UseFullScreenForPopupMenu:

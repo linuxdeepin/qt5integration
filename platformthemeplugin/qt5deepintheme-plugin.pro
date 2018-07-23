@@ -22,7 +22,7 @@ qtCompileTest(dthemed_icon_lookup) {
     HEADERS += diconengine.h
 }
 
-PKGCONFIG += mtdev Qt5Xdg gtk+-2.0 x11 Qt5XdgIconLoader dtkcore
+PKGCONFIG += mtdev Qt5Xdg x11 Qt5XdgIconLoader dtkcore
 
 PKG_CONFIG = $$pkgConfigExecutable()
 INCLUDEPATH += $$system($$PKG_CONFIG --variable includedir Qt5XdgIconLoader)/qt5xdgiconloader/$$system($$PKG_CONFIG --modversion Qt5XdgIconLoader)
