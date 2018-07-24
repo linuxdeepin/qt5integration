@@ -150,15 +150,7 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         if (settings()->isSetStyleNames() && !settings()->styleNames().isEmpty())
             return settings()->styleNames();
 
-        QStringList styleNames;
-        // TODO(hualet): Make ddark&dlight styles ready!
-        // styleNames << QStringLiteral("dlight");
-#ifndef QT_NO_STYLE_GTK
-        styleNames << QStringLiteral("gtk2");
-        styleNames << QStringLiteral("GTK+");
-#endif
-        styleNames << QStringLiteral("fusion");
-        return QVariant(styleNames);
+        break;
     }
     case QPlatformTheme::SystemIconThemeName:
         if (settings()->isSetIconThemeName())
