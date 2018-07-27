@@ -27,6 +27,7 @@
 #include <QGuiApplication>
 
 #include <XdgIcon>
+#include <private/xdgiconloader/xdgiconloader_p.h>
 
 #include <private/qicon_p.h>
 #include <private/qiconloader_p.h>
@@ -57,7 +58,7 @@ static void onIconThemeSetCallback()
 
 QDeepinTheme::QDeepinTheme()
 {
-    QObject::connect(settings(), &DThemeSettings::iconThemeNameChanged, &onIconThemeSetCallback);
+    // 注意!!!, 此处还没有开始启动事件循环, 很多Qt类无法使用, 例如QTimer
 }
 
 QDeepinTheme::~QDeepinTheme()
@@ -228,6 +229,7 @@ DThemeSettings *QDeepinTheme::settings() const
 
         QObject::connect(m_settings, &DThemeSettings::systemFontChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
         QObject::connect(m_settings, &DThemeSettings::systemFontPointSizeChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
+        QObject::connect(m_settings, &DThemeSettings::iconThemeNameChanged, m_settings, &onIconThemeSetCallback, Qt::UniqueConnection);
     }
 
     return m_settings;
