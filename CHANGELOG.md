@@ -1,3 +1,18 @@
+<a name="0.3.2"></a>
+## 0.3.2 (2018-07-31)
+
+
+#### Bug Fixes
+
+*   not update the xdg system icon theme when the icon theme is changed ([cc738c11](https://github.com/linuxdeepin/qt5integration/commit/cc738c114853ed9a9be46f2ebe711e2db98a41e1))
+*   remove gtk2 depend ([6b2d1f7d](https://github.com/linuxdeepin/qt5integration/commit/6b2d1f7dfae7d17591f3f1d98a67da933505b9f6))
+
+#### Features
+
+*   support custom the color scheme of get icon from theme ([0daec72b](https://github.com/linuxdeepin/qt5integration/commit/0daec72b6467a29bcbc126b9bfefe5a7e22c1123))
+
+
+
 <a name="0.3.1"></a>
 ## 0.3.1 (2018-07-19)
 
