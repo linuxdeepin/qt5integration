@@ -180,31 +180,35 @@ void Style::polish(QWidget *w)
         w->setFont(font);
     }
 
-    if (DApplication::isDXcbPlatform() && (!w->windowHandle() || DPlatformWindowHandle::isEnabledDXcb(w))) {
+    if (DApplication::isDXcbPlatform()) {
         if (qobject_cast<QMenu*>(w)) {
             DPlatformWindowHandle handle(w);
 
-            const QColor &color = m_palette->brush(PaletteExtended::Menu_BorderColor).color();
+            if (DPlatformWindowHandle::isEnabledDXcb(w)) {
+                const QColor &color = m_palette->brush(PaletteExtended::Menu_BorderColor).color();
 
-            if (color.isValid())
-                handle.setBorderColor(color);
+                if (color.isValid())
+                    handle.setBorderColor(color);
 
-            handle.setShadowOffset(QPoint(0, 4));
-            handle.setShadowRadius(15);
-            handle.setShadowColor(QColor(0, 0, 0, 100));
-#ifdef DTK_SUPPORT_BLUR_WINDOW
-            handle.setEnableBlurWindow(true);
-#endif
-            handle.setTranslucentBackground(true);
+                handle.setShadowOffset(QPoint(0, 4));
+                handle.setShadowRadius(15);
+                handle.setShadowColor(QColor(0, 0, 0, 100));
+    #ifdef DTK_SUPPORT_BLUR_WINDOW
+                handle.setEnableBlurWindow(true);
+    #endif
+                handle.setTranslucentBackground(true);
 
-            w->setAttribute(Qt::WA_TranslucentBackground);
+                w->setAttribute(Qt::WA_TranslucentBackground);
+            }
         } else if (w->inherits("QTipLabel")) {
             DPlatformWindowHandle handle(w);
 
-            handle.setShadowOffset(QPoint(0, 2));
-            handle.setShadowRadius(4);
+            if (DPlatformWindowHandle::isEnabledDXcb(w)) {
+                handle.setShadowOffset(QPoint(0, 2));
+                handle.setShadowRadius(4);
 
-            w->setAttribute(Qt::WA_TranslucentBackground);
+                w->setAttribute(Qt::WA_TranslucentBackground);
+            }
         }
     }
 
