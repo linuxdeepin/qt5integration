@@ -113,6 +113,40 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
             activeWindow = QGuiApplication::focusWindow();
 
         nativeDialog->setParent(parent);
+
+        Qt::WindowFlags nd_flags = static_cast<Qt::WindowFlags>(nativeDialog->windowFlags());
+        Qt::WindowFlags need_flags = Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                                        | Qt::WindowMinMaxButtonsHint | Qt::WindowContextHelpButtonHint
+                                        | Qt::WindowStaysOnTopHint | Qt::WindowTransparentForInput
+                                        | Qt::WindowDoesNotAcceptFocus | Qt::WindowStaysOnBottomHint
+                                        | Qt::WindowCloseButtonHint | Qt::BypassWindowManagerHint;
+
+        if (flags & need_flags)
+            nativeDialog->setWindowFlags(nd_flags | (flags & need_flags));
+
+        static bool i_am_dbus_server = iAmFileDialogDBusServer();
+
+        if (i_am_dbus_server) {
+            WId native_dialog_winId = nativeDialog->winId();
+            QWindow *real_native_dialog = nullptr;
+
+            for (QWindow *window : qGuiApp->topLevelWindows()) {
+                if (window->winId() == native_dialog_winId) {
+                    real_native_dialog = window;
+                    break;
+                }
+            }
+
+            if (real_native_dialog) {
+                real_native_dialog->setTransientParent(parent);
+                real_native_dialog->setModality(modality);
+                // call later
+                QMetaObject::invokeMethod(nativeDialog.data(), "show", Qt::QueuedConnection);
+
+                return true;
+            }
+        }
+
         auxiliaryWindow->setParent(parent);
         auxiliaryWindow->setFlags(flags);
         auxiliaryWindow->setModality(modality);
@@ -147,16 +181,6 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
                 });
             }
         }
-
-        Qt::WindowFlags nd_flags = static_cast<Qt::WindowFlags>(nativeDialog->windowFlags());
-        Qt::WindowFlags need_flags = Qt::WindowTitleHint | Qt::WindowSystemMenuHint
-                                        | Qt::WindowMinMaxButtonsHint | Qt::WindowContextHelpButtonHint
-                                        | Qt::WindowStaysOnTopHint | Qt::WindowTransparentForInput
-                                        | Qt::WindowDoesNotAcceptFocus | Qt::WindowStaysOnBottomHint
-                                        | Qt::WindowCloseButtonHint;
-
-        if (flags & need_flags)
-            nativeDialog->setWindowFlags(nd_flags | (flags & need_flags));
     } else {
         qtDialog->setAttribute(Qt::WA_NativeWindow);
 
@@ -315,6 +339,13 @@ void QDeepinFileDialogHelper::initDBusFileDialogManager()
             || QFile::exists("/usr/bin/dde-file-manager")) {
         manager = new DFileDialogManager(DIALOG_SERVICE, "/com/deepin/filemanager/filedialogmanager", QDBusConnection::sessionBus());
     }
+}
+
+bool QDeepinFileDialogHelper::iAmFileDialogDBusServer()
+{
+    static bool _value = manager->connection().interface()->servicePid(manager->service()) == static_cast<uint>(getpid());
+
+    return _value;
 }
 
 void QDeepinFileDialogHelper::ensureDialog() const

@@ -54,6 +54,7 @@ public:
     QString selectedNameFilter() const Q_DECL_OVERRIDE;
 
     static void initDBusFileDialogManager();
+    static bool iAmFileDialogDBusServer();
 
 private:
     mutable QPointer<DFileDialogHandle> nativeDialog;
