@@ -1,3 +1,17 @@
+<a name="0.3.3"></a>
+## 0.3.3 (2018-08-06)
+
+
+#### Features
+
+*   anyway try to enable dxcb for QMenu and QTipLabel ([689e440b](https://github.com/linuxdeepin/qt5integration/commit/689e440bf160a0ed094f03eca9d307e1d1d0f63c))
+
+#### Bug Fixes
+
+*   the dde-desktop UI is blocked ([c75ffad8](https://github.com/linuxdeepin/qt5integration/commit/c75ffad83ff353f10840dac2e38a2daa3b8e3187))
+
+
+
 <a name="0.3.2"></a>
 ## 0.3.2 (2018-07-31)
 
