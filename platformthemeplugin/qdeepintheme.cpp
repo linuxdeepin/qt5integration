@@ -29,9 +29,11 @@
 #include <QPalette>
 
 #include <XdgIcon>
+#if XDG_ICON_VERSION_MAR >= 3
 #define private public
 #include <private/xdgiconloader/xdgiconloader_p.h>
 #undef private
+#endif
 
 #include <private/qicon_p.h>
 #include <private/qiconloader_p.h>
@@ -41,13 +43,17 @@
 
 #include <cxxabi.h>
 
+#if XDG_ICON_VERSION_MAR >= 3
 namespace DEEPIN_QT_THEME {
 QThreadStorage<QString> colorScheme;
 void(*setFollowColorScheme)(bool);
 bool(*followColorScheme)();
 }
+#endif
+
 QT_BEGIN_NAMESPACE
 
+#if XDG_ICON_VERSION_MAR >= 3
 class XdgIconProxyEngine : public QIconEngine
 {
 public:
@@ -247,6 +253,7 @@ public:
     XdgIconLoaderEngine *engine;
     QHash<quint64, QString> entryToColorScheme;
 };
+#endif
 
 const char *QDeepinTheme::name = "deepin";
 bool QDeepinTheme::m_usePlatformNativeDialog = true;
@@ -268,9 +275,11 @@ static void onIconThemeSetCallback()
 
 QDeepinTheme::QDeepinTheme()
 {
+#if XDG_ICON_VERSION_MAR >= 3
     // 注意!!!, 此处还没有开始启动事件循环, 很多Qt类无法使用, 例如QTimer
     DEEPIN_QT_THEME::setFollowColorScheme = XdgIcon::setFollowColorScheme;
     DEEPIN_QT_THEME::followColorScheme = XdgIcon::followColorScheme;
+#endif
 }
 
 QDeepinTheme::~QDeepinTheme()
@@ -325,7 +334,11 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
     if (icon.availableSizes().isEmpty())
         return QGenericUnixTheme::createIconEngine(iconName);
 
+#if XDG_ICON_VERSION_MAR < 3
+    return icon.data_ptr()->engine->clone();
+#else
     return new XdgIconProxyEngine(static_cast<XdgIconLoaderEngine*>(icon.data_ptr()->engine->clone()));
+#endif
 #endif
 }
 

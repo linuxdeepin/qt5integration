@@ -25,7 +25,10 @@ qtCompileTest(dthemed_icon_lookup) {
 PKGCONFIG += mtdev Qt5Xdg x11 Qt5XdgIconLoader dtkcore
 
 PKG_CONFIG = $$pkgConfigExecutable()
-INCLUDEPATH += $$system($$PKG_CONFIG --variable includedir Qt5XdgIconLoader)/qt5xdgiconloader/$$system($$PKG_CONFIG --modversion Qt5XdgIconLoader)
+XDG_ICON_VERSION = $$system($$PKG_CONFIG --modversion Qt5XdgIconLoader)
+XDG_ICON_VERSION_LIST = $$split(XDG_ICON_VERSION, .)
+INCLUDEPATH += $$system($$PKG_CONFIG --variable includedir Qt5XdgIconLoader)/qt5xdgiconloader/$$XDG_ICON_VERSION
+DEFINES += "XDG_ICON_VERSION_MAR=$$first(XDG_ICON_VERSION_LIST)"
 
 PLUGIN_TYPE = platformthemes
 PLUGIN_EXTENDS = -
