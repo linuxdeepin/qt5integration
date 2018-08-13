@@ -1,3 +1,14 @@
+<a name="0.3.4"></a>
+## 0.3.4 (2018-08-13)
+
+
+#### Bug Fixes
+
+*   build failed on libqt5xdg2 ([da972cac](https://github.com/linuxdeepin/qt5integration/commit/da972cac239240ae4f2ed08e505c75a2bd7aaae9))
+*   return a null pixmap in QIcon::pixmap ([8d923ea9](https://github.com/linuxdeepin/qt5integration/commit/8d923ea94f49eee3ad6cda201a04b1125031ebe7))
+
+
+
 <a name="0.3.3"></a>
 ## 0.3.3 (2018-08-06)
 
