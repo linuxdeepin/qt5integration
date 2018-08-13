@@ -228,6 +228,8 @@ public:
 #if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
         if (id == QIconEngine::ScaledPixmapHook)
         {
+            engine->ensureLoaded();
+
             QIconEngine::ScaledPixmapArgument &arg = *reinterpret_cast<QIconEngine::ScaledPixmapArgument*>(data);
             // QIcon::pixmap() multiplies size by the device pixel ratio.
             const int integerScale = qCeil(arg.scale);
