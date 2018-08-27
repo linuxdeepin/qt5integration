@@ -337,7 +337,14 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 #if XDG_ICON_VERSION_MAR < 3
     return icon.data_ptr()->engine->clone();
 #else
-    return new XdgIconProxyEngine(static_cast<XdgIconLoaderEngine*>(icon.data_ptr()->engine->clone()));
+    QIconEngine *base_engine = icon.data_ptr()->engine->clone();
+    XdgIconLoaderEngine *engine = dynamic_cast<XdgIconLoaderEngine*>(base_engine);
+
+    if (!engine) {
+        return base_engine;
+    }
+
+    return new XdgIconProxyEngine(engine);
 #endif
 #endif
 }
