@@ -17,7 +17,8 @@ Build-Depends:
  libqt5svg5-dev,
  libqt5xdgiconloader-dev,
  libmtdev-dev,
- libegl1-mesa-dev
+ libegl1-mesa-dev,
+ libxrender-dev
 Standards-Version: 3.9.8
 
 Package: dde-qt5integration
