@@ -1,3 +1,13 @@
+<a name="0.3.5"></a>
+## 0.3.5 (2018-08-28)
+
+
+#### Bug Fixes
+
+* **iconengine:**  use the original one if cast failed ([50286e1d](https://github.com/linuxdeepin/qt5integration/commit/50286e1d2d4a31c86bc556f3cc8433ac2e2803bb))
+
+
+
 <a name="0.3.4"></a>
 ## 0.3.4 (2018-08-13)
 
