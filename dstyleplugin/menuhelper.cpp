@@ -109,6 +109,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
 
         bool ignoreCheckMark = false;
         int checkcol = qMax(menuItem->maxIconWidth, 20);
+        QRect iconRect;
 
         if (qobject_cast<const QComboBox*>(widget) ||
             (option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool()))
@@ -139,6 +140,23 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
                     }
                 }
             }
+
+            // draw check label
+            if (checkable) {
+                checkcol = qMax(menuItem->maxIconWidth * 2, 20);
+                QRect vCheckRect = visualRect(option->direction, menuItem->rect,
+                                              QRect(menuItem->rect.x() + 4, menuItem->rect.y(),
+                                                    checkcol, menuItem->rect.height()));
+                iconRect = QRect(vCheckRect.x() + vCheckRect.width() / 2, vCheckRect.y(), vCheckRect.width() / 2, vCheckRect.height());
+            }
+            else {
+                checkcol = qMax(menuItem->maxIconWidth, 20);
+                iconRect = visualRect(option->direction, menuItem->rect,
+                                      QRect(menuItem->rect.x() + 4, menuItem->rect.y(),
+                                            checkcol, menuItem->rect.height()));
+            }
+
+
         } else { //ignore checkmark
             if (menuItem->icon.isNull())
                 checkcol = 0;
@@ -153,9 +171,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
         const QStyleOptionMenuItem *menuitem = menuItem;
 
         QPainter *p = painter;
-        QRect vCheckRect = visualRect(opt->direction, menuitem->rect,
-                                      QRect(menuitem->rect.x() + 4, menuitem->rect.y(),
-                                            checkcol, menuitem->rect.height()));
+
         // NOTE: If widget is QLineEdit and qApp is DApplication, will hide menu icon
         if (!menuItem->icon.isNull() && (!isEdit(widget) || isVisibleMenuIcon())) {
             QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
@@ -176,19 +192,19 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
             const int pixh = pixmap.height() / pixmap.devicePixelRatio();
 
             QRect pmr(0, 0, pixw, pixh);
-            pmr.moveCenter(vCheckRect.center());
+            pmr.moveCenter(iconRect.center());
             painter->setPen(menuItem->palette.text().color());
-            if (!ignoreCheckMark && checkable && checked) {
-                QStyleOption opt = *option;
-                if (act) {
-                    QColor activeColor = mergedColors(option->palette.background().color(),
-                                                      option->palette.highlight().color());
-                    opt.palette.setBrush(QPalette::Button, activeColor);
-                }
-                opt.state |= State_Sunken;
-                opt.rect = vCheckRect;
-                proxy()->drawPrimitive(PE_PanelButtonCommand, &opt, painter, widget);
-            }
+//            if (!ignoreCheckMark && checkable && checked) {
+//                QStyleOption opt = *option;
+//                if (act) {
+//                    QColor activeColor = mergedColors(option->palette.background().color(),
+//                                                      option->palette.highlight().color());
+//                    opt.palette.setBrush(QPalette::Button, activeColor);
+//                }
+//                opt.state |= State_Sunken;
+//                opt.rect = vCheckRect;
+//                proxy()->drawPrimitive(PE_PanelButtonCommand, &opt, painter, widget);
+//            }
             painter->drawPixmap(pmr.topLeft(), pixmap);
         }
         if (selected) {
