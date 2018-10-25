@@ -1,3 +1,13 @@
+<a name="0.3.6"></a>
+## 0.3.6 (2018-10-25)
+
+
+#### Features
+
+* **menu:**  add check label ([f7d4530b](https://github.com/linuxdeepin/qt5integration/commit/f7d4530bb396e79a45e6b62e0cdb0b1c14b431e9))
+
+
+
 <a name="0.3.5"></a>
 ## 0.3.5 (2018-08-28)
 
