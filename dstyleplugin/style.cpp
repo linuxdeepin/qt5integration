@@ -39,6 +39,7 @@
 
 #include <private/qhexstring_p.h>
 #include <private/qdrawhelper_p.h>
+#include <qpa/qplatformwindow.h>
 
 #include <DApplication>
 #include <DPlatformWindowHandle>
@@ -181,7 +182,22 @@ void Style::polish(QWidget *w)
     }
 
     if (DApplication::isDXcbPlatform()) {
-        if (qobject_cast<QMenu*>(w)) {
+        bool is_menu = qobject_cast<QMenu*>(w);
+        bool is_tip = w->inherits("QTipLabel");
+
+        // 当窗口已经创建对应的native窗口，要判断当前是否已经设置了窗口背景透明
+        // Bug: https://github.com/linuxdeepin/internal-discussion/issues/323
+        if ((is_menu || is_tip) && w->windowHandle()) {
+            if (const QPlatformWindow *handle = w->windowHandle()->handle()) {
+                if (!w->testAttribute(Qt::WA_TranslucentBackground) && !handle->isExposed()) {
+                    // 销毁现有的native窗口，否则设置Qt::WA_TranslucentBackground不会生效
+                    class DQWidget : public QWidget {public: using QWidget::destroy;};
+                    reinterpret_cast<DQWidget*>(w)->destroy(true, false);
+                }
+            }
+        }
+
+        if (is_menu) {
             DPlatformWindowHandle handle(w);
 
             if (DPlatformWindowHandle::isEnabledDXcb(w)) {
@@ -200,7 +216,7 @@ void Style::polish(QWidget *w)
 
                 w->setAttribute(Qt::WA_TranslucentBackground);
             }
-        } else if (w->inherits("QTipLabel")) {
+        } else if (is_tip) {
             DPlatformWindowHandle handle(w);
 
             if (DPlatformWindowHandle::isEnabledDXcb(w)) {
