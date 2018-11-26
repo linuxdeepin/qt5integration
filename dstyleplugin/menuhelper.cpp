@@ -143,7 +143,13 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
 
             // draw check label
             if (checkable) {
-                checkcol = qMax(menuItem->maxIconWidth * 2, 20);
+                if (!menuItem->icon.isNull()) {
+                    checkcol = qMax(menuItem->maxIconWidth * 2, 20);
+                }
+                else {
+                    checkcol = qMax(menuItem->maxIconWidth, 20);
+                }
+
                 QRect vCheckRect = visualRect(option->direction, menuItem->rect,
                                               QRect(menuItem->rect.x() + 4, menuItem->rect.y(),
                                                     checkcol, menuItem->rect.height()));
