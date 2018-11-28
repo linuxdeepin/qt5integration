@@ -145,7 +145,7 @@ QByteArray QSvgIOHandler::name() const
 
 bool QSvgIOHandler::read(QImage *image)
 {
-    if (!d->readDone && d->load(device())) {
+    if (d->readDone || d->load(device())) {
         bool xform = (d->clipRect.isValid() || d->scaledSize.isValid() || d->scaledClipRect.isValid());
         QSize finalSize = d->defaultSize;
         QRectF bounds;
