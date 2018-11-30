@@ -1,3 +1,15 @@
+<a name="0.3.7"></a>
+## 0.3.7 (2018-11-30)
+
+
+#### Bug Fixes
+
+*   can not read image file on the second time ([668540cf](https://github.com/linuxdeepin/qt5integration/commit/668540cfc655ae9e9953b90b70411f8f6f7a732a))
+*   set the QMenu Qt::WA_TranslucentBackground does not take effect ([6814e028](https://github.com/linuxdeepin/qt5integration/commit/6814e028a90e3b82e4db91e8b62ee76cc86a5489))
+* **Menu:**  check icon when select state ([8fe47513](https://github.com/linuxdeepin/qt5integration/commit/8fe475130f7d7aacef438b258acfaeae0560c598))
+
+
+
 <a name="0.3.6"></a>
 ## 0.3.6 (2018-10-25)
 
