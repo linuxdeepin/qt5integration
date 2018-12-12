@@ -189,9 +189,7 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
         else if( mouseOver && flat ) iconMode = QIcon::Active;
         else iconMode = QIcon::Normal;
 
-        const QPixmap pixmap = buttonOption->icon.pixmap( iconSize, iconMode, iconState );
-        widget->style()->drawItemPixmap( painter, iconRect, Qt::AlignCenter, pixmap );
-
+        buttonOption->icon.paint(painter, iconRect, Qt::AlignCenter, iconMode, iconState);
     }
 
     // render text
