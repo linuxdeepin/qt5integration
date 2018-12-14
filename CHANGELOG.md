@@ -1,3 +1,13 @@
+<a name="0.3.7.1"></a>
+## 0.3.7.1 (2018-12-14)
+
+
+#### Bug Fixes
+
+*   QPushButton icon color follow theme ([e1f6d379](https://github.com/linuxdeepin/qt5integration/commit/e1f6d379ebf05a96689ddcfa01e02126df42c540))
+
+
+
 <a name="0.3.7"></a>
 ## 0.3.7 (2018-11-30)
 
