@@ -34,6 +34,7 @@ class DThemeSettings : public QObject
     Q_PROPERTY(QString systemFixedFont READ systemFixedFont NOTIFY systemFixedFontChanged)
     Q_PROPERTY(qreal systemFontPointSize READ systemFontPointSize NOTIFY systemFontPointSizeChanged)
     Q_PROPERTY(QStringList styleNames READ styleNames NOTIFY styleNamesChanged)
+    Q_PROPERTY(int touchFlickBeginMoveDelay READ touchFlickBeginMoveDelay NOTIFY touchFlickBeginMoveDelayChanged)
 
 public:
     explicit DThemeSettings(QObject *parent = 0);
@@ -53,6 +54,7 @@ public:
     qreal systemFontPointSize() const;
     bool isSetSystemFixedFont() const;
     QString systemFixedFont() const;
+    int touchFlickBeginMoveDelay() const;
 
 signals:
     void valueChanged(const QString &key, const QVariant &oldValue, const QVariant &newValue);
@@ -62,6 +64,7 @@ signals:
     void styleNamesChanged(QStringList styleNames);
     void systemFixedFontChanged(QString systemFixedFont);
     void systemFontPointSizeChanged(qreal systemFontPointSize);
+    void touchFlickBeginMoveDelayChanged(int touchFlickBeginMoveDelay);
 
 private:
     QSettings settings;

@@ -31,6 +31,10 @@
 #define SYSTEM_FONT QStringLiteral("Font")
 #define SYSTEM_FIXED_FONT QStringLiteral("MonoFont")
 #define SYSTEM_FONT_POINT_SIZE QStringLiteral("FontSize")
+// 在某些情况下，触摸滚动视图的操作可能和其它的touch move行为冲突（例如文件管理器的视图滚动和文件内容多选）
+// 只能在时间上控制让两个冲突的逻辑错开。此处定义此时间（单位：ms），表示从touch begin到touch move比较在
+// 此时间段内完成，否则不应该认为这个一个触摸滚动操作
+#define TOUCH_FLICK_BEGIN_MOVE_DELAY QStringLiteral("TouchFlickBeginMoveDelay")
 
 DCORE_USE_NAMESPACE
 
@@ -137,6 +141,11 @@ QString DThemeSettings::systemFixedFont() const
     return value(SYSTEM_FIXED_FONT).toString();
 }
 
+int DThemeSettings::touchFlickBeginMoveDelay() const
+{
+    return value(TOUCH_FLICK_BEGIN_MOVE_DELAY, 300).toInt();
+}
+
 void DThemeSettings::onConfigChanged()
 {
     QVariantMap config;
@@ -164,6 +173,8 @@ void DThemeSettings::onConfigChanged()
                 emit systemFixedFontChanged(new_value.toString());
             else if (v == SYSTEM_FONT_POINT_SIZE)
                 emit systemFontPointSizeChanged(new_value.toInt());
+            else if (v == TOUCH_FLICK_BEGIN_MOVE_DELAY)
+                emit touchFlickBeginMoveDelayChanged(new_value.toInt());
 
             emit valueChanged(v, old_value, new_value);
         }
