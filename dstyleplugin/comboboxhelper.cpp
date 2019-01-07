@@ -165,11 +165,12 @@ bool Style::drawComboBoxLabelControl(const QStyleOption *option, QPainter *paint
 
     // content
     const bool hasText( !cb->currentText.isEmpty() );
-    const bool hasIcon( ( flat || !hasText ) && !cb->currentIcon.isNull() );
+    const bool hasIcon( !cb->currentIcon.isNull() );
 
     // contents
     QRect contentsRect( rect );
     if( sunken && !flat ) contentsRect.translate( 1, 1 );
+    contentsRect.adjust(Metrics::Layout_ChildMarginWidth, 0, -Metrics::Layout_ChildMarginWidth, 0);
 
     // icon size
     QSize iconSize;
@@ -199,10 +200,12 @@ bool Style::drawComboBoxLabelControl(const QStyleOption *option, QPainter *paint
     if( hasText && !hasIcon ) textRect = contentsRect;
     else if( hasIcon && !hasText ) iconRect = contentsRect;
     else {
-
         const int contentsWidth( iconSize.width() + textSize.width() + Metrics::Button_ItemSpacing );
-        iconRect = QRect( QPoint( contentsRect.left() + (contentsRect.width() - contentsWidth )/2, contentsRect.top() + (contentsRect.height() - iconSize.height())/2 ), iconSize );
-        textRect = QRect( QPoint( iconRect.right() + Metrics::ToolButton_ItemSpacing + 1, contentsRect.top() + (contentsRect.height() - textSize.height())/2 ), textSize );
+        const int contentLeftPadding = flat ? (contentsRect.width() - contentsWidth )/2 : 0;
+        iconRect = QRect( QPoint( contentsRect.left() + contentLeftPadding,
+                                  contentsRect.top() + (contentsRect.height() - iconSize.height())/2 ), iconSize );
+        textRect = QRect( QPoint( iconRect.right() + Metrics::Button_ItemSpacing + 1,
+                                  contentsRect.top() + (contentsRect.height() - textSize.height())/2 ), textSize );
 
     }
 
@@ -215,7 +218,6 @@ bool Style::drawComboBoxLabelControl(const QStyleOption *option, QPainter *paint
 
     // render icon
     if( hasIcon && iconRect.isValid() ) {
-
         // icon state and mode
         const QIcon::State iconState( sunken ? QIcon::On : QIcon::Off );
         QIcon::Mode iconMode;
@@ -231,8 +233,6 @@ bool Style::drawComboBoxLabelControl(const QStyleOption *option, QPainter *paint
 
     // render text
     if( hasText && textRect.isValid() && !editable) {
-        textRect.setLeft(textRect.left() + Metrics::Layout_ChildMarginWidth);
-
         painter->setPen(m_palette->brush(PaletteExtended::PushButton_TextColor, option).color());
         painter->drawText(textRect, textFlags, cb->currentText);
     }
