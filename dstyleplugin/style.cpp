@@ -739,7 +739,7 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
         newSize += QSize(0, -3);
         break;
     case CT_ComboBox:
-//        newSize += QSize(2, 4);
+        newSize += QSize(0, -6);
         break;
     case CT_LineEdit:
         newSize += QSize(0, 4);

@@ -109,6 +109,7 @@ private:
     QLineEdit *lineEdit;
     QSpinBox *spinBox;
     QDateTimeEdit *dateTimeEdit;
+    QComboBox *comboBoxEdit;
     QSlider *slider;
     QScrollBar *scrollBar;
     QDial *dial;

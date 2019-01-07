@@ -254,6 +254,11 @@ void WidgetGallery::createBottomRightGroupBox()
     dateTimeEdit = new QDateTimeEdit(bottomRightGroupBox);
     dateTimeEdit->setDateTime(QDateTime::currentDateTime());
 
+    comboBoxEdit = new QComboBox(bottomRightGroupBox);
+    comboBoxEdit->addItem(QIcon::fromTheme("state-ok"), "state-ok");
+    comboBoxEdit->addItem(QIcon::fromTheme("crosshairs"), "crosshairs");
+    comboBoxEdit->addItem(QIcon::fromTheme("audio-volume-low-symbolic"), "audio-volume-low-symbolic");
+
     slider = new QSlider(Qt::Horizontal, bottomRightGroupBox);
     slider->setRange(0, 100);
     slider->setTickInterval(10);
@@ -271,10 +276,11 @@ void WidgetGallery::createBottomRightGroupBox()
     layout->addWidget(lineEdit, 0, 0, 1, 2);
     layout->addWidget(spinBox, 1, 0, 1, 2);
     layout->addWidget(dateTimeEdit, 2, 0, 1, 2);
-    layout->addWidget(slider, 3, 0);
-    layout->addWidget(scrollBar, 4, 0);
-    layout->addWidget(dial, 3, 1, 2, 1);
-    layout->setRowStretch(5, 1);
+    layout->addWidget(comboBoxEdit, 3, 0, 1, 2);
+    layout->addWidget(slider, 4, 0);
+    layout->addWidget(scrollBar, 5, 0);
+    layout->addWidget(dial, 4, 1, 2, 1);
+    layout->setRowStretch(6, 1);
     bottomRightGroupBox->setLayout(layout);
 }
 
