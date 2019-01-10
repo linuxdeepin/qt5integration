@@ -1,3 +1,18 @@
+<a name="0.3.7.2"></a>
+## 0.3.7.2 (2019-01-10)
+
+
+#### Bug Fixes
+
+*   QComboBox show icon ([9ac0b0bc](https://github.com/linuxdeepin/qt5integration/commit/9ac0b0bc54add64fa249cf78d1960a270e8f5af1))
+*   adjust QComboBox height ([4778931f](https://github.com/linuxdeepin/qt5integration/commit/4778931f7605a04ff5ec3c6166d89bb9166c9b4e))
+
+#### Features
+
+*   add property "touchFlickBeginMoveDelay" for DThemeSettings ([2ab1fab0](https://github.com/linuxdeepin/qt5integration/commit/2ab1fab0b65f6d4f41d3f2c06a61816346fda153))
+
+
+
 <a name="0.3.7.1"></a>
 ## 0.3.7.1 (2018-12-14)
 
