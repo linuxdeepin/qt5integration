@@ -29,7 +29,7 @@
 #include <QPalette>
 
 #include <XdgIcon>
-#if XDG_ICON_VERSION_MAR >= 3
+#if XDG_ICON_VERSION_MAR >= 2
 #define private public
 #include <private/xdgiconloader/xdgiconloader_p.h>
 #undef private
@@ -327,25 +327,10 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
         return QGenericUnixTheme::createIconEngine(iconName);
     else
         return new DIconEngine(iconName);
+#elif XDG_ICON_VERSION_MAR < 3
+    return new XdgIconLoaderEngine(iconName);
 #else
-
-    QIcon icon = XdgIcon::fromTheme(iconName);
-
-    if (icon.availableSizes().isEmpty())
-        return QGenericUnixTheme::createIconEngine(iconName);
-
-#if XDG_ICON_VERSION_MAR < 3
-    return icon.data_ptr()->engine->clone();
-#else
-    QIconEngine *base_engine = icon.data_ptr()->engine->clone();
-    XdgIconLoaderEngine *engine = dynamic_cast<XdgIconLoaderEngine*>(base_engine);
-
-    if (!engine) {
-        return base_engine;
-    }
-
-    return new XdgIconProxyEngine(engine);
-#endif
+    return new XdgIconProxyEngine(new XdgIconLoaderEngine(iconName));
 #endif
 }
 
