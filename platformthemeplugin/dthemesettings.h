@@ -35,9 +35,14 @@ class DThemeSettings : public QObject
     Q_PROPERTY(qreal systemFontPointSize READ systemFontPointSize NOTIFY systemFontPointSizeChanged)
     Q_PROPERTY(QStringList styleNames READ styleNames NOTIFY styleNamesChanged)
     Q_PROPERTY(int touchFlickBeginMoveDelay READ touchFlickBeginMoveDelay NOTIFY touchFlickBeginMoveDelayChanged)
+    Q_PROPERTY(qreal scaleFactor READ scaleFactor NOTIFY scaleFactorChanged)
+    Q_PROPERTY(QByteArray screenScaleFactors READ screenScaleFactors NOTIFY screenScaleFactorsChanged)
+    Q_PROPERTY(QPair<qreal, qreal> scaleLogicalDpi READ scaleLogicalDpi NOTIFY scaleLogicalDpiChanged)
 
 public:
-    explicit DThemeSettings(QObject *parent = 0);
+    explicit DThemeSettings(bool watchFile = true, QObject *parent = 0);
+
+    static QSettings *makeSettings();
 
     bool contains(const QString &key) const;
     QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const;
@@ -55,6 +60,9 @@ public:
     bool isSetSystemFixedFont() const;
     QString systemFixedFont() const;
     int touchFlickBeginMoveDelay() const;
+    qreal scaleFactor() const;
+    QByteArray screenScaleFactors() const;
+    QPair<qreal, qreal> scaleLogicalDpi() const;
 
 signals:
     void valueChanged(const QString &key, const QVariant &oldValue, const QVariant &newValue);
@@ -65,9 +73,12 @@ signals:
     void systemFixedFontChanged(QString systemFixedFont);
     void systemFontPointSizeChanged(qreal systemFontPointSize);
     void touchFlickBeginMoveDelayChanged(int touchFlickBeginMoveDelay);
+    void scaleFactorChanged(const qreal &scaleFactor);
+    void screenScaleFactorsChanged(const QByteArray &screenScaleFactors);
+    void scaleLogicalDpiChanged(const QPair<qreal, qreal> scaleLogicalDpi);
 
 private:
-    QSettings settings;
+    QSettings *settings;
 
     void onConfigChanged();
 };
