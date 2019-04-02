@@ -37,6 +37,13 @@
 
 #include <private/qicon_p.h>
 #include <private/qiconloader_p.h>
+#define private public
+#include <private/qhighdpiscaling_p.h>
+#undef private
+#include <private/qwindow_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qwindowsysteminterface_p.h>
+#include <qpa/qplatformscreen.h>
 
 #undef signals
 #include <X11/Xlib.h>
@@ -273,6 +280,134 @@ static void onIconThemeSetCallback()
     }
 }
 
+static void updateAllWindowGeometry()
+{
+    for (QWindow *w : qGuiApp->allWindows()) {
+        if (w->type() == Qt::ForeignWindow || w->type() == Qt::Desktop) {
+            continue;
+        }
+
+        // 通知窗口大小发送改变
+        if (w->handle()) {
+            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(w, QHighDpi::fromNativePixels(w->handle()->geometry(), w));
+            QGuiApplicationPrivate::processGeometryChangeEvent(&gce);
+        }
+    }
+}
+
+// 延迟一段时间更新窗口geometry，防止屏幕缩放比在短时间内连续变化时导致窗口闪动
+static void updateAllWindowGeometryDelay(int interval = 500)
+{
+    static QTimer *t = new QTimer();
+
+    t->setSingleShot(true);
+    t->setInterval(interval);
+    t->connect(t, &QTimer::timeout, t, updateAllWindowGeometry, Qt::UniqueConnection);
+    t->start();
+}
+
+static void notifyScreenScaleUpdated()
+{
+    for (QScreen *s : qGuiApp->screens()) {
+        Q_EMIT s->geometryChanged(s->geometry());
+
+        // 发射信号通知屏幕缩放比发生变化，DApplication中会定义此信号
+        if (qGuiApp->metaObject()->indexOfSignal("screenDevicePixelRatioChanged(QScreen*)")) {
+            qGuiApp->metaObject()->invokeMethod(qGuiApp, "screenDevicePixelRatioChanged", Q_ARG(QScreen*, s));
+        }
+    }
+}
+
+static bool updateScaleFactor(qreal value)
+{
+    if (qIsNull(value)) {
+        value = 1.0;
+    }
+
+    if (qFuzzyCompare(QHighDpiScaling::m_factor, value)) {
+        return false;
+    }
+
+    QHighDpiScaling::setGlobalFactor(value);
+
+    return true;
+}
+
+static void onScaleFactorChanged(qreal value)
+{
+    if (updateScaleFactor(value)) {
+        notifyScreenScaleUpdated();
+        updateAllWindowGeometryDelay();
+    }
+}
+
+static bool updateScaleLogcailDpi(const QPair<qreal, qreal> &dpi)
+{
+    bool ok = false;
+
+    if (!qIsNull(dpi.first)) {
+        QHighDpiScaling::m_logicalDpi.first = dpi.first;
+        ok = true;
+    }
+
+    if (!qIsNull(dpi.second)) {
+        QHighDpiScaling::m_logicalDpi.second = dpi.second;
+        ok = true;
+    }
+
+    return ok;
+}
+
+static bool updateScreenScaleFactors(DThemeSettings *s, const QByteArray &value, bool unsetenv = false)
+{
+    if (qgetenv("QT_SCREEN_SCALE_FACTORS") == value)
+        return false;
+
+    if (value.isEmpty()) {
+        if (!unsetenv)
+            return false;
+
+        qunsetenv("QT_SCREEN_SCALE_FACTORS");
+    } else {
+        qputenv("QT_SCREEN_SCALE_FACTORS", value);
+    }
+
+    QHighDpiScaling::updateHighDpiScaling();
+
+    if (!updateScaleLogcailDpi(s->scaleLogicalDpi())) {
+        // 使用 QT_SCREEN_SCALE_FACTORS 为每个屏幕设置不同的缩放比之后，Qt会自动将 dpi 除以主屏的
+        // 缩放倍数，以此来避免字体被放大。font dpi会影响未设置pixel size的QFont，默认情况下，
+        // QGuiApplication::font() 不会设置pixel size，因此，使用分屏幕设置不同缩放比后，字体却还
+        // 是缩放前的大小。
+        // 此处，如果设置了 ScreenScaleFactors，但未指定 ScaleLogcailDpi 时，默认将其重设回主屏
+        // 的 logicalDpi。
+        QHighDpiScaling::m_logicalDpi = qGuiApp->primaryScreen()->handle()->logicalDpi();
+    }
+
+    return true;
+}
+static void onScreenScaleFactorsChanged(const QByteArray &value)
+{
+    if (updateScreenScaleFactors(QDeepinTheme::getSettings(), value, true)) {
+        notifyScreenScaleUpdated();
+        updateAllWindowGeometryDelay();
+    }
+}
+
+static bool enabledRTScreenScale()
+{
+    // 应用中设置了和屏幕缩放相关的环境变量或启动相关属性后后不开启自动缩放功能
+    static bool enable = !qEnvironmentVariableIsSet("D_DISABLE_RT_SCREEN_SCALE") &&
+                            !qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO") &&
+                            !qEnvironmentVariableIsSet("QT_SCALE_FACTOR") &&
+                            !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR") &&
+                            !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS") &&
+                            !QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling) &&
+                            !QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling);
+
+    return enable;
+}
+
 QDeepinTheme::QDeepinTheme()
 {
 #if XDG_ICON_VERSION_MAR >= 3
@@ -280,6 +415,16 @@ QDeepinTheme::QDeepinTheme()
     DEEPIN_QT_THEME::setFollowColorScheme = XdgIcon::setFollowColorScheme;
     DEEPIN_QT_THEME::followColorScheme = XdgIcon::followColorScheme;
 #endif
+
+    if (enabledRTScreenScale()) {
+        QScopedPointer<DThemeSettings> setting(new DThemeSettings(false));
+        // 程序启动时初始设置屏幕缩放比
+        updateScaleFactor(setting->scaleFactor());
+
+        if (!updateScreenScaleFactors(setting.data(), setting->screenScaleFactors())) {
+            updateScaleLogcailDpi(setting->scaleLogicalDpi());
+        }
+    }
 }
 
 QDeepinTheme::~QDeepinTheme()
@@ -447,8 +592,22 @@ DThemeSettings *QDeepinTheme::settings() const
         QObject::connect(m_settings, &DThemeSettings::systemFontChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
         QObject::connect(m_settings, &DThemeSettings::systemFontPointSizeChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
         QObject::connect(m_settings, &DThemeSettings::iconThemeNameChanged, m_settings, &onIconThemeSetCallback, Qt::UniqueConnection);
+
+        if (enabledRTScreenScale()) {
+            QObject::connect(m_settings, &DThemeSettings::scaleFactorChanged,
+                             m_settings, onScaleFactorChanged, Qt::UniqueConnection);
+            QObject::connect(m_settings, &DThemeSettings::screenScaleFactorsChanged,
+                             m_settings, onScreenScaleFactorsChanged, Qt::UniqueConnection);
+            QObject::connect(m_settings, &DThemeSettings::scaleLogicalDpiChanged,
+                             m_settings, updateScaleLogcailDpi, Qt::UniqueConnection);
+        }
     }
 
+    return m_settings;
+}
+
+DThemeSettings *QDeepinTheme::getSettings()
+{
     return m_settings;
 }
 

@@ -47,6 +47,7 @@ public:
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
     const QFont *font(Font type) const Q_DECL_OVERRIDE;
     DThemeSettings *settings() const;
+    static DThemeSettings *getSettings();
 
     static const char *name;
 
