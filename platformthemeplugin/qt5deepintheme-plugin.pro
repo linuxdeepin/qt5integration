@@ -40,12 +40,14 @@ SOURCES += qdeepintheme.cpp \
     main.cpp \
     qdeepinfiledialoghelper.cpp \
     diconproxyengine.cpp \
-    dthemesettings.cpp
+    dthemesettings.cpp \
+    xdgiconenginecreator.cpp
 
 HEADERS += qdeepintheme.h \
     qdeepinfiledialoghelper.h \
     diconproxyengine.h \
-    dthemesettings.h
+    dthemesettings.h \
+    xdgiconenginecreator.h
 
 DISTFILES += \
     deepin.json
