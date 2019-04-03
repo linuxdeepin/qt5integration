@@ -1,3 +1,17 @@
+<a name="0.3.9"></a>
+## 0.3.9 (2019-04-03)
+
+
+#### Bug Fixes
+
+*   build failed on Qt 5.7.x ([9159a9fa](https://github.com/linuxdeepin/qt5integration/commit/9159a9fadf70c0190c698769b7f0d576bf380567))
+
+#### Features
+
+*   screen scale support takes effect in real time ([1e9c855b](https://github.com/linuxdeepin/qt5integration/commit/1e9c855b7409fdaa04eb938ddab42b5a38d51790))
+
+
+
 <a name="0.3.8"></a>
 ## 0.3.8 (2019-03-27)
 
