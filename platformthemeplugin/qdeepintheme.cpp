@@ -29,10 +29,14 @@
 #include <QPalette>
 
 #include <XdgIcon>
-#if XDG_ICON_VERSION_MAR >= 2
+#if XDG_ICON_VERSION_MAR >= 3
 #define private public
 #include <private/xdgiconloader/xdgiconloader_p.h>
 #undef private
+#elif XDG_ICON_VERSION_MAR == 2
+//这个版本中的xdgiconloader_p.h定义和qiconloader_p.h有冲突
+//只能通过此方式提供创建XdgIconLoaderEngine对象的接口
+#include "xdgiconenginecreator.h"
 #endif
 
 #include <private/qicon_p.h>
@@ -289,7 +293,11 @@ static void updateAllWindowGeometry()
 
         // 通知窗口大小发送改变
         if (w->handle()) {
-            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(w, QHighDpi::fromNativePixels(w->handle()->geometry(), w));
+            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(w, QHighDpi::fromNativePixels(w->handle()->geometry(), w)
+                                                       #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
+                                                                   , QRect()
+                                                       #endif
+                                                                   );
             QGuiApplicationPrivate::processGeometryChangeEvent(&gce);
         }
     }
@@ -473,7 +481,7 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
     else
         return new DIconEngine(iconName);
 #elif XDG_ICON_VERSION_MAR < 3
-    return new XdgIconLoaderEngine(iconName);
+    return XdgIconEngineCreator::create(iconName);
 #else
     return new XdgIconProxyEngine(new XdgIconLoaderEngine(iconName));
 #endif
