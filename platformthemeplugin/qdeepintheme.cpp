@@ -602,6 +602,11 @@ DThemeSettings *QDeepinTheme::settings() const
         QObject::connect(m_settings, &DThemeSettings::iconThemeNameChanged, m_settings, &onIconThemeSetCallback, Qt::UniqueConnection);
 
         if (enabledRTScreenScale()) {
+#ifdef QT_NO_DEBUG
+            if (!qEnvironmentVariableIsSet("D_ENABLE_RT_SCALE"))
+                return m_settings;
+#endif
+
             QObject::connect(m_settings, &DThemeSettings::scaleFactorChanged,
                              m_settings, onScaleFactorChanged, Qt::UniqueConnection);
             QObject::connect(m_settings, &DThemeSettings::screenScaleFactorsChanged,
