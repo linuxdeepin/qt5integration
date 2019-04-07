@@ -48,6 +48,7 @@
 #include <private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformscreen.h>
+#include <qpa/qplatformcursor.h>
 
 #undef signals
 #include <X11/Xlib.h>
@@ -61,6 +62,13 @@ void(*setFollowColorScheme)(bool);
 bool(*followColorScheme)();
 }
 #endif
+
+#define DISABLE_UPDATE_WINDOW_GEOMETRY "D_DISABLE_UPDATE_WINDOW_GEOMETRY_FOR_SCALE"
+#define DNOT_UPDATE_WINDOW_GEOMETRY "_d_disable_update_geometry_for_scale"
+#define HOOK_UPDATE_WINDOW_GEOMETRY_OBJECT "_d_hookUpdateGeometryForScaleObject"
+#define UPDATE_WINDOW_GEOMETRY_ENTRY "_d_updateGeometryForScaleEntry"
+#define UPDATE_WINDOW_GEOMETRY_GEOMETRY "_d_updateGeometryForScaleGeometry"
+#define UPDATE_WINDOW_GEOMETRY_EXIT "_d_updateGeometryForScaleExit"
 
 QT_BEGIN_NAMESPACE
 
@@ -284,22 +292,83 @@ static void onIconThemeSetCallback()
     }
 }
 
+static void updateWindowGeometry(QWindow *w)
+{
+    if (w->type() == Qt::ForeignWindow || w->type() == Qt::Desktop) {
+        return;
+    }
+
+    if (!w->handle() || !w->isTopLevel())
+        return;
+
+    if (w->property(DNOT_UPDATE_WINDOW_GEOMETRY).toBool()) {
+        QWindowSystemInterfacePrivate::GeometryChangeEvent gce(w, QHighDpi::fromNativePixels(w->handle()->geometry(), w)
+                                                   #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
+                                                               , QRect()
+                                                   #endif
+                                                               );
+        QGuiApplicationPrivate::processGeometryChangeEvent(&gce);
+    } else {// 通知窗口大小发送改变
+        const QRect currentGeo = QWindowPrivate::get(w)->geometry;
+
+        if (!currentGeo.isValid())
+            return;
+
+        // 对外提供能hook自动更新窗口大小的方法
+        QObject *hook_obj = qvariant_cast<QObject*>(w->property(HOOK_UPDATE_WINDOW_GEOMETRY_OBJECT));
+
+        if (!hook_obj) {
+            hook_obj = w;
+        }
+
+        bool accept = true;
+        // 通知窗口即将开始更新其geometry
+        QMetaObject::invokeMethod(hook_obj, UPDATE_WINDOW_GEOMETRY_ENTRY,
+                                  Qt::DirectConnection, Q_RETURN_ARG(bool, accept));
+
+        if (!accept) {
+            // 中断操作
+            return;
+        }
+
+        QRect nativeGeo;
+        // 尝试从窗口对象获取新的geometry
+        QMetaObject::invokeMethod(hook_obj, UPDATE_WINDOW_GEOMETRY_GEOMETRY,
+                                  Qt::DirectConnection, Q_RETURN_ARG(QRect, nativeGeo));
+
+        if (!nativeGeo.isValid()) {
+            nativeGeo = w->handle()->geometry();
+
+            qreal scale = QHighDpiScaling::factor(w);
+            const QPoint &cursor_pos = w->screen()->handle()->cursor()->pos();
+            // 如果窗口是active的，且鼠标处于窗口内，应当移动窗口位置以保持鼠标相对窗口的位置
+            if (w->isActive()) {
+                const QMargins &frame_margins = w->handle()->frameMargins();
+                const QRect &frame_rect = nativeGeo.marginsAdded(frame_margins);
+
+                if (frame_rect.contains(cursor_pos)) {
+                    nativeGeo.moveTopLeft(cursor_pos + (nativeGeo.topLeft() - cursor_pos) * currentGeo.width() * scale / nativeGeo.width());
+                }
+            }
+
+            nativeGeo.setSize(currentGeo.size() * scale);
+        }
+
+        bool positionAutomaticSave = QWindowPrivate::get(w)->positionAutomatic;
+        QWindowPrivate::get(w)->positionAutomatic = false;
+        w->handle()->setGeometry(nativeGeo);
+        QWindowPrivate::get(w)->positionAutomatic = positionAutomaticSave;
+        // 请求重绘
+        QGuiApplication::sendEvent(w, new QEvent(QEvent::UpdateRequest));
+        // 通知窗口geometry更新结束
+        QMetaObject::invokeMethod(hook_obj, UPDATE_WINDOW_GEOMETRY_EXIT);
+    }
+}
+
 static void updateAllWindowGeometry()
 {
     for (QWindow *w : qGuiApp->allWindows()) {
-        if (w->type() == Qt::ForeignWindow || w->type() == Qt::Desktop) {
-            continue;
-        }
-
-        // 通知窗口大小发送改变
-        if (w->handle()) {
-            QWindowSystemInterfacePrivate::GeometryChangeEvent gce(w, QHighDpi::fromNativePixels(w->handle()->geometry(), w)
-                                                       #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
-                                                                   , QRect()
-                                                       #endif
-                                                                   );
-            QGuiApplicationPrivate::processGeometryChangeEvent(&gce);
-        }
+        updateWindowGeometry(w);
     }
 }
 
@@ -346,6 +415,67 @@ static void onScaleFactorChanged(qreal value)
     if (updateScaleFactor(value)) {
         notifyScreenScaleUpdated();
         updateAllWindowGeometryDelay();
+    }
+}
+
+// 用于窗口屏幕改变时更新窗口大小
+class AutoScaleWindowObject : public QObject
+{
+    Q_OBJECT
+public:
+    explicit AutoScaleWindowObject(QObject *parent = nullptr)
+        : QObject(parent) {
+        qGuiApp->installEventFilter(this);
+    }
+
+    void onScreenChanged(QScreen *s)
+    {
+        Q_UNUSED(s);
+
+        if (QWindow *w = qobject_cast<QWindow*>(sender())) {
+            updateWindowGeometry(w);
+        }
+    }
+
+private:
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        if (event->type() != QEvent::PlatformSurface)
+            return false;
+
+        if (QWindow *w = qobject_cast<QWindow*>(watched)) {
+            QPlatformSurfaceEvent *se = static_cast<QPlatformSurfaceEvent*>(event);
+
+            if (se->surfaceEventType() == QPlatformSurfaceEvent::SurfaceCreated) {
+                // 监听窗口屏幕变化信号，自动根据新的屏幕缩放比更新窗口大小
+                connect(w, &QWindow::screenChanged,
+                        this, &AutoScaleWindowObject::onScreenChanged,
+                        Qt::DirectConnection);
+            } else {
+                disconnect(w, &QWindow::screenChanged,
+                           this, &AutoScaleWindowObject::onScreenChanged);
+            }
+        }
+
+        return false;
+    }
+};
+
+static void onAutoScaleWindowChanged(bool on)
+{
+    static AutoScaleWindowObject *event_fileter = nullptr;
+
+    if (on) {
+        if (event_fileter)
+            return;
+
+        event_fileter = new AutoScaleWindowObject(qGuiApp);
+    } else {
+        if (!event_fileter)
+            return;
+
+        event_fileter->deleteLater();
+        event_fileter = nullptr;
     }
 }
 
@@ -614,6 +744,13 @@ DThemeSettings *QDeepinTheme::settings() const
             QObject::connect(m_settings, &DThemeSettings::scaleLogicalDpiChanged,
                              m_settings, updateScaleLogcailDpi, Qt::UniqueConnection);
         }
+
+        if (!qEnvironmentVariableIsSet(DISABLE_UPDATE_WINDOW_GEOMETRY)) {
+            QObject::connect(m_settings, &DThemeSettings::autoScaleWindowChanged,
+                             m_settings, onAutoScaleWindowChanged, Qt::UniqueConnection);
+
+            onAutoScaleWindowChanged(m_settings->autoScaleWindow());
+        }
     }
 
     return m_settings;
@@ -625,3 +762,5 @@ DThemeSettings *QDeepinTheme::getSettings()
 }
 
 QT_END_NAMESPACE
+
+#include "qdeepintheme.moc"

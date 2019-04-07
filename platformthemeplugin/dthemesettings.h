@@ -38,6 +38,7 @@ class DThemeSettings : public QObject
     Q_PROPERTY(qreal scaleFactor READ scaleFactor NOTIFY scaleFactorChanged)
     Q_PROPERTY(QByteArray screenScaleFactors READ screenScaleFactors NOTIFY screenScaleFactorsChanged)
     Q_PROPERTY(QPair<qreal, qreal> scaleLogicalDpi READ scaleLogicalDpi NOTIFY scaleLogicalDpiChanged)
+    Q_PROPERTY(bool autoScaleWindow READ autoScaleWindow NOTIFY autoScaleWindowChanged)
 
 public:
     explicit DThemeSettings(bool watchFile = true, QObject *parent = 0);
@@ -63,6 +64,7 @@ public:
     qreal scaleFactor() const;
     QByteArray screenScaleFactors() const;
     QPair<qreal, qreal> scaleLogicalDpi() const;
+    bool autoScaleWindow() const;
 
 signals:
     void valueChanged(const QString &key, const QVariant &oldValue, const QVariant &newValue);
@@ -76,6 +78,7 @@ signals:
     void scaleFactorChanged(const qreal &scaleFactor);
     void screenScaleFactorsChanged(const QByteArray &screenScaleFactors);
     void scaleLogicalDpiChanged(const QPair<qreal, qreal> scaleLogicalDpi);
+    void autoScaleWindowChanged(bool autoScaleWindow);
 
 private:
     QSettings *settings;

@@ -38,6 +38,8 @@
 #define SCREEN_SCALE_FACTORS QStringLiteral("ScreenScaleFactors")
 #define SCALE_FACTOR QStringLiteral("ScaleFactor")
 #define SCALE_LOGICAL_DPI QStringLiteral("ScaleLogicalDpi")
+// 当窗口从一个屏幕移动到另一个屏幕后，自动根据新的屏幕缩放比例更新窗口实际大小
+#define AUTO_SCALE_WINDOW QStringLiteral("AutoScaleWindow")
 
 DCORE_USE_NAMESPACE
 
@@ -232,6 +234,11 @@ static QPair<qreal, qreal> takePair(const QVariant &value)
 QPair<qreal, qreal> DThemeSettings::scaleLogicalDpi() const
 {
     return takePair(value(SCALE_LOGICAL_DPI));
+}
+
+bool DThemeSettings::autoScaleWindow() const
+{
+    return value(AUTO_SCALE_WINDOW, true).toBool();
 }
 
 void DThemeSettings::onConfigChanged()
