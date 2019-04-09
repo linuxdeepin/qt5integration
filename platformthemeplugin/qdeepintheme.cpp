@@ -323,8 +323,10 @@ static void updateWindowGeometry(QWindow *w)
 
         bool accept = true;
         // 通知窗口即将开始更新其geometry
-        QMetaObject::invokeMethod(hook_obj, UPDATE_WINDOW_GEOMETRY_ENTRY,
-                                  Qt::DirectConnection, Q_RETURN_ARG(bool, accept));
+        if (hook_obj->metaObject()->indexOfMethod(UPDATE_WINDOW_GEOMETRY_ENTRY "()") >= 0) {
+            QMetaObject::invokeMethod(hook_obj, UPDATE_WINDOW_GEOMETRY_ENTRY,
+                                      Qt::DirectConnection, Q_RETURN_ARG(bool, accept));
+        }
 
         if (!accept) {
             // 中断操作
@@ -333,8 +335,10 @@ static void updateWindowGeometry(QWindow *w)
 
         QRect nativeGeo;
         // 尝试从窗口对象获取新的geometry
-        QMetaObject::invokeMethod(hook_obj, UPDATE_WINDOW_GEOMETRY_GEOMETRY,
-                                  Qt::DirectConnection, Q_RETURN_ARG(QRect, nativeGeo));
+        if (hook_obj->metaObject()->indexOfMethod(UPDATE_WINDOW_GEOMETRY_GEOMETRY "()") >= 0) {
+            QMetaObject::invokeMethod(hook_obj, UPDATE_WINDOW_GEOMETRY_GEOMETRY,
+                                      Qt::DirectConnection, Q_RETURN_ARG(QRect, nativeGeo));
+        }
 
         if (!nativeGeo.isValid()) {
             nativeGeo = w->handle()->geometry();
@@ -361,7 +365,9 @@ static void updateWindowGeometry(QWindow *w)
         // 请求重绘
         QGuiApplication::sendEvent(w, new QEvent(QEvent::UpdateRequest));
         // 通知窗口geometry更新结束
-        QMetaObject::invokeMethod(hook_obj, UPDATE_WINDOW_GEOMETRY_EXIT);
+        if (hook_obj->metaObject()->indexOfMethod(UPDATE_WINDOW_GEOMETRY_EXIT "()") >= 0) {
+            QMetaObject::invokeMethod(hook_obj, UPDATE_WINDOW_GEOMETRY_EXIT);
+        }
     }
 }
 
@@ -461,8 +467,19 @@ private:
     }
 };
 
-static void onAutoScaleWindowChanged(bool on)
+static void onAutoScaleWindowChanged()
 {
+    bool on = QDeepinTheme::getSettings()->autoScaleWindow();
+
+    if (on) {
+        const QString &multi_scale = QDeepinTheme::getSettings()->screenScaleFactors();
+
+        // 只在针对多个屏幕分别设置了缩放比时开启此功能
+        if (!multi_scale.contains(";")) {
+            on = false;
+        }
+    }
+
     static AutoScaleWindowObject *event_fileter = nullptr;
 
     if (on) {
@@ -743,13 +760,15 @@ DThemeSettings *QDeepinTheme::settings() const
                              m_settings, onScreenScaleFactorsChanged, Qt::UniqueConnection);
             QObject::connect(m_settings, &DThemeSettings::scaleLogicalDpiChanged,
                              m_settings, updateScaleLogcailDpi, Qt::UniqueConnection);
-        }
 
-        if (!qEnvironmentVariableIsSet(DISABLE_UPDATE_WINDOW_GEOMETRY)) {
-            QObject::connect(m_settings, &DThemeSettings::autoScaleWindowChanged,
-                             m_settings, onAutoScaleWindowChanged, Qt::UniqueConnection);
+            if (!qEnvironmentVariableIsSet(DISABLE_UPDATE_WINDOW_GEOMETRY)) {
+                QObject::connect(m_settings, &DThemeSettings::autoScaleWindowChanged,
+                                 m_settings, onAutoScaleWindowChanged, Qt::UniqueConnection);
+                QObject::connect(m_settings, &DThemeSettings::screenScaleFactorsChanged,
+                                 m_settings, onAutoScaleWindowChanged, Qt::UniqueConnection);
 
-            onAutoScaleWindowChanged(m_settings->autoScaleWindow());
+                onAutoScaleWindowChanged();
+            }
         }
     }
 
