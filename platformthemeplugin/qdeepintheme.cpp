@@ -496,18 +496,26 @@ static void onAutoScaleWindowChanged()
     }
 }
 
+// 使用 QT_SCREEN_SCALE_FACTORS 为每个屏幕设置不同的缩放比之后，Qt会自动将 dpi 除以主屏的
+// 缩放倍数，以此来避免字体被放大。font dpi会影响未设置pixel size的QFont，默认情况下，
+// QGuiApplication::font() 不会设置pixel size，因此，使用分屏幕设置不同缩放比后，字体却还
+// 是缩放前的大小。
+// 此处，如果设置了 ScreenScaleFactors，但未指定 ScaleLogcailDpi 时，默认将其重设回主屏
+// 的 logicalDpi。
 static bool updateScaleLogcailDpi(const QPair<qreal, qreal> &dpi)
 {
-    bool ok = false;
+    bool ok = dpi.first >= 0 && dpi.second >= 0;
 
-    if (!qIsNull(dpi.first)) {
+    if (dpi.first > 0) {
         QHighDpiScaling::m_logicalDpi.first = dpi.first;
-        ok = true;
+    } else if (qIsNull(dpi.first)) {
+        QHighDpiScaling::m_logicalDpi.first = qGuiApp->primaryScreen()->handle()->logicalDpi().first;
     }
 
-    if (!qIsNull(dpi.second)) {
+    if (dpi.second > 0) {
         QHighDpiScaling::m_logicalDpi.second = dpi.second;
-        ok = true;
+    } else if (qIsNull(dpi.second)) {
+        QHighDpiScaling::m_logicalDpi.second = qGuiApp->primaryScreen()->handle()->logicalDpi().second;
     }
 
     return ok;
@@ -528,16 +536,7 @@ static bool updateScreenScaleFactors(DThemeSettings *s, const QByteArray &value,
     }
 
     QHighDpiScaling::updateHighDpiScaling();
-
-    if (!updateScaleLogcailDpi(s->scaleLogicalDpi())) {
-        // 使用 QT_SCREEN_SCALE_FACTORS 为每个屏幕设置不同的缩放比之后，Qt会自动将 dpi 除以主屏的
-        // 缩放倍数，以此来避免字体被放大。font dpi会影响未设置pixel size的QFont，默认情况下，
-        // QGuiApplication::font() 不会设置pixel size，因此，使用分屏幕设置不同缩放比后，字体却还
-        // 是缩放前的大小。
-        // 此处，如果设置了 ScreenScaleFactors，但未指定 ScaleLogcailDpi 时，默认将其重设回主屏
-        // 的 logicalDpi。
-        QHighDpiScaling::m_logicalDpi = qGuiApp->primaryScreen()->handle()->logicalDpi();
-    }
+    updateScaleLogcailDpi(s->scaleLogicalDpi());
 
     return true;
 }
@@ -728,6 +727,10 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
     return QGenericUnixTheme::font(type);
 }
 
+static void compelledUpdateScaleLogcailDpi() {
+    updateScaleLogcailDpi(QDeepinTheme::getSettings()->scaleLogicalDpi());
+}
+
 DThemeSettings *QDeepinTheme::settings() const
 {
     if (!m_settings) {
@@ -760,6 +763,18 @@ DThemeSettings *QDeepinTheme::settings() const
                              m_settings, onScreenScaleFactorsChanged, Qt::UniqueConnection);
             QObject::connect(m_settings, &DThemeSettings::scaleLogicalDpiChanged,
                              m_settings, updateScaleLogcailDpi, Qt::UniqueConnection);
+
+            // 当屏幕connected时，Qt库中会更新缩放值，导致dpi的设置被覆盖，此处应该再重新设置dpi值。
+            // TODO(zccrs): 当最后一个屏幕disconnectd时，Qt不会移除它，在这种状态下，插入一个新的
+            //              屏幕时，Qt只会更新遗留的screen对象的信息，因此不会有screenAdded信号，
+            //              而且同样会更新dpi的值，因为目前无法通过Qt api检测到此状态，所以这种情
+            //              况下无法自动更新dpi值，将导致应用字体显示大小不受缩放比控制。
+            //              !!!
+            //              针对 dtk 应用，将在dxcb插件中通知应用更新dpi值。
+            qApp->setProperty("_d_updateScaleLogcailDpi", (quintptr)&compelledUpdateScaleLogcailDpi);
+            QObject::connect(qApp, &QGuiApplication::screenAdded,
+                             m_settings, compelledUpdateScaleLogcailDpi,
+                             Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
 
             if (!qEnvironmentVariableIsSet(DISABLE_UPDATE_WINDOW_GEOMETRY)) {
                 QObject::connect(m_settings, &DThemeSettings::autoScaleWindowChanged,
