@@ -1,3 +1,19 @@
+<a name="0.3.11"></a>
+## 0.3.11 (2019-04-17)
+
+
+#### Bug Fixes
+
+*   ScreenScaleFactors cannot be applied to all screens when only one value is specified ([24a73d6b](https://github.com/linuxdeepin/qt5integration/commit/24a73d6b2243602781dd7c56071efadb5387142c))
+*   font pixel changed when connect a screen ([fcca6b5e](https://github.com/linuxdeepin/qt5integration/commit/fcca6b5e64863741a48600bdc22b18d2c3eac3d6))
+*   enable real-time scale for window only on enable screenScaleFactors ([520f00eb](https://github.com/linuxdeepin/qt5integration/commit/520f00eb47e57883838040372fa4bc377cf8be78))
+
+#### Features
+
+*   support auto update the window geometry by new device pixel ratio ([6902fc8a](https://github.com/linuxdeepin/qt5integration/commit/6902fc8ad8923f1579b115561f4aa0a361ac0f64))
+
+
+
 <a name="0.3.10"></a>
 ## 0.3.10 (2019-04-04)
 

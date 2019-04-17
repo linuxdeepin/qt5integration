@@ -571,7 +571,10 @@ static bool updateScreenScaleFactors(DThemeSettings *s, const QByteArray &value,
     }
 
     QHighDpiScaling::updateHighDpiScaling();
+    qDebug() << QHighDpiScaling::logicalDpi();
     updateScaleLogcailDpi(s->scaleLogicalDpi());
+
+    qDebug() << QHighDpiScaling::logicalDpi();
 
     return true;
 }
