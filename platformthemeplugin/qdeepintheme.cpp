@@ -467,15 +467,26 @@ private:
     }
 };
 
+// 判断ScreenScaleFactor的值是否应该应用于所有屏幕
+static bool isGenericScreenScaleFactors(const QByteArray &value)
+{
+    for (char ch : value) {
+        if (ch == '=' || ch == ';')
+            return false;
+    }
+
+    return true;
+}
+
 static void onAutoScaleWindowChanged()
 {
     bool on = QDeepinTheme::getSettings()->autoScaleWindow();
 
     if (on) {
-        const QString &multi_scale = QDeepinTheme::getSettings()->screenScaleFactors();
+        const QByteArray &multi_scale = QDeepinTheme::getSettings()->screenScaleFactors();
 
         // 只在针对多个屏幕分别设置了缩放比时开启此功能
-        if (!multi_scale.contains(";")) {
+        if (isGenericScreenScaleFactors(multi_scale)) {
             on = false;
         }
     }
@@ -521,18 +532,42 @@ static bool updateScaleLogcailDpi(const QPair<qreal, qreal> &dpi)
     return ok;
 }
 
+static QByteArray getEnvValueByScreenScaleFactors(const QByteArray &data)
+{
+    QByteArray envValue;
+
+    if (!isGenericScreenScaleFactors(data)) {
+        envValue = data;
+    } else if (!data.isEmpty()) {
+        // 这种情况下，在Qt的实现中，只会将值应用给第一个屏幕，因此此处需要给所有屏幕都设置通用的值
+        int screen_count = qApp->screens().count();
+
+        // 为除了最后一个屏幕的其它屏幕添加缩放比
+        while (--screen_count) {
+            envValue.append(data).append(';');
+        }
+
+        // 为最后一个屏幕添加缩放比
+        envValue.append(data);
+    }
+
+    return envValue;
+}
+
 static bool updateScreenScaleFactors(DThemeSettings *s, const QByteArray &value, bool unsetenv = false)
 {
-    if (qgetenv("QT_SCREEN_SCALE_FACTORS") == value)
+    const QByteArray &envValue = getEnvValueByScreenScaleFactors(value);
+
+    if (qgetenv("QT_SCREEN_SCALE_FACTORS") == envValue)
         return false;
 
-    if (value.isEmpty()) {
+    if (envValue.isEmpty()) {
         if (!unsetenv)
             return false;
 
         qunsetenv("QT_SCREEN_SCALE_FACTORS");
     } else {
-        qputenv("QT_SCREEN_SCALE_FACTORS", value);
+        qputenv("QT_SCREEN_SCALE_FACTORS", envValue);
     }
 
     QHighDpiScaling::updateHighDpiScaling();
@@ -731,6 +766,27 @@ static void compelledUpdateScaleLogcailDpi() {
     updateScaleLogcailDpi(QDeepinTheme::getSettings()->scaleLogicalDpi());
 }
 
+static void onScreenAdded(QScreen *s) {
+    if (QHighDpiScaling::m_screenFactorSet) {
+        auto setting = QDeepinTheme::getSettings();
+        auto value = setting->screenScaleFactors();
+
+        if (!value.isEmpty() && isGenericScreenScaleFactors(value)) {
+            const QByteArray &envValue = getEnvValueByScreenScaleFactors(value);
+
+            qputenv("QT_SCREEN_SCALE_FACTORS", envValue);
+            bool ok = false;
+            qreal scale = value.toDouble(&ok);
+
+            // 为新的屏幕设置缩放比
+            if (ok)
+                QHighDpiScaling::setScreenFactor(s, scale);
+        }
+    }
+
+    compelledUpdateScaleLogcailDpi();
+}
+
 DThemeSettings *QDeepinTheme::settings() const
 {
     if (!m_settings) {
@@ -773,7 +829,7 @@ DThemeSettings *QDeepinTheme::settings() const
             //              针对 dtk 应用，将在dxcb插件中通知应用更新dpi值。
             qApp->setProperty("_d_updateScaleLogcailDpi", (quintptr)&compelledUpdateScaleLogcailDpi);
             QObject::connect(qApp, &QGuiApplication::screenAdded,
-                             m_settings, compelledUpdateScaleLogcailDpi,
+                             m_settings, onScreenAdded,
                              Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
 
             if (!qEnvironmentVariableIsSet(DISABLE_UPDATE_WINDOW_GEOMETRY)) {
