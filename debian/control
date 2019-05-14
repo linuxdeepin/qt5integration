@@ -7,7 +7,7 @@ Build-Depends:
  qt5-default,
  qtbase5-dev,
  qtbase5-private-dev,
- libqt5xdg-dev,
+ llibqt5xdg3-dev|ibqt5xdg-dev,
  libdtkwidget-dev,
  pkg-config,
  libqt5x11extras5-dev,
@@ -15,7 +15,7 @@ Build-Depends:
  libfreetype6-dev,
  libglib2.0-dev,
  libqt5svg5-dev,
- libqt5xdgiconloader-dev,
+ libqt5xdgiconloader3-dev|libqt5xdgiconloader-dev,
  libmtdev-dev,
  libegl1-mesa-dev,
  libxrender-dev
