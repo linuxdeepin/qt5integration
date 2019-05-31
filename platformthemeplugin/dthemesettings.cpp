@@ -21,6 +21,7 @@
 #include "dthemesettings.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QTimer>
 
 #include <DFileWatcherManager>
@@ -89,9 +90,16 @@ QSettings * DThemeSettings::makeSettings()
             break;
         }
 
+        const QString suffix("/deepin/qt-theme.ini");
+        QFileInfo info(theme_config_path + suffix);
+
+        // 忽略不存在的文件或软连接
+        if (!info.exists() || info.isSymLink()) {
+            break;
+        }
+
         // 先创建一个对象，用于获取默认配置文件的路径
         QSettings s(QSettings::IniFormat, QSettings::UserScope, "deepin", "qt-theme");
-        const QString suffix("/deepin/qt-theme.ini");
         QString file_path = s.fileName();
 
         // 必须以此路径结尾，去除此路径的剩余部分为配置文件路径
