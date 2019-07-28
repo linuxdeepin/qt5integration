@@ -48,8 +48,9 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(styles);
 
+    qputenv("QT_DEBUG_PLUGINS", "1");
     QStringList paths = QApplication::libraryPaths();
-    paths.prepend(QFileInfo(QString::fromUtf8(argv[0])).path() + "/plugins/");
+    paths.prepend(QFileInfo(QString::fromUtf8(argv[0])).path() + "/plugins");
     QApplication::setLibraryPaths(paths);
 
     QApplication app(argc, argv);
