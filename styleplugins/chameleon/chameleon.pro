@@ -1,4 +1,4 @@
-QT        += core gui widgets widgets-private core-private gui-private dtkwidget
+QT        += core gui widgets widgets-private core-private gui-private dtkgui dtkwidget
 
 TARGET = chameleon
 TEMPLATE = lib
