@@ -8,6 +8,7 @@ Build-Depends:
  qtbase5-dev,
  qtbase5-private-dev,
  libqt5xdg-dev,
+ libdtkgui-dev,
  libdtkwidget-dev,
  pkg-config,
  libqt5x11extras5-dev,

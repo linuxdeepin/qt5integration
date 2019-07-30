@@ -27,6 +27,8 @@ class ChameleonStyle : public QCommonStyle
 {
 public:
     explicit ChameleonStyle();
+
+    QPalette standardPalette() const override;
 };
 
 #endif // CHAMELEONSTYLE_H
