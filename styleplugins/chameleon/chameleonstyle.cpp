@@ -21,10 +21,14 @@
 #include "chameleonstyle.h"
 
 #include <DNativeSettings>
+#include <DStyleOption>
 
 #include <QVariant>
+#include <QDebug>
+#include <QApplication>
 
 DGUI_USE_NAMESPACE
+DWIDGET_USE_NAMESPACE
 
 static QColor light[QPalette::NColorRoles] {
     QColor("#414d68"),                  //WindowText
@@ -113,24 +117,80 @@ static void initInactivePalette(QPalette &pa)
 QPalette ChameleonStyle::standardPalette() const
 {
     QPalette pa;
-    const QColor *color_list;
-
-    DNativeSettings theme_settings(0);
-
-    if (theme_settings.isValid() && theme_settings.getSetting("Net/ThemeName").toByteArray().contains("dark")) {
-        color_list = dark;
-    } else {
-        color_list = light;
-    }
+    const QColor *color_list = isDrakStyle() ? dark : light;
 
     for (int i = 0; i < QPalette::NColorRoles; ++i) {
         QPalette::ColorRole role = static_cast<QPalette::ColorRole>(i);
 
-        pa.setColor(role, color_list[i]);
+        pa.setColor(DPalette::Active, role, color_list[i]);
     }
 
     initDisablePalette(pa);
     initInactivePalette(pa);
 
     return pa;
+}
+
+static void initDisablePalette(DPalette &pa)
+{
+    for (int i = 0; i < DPalette::NColorTypes; ++i) {
+        DPalette::ColorType role = static_cast<DPalette::ColorType>(i);
+        QColor color = pa.color(DPalette::Normal, role);
+
+        color.setAlpha(color.alpha() * 0.6);
+        pa.setColor(QPalette::Disabled, role, color);
+    }
+}
+
+static void initInactivePalette(DPalette &pa)
+{
+    for (int i = 0; i < DPalette::NColorTypes; ++i) {
+        DPalette::ColorType role = static_cast<DPalette::ColorType>(i);
+        QColor color = pa.color(DPalette::Normal, role);
+
+        color.setAlpha(color.alpha() * 0.4);
+        pa.setColor(QPalette::Inactive, role, color);
+    }
+}
+
+static QColor light_dpalette[DPalette::NColorTypes] {
+    QColor(0, 0, 0, 255 * 0.03),    //ItemBackground
+    QColor("#001A2E"),              //TextTitle
+    QColor("#526A7F"),              //TextTips
+    QColor("#FF5736"),              //TextWarning
+    QColor("#0082FA")               //TextLively
+};
+
+static QColor dark_dpalette[DPalette::NColorTypes] {
+    QColor(255, 255, 255, 255 * 0.05),  //ItemBackground
+    QColor("#C0C6D4"),                  //TextTitle
+    QColor("#6D7C88"),                  //TextTips
+    QColor("#FF5736"),                  //TextWarning
+    QColor("#0082FA")                   //TextLively
+};
+
+void ChameleonStyle::polish(QApplication *app)
+{
+    DPalette pa = proxy()->standardPalette();
+    const QColor *color_list = isDrakStyle() ? dark_dpalette : light_dpalette;
+
+    for (int i = 0; i < DPalette::NColorTypes; ++i) {
+        DPalette::ColorType type = static_cast<DPalette::ColorType>(i);
+
+        pa.setColor(DPalette::Active, type, color_list[i]);
+    }
+
+    initDisablePalette(pa);
+    initInactivePalette(pa);
+
+    DPalette::setGeneric(pa);
+
+    QCommonStyle::polish(app);
+}
+
+bool ChameleonStyle::isDrakStyle() const
+{
+    DNativeSettings theme_settings(0);
+
+    return theme_settings.isValid() && theme_settings.getSetting("Net/ThemeName").toByteArray().contains("dark");
 }

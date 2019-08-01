@@ -29,6 +29,10 @@ public:
     explicit ChameleonStyle();
 
     QPalette standardPalette() const override;
+    void polish(QApplication *app) override;
+
+private:
+    bool isDrakStyle() const;
 };
 
 #endif // CHAMELEONSTYLE_H

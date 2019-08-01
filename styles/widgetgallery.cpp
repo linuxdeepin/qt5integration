@@ -108,7 +108,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     mainLayout->setColumnStretch(1, 1);
 
     setWindowTitle(tr("Styles"));
-    changeStyle("NorwegianWood");
+    changeStyle("chameleon");
 
     setCentralWidget(mainWidget);
 
