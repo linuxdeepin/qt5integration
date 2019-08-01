@@ -22,10 +22,23 @@
 
 #include <DNativeSettings>
 #include <DStyleOption>
+#include <DApplication>
+#include <DPlatformWindowHandle>
 
 #include <QVariant>
 #include <QDebug>
 #include <QApplication>
+#include <QPushButton>
+#include <QComboBox>
+#include <QScrollBar>
+#include <QCheckBox>
+#include <QRadioButton>
+#include <QToolButton>
+#include <QLineEdit>
+#include <QAction>
+#include <QMenu>
+
+#include <qpa/qplatformwindow.h>
 
 DGUI_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
@@ -271,14 +284,64 @@ void ChameleonStyle::polish(QApplication *app)
     QCommonStyle::polish(app);
 }
 
-void ChameleonStyle::polish(QWidget *widget)
+void ChameleonStyle::polish(QWidget *w)
 {
-    QCommonStyle::polish(widget);
+    QCommonStyle::polish(w);
+
+    if (qobject_cast<QPushButton *>(w)
+            || qobject_cast<QComboBox *>(w)
+            || qobject_cast<QScrollBar *>(w)
+            || qobject_cast<QCheckBox*>(w)
+            || qobject_cast<QRadioButton*>(w)
+            || qobject_cast<QToolButton*>(w)
+            || qobject_cast<QAbstractSpinBox*>(w)
+            || qobject_cast<QTabBar*>(w)) {
+        w->setAttribute(Qt::WA_Hover, true);
+    }
+
+    if (DApplication::isDXcbPlatform()) {
+        bool is_menu = qobject_cast<QMenu*>(w);
+        bool is_tip = w->inherits("QTipLabel");
+
+        // 当窗口已经创建对应的native窗口，要判断当前是否已经设置了窗口背景透明
+        // Bug: https://github.com/linuxdeepin/internal-discussion/issues/323
+        if (is_menu && w->windowHandle()) {
+            if (const QPlatformWindow *handle = w->windowHandle()->handle()) {
+                if (!w->testAttribute(Qt::WA_TranslucentBackground) && !handle->isExposed()) {
+                    // 销毁现有的native窗口，否则设置Qt::WA_TranslucentBackground不会生效
+                    class DQWidget : public QWidget {public: using QWidget::destroy;};
+                    reinterpret_cast<DQWidget*>(w)->destroy(true, false);
+                }
+            }
+        }
+
+        if (is_menu) {
+            DPlatformWindowHandle handle(w);
+
+            if (DPlatformWindowHandle::isEnabledDXcb(w)) {
+                handle.setEnableBlurWindow(true);
+                w->setAttribute(Qt::WA_TranslucentBackground);
+            }
+        } else if (is_tip) {
+            DPlatformWindowHandle::enableDXcbForWindow(w);
+        }
+    }
 }
 
-void ChameleonStyle::unpolish(QWidget *widget)
+void ChameleonStyle::unpolish(QWidget *w)
 {
-    QCommonStyle::unpolish(widget);
+    QCommonStyle::unpolish(w);
+
+    if (qobject_cast<QPushButton *>(w)
+            || qobject_cast<QComboBox *>(w)
+            || qobject_cast<QScrollBar *>(w)
+            || qobject_cast<QCheckBox*>(w)
+            || qobject_cast<QRadioButton*>(w)
+            || qobject_cast<QToolButton*>(w)
+            || qobject_cast<QAbstractSpinBox*>(w)
+            || qobject_cast<QTabBar*>(w)) {
+        w->setAttribute(Qt::WA_Hover, false);
+    }
 }
 
 void ChameleonStyle::unpolish(QApplication *application)

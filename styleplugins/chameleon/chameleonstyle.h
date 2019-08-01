@@ -61,8 +61,8 @@ public:
     QPalette standardPalette() const override;
     void polish(QPalette &pa) override;
     void polish(QApplication *app) override;
-    void polish(QWidget *widget) override;
-    void unpolish(QWidget *widget) override;
+    void polish(QWidget *w) override;
+    void unpolish(QWidget *w) override;
     void unpolish(QApplication *application) override;
 
 private:
