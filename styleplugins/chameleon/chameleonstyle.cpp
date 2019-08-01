@@ -30,7 +30,7 @@
 DGUI_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
 
-static QColor light[QPalette::NColorRoles] {
+static QColor light_qpalette[QPalette::NColorRoles] {
     QColor("#414d68"),                  //WindowText
     QColor("#e5e5e5"),                  //Button
     QColor("#e6e6e6"),                  //Light
@@ -53,7 +53,7 @@ static QColor light[QPalette::NColorRoles] {
     Qt::black                           //ToolTipText
 };
 
-static QColor dark[QPalette::NColorRoles] {
+static QColor dark_qpalette[QPalette::NColorRoles] {
     QColor("#c0c6d4"),                  //WindowText
     QColor("#444444"),                  //Button
     QColor("#484848"),                  //Light
@@ -76,11 +76,21 @@ static QColor dark[QPalette::NColorRoles] {
     QColor("#c0c6d4")                   //ToolTipText
 };
 
-ChameleonStyle::ChameleonStyle()
-    : QCommonStyle()
-{
+static QColor light_dpalette[DPalette::NColorTypes] {
+    QColor(0, 0, 0, 255 * 0.03),    //ItemBackground
+    QColor("#001A2E"),              //TextTitle
+    QColor("#526A7F"),              //TextTips
+    QColor("#FF5736"),              //TextWarning
+    QColor("#0082FA")               //TextLively
+};
 
-}
+static QColor dark_dpalette[DPalette::NColorTypes] {
+    QColor(255, 255, 255, 255 * 0.05),  //ItemBackground
+    QColor("#C0C6D4"),                  //TextTitle
+    QColor("#6D7C88"),                  //TextTips
+    QColor("#FF5736"),                  //TextWarning
+    QColor("#0082FA")                   //TextLively
+};
 
 static void initDisablePalette(QPalette &pa)
 {
@@ -114,23 +124,6 @@ static void initInactivePalette(QPalette &pa)
     }
 }
 
-QPalette ChameleonStyle::standardPalette() const
-{
-    QPalette pa;
-    const QColor *color_list = isDrakStyle() ? dark : light;
-
-    for (int i = 0; i < QPalette::NColorRoles; ++i) {
-        QPalette::ColorRole role = static_cast<QPalette::ColorRole>(i);
-
-        pa.setColor(DPalette::Active, role, color_list[i]);
-    }
-
-    initDisablePalette(pa);
-    initInactivePalette(pa);
-
-    return pa;
-}
-
 static void initDisablePalette(DPalette &pa)
 {
     for (int i = 0; i < DPalette::NColorTypes; ++i) {
@@ -153,21 +146,111 @@ static void initInactivePalette(DPalette &pa)
     }
 }
 
-static QColor light_dpalette[DPalette::NColorTypes] {
-    QColor(0, 0, 0, 255 * 0.03),    //ItemBackground
-    QColor("#001A2E"),              //TextTitle
-    QColor("#526A7F"),              //TextTips
-    QColor("#FF5736"),              //TextWarning
-    QColor("#0082FA")               //TextLively
-};
+ChameleonStyle::ChameleonStyle()
+    : QCommonStyle()
+{
 
-static QColor dark_dpalette[DPalette::NColorTypes] {
-    QColor(255, 255, 255, 255 * 0.05),  //ItemBackground
-    QColor("#C0C6D4"),                  //TextTitle
-    QColor("#6D7C88"),                  //TextTips
-    QColor("#FF5736"),                  //TextWarning
-    QColor("#0082FA")                   //TextLively
-};
+}
+
+void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOption *opt,
+                                   QPainter *p, const QWidget *w) const
+{
+    QCommonStyle::drawPrimitive(pe, opt, p, w);
+}
+
+void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOption *opt,
+                                 QPainter *p, const QWidget *w) const
+{
+    QCommonStyle::drawControl(element, opt, p, w);
+}
+
+QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *opt,
+                                     const QWidget *widget) const
+{
+    return QCommonStyle::subElementRect(r, opt, widget);
+}
+
+void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
+                                        QPainter *p, const QWidget *w) const
+{
+    QCommonStyle::drawComplexControl(cc, opt, p, w);
+}
+
+QStyle::SubControl ChameleonStyle::hitTestComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
+                                                         const QPoint &pt, const QWidget *w) const
+{
+    return QCommonStyle::hitTestComplexControl(cc, opt, pt, w);
+}
+
+QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
+                                     QStyle::SubControl sc, const QWidget *w) const
+{
+    return QCommonStyle::subControlRect(cc, opt, sc, w);
+}
+
+QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOption *opt,
+                                       const QSize &contentsSize, const QWidget *widget) const
+{
+    return QCommonStyle::sizeFromContents(ct, opt, contentsSize, widget);
+}
+
+int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
+                                const QWidget *widget) const
+{
+    return QCommonStyle::pixelMetric(m, opt, widget);
+}
+
+int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
+                              const QWidget *w, QStyleHintReturn *shret) const
+{
+    return QCommonStyle::styleHint(sh, opt, w, shret);
+}
+
+QIcon ChameleonStyle::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOption *opt,
+                                   const QWidget *widget) const
+{
+    return QCommonStyle::standardIcon(standardIcon, opt, widget);
+}
+
+QPixmap ChameleonStyle::standardPixmap(QStyle::StandardPixmap sp, const QStyleOption *opt,
+                                       const QWidget *widget) const
+{
+    return QCommonStyle::standardPixmap(sp, opt, widget);
+}
+
+QPixmap ChameleonStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
+                                            const QStyleOption *opt) const
+{
+    return QCommonStyle::generatedIconPixmap(iconMode, pixmap, opt);
+}
+
+int ChameleonStyle::layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
+                                  Qt::Orientation orientation, const QStyleOption *option, const QWidget *widget) const
+{
+    return QCommonStyle::layoutSpacing(control1, control2, orientation, option, widget);
+}
+
+QPalette ChameleonStyle::standardPalette() const
+{
+    QPalette pa;
+    const QColor *color_list = isDrakStyle() ? dark_qpalette : light_qpalette;
+
+    for (int i = 0; i < QPalette::NColorRoles; ++i) {
+        QPalette::ColorRole role = static_cast<QPalette::ColorRole>(i);
+
+        pa.setColor(DPalette::Active, role, color_list[i]);
+    }
+
+    initDisablePalette(pa);
+    initInactivePalette(pa);
+
+    return pa;
+}
+
+void ChameleonStyle::polish(QPalette &pa)
+{
+    QCommonStyle::polish(pa);
+}
 
 void ChameleonStyle::polish(QApplication *app)
 {
@@ -186,6 +269,21 @@ void ChameleonStyle::polish(QApplication *app)
     DPalette::setGeneric(pa);
 
     QCommonStyle::polish(app);
+}
+
+void ChameleonStyle::polish(QWidget *widget)
+{
+    QCommonStyle::polish(widget);
+}
+
+void ChameleonStyle::unpolish(QWidget *widget)
+{
+    QCommonStyle::unpolish(widget);
+}
+
+void ChameleonStyle::unpolish(QApplication *application)
+{
+    QCommonStyle::unpolish(application);
 }
 
 bool ChameleonStyle::isDrakStyle() const
