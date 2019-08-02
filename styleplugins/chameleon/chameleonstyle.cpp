@@ -19,6 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "chameleonstyle.h"
+#include "common.h"
+#include "drawutils.h"
 
 #include <DNativeSettings>
 #include <DStyleOption>
@@ -37,11 +39,15 @@
 #include <QLineEdit>
 #include <QAction>
 #include <QMenu>
+#include <QPainter>
+#include <QPaintEngine>
 
 #include <qpa/qplatformwindow.h>
 
 DGUI_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
+
+namespace chameleon {
 
 static QColor light_qpalette[QPalette::NColorRoles] {
     QColor("#414d68"),                  //WindowText
@@ -55,7 +61,7 @@ static QColor light_qpalette[QPalette::NColorRoles] {
     QColor("#414d68"),                  //ButtonText
     Qt::white,                          //Base
     QColor("#f8f8f8"),                  //Window
-    QColor(0, 0, 0, 0.05 * 255),        //Shadow
+    QColor(0, 0, 0, 0.7 * 255),         //Shadow
     QColor("#0081ff"),                  //Highlight
     Qt::white,                          //HighlightedText
     QColor("#0082fa"),                  //Link
@@ -159,6 +165,21 @@ static void initInactivePalette(DPalette &pa)
     }
 }
 
+// 阴影区域额外需要的空间
+static QMargins shadowExtentMargins()
+{
+    int top = (Metrics::Shadow_Radius + Metrics::Shadow_YOffset) / 2;
+    int left = (Metrics::Shadow_Radius + Metrics::Shadow_XOffset) / 2;
+
+    return QMargins(left, top, left, top);
+}
+
+static QSize shadowExtentSize()
+{
+    const QMargins &margins = shadowExtentMargins();
+    return QSize(margins.left() + margins.right(), margins.top() + margins.bottom());
+}
+
 ChameleonStyle::ChameleonStyle()
     : QCommonStyle()
 {
@@ -168,6 +189,28 @@ ChameleonStyle::ChameleonStyle()
 void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOption *opt,
                                    QPainter *p, const QWidget *w) const
 {
+    switch (static_cast<int>(pe)) {
+    case PE_PanelButtonCommand: {
+        DrawUtils::drawShadow(p, opt->rect + shadowExtentMargins(),
+                              Metrics::Frame_FrameRadius, Metrics::Frame_FrameRadius,
+                              opt->palette.shadow().color(), Metrics::Shadow_Radius,
+                              QPoint(Metrics::Shadow_XOffset, Metrics::Shadow_YOffset));
+        // 初始化button的渐变背景色
+        QLinearGradient lg(QPointF(0, opt->rect.top()),
+                           QPointF(0, opt->rect.bottom()));
+        lg.setColorAt(0, opt->palette.light().color());
+        lg.setColorAt(1, opt->palette.dark().color());
+
+        p->setPen(QPen(opt->palette.alternateBase(), Metrics::Painter_PenWidth));
+        p->setBrush(lg);
+        p->setRenderHint(QPainter::Antialiasing);
+        p->drawRoundedRect(opt->rect - shadowExtentMargins(), Metrics::Frame_FrameRadius, Metrics::Frame_FrameRadius);
+        return;
+    }
+    default:
+        break;
+    }
+
     QCommonStyle::drawPrimitive(pe, opt, p, w);
 }
 
@@ -204,12 +247,29 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
 QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOption *opt,
                                        const QSize &contentsSize, const QWidget *widget) const
 {
-    return QCommonStyle::sizeFromContents(ct, opt, contentsSize, widget);
+    QSize size = QCommonStyle::sizeFromContents(ct, opt, contentsSize, widget);
+
+    switch (ct) {
+    case CT_PushButton:
+        size += shadowExtentSize();
+        break;
+    default:
+        break;
+    }
+
+    return size;
 }
 
 int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
                                 const QWidget *widget) const
 {
+    switch (m) {
+    case PM_ButtonMargin:
+        return Metrics::Button_MarginWidth;
+    default:
+        break;
+    }
+
     return QCommonStyle::pixelMetric(m, opt, widget);
 }
 
@@ -355,3 +415,5 @@ bool ChameleonStyle::isDrakStyle() const
 
     return theme_settings.isValid() && theme_settings.getSetting("Net/ThemeName").toByteArray().contains("dark");
 }
+
+} // namespace chameleon

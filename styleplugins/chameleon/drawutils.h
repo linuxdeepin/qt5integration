@@ -18,25 +18,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef DRAWUTILS_H
+#define DRAWUTILS_H
 
-#include "chameleonstyle.h"
+#include <QtGlobal>
 
-#include <QStylePlugin>
+QT_BEGIN_NAMESPACE
+class QPainter;
+class QRect;
+class QPoint;
+class QColor;
+class QPainterPath;
+QT_END_NAMESPACE
 
-class ChameleonStylePlugin : public QStylePlugin
-{
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "chameleon.json")
+namespace chameleon {
 
-public:
-    QStyle* create(const QString &key) override
-    {
-        if (QStringLiteral("chameleon") != key) {
-            return nullptr;
-        }
+namespace DrawUtils {
+    void drawShadow(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, const QColor &sc, qreal radius, const QPoint &offset);
+    void drawShadow(QPainter *pa, const QPainterPath &path, const QColor &sc, int radius, const QPoint &offset);
+} // namespace DrawUtils
 
-        return new chameleon::ChameleonStyle();
-    }
-};
+} // namespace chameleon
 
-#include "main.moc"
+#endif // DRAWUTILS_H

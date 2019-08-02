@@ -23,6 +23,8 @@
 
 #include <QCommonStyle>
 
+namespace chameleon {
+
 class ChameleonStyle : public QCommonStyle
 {
 public:
@@ -68,5 +70,7 @@ public:
 private:
     bool isDrakStyle() const;
 };
+
+} // namespace chameleon
 
 #endif // CHAMELEONSTYLE_H
