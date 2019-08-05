@@ -35,7 +35,7 @@ namespace chameleon {
 
 namespace DrawUtils {
     void drawShadow(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, const QColor &sc, qreal radius, const QPoint &offset);
-    void drawShadow(QPainter *pa, const QPainterPath &path, const QColor &sc, int radius, const QPoint &offset);
+    void drawShadow(QPainter *pa, const QRect &rect, const QPainterPath &path, const QColor &sc, int radius, const QPoint &offset);
 } // namespace DrawUtils
 
 } // namespace chameleon

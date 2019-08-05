@@ -108,7 +108,7 @@ static QImage borderImage(const QPixmap &px, const QMargins &borders, const QSiz
     const QList<QRect> sudoku_src = sudokuByRect(px.rect(), borders);
     const QList<QRect> sudoku_tar = sudokuByRect(QRect(QPoint(0, 0), size), borders);
 
-    pa.setCompositionMode(QPainter::CompositionMode_Source);
+    pa.setCompositionMode(QPainter::CompositionMode_Source);  //设置组合模式
 
     for (int i = 0; i < 9; ++i) {
         pa.drawPixmap(sudoku_tar[i], px, sudoku_src[i]);
@@ -123,6 +123,9 @@ void drawShadow(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, c
 {
     QPixmap shadow;
     qreal scale = pa->paintEngine()->paintDevice()->devicePixelRatioF();
+    QRect shadow_rect = rect;
+
+    shadow_rect.setTopLeft(shadow_rect.topLeft() + offset);
 
     xRadius *= scale;
     yRadius *= scale;
@@ -146,7 +149,6 @@ void drawShadow(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, c
     }
 
     const QMargins margins(xRadius + radius, yRadius + radius, xRadius + radius, yRadius + radius);
-    const QRect shadow_rect = rect.adjusted(offset.x(), offset.y(), 0, 0);
     QImage new_shadow = borderImage(shadow, margins, shadow_rect.size() * scale, QImage::Format_ARGB32_Premultiplied);
 //    QPainter pa_shadow(&new_shadow);
 //    pa_shadow.setCompositionMode(QPainter::CompositionMode_Clear);
@@ -156,12 +158,32 @@ void drawShadow(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, c
 //    pa_shadow.drawRoundedRect((new_shadow.rect() - QMargins(radius, radius, radius, radius)).translated(-offset), xRadius, yRadius);
 //    pa_shadow.end();
     new_shadow.setDevicePixelRatio(scale);
-    pa->drawImage(rect.topLeft() + offset, new_shadow);
+    pa->drawImage(shadow_rect.topLeft(), new_shadow);
 }
 
-void drawShadow(QPainter *pa, const QPainterPath &path, const QColor &sc, int radius, const QPoint &offset)
+void drawShadow(QPainter *pa, const QRect &rect, const QPainterPath &path, const QColor &sc, int radius, const QPoint &offset)
 {
+    QPixmap shadow;
+    qreal scale = pa->paintEngine()->paintDevice()->devicePixelRatioF();
+    QRect shadow_rect = rect;
 
+    shadow_rect.setTopLeft(rect.topLeft() + offset);
+    radius *= scale;
+
+    QImage shadow_base(shadow_rect.size() * scale, QImage::Format_ARGB32_Premultiplied);
+    shadow_base.fill(0);
+    shadow_base.setDevicePixelRatio(scale);
+
+    QPainter paTmp(&shadow_base);
+    paTmp.setBrush(sc);
+    paTmp.setPen(Qt::NoPen);
+    paTmp.drawPath(path);
+    paTmp.end();
+    shadow_base = dropShadow(QPixmap::fromImage(shadow_base), radius, sc);
+    shadow = QPixmap::fromImage(shadow_base);
+    shadow.setDevicePixelRatio(scale);
+
+    pa->drawPixmap(shadow_rect, shadow);
 }
 
 } // namespace DrawUtils
