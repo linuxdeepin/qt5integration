@@ -452,19 +452,14 @@ void ChameleonStyle::drawShadow(QPainter *p, const QRect &rect, const QColor &co
 
 void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &brush) const
 {
-    qreal border_width = DStyle::pixelMetric(PM_FocusBorderWidth);
-
-    if (border_width > 1) {
-        border_width -= 0.5;
-    }
-
+    int border_width = DStyle::pixelMetric(PM_FocusBorderWidth);
     int border_spacing = DStyle::pixelMetric(PM_FocusBorderSpacing);
     int frame_radis = DStyle::pixelMetric(PM_FrameRadius) + border_spacing;
 
-    p->setPen(QPen(brush, border_width, Qt::SolidLine, Qt::RoundCap));
+    p->setPen(QPen(brush, border_width, Qt::SolidLine));
     p->setBrush(Qt::NoBrush);
     p->setRenderHint(QPainter::Antialiasing);
-    p->drawRoundedRect(QRectF(rect).adjusted(0.5, 0.5, -0.5, -0.5), frame_radis, frame_radis);
+    p->drawRoundedRect(QRectF(rect).adjusted(1, 1, -1, -1), frame_radis, frame_radis);
 }
 
 } // namespace chameleon
