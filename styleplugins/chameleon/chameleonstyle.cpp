@@ -351,16 +351,16 @@ void ChameleonStyle::polish(QWidget *w)
     if (qobject_cast<QPushButton *>(w)
             || qobject_cast<QComboBox *>(w)
             || qobject_cast<QScrollBar *>(w)
-            || qobject_cast<QCheckBox*>(w)
-            || qobject_cast<QRadioButton*>(w)
-            || qobject_cast<QToolButton*>(w)
-            || qobject_cast<QAbstractSpinBox*>(w)
-            || qobject_cast<QTabBar*>(w)) {
+            || qobject_cast<QCheckBox *>(w)
+            || qobject_cast<QRadioButton *>(w)
+            || qobject_cast<QToolButton *>(w)
+            || qobject_cast<QAbstractSpinBox *>(w)
+            || qobject_cast<QTabBar *>(w)) {
         w->setAttribute(Qt::WA_Hover, true);
     }
 
     if (DApplication::isDXcbPlatform()) {
-        bool is_menu = qobject_cast<QMenu*>(w);
+        bool is_menu = qobject_cast<QMenu *>(w);
         bool is_tip = w->inherits("QTipLabel");
 
         // 当窗口已经创建对应的native窗口，要判断当前是否已经设置了窗口背景透明
@@ -370,7 +370,7 @@ void ChameleonStyle::polish(QWidget *w)
                 if (!w->testAttribute(Qt::WA_TranslucentBackground) && !handle->isExposed()) {
                     // 销毁现有的native窗口，否则设置Qt::WA_TranslucentBackground不会生效
                     class DQWidget : public QWidget {public: using QWidget::destroy;};
-                    reinterpret_cast<DQWidget*>(w)->destroy(true, false);
+                    reinterpret_cast<DQWidget *>(w)->destroy(true, false);
                 }
             }
         }
@@ -395,11 +395,11 @@ void ChameleonStyle::unpolish(QWidget *w)
     if (qobject_cast<QPushButton *>(w)
             || qobject_cast<QComboBox *>(w)
             || qobject_cast<QScrollBar *>(w)
-            || qobject_cast<QCheckBox*>(w)
-            || qobject_cast<QRadioButton*>(w)
-            || qobject_cast<QToolButton*>(w)
-            || qobject_cast<QAbstractSpinBox*>(w)
-            || qobject_cast<QTabBar*>(w)) {
+            || qobject_cast<QCheckBox *>(w)
+            || qobject_cast<QRadioButton *>(w)
+            || qobject_cast<QToolButton *>(w)
+            || qobject_cast<QAbstractSpinBox *>(w)
+            || qobject_cast<QTabBar *>(w)) {
         w->setAttribute(Qt::WA_Hover, false);
     }
 }
