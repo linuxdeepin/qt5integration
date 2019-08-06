@@ -284,6 +284,9 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return Metrics::Shadow_XOffset;
     case PM_ShadowVOffset:
         return Metrics::Shadow_YOffset;
+    case PM_ButtonShiftHorizontal:
+    case PM_ButtonShiftVertical:
+        return 0;
     default:
         break;
     }
