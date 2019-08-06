@@ -34,6 +34,7 @@ enum Metrics
     // frames
     Frame_FrameWidth = 2,
     Frame_FrameRadius = 8,
+    Frame_BorderSpacing = 2,
 
     // shadow
     Shadow_Radius = 6,

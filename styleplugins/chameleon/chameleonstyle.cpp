@@ -170,8 +170,9 @@ static QMargins shadowExtentMargins()
 {
     int top = (Metrics::Shadow_Radius + Metrics::Shadow_YOffset) / 2;
     int left = (Metrics::Shadow_Radius + Metrics::Shadow_XOffset) / 2;
+    int margin = qMax(top, left);
 
-    return QMargins(left, top, left, top);
+    return QMargins(margin, margin, margin, margin);
 }
 
 static QSize shadowExtentSize()
@@ -191,10 +192,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 {
     switch (static_cast<int>(pe)) {
     case PE_PanelButtonCommand: {
-        DrawUtils::drawShadow(p, opt->rect + shadowExtentMargins(),
-                              Metrics::Frame_FrameRadius, Metrics::Frame_FrameRadius,
-                              opt->palette.shadow().color(), Metrics::Shadow_Radius,
-                              QPoint(Metrics::Shadow_XOffset, Metrics::Shadow_YOffset));
+        drawShadow(p, opt->rect + shadowExtentMargins(), opt->palette.shadow().color());
         // 初始化button的渐变背景色
         QLinearGradient lg(QPointF(0, opt->rect.top()),
                            QPointF(0, opt->rect.bottom()));
@@ -205,6 +203,10 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->setBrush(lg);
         p->setRenderHint(QPainter::Antialiasing);
         p->drawRoundedRect(opt->rect - shadowExtentMargins(), Metrics::Frame_FrameRadius, Metrics::Frame_FrameRadius);
+        return;
+    }
+    case PE_FrameFocusRect: {
+        drawBorder(p, opt->rect, opt->palette.highlight());
         return;
     }
     default:
@@ -223,6 +225,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *opt,
                                      const QWidget *widget) const
 {
+    switch (r) {
+    case SE_PushButtonFocusRect:
+        return opt->rect;
+    default:
+        break;
+    }
+
     return DStyle::subElementRect(r, opt, widget);
 }
 
@@ -263,9 +272,23 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
 int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
                                 const QWidget *widget) const
 {
-    switch (m) {
+    switch (static_cast<int>(m)) {
     case PM_ButtonMargin:
         return Metrics::Button_MarginWidth;
+    case PM_ButtonDefaultIndicator:
+        return 0;
+    case PM_FrameRadius:
+        return Metrics::Frame_FrameRadius;
+    case PM_FocusBorderWidth:
+        return Metrics::Frame_FrameWidth;
+    case PM_FocusBorderSpacing:
+        return Metrics::Frame_BorderSpacing;
+    case PM_ShadowRadius:
+        return Metrics::Shadow_Radius;
+    case PM_ShadowHOffset:
+        return Metrics::Shadow_XOffset;
+    case PM_ShadowVOffset:
+        return Metrics::Shadow_YOffset;
     default:
         break;
     }
@@ -414,6 +437,34 @@ bool ChameleonStyle::isDrakStyle() const
     DNativeSettings theme_settings(0);
 
     return theme_settings.isValid() && theme_settings.getSetting("Net/ThemeName").toByteArray().contains("dark");
+}
+
+void ChameleonStyle::drawShadow(QPainter *p, const QRect &rect, const QColor &color) const
+{
+    int frame_radis = DStyle::pixelMetric(PM_FrameRadius);
+    int shadow_radius = DStyle::pixelMetric(PM_ShadowRadius);
+    int shadow_xoffset = DStyle::pixelMetric(PM_ShadowHOffset);
+    int shadow_yoffset = DStyle::pixelMetric(PM_ShadowVOffset);
+
+    DrawUtils::drawShadow(p, rect, frame_radis, frame_radis, color, shadow_radius,
+                          QPoint(shadow_xoffset, shadow_yoffset));
+}
+
+void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &brush) const
+{
+    qreal border_width = DStyle::pixelMetric(PM_FocusBorderWidth);
+
+    if (border_width > 1) {
+        border_width -= 0.5;
+    }
+
+    int border_spacing = DStyle::pixelMetric(PM_FocusBorderSpacing);
+    int frame_radis = DStyle::pixelMetric(PM_FrameRadius) + border_spacing;
+
+    p->setPen(QPen(brush, border_width, Qt::SolidLine, Qt::RoundCap));
+    p->setBrush(Qt::NoBrush);
+    p->setRenderHint(QPainter::Antialiasing);
+    p->drawRoundedRect(QRectF(rect).adjusted(0.5, 0.5, -0.5, -0.5), frame_radis, frame_radis);
 }
 
 } // namespace chameleon
