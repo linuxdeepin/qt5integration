@@ -73,6 +73,8 @@ private:
     bool isDrakStyle() const;
     void drawShadow(QPainter *p, const QRect &rect, const QColor &color) const;
     void drawBorder(QPainter *p, const QRect &rect, const QBrush &brush) const;
+
+    QColor getColor(const QStyleOption *option, QPalette::ColorRole role) const;
 };
 
 } // namespace chameleon

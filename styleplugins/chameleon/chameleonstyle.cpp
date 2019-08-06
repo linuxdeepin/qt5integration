@@ -192,12 +192,12 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 {
     switch (static_cast<int>(pe)) {
     case PE_PanelButtonCommand: {
-        drawShadow(p, opt->rect + shadowExtentMargins(), opt->palette.shadow().color());
+        drawShadow(p, opt->rect + shadowExtentMargins(), getColor(opt, QPalette::Shadow));
         // 初始化button的渐变背景色
         QLinearGradient lg(QPointF(0, opt->rect.top()),
                            QPointF(0, opt->rect.bottom()));
-        lg.setColorAt(0, opt->palette.light().color());
-        lg.setColorAt(1, opt->palette.dark().color());
+        lg.setColorAt(0, getColor(opt, QPalette::Light));
+        lg.setColorAt(1, getColor(opt, QPalette::Dark));
 
         p->setPen(QPen(opt->palette.alternateBase(), Metrics::Painter_PenWidth));
         p->setBrush(lg);
@@ -206,7 +206,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_FrameFocusRect: {
-        drawBorder(p, opt->rect, opt->palette.highlight());
+        drawBorder(p, opt->rect, getColor(opt, QPalette::Highlight));
         return;
     }
     default:
@@ -460,6 +460,11 @@ void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &br
     p->setBrush(Qt::NoBrush);
     p->setRenderHint(QPainter::Antialiasing);
     p->drawRoundedRect(QRectF(rect).adjusted(1, 1, -1, -1), frame_radis, frame_radis);
+}
+
+QColor ChameleonStyle::getColor(const QStyleOption *option, QPalette::ColorRole role) const
+{
+    return generatedBrush(option, option->palette.brush(role), option->palette.currentColorGroup(), role).color();
 }
 
 } // namespace chameleon
