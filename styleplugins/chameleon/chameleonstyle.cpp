@@ -100,7 +100,10 @@ static QColor light_dpalette[DPalette::NColorTypes] {
     QColor("#001A2E"),              //TextTitle
     QColor("#526A7F"),              //TextTips
     QColor("#FF5736"),              //TextWarning
-    QColor("#0082FA")               //TextLively
+    QColor("#0082FA"),              //TextLively
+    QColor("#25b7ff"),              //LightLively
+    QColor("#0098ff"),              //DarkLively
+    QColor(0, 0, 0, 0.03 * 255)     //FrameBorder
 };
 
 static QColor dark_dpalette[DPalette::NColorTypes] {
@@ -108,7 +111,10 @@ static QColor dark_dpalette[DPalette::NColorTypes] {
     QColor("#C0C6D4"),                  //TextTitle
     QColor("#6D7C88"),                  //TextTips
     QColor("#FF5736"),                  //TextWarning
-    QColor("#0082FA")                   //TextLively
+    QColor("#0082FA"),                  //TextLively
+    QColor("#0056c1"),                  //LightLively
+    QColor("#004c9c"),                  //DarkLively
+    QColor(0, 0, 0, 0.05 * 255)         //FrameBorder
 };
 
 static void initDisablePalette(QPalette &pa)
@@ -183,10 +189,13 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         lg.setColorAt(0, getColor(opt, QPalette::Light));
         lg.setColorAt(1, getColor(opt, QPalette::Dark));
 
-        p->setPen(QPen(opt->palette.alternateBase(), Metrics::Painter_PenWidth));
+        p->setPen(QPen(getColor(opt, DPalette::FrameBorder), Metrics::Painter_PenWidth));
         p->setBrush(lg);
         p->setRenderHint(QPainter::Antialiasing);
-        p->drawRoundedRect(opt->rect - frameExtentMargins(), Metrics::Frame_FrameRadius, Metrics::Frame_FrameRadius);
+
+        int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+
+        p->drawRoundedRect(opt->rect - frameExtentMargins(), frame_radius, frame_radius);
         return;
     }
     case PE_FrameFocusRect: {
@@ -451,6 +460,13 @@ void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &br
 QColor ChameleonStyle::getColor(const QStyleOption *option, QPalette::ColorRole role) const
 {
     return generatedBrush(option, option->palette.brush(role), option->palette.currentColorGroup(), role).color();
+}
+
+QColor ChameleonStyle::getColor(const QStyleOption *option, DPalette::ColorType type) const
+{
+    const DPalette &pa = DPalette::get(qobject_cast<QWidget*>(option->styleObject), option->palette);
+
+    return generatedBrush(option, pa.brush(type), pa.currentColorGroup(), type).color();
 }
 
 QMargins ChameleonStyle::frameExtentMargins() const

@@ -75,6 +75,7 @@ private:
     void drawBorder(QPainter *p, const QRect &rect, const QBrush &brush) const;
 
     QColor getColor(const QStyleOption *option, QPalette::ColorRole role) const;
+    QColor getColor(const QStyleOption *option, DPalette::ColorType type) const;
     QMargins frameExtentMargins() const;
 };
 
