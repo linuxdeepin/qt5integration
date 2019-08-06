@@ -181,7 +181,7 @@ static QSize shadowExtentSize()
 }
 
 ChameleonStyle::ChameleonStyle()
-    : QCommonStyle()
+    : DStyle()
 {
 
 }
@@ -211,43 +211,43 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         break;
     }
 
-    QCommonStyle::drawPrimitive(pe, opt, p, w);
+    DStyle::drawPrimitive(pe, opt, p, w);
 }
 
 void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOption *opt,
                                  QPainter *p, const QWidget *w) const
 {
-    QCommonStyle::drawControl(element, opt, p, w);
+    DStyle::drawControl(element, opt, p, w);
 }
 
 QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *opt,
                                      const QWidget *widget) const
 {
-    return QCommonStyle::subElementRect(r, opt, widget);
+    return DStyle::subElementRect(r, opt, widget);
 }
 
 void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
                                         QPainter *p, const QWidget *w) const
 {
-    QCommonStyle::drawComplexControl(cc, opt, p, w);
+    DStyle::drawComplexControl(cc, opt, p, w);
 }
 
 QStyle::SubControl ChameleonStyle::hitTestComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
                                                          const QPoint &pt, const QWidget *w) const
 {
-    return QCommonStyle::hitTestComplexControl(cc, opt, pt, w);
+    return DStyle::hitTestComplexControl(cc, opt, pt, w);
 }
 
 QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
                                      QStyle::SubControl sc, const QWidget *w) const
 {
-    return QCommonStyle::subControlRect(cc, opt, sc, w);
+    return DStyle::subControlRect(cc, opt, sc, w);
 }
 
 QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOption *opt,
                                        const QSize &contentsSize, const QWidget *widget) const
 {
-    QSize size = QCommonStyle::sizeFromContents(ct, opt, contentsSize, widget);
+    QSize size = DStyle::sizeFromContents(ct, opt, contentsSize, widget);
 
     switch (ct) {
     case CT_PushButton:
@@ -270,37 +270,37 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         break;
     }
 
-    return QCommonStyle::pixelMetric(m, opt, widget);
+    return DStyle::pixelMetric(m, opt, widget);
 }
 
 int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
                               const QWidget *w, QStyleHintReturn *shret) const
 {
-    return QCommonStyle::styleHint(sh, opt, w, shret);
+    return DStyle::styleHint(sh, opt, w, shret);
 }
 
 QIcon ChameleonStyle::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOption *opt,
                                    const QWidget *widget) const
 {
-    return QCommonStyle::standardIcon(standardIcon, opt, widget);
+    return DStyle::standardIcon(standardIcon, opt, widget);
 }
 
 QPixmap ChameleonStyle::standardPixmap(QStyle::StandardPixmap sp, const QStyleOption *opt,
                                        const QWidget *widget) const
 {
-    return QCommonStyle::standardPixmap(sp, opt, widget);
+    return DStyle::standardPixmap(sp, opt, widget);
 }
 
 QPixmap ChameleonStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
                                             const QStyleOption *opt) const
 {
-    return QCommonStyle::generatedIconPixmap(iconMode, pixmap, opt);
+    return DStyle::generatedIconPixmap(iconMode, pixmap, opt);
 }
 
 int ChameleonStyle::layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
                                   Qt::Orientation orientation, const QStyleOption *option, const QWidget *widget) const
 {
-    return QCommonStyle::layoutSpacing(control1, control2, orientation, option, widget);
+    return DStyle::layoutSpacing(control1, control2, orientation, option, widget);
 }
 
 QPalette ChameleonStyle::standardPalette() const
@@ -322,7 +322,7 @@ QPalette ChameleonStyle::standardPalette() const
 
 void ChameleonStyle::polish(QPalette &pa)
 {
-    QCommonStyle::polish(pa);
+    DStyle::polish(pa);
 }
 
 void ChameleonStyle::polish(QApplication *app)
@@ -341,12 +341,12 @@ void ChameleonStyle::polish(QApplication *app)
 
     DPalette::setGeneric(pa);
 
-    QCommonStyle::polish(app);
+    DStyle::polish(app);
 }
 
 void ChameleonStyle::polish(QWidget *w)
 {
-    QCommonStyle::polish(w);
+    DStyle::polish(w);
 
     if (qobject_cast<QPushButton *>(w)
             || qobject_cast<QComboBox *>(w)
@@ -390,7 +390,7 @@ void ChameleonStyle::polish(QWidget *w)
 
 void ChameleonStyle::unpolish(QWidget *w)
 {
-    QCommonStyle::unpolish(w);
+    DStyle::unpolish(w);
 
     if (qobject_cast<QPushButton *>(w)
             || qobject_cast<QComboBox *>(w)
@@ -406,7 +406,7 @@ void ChameleonStyle::unpolish(QWidget *w)
 
 void ChameleonStyle::unpolish(QApplication *application)
 {
-    QCommonStyle::unpolish(application);
+    DStyle::unpolish(application);
 }
 
 bool ChameleonStyle::isDrakStyle() const

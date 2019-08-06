@@ -21,16 +21,18 @@
 #ifndef CHAMELEONSTYLE_H
 #define CHAMELEONSTYLE_H
 
-#include <QCommonStyle>
+#include <DStyle>
+
+DWIDGET_USE_NAMESPACE
 
 namespace chameleon {
 
-class ChameleonStyle : public QCommonStyle
+class ChameleonStyle : public DStyle
 {
 public:
     explicit ChameleonStyle();
 
-    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
+    void drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
                        const QWidget *w = nullptr) const override;
     void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
                      const QWidget *w = nullptr) const override;
@@ -44,7 +46,7 @@ public:
     QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
                            const QSize &contentsSize, const QWidget *widget = nullptr) const override;
 
-    int pixelMetric(PixelMetric m, const QStyleOption *opt = nullptr, const QWidget *widget = nullptr) const override;
+    int pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt = nullptr, const QWidget *widget = nullptr) const override;
 
     int styleHint(StyleHint sh, const QStyleOption *opt = nullptr, const QWidget *w = nullptr,
                   QStyleHintReturn *shret = nullptr) const override;
