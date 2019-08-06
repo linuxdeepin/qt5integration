@@ -59,7 +59,7 @@ bool Style::drawPushButtonBevel(const QStyleOption *option, QPainter *painter, c
         const QColor shadow( Qt::transparent );
         const QBrush outline(
 #ifdef DTKWIDGET_CLASS_DSuggestButton
-                    (buttonOption->features & DStyleOptionSuggestButton::SuggestButton) ?
+                    (buttonOption->features & DStyleOptionButton::SuggestButton) ?
                         m_palette->brush(PaletteExtended::PushButton_SuggestButtonColor, option) :
                         m_palette->brush(PaletteExtended::PushButton_BorderBrush, option)
 #else
@@ -101,7 +101,7 @@ bool Style::drawPushButtonLabel(const QStyleOption *option, QPainter *painter, c
     const bool flat( buttonOption->features & QStyleOptionButton::Flat );
     const bool suggest(
 #ifdef DTKWIDGET_CLASS_DSuggestButton
-                buttonOption->features & DStyleOptionSuggestButton::SuggestButton
+                buttonOption->features & DStyleOptionButton::SuggestButton
 #else
                 false
 #endif
