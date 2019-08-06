@@ -75,6 +75,7 @@ private:
     void drawBorder(QPainter *p, const QRect &rect, const QBrush &brush) const;
 
     QColor getColor(const QStyleOption *option, QPalette::ColorRole role) const;
+    QMargins frameExtentMargins() const;
 };
 
 } // namespace chameleon

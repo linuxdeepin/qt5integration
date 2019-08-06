@@ -165,22 +165,6 @@ static void initInactivePalette(DPalette &pa)
     }
 }
 
-// 阴影区域额外需要的空间
-static QMargins shadowExtentMargins()
-{
-    int top = (Metrics::Shadow_Radius + Metrics::Shadow_YOffset) / 2;
-    int left = (Metrics::Shadow_Radius + Metrics::Shadow_XOffset) / 2;
-    int margin = qMax(top, left);
-
-    return QMargins(margin, margin, margin, margin);
-}
-
-static QSize shadowExtentSize()
-{
-    const QMargins &margins = shadowExtentMargins();
-    return QSize(margins.left() + margins.right(), margins.top() + margins.bottom());
-}
-
 ChameleonStyle::ChameleonStyle()
     : DStyle()
 {
@@ -192,7 +176,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 {
     switch (static_cast<int>(pe)) {
     case PE_PanelButtonCommand: {
-        drawShadow(p, opt->rect + shadowExtentMargins(), getColor(opt, QPalette::Shadow));
+        drawShadow(p, opt->rect + frameExtentMargins(), getColor(opt, QPalette::Shadow));
         // 初始化button的渐变背景色
         QLinearGradient lg(QPointF(0, opt->rect.top()),
                            QPointF(0, opt->rect.bottom()));
@@ -202,7 +186,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->setPen(QPen(opt->palette.alternateBase(), Metrics::Painter_PenWidth));
         p->setBrush(lg);
         p->setRenderHint(QPainter::Antialiasing);
-        p->drawRoundedRect(opt->rect - shadowExtentMargins(), Metrics::Frame_FrameRadius, Metrics::Frame_FrameRadius);
+        p->drawRoundedRect(opt->rect - frameExtentMargins(), Metrics::Frame_FrameRadius, Metrics::Frame_FrameRadius);
         return;
     }
     case PE_FrameFocusRect: {
@@ -259,9 +243,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     QSize size = DStyle::sizeFromContents(ct, opt, contentsSize, widget);
 
     switch (ct) {
-    case CT_PushButton:
-        size += shadowExtentSize();
+    case CT_PushButton: {
+        int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
+        size += QSize(frame_margins * 2, frame_margins * 2);
         break;
+    }
     default:
         break;
     }
@@ -465,6 +451,13 @@ void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &br
 QColor ChameleonStyle::getColor(const QStyleOption *option, QPalette::ColorRole role) const
 {
     return generatedBrush(option, option->palette.brush(role), option->palette.currentColorGroup(), role).color();
+}
+
+QMargins ChameleonStyle::frameExtentMargins() const
+{
+    int margins = DStyle::pixelMetric(PM_FrameMargins);
+
+    return QMargins(margins, margins, margins, margins);
 }
 
 } // namespace chameleon
