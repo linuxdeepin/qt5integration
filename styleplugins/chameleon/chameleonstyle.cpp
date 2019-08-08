@@ -189,7 +189,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         lg.setColorAt(0, getColor(opt, QPalette::Light));
         lg.setColorAt(1, getColor(opt, QPalette::Dark));
 
-        p->setPen(QPen(getColor(opt, DPalette::FrameBorder), Metrics::Painter_PenWidth));
+        p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
         p->setBrush(lg);
         p->setRenderHint(QPainter::Antialiasing);
 
@@ -201,6 +201,15 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     case PE_FrameFocusRect: {
         drawBorder(p, opt->rect, getColor(opt, QPalette::Highlight));
         return;
+    }
+    case PE_PanelItemViewItem: {
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+            int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+            p->setBrush(getColor(opt, DPalette::ItemBackground, w));
+            p->setPen(Qt::NoPen);
+            p->drawRoundedRect(vopt->rect - frameExtentMargins(), frame_radius, frame_radius);
+            return;
+        }
     }
     default:
         break;
@@ -220,7 +229,16 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
 {
     switch (r) {
     case SE_PushButtonFocusRect:
+    case SE_ItemViewItemFocusRect:
         return opt->rect;
+    case SE_ItemViewItemDecoration:
+    case SE_ItemViewItemText:
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+            QStyleOptionViewItem option(*vopt);
+            option.rect = opt->rect.marginsRemoved(frameExtentMargins());
+            return DStyle::subElementRect(r, &option, widget);
+        }
+        break;
     default:
         break;
     }
@@ -256,6 +274,19 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         size += QSize(frame_margins * 2, frame_margins * 2);
         break;
+    }
+    case CT_ItemViewItem: {
+        int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
+        size += QSize(frame_margins * 2, frame_margins * 2);
+
+        //加上Item自定义的margins
+        if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+            const QMargins &item_margins = qvariant_cast<QMargins>(vopt->index.data(Dtk::MarginsRole));
+
+            if (!item_margins.isNull()) {
+                size = QRect(QPoint(0, 0), size).marginsAdded(item_margins).size();
+            }
+        }
     }
     default:
         break;
@@ -510,9 +541,9 @@ QColor ChameleonStyle::getColor(const QStyleOption *option, QPalette::ColorRole 
     return DStyle::generatedBrush(option, option->palette.brush(role), option->palette.currentColorGroup(), role).color();
 }
 
-QColor ChameleonStyle::getColor(const QStyleOption *option, DPalette::ColorType type) const
+QColor ChameleonStyle::getColor(const QStyleOption *option, DPalette::ColorType type, const QWidget *widget) const
 {
-    const DPalette &pa = DPalette::get(qobject_cast<QWidget *>(option->styleObject), option->palette);
+    const DPalette &pa = DPalette::get(widget, option->palette);
 
     return DStyle::generatedBrush(option, pa.brush(type), pa.currentColorGroup(), type).color();
 }
