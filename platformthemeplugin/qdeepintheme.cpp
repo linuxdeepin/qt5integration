@@ -698,6 +698,19 @@ QPixmap QDeepinTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &si
 }
 #endif
 
+static bool isDarkColor(const QColor &color)
+{
+    QColor rgb_color = color.toRgb();
+    // 获取rgb颜色的亮度
+    float luminance = 0.299 * rgb_color.redF() + 0.587 * rgb_color.greenF() + 0.114 * rgb_color.blueF();
+
+    if (qRound(luminance * 255) > 191) {
+        return false;
+    }
+
+    return true;
+}
+
 QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
@@ -712,11 +725,15 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
             return settings()->iconThemeName();
 
         return QVariant();
-    case QPlatformTheme::SystemIconFallbackThemeName:
-        if (settings()->isSetFallbackIconThemeName())
-            return settings()->fallbackIconThemeName();
+    case QPlatformTheme::SystemIconFallbackThemeName: {
+        const QColor &color = qGuiApp->palette().window().color();
 
-        return QVariant("deepin");
+        if (color.isValid() && isDarkColor(color)) {
+            return QVariant("deepin-app-dark");
+        }
+
+        return QVariant("deepin-app-light");
+    }
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(QGenericUnixTheme::xdgIconThemePaths() << QDir::homePath() + "/.local/share/icons");
     case UseFullScreenForPopupMenu:

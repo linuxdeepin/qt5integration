@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/icons/deepin-app-dark">
+        <file>index.theme</file>
+    </qresource>
+    <qresource prefix="/icons/deepin-app-light">
+        <file>index.theme</file>
+    </qresource>
+</RCC>

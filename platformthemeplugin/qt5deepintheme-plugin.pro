@@ -58,7 +58,7 @@ unix {
 }
 
 RESOURCES += \
-    theme.qrc
+    $$PWD/icon-theme/deepin-icon-theme.qrc
 
 CONFIG(release, debug|release) {
     DEFINES += QT_NO_DEBUG_OUTPUT
