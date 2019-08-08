@@ -210,6 +210,26 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             p->drawRoundedRect(vopt->rect - frameExtentMargins(), frame_radius, frame_radius);
             return;
         }
+        break;
+    }
+    case PE_Frame: {
+        if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
+            if (!frame->lineWidth)
+                break;
+
+            p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), frame->lineWidth));
+            p->setBrush(Qt::NoBrush);
+
+            if (!frame->features.testFlag(QStyleOptionFrame::Flat)) {
+                int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+                p->setRenderHint(QPainter::Antialiasing);
+                p->drawRoundedRect(opt->rect, frame_radius, frame_radius);
+            } else {
+                p->drawRect(opt->rect);
+            }
+            return;
+        }
+        break;
     }
     default:
         break;
