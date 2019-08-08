@@ -536,6 +536,60 @@ QBrush ChameleonStyle::generatedBrush(StateFlags flags, const QBrush &base, QPal
     return base;
 }
 
+QBrush ChameleonStyle::generatedBrush(DStyle::StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, DPalette::ColorType type, const QStyleOption *option) const
+{
+    Q_UNUSED(cg)
+    Q_UNUSED(option)
+
+    QColor colorNew = base.color();
+
+    if (!colorNew.isValid())
+        return base;
+
+    if ((flags & StyleState_Mask)  == SS_HoverState) {
+        switch (type) {
+        case DPalette::LightLively:
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, +30, 0, 0, 0, 0);
+            break;
+        case DPalette::DarkLively:
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, +10, 0, 0, 0, 0);
+            break;
+        default:
+            break;
+        }
+
+        return colorNew;
+    } else if ((flags & StyleState_Mask) == SS_PressState) {
+        switch (type) {
+        case DPalette::LightLively:
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, -30, 0, 0, 0, 0);
+            break;
+        case DPalette::DarkLively:
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, -20, 0, 0, 0, 0);
+            break;
+        default:
+            break;
+        }
+
+        return colorNew;
+    } else if ((flags & StyleState_Mask) == SS_NormalState) {
+        switch (type) {
+        case DPalette::LightLively:
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, +40, 0, 0, 0, 0);
+            break;
+        case DPalette::DarkLively:
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, +20, 0, 0, 0, 0);
+            break;
+        default:
+            break;
+        }
+
+        return colorNew;
+    }
+
+    return base;
+}
+
 QColor ChameleonStyle::getColor(const QStyleOption *option, QPalette::ColorRole role) const
 {
     return DStyle::generatedBrush(option, option->palette.brush(role), option->palette.currentColorGroup(), role).color();
