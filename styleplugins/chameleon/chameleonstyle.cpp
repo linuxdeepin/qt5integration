@@ -460,16 +460,61 @@ void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &br
     p->drawRoundedRect(QRectF(rect).adjusted(1, 1, -1, -1), frame_radis, frame_radis);
 }
 
+QBrush ChameleonStyle::generatedBrush(StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, QPalette::ColorRole role, const QStyleOption *option) const
+{
+    Q_UNUSED(cg)
+
+    QColor colorNew = base.color();
+
+    if (!colorNew.isValid())
+        return base;
+
+    if ((flags & StyleState_Mask)  == SS_HoverState) {
+        switch (role) {
+        case QPalette::Light:
+        case QPalette::Dark:
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, -10, 0, 0, 0, 0);
+            break;
+        default:
+            break;
+        }
+
+        return colorNew;
+    } else if ((flags & StyleState_Mask) == SS_PressState) {
+        QColor hightColor = option->palette.highlight().color();
+        hightColor.setAlphaF(0.1);
+
+        switch (role) {
+        case QPalette::Light: {
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, -20, 0, 0, +20, 0);
+            colorNew = DStyle::blendColor(colorNew, hightColor);
+            break;
+        }
+        case QPalette::Dark: {
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, -15, 0, 0, +20, 0);
+            colorNew = DStyle::blendColor(colorNew, hightColor);
+            break;
+        }
+        default:
+            break;
+        }
+
+        return colorNew;
+    }
+
+    return base;
+}
+
 QColor ChameleonStyle::getColor(const QStyleOption *option, QPalette::ColorRole role) const
 {
-    return generatedBrush(option, option->palette.brush(role), option->palette.currentColorGroup(), role).color();
+    return DStyle::generatedBrush(option, option->palette.brush(role), option->palette.currentColorGroup(), role).color();
 }
 
 QColor ChameleonStyle::getColor(const QStyleOption *option, DPalette::ColorType type) const
 {
-    const DPalette &pa = DPalette::get(qobject_cast<QWidget*>(option->styleObject), option->palette);
+    const DPalette &pa = DPalette::get(qobject_cast<QWidget *>(option->styleObject), option->palette);
 
-    return generatedBrush(option, pa.brush(type), pa.currentColorGroup(), type).color();
+    return DStyle::generatedBrush(option, pa.brush(type), pa.currentColorGroup(), type).color();
 }
 
 QMargins ChameleonStyle::frameExtentMargins() const

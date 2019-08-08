@@ -69,6 +69,8 @@ public:
     void unpolish(QWidget *w) override;
     void unpolish(QApplication *application) override;
 
+    QBrush generatedBrush(StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, QPalette::ColorRole role, const QStyleOption *option) const;
+
 private:
     bool isDrakStyle() const;
     void drawShadow(QPainter *p, const QRect &rect, const QColor &color) const;
