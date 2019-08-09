@@ -204,11 +204,53 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_PanelItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+            DStyleOptionBackgroundGroup option;
+            option.rect = vopt->rect - frameExtentMargins();
+            option.position = DStyleOptionBackgroundGroup::ItemBackgroundPosition(vopt->viewItemPosition);
+            DStyle::drawPrimitive(PE_ItemBackground, &option, p, w);
+        }
+        break;
+    }
+    case PE_ItemBackground: {
+        if (const DStyleOptionBackgroundGroup *vopt = qstyleoption_cast<const DStyleOptionBackgroundGroup*>(opt)) {
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
             p->setBrush(getColor(opt, DPalette::ItemBackground, w));
             p->setPen(Qt::NoPen);
-            p->drawRoundedRect(vopt->rect - frameExtentMargins(), frame_radius, frame_radius);
-            return;
+            p->setRenderHint(QPainter::Antialiasing);
+
+            if (vopt->directions != Qt::Horizontal && vopt->directions != Qt::Vertical) {
+                p->drawRoundedRect(vopt->rect, frame_radius, frame_radius);
+                break;
+            }
+
+            switch (vopt->position) {
+            case DStyleOptionBackgroundGroup::OnlyOne:
+                p->drawRoundedRect(vopt->rect, frame_radius, frame_radius);
+                break;
+            case DStyleOptionBackgroundGroup::Beginning: {
+                if (vopt->directions == Qt::Horizontal) {
+                    DrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius, DrawUtils::TopLeftCorner | DrawUtils::BottomLeftCorner);
+                } else {
+                    DrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius, DrawUtils::TopLeftCorner | DrawUtils::TopRightCorner);
+                }
+
+                break;
+            }
+            case DStyleOptionBackgroundGroup::End:
+                if (vopt->directions == Qt::Horizontal) {
+                    DrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius, DrawUtils::TopRightCorner | DrawUtils::BottomRightCorner);
+                } else {
+                    DrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius, DrawUtils::BottomLeftCorner | DrawUtils::BottomRightCorner);
+                }
+
+                break;
+            case DStyleOptionBackgroundGroup::Middle:
+                p->setRenderHint(QPainter::Antialiasing, false);
+                p->drawRect(vopt->rect);
+                break;
+            default:
+                break;
+            }
         }
         break;
     }

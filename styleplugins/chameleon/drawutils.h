@@ -22,6 +22,7 @@
 #define DRAWUTILS_H
 
 #include <QtGlobal>
+#include <qnamespace.h>
 
 QT_BEGIN_NAMESPACE
 class QPainter;
@@ -34,8 +35,19 @@ QT_END_NAMESPACE
 namespace chameleon {
 
 namespace DrawUtils {
+    enum Corner {
+        TopLeftCorner = 0x00001,
+        TopRightCorner = 0x00002,
+        BottomLeftCorner = 0x00004,
+        BottomRightCorner = 0x00008
+    };
+    Q_DECLARE_FLAGS(Corners, Corner)
+
     void drawShadow(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, const QColor &sc, qreal radius, const QPoint &offset);
     void drawShadow(QPainter *pa, const QRect &rect, const QPainterPath &path, const QColor &sc, int radius, const QPoint &offset);
+    void drawRoundedRect(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, Corners corners, Qt::SizeMode mode = Qt::AbsoluteSize);
+
+    Q_DECLARE_OPERATORS_FOR_FLAGS(Corners)
 } // namespace DrawUtils
 
 } // namespace chameleon

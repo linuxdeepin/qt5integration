@@ -186,6 +186,78 @@ void drawShadow(QPainter *pa, const QRect &rect, const QPainterPath &path, const
     pa->drawPixmap(shadow_rect, shadow);
 }
 
+void drawRoundedRect(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, Corners corners, Qt::SizeMode mode)
+{
+    QRectF r = rect.normalized();
+
+    if (r.isNull())
+        return;
+
+    if (mode == Qt::AbsoluteSize) {
+        qreal w = r.width() / 2;
+        qreal h = r.height() / 2;
+
+        if (w == 0) {
+            xRadius = 0;
+        } else {
+            xRadius = 100 * qMin(xRadius, w) / w;
+        }
+        if (h == 0) {
+            yRadius = 0;
+        } else {
+            yRadius = 100 * qMin(yRadius, h) / h;
+        }
+    } else {
+        if (xRadius > 100)                          // fix ranges
+            xRadius = 100;
+
+        if (yRadius > 100)
+            yRadius = 100;
+    }
+
+    if (xRadius <= 0 || yRadius <= 0) {             // add normal rectangle
+        pa->drawRect(r);
+        return;
+    }
+
+    QPainterPath path;
+    qreal x = r.x();
+    qreal y = r.y();
+    qreal w = r.width();
+    qreal h = r.height();
+    qreal rxx2 = w*xRadius/100;
+    qreal ryy2 = h*yRadius/100;
+
+    path.arcMoveTo(x, y, rxx2, ryy2, 180);
+
+    if (corners & TopLeftCorner) {
+        path.arcTo(x, y, rxx2, ryy2, 180, -90);
+    } else {
+        path.lineTo(r.topLeft());
+    }
+
+    if (corners & TopRightCorner) {
+        path.arcTo(x+w-rxx2, y, rxx2, ryy2, 90, -90);
+    } else {
+        path.lineTo(r.topRight());
+    }
+
+    if (corners & BottomRightCorner) {
+        path.arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 0, -90);
+    } else {
+        path.lineTo(r.bottomRight());
+    }
+
+    if (corners & BottomLeftCorner) {
+        path.arcTo(x, y+h-ryy2, rxx2, ryy2, 270, -90);
+    } else {
+        path.lineTo(r.bottomLeft());
+    }
+
+    path.closeSubpath();
+    pa->drawPath(path);
+}
+
 } // namespace DrawUtils
 
 }
