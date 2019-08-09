@@ -205,14 +205,32 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_PanelItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+            bool valid_type = false;
+            Dtk::ItemBackgroundType type = static_cast<Dtk::ItemBackgroundType>(vopt->index.data(Dtk::BackgroundTypeRole).toInt(&valid_type));
+
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
 
-            if (!vopt->showDecorationSelected || !vopt->state.testFlag(QStyle::State_Selected)) {
-                DStyleOptionBackgroundGroup option;
-                option.rect = vopt->rect - frameExtentMargins();
-                option.state = vopt->state;
-                option.position = DStyleOptionBackgroundGroup::ItemBackgroundPosition(vopt->viewItemPosition);
-                DStyle::drawPrimitive(PE_ItemBackground, &option, p, w);
+            if (valid_type && Q_LIKELY(type <= Dtk::RoundedBackground)) {
+                if (type == Dtk::ClipCornerBackground) {
+                    QPainterPath path;
+                    path.addRoundedRect(w->rect(), frame_radius, frame_radius);
+                    p->setClipPath(path);
+                }
+
+                if (!vopt->showDecorationSelected || !vopt->state.testFlag(QStyle::State_Selected)) {
+                    DStyleOptionBackgroundGroup option;
+                    option.state = vopt->state;
+                    option.position = DStyleOptionBackgroundGroup::ItemBackgroundPosition(vopt->viewItemPosition);
+
+                    if (type != Dtk::RoundedBackground) {
+                        option.directions = Qt::Vertical;
+                        option.rect = vopt->rect;
+                    } else {
+                        option.rect = vopt->rect - frameExtentMargins();
+                    }
+
+                    DStyle::drawPrimitive(PE_ItemBackground, &option, p, w);
+                }
             }
 
             if (vopt->state & QStyle::State_Selected) {
@@ -283,25 +301,6 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         }
         break;
     }
-    case PE_Frame: {
-        if (const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-            if (!frame->lineWidth)
-                break;
-
-            p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), frame->lineWidth));
-            p->setBrush(Qt::NoBrush);
-
-            if (!frame->features.testFlag(QStyleOptionFrame::Flat)) {
-                int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-                p->setRenderHint(QPainter::Antialiasing);
-                p->drawRoundedRect(opt->rect, frame_radius, frame_radius);
-            } else {
-                p->drawRect(opt->rect);
-            }
-            return;
-        }
-        break;
-    }
     case PE_PanelLineEdit: {
         p->setBrush(getColor(opt, QPalette::Button));
         p->setPen(Qt::NoPen);
@@ -337,8 +336,9 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
     case SE_ItemViewItemDecoration:
     case SE_ItemViewItemText:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+            int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
             QStyleOptionViewItem option(*vopt);
-            option.rect = opt->rect.marginsRemoved(frameExtentMargins());
+            option.rect = opt->rect.adjusted(frame_radius, 0, -frame_radius, 0);
             return DStyle::subElementRect(r, &option, widget);
         }
         break;
@@ -388,17 +388,25 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         break;
     }
     case CT_ItemViewItem: {
-        int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
-        size += QSize(frame_margins * 2, frame_margins * 2);
-
-        //加上Item自定义的margins
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             const QMargins &item_margins = qvariant_cast<QMargins>(vopt->index.data(Dtk::MarginsRole));
 
             if (!item_margins.isNull()) {
+                //加上Item自定义的margins
                 size = QRect(QPoint(0, 0), size).marginsAdded(item_margins).size();
             }
+
+            bool valid_type = false;
+            Dtk::ItemBackgroundType type = static_cast<Dtk::ItemBackgroundType>(vopt->index.data(Dtk::BackgroundTypeRole).toInt(&valid_type));
+
+            if (!valid_type || type != Dtk::RoundedBackground) {
+                return size;
+            }
+
+            int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
+            size += QSize(frame_margins * 2, frame_margins * 2);
         }
+        break;
     }
     default:
         break;
@@ -535,7 +543,6 @@ void ChameleonStyle::polish(QWidget *w)
 
     if (auto view = qobject_cast<QAbstractItemView *>(w)) {
         view->viewport()->setAttribute(Qt::WA_Hover, true);
-        view->setFrameShape(QFrame::NoFrame);
     }
 
     if (DApplication::isDXcbPlatform()) {
@@ -584,7 +591,6 @@ void ChameleonStyle::unpolish(QWidget *w)
 
     if (auto view = qobject_cast<QAbstractItemView *>(w)) {
         view->viewport()->setAttribute(Qt::WA_Hover, false);
-        view->setFrameShape(QFrame::StyledPanel);
     }
 }
 
