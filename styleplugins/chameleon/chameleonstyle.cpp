@@ -41,6 +41,7 @@
 #include <QMenu>
 #include <QPainter>
 #include <QPaintEngine>
+#include <QAbstractItemView>
 
 #include <qpa/qplatformwindow.h>
 
@@ -204,17 +205,43 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_PanelItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
-            DStyleOptionBackgroundGroup option;
-            option.rect = vopt->rect - frameExtentMargins();
-            option.position = DStyleOptionBackgroundGroup::ItemBackgroundPosition(vopt->viewItemPosition);
-            DStyle::drawPrimitive(PE_ItemBackground, &option, p, w);
+            int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+
+            if (!vopt->showDecorationSelected || !vopt->state.testFlag(QStyle::State_Selected)) {
+                DStyleOptionBackgroundGroup option;
+                option.rect = vopt->rect - frameExtentMargins();
+                option.state = vopt->state;
+                option.position = DStyleOptionBackgroundGroup::ItemBackgroundPosition(vopt->viewItemPosition);
+                DStyle::drawPrimitive(PE_ItemBackground, &option, p, w);
+            }
+
+            if (vopt->state & QStyle::State_Selected) {
+                QRect select_rect = opt->rect;
+
+                if (!vopt->showDecorationSelected) {
+                    select_rect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
+                }
+
+                p->setPen(Qt::NoPen);
+                p->setBrush(getColor(opt, QPalette::Highlight));
+                p->setRenderHint(QPainter::Antialiasing);
+                p->drawRoundedRect(select_rect, frame_radius, frame_radius);
+            }
+
+            return;
         }
         break;
     }
     case PE_ItemBackground: {
         if (const DStyleOptionBackgroundGroup *vopt = qstyleoption_cast<const DStyleOptionBackgroundGroup*>(opt)) {
+            const QColor &color = getColor(opt, DPalette::ItemBackground, w);
+
+            if (color.alpha() == 0) {
+                return;
+            }
+
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-            p->setBrush(getColor(opt, DPalette::ItemBackground, w));
+            p->setBrush(color);
             p->setPen(Qt::NoPen);
             p->setRenderHint(QPainter::Antialiasing);
 
@@ -251,6 +278,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             default:
                 break;
             }
+
+            return;
         }
         break;
     }
@@ -390,6 +419,13 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
 int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
                               const QWidget *w, QStyleHintReturn *shret) const
 {
+    switch (sh) {
+    case SH_ItemView_ShowDecorationSelected:
+        return true;
+    default:
+        break;
+    }
+
     return DStyle::styleHint(sh, opt, w, shret);
 }
 
@@ -473,6 +509,11 @@ void ChameleonStyle::polish(QWidget *w)
         w->setAttribute(Qt::WA_Hover, true);
     }
 
+    if (auto view = qobject_cast<QAbstractItemView *>(w)) {
+        view->viewport()->setAttribute(Qt::WA_Hover, true);
+        view->setFrameShape(QFrame::NoFrame);
+    }
+
     if (DApplication::isDXcbPlatform()) {
         bool is_menu = qobject_cast<QMenu *>(w);
         bool is_tip = w->inherits("QTipLabel");
@@ -515,6 +556,11 @@ void ChameleonStyle::unpolish(QWidget *w)
             || qobject_cast<QAbstractSpinBox *>(w)
             || qobject_cast<QTabBar *>(w)) {
         w->setAttribute(Qt::WA_Hover, false);
+    }
+
+    if (auto view = qobject_cast<QAbstractItemView *>(w)) {
+        view->viewport()->setAttribute(Qt::WA_Hover, false);
+        view->setFrameShape(QFrame::StyledPanel);
     }
 }
 
@@ -615,6 +661,9 @@ QBrush ChameleonStyle::generatedBrush(DStyle::StateFlags flags, const QBrush &ba
             break;
         case DPalette::DarkLively:
             colorNew = DStyle::adjustColor(colorNew, 0, 0, +10, 0, 0, 0, 0);
+            break;
+        case DPalette::ItemBackground:
+            colorNew = DStyle::adjustColor(colorNew, 0, 0, 0, 0, 0, 0, +10);
             break;
         default:
             break;
