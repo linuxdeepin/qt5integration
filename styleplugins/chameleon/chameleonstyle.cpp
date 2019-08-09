@@ -302,6 +302,18 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         }
         break;
     }
+    case PE_PanelLineEdit: {
+        p->setBrush(getColor(opt, QPalette::Button));
+        p->setPen(Qt::NoPen);
+        int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+        p->drawRoundedRect(opt->rect - frameExtentMargins(), frame_radius, frame_radius);
+
+        if (opt->state.testFlag(QStyle::State_HasFocus)) {
+            proxy()->drawPrimitive(PE_FrameFocusRect, opt, p, w);
+        }
+
+        return;
+    }
     default:
         break;
     }
@@ -330,6 +342,10 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
             return DStyle::subElementRect(r, &option, widget);
         }
         break;
+    case SE_LineEditContents: {
+        int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
+        return opt->rect.adjusted(frame_margins * 2, 0, -frame_margins * 2, 0);
+    }
     default:
         break;
     }
@@ -361,6 +377,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     QSize size = DStyle::sizeFromContents(ct, opt, contentsSize, widget);
 
     switch (ct) {
+    case CT_LineEdit: {
+        int button_margin = proxy()->pixelMetric(QStyle::PM_ButtonMargin, opt, widget);
+        size += QSize(button_margin, button_margin);
+        Q_FALLTHROUGH();
+    }
     case CT_PushButton: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         size += QSize(frame_margins * 2, frame_margins * 2);
