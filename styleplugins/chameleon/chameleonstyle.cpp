@@ -390,10 +390,14 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
                                 const QWidget *widget) const
 {
     switch (static_cast<int>(m)) {
+    case PM_ButtonDefaultIndicator:
+    case PM_ButtonShiftHorizontal:
+    case PM_ButtonShiftVertical:
+    case PM_FocusFrameVMargin:
+    case PM_FocusFrameHMargin:
+        return 0;
     case PM_ButtonMargin:
         return Metrics::Button_MarginWidth;
-    case PM_ButtonDefaultIndicator:
-        return 0;
     case PM_FrameRadius:
         return Metrics::Frame_FrameRadius;
     case PM_FocusBorderWidth:
@@ -406,9 +410,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return Metrics::Shadow_XOffset;
     case PM_ShadowVOffset:
         return Metrics::Shadow_YOffset;
-    case PM_ButtonShiftHorizontal:
-    case PM_ButtonShiftVertical:
-        return 0;
+    case PM_MenuBarItemSpacing:
+        return Metrics::MenuBar_ItemSpacing;
     default:
         break;
     }
