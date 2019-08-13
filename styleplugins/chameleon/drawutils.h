@@ -31,6 +31,9 @@ class QRectF;
 class QPoint;
 class QColor;
 class QPainterPath;
+class QBrush;
+class QRectF;
+class QWidget;
 QT_END_NAMESPACE
 
 namespace chameleon {
@@ -48,6 +51,8 @@ namespace DrawUtils {
     void drawShadow(QPainter *pa, const QRect &rect, const QPainterPath &path, const QColor &sc, int radius, const QPoint &offset);
     void drawRoundedRect(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, Corners corners, Qt::SizeMode mode = Qt::AbsoluteSize);
     void drawFork(QPainter *pa, const QRectF &rect, const QColor &color, int width = 2);
+    void drawMark(QPainter *pa, const QRectF &rect, const QColor &boxInside, const QColor &boxOutside, const int penWidth, const int outLineLeng = 2);
+    void drawBorder(QPainter *pa, const QRectF &rect, const QBrush &brush, int borderWidth, int radius);
 
     Q_DECLARE_OPERATORS_FOR_FLAGS(Corners)
 } // namespace DrawUtils

@@ -251,7 +251,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         break;
     }
     case PE_ItemBackground: {
-        if (const DStyleOptionBackgroundGroup *vopt = qstyleoption_cast<const DStyleOptionBackgroundGroup*>(opt)) {
+        if (const DStyleOptionBackgroundGroup *vopt = qstyleoption_cast<const DStyleOptionBackgroundGroup *>(opt)) {
             const QColor &color = getColor(opt, DPalette::ItemBackground, w);
 
             if (color.alpha() == 0) {
@@ -313,6 +313,25 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         return;
     }
+    case PE_IndicatorCheckBox: {
+        QRectF standard = QRectF(opt->rect.adjusted(3,-3,3,-3));
+        DrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
+
+        if (opt->state & State_NoChange) {  //Qt::PartiallyChecked
+            QRectF lineRect(0, 0, standard.width() / 2.0, 2);
+            lineRect.moveCenter(standard.center());
+            p->fillRect(lineRect, getColor(opt, DPalette::TextTitle, w));
+        } else if (opt->state & State_On) {  //Qt::Checked
+            p->setPen(Qt::NoPen);
+            p->setBrush(getColor(opt, DPalette::Highlight));
+            p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 1, 2);
+            QRectF adjustment(standard);
+            adjustment.adjust(3, 0, 0, -3);
+            DrawUtils::drawMark(p, adjustment, getColor(opt, DPalette::Window), getColor(opt, DPalette::Highlight), 2);
+        }
+
+        return;
+    }
     default:
         break;
     }
@@ -323,6 +342,28 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOption *opt,
                                  QPainter *p, const QWidget *w) const
 {
+    switch (element) {
+    case CE_CheckBox:
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            QStyleOptionButton subopt = *btn;
+            subopt.rect = subElementRect(SE_CheckBoxIndicator, btn, w);
+            proxy()->drawPrimitive(PE_IndicatorCheckBox,&subopt, p, w);
+            subopt.rect = subElementRect(SE_CheckBoxContents, btn, w);
+            proxy()->drawControl(CE_CheckBoxLabel, &subopt, p, w);
+
+            if (btn->state & State_HasFocus) {
+                QStyleOptionButton suboptCheck;
+                QStyleOptionFocusRect fropt;
+                fropt.QStyleOption::operator=(*btn);
+                fropt.rect = subElementRect(SE_CheckBoxFocusRect, btn, w);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &suboptCheck, p, w);
+            }
+        }
+        return;
+    default:
+        break;
+    }
+
     DStyle::drawControl(element, opt, p, w);
 }
 
@@ -568,7 +609,8 @@ void ChameleonStyle::polish(QWidget *w)
             || qobject_cast<QRadioButton *>(w)
             || qobject_cast<QToolButton *>(w)
             || qobject_cast<QAbstractSpinBox *>(w)
-            || qobject_cast<QTabBar *>(w)) {
+            || qobject_cast<QTabBar *>(w)
+            || qobject_cast<QCheckBox *>(w)) {
         w->setAttribute(Qt::WA_Hover, true);
     }
 
@@ -616,7 +658,8 @@ void ChameleonStyle::unpolish(QWidget *w)
             || qobject_cast<QRadioButton *>(w)
             || qobject_cast<QToolButton *>(w)
             || qobject_cast<QAbstractSpinBox *>(w)
-            || qobject_cast<QTabBar *>(w)) {
+            || qobject_cast<QTabBar *>(w)
+            || qobject_cast<QCheckBox *>(w)) {
         w->setAttribute(Qt::WA_Hover, false);
     }
 
@@ -654,10 +697,7 @@ void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &br
     int border_spacing = DStyle::pixelMetric(PM_FocusBorderSpacing);
     int frame_radis = DStyle::pixelMetric(PM_FrameRadius) + border_spacing;
 
-    p->setPen(QPen(brush, border_width, Qt::SolidLine));
-    p->setBrush(Qt::NoBrush);
-    p->setRenderHint(QPainter::Antialiasing);
-    p->drawRoundedRect(QRectF(rect).adjusted(1, 1, -1, -1), frame_radis, frame_radis);
+    DrawUtils::drawBorder(p, rect, brush, border_width, frame_radis);
 }
 
 QBrush ChameleonStyle::generatedBrush(StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, QPalette::ColorRole role, const QStyleOption *option) const

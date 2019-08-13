@@ -26,6 +26,8 @@
 #include <QWidget>
 #include <QPaintEngine>
 
+#include <math.h>
+
 QT_BEGIN_NAMESPACE
 //extern Q_WIDGETS_EXPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed = 0);
 extern Q_WIDGETS_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage, qreal radius, bool quality, bool alphaOnly, int transposed = 0);
@@ -238,8 +240,8 @@ void drawRoundedRect(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadi
     qreal y = r.y();
     qreal w = r.width();
     qreal h = r.height();
-    qreal rxx2 = w*xRadius/100;
-    qreal ryy2 = h*yRadius/100;
+    qreal rxx2 = w * xRadius / 100;
+    qreal ryy2 = h * yRadius / 100;
 
     path.arcMoveTo(x, y, rxx2, ryy2, 180);
 
@@ -250,25 +252,60 @@ void drawRoundedRect(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadi
     }
 
     if (corners & TopRightCorner) {
-        path.arcTo(x+w-rxx2, y, rxx2, ryy2, 90, -90);
+        path.arcTo(x + w - rxx2, y, rxx2, ryy2, 90, -90);
     } else {
         path.lineTo(r.topRight());
     }
 
     if (corners & BottomRightCorner) {
-        path.arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 0, -90);
+        path.arcTo(x + w - rxx2, y + h - ryy2, rxx2, ryy2, 0, -90);
     } else {
         path.lineTo(r.bottomRight());
     }
 
     if (corners & BottomLeftCorner) {
-        path.arcTo(x, y+h-ryy2, rxx2, ryy2, 270, -90);
+        path.arcTo(x, y + h - ryy2, rxx2, ryy2, 270, -90);
     } else {
         path.lineTo(r.bottomLeft());
     }
 
     path.closeSubpath();
     pa->drawPath(path);
+}
+
+void drawMark(QPainter *pa, const QRectF &rect, const QColor &boxInside, const QColor &boxOutside, const int penWidth, const int outLineLeng)
+{
+    QPen pen(boxInside);
+    pen.setWidth(penWidth);
+    pa->setPen(pen);
+    pen.setJoinStyle(Qt::RoundJoin);
+    pa->setRenderHint(QPainter::Antialiasing, true);
+
+    pa->drawLine(rect.x(), rect.center().y(), rect.center().x(), rect.bottom());
+    pa->drawLine(rect.center().x(), rect.bottom(), rect.right(), rect.y());
+
+    int xWide = qRound64(rect.bottom() / 2);
+    int yHigh = qRound64(rect.right());
+    int length = qRound64(sqrt(pow(xWide, 2) + pow(yHigh, 2)));
+
+    if (outLineLeng == 0)
+        return;
+
+    int y = qRound64((yHigh * outLineLeng) / sqrt(length) - rect.y());
+    int Result = qRound64(rect.right() - rect.height() - y);
+    int x = qRound64((xWide * outLineLeng) / sqrt(length) + xWide + rect.x() + 1);
+
+    pen.setColor(boxOutside);
+    pa->setPen(pen);
+    pa->drawLine(rect.right(), rect.y(), x, Result);
+}
+
+void drawBorder(QPainter *pa, const QRectF &rect, const QBrush &brush, int borderWidth, int radius)
+{
+    pa->setPen(QPen(brush, borderWidth, Qt::SolidLine));
+    pa->setBrush(Qt::NoBrush);
+    pa->setRenderHint(QPainter::Antialiasing);
+    pa->drawRoundedRect(rect.adjusted(1, 1, -1, -1), radius, radius) ;
 }
 
 } // namespace DrawUtils
