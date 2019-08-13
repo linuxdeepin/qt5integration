@@ -27,6 +27,7 @@
 QT_BEGIN_NAMESPACE
 class QPainter;
 class QRect;
+class QRectF;
 class QPoint;
 class QColor;
 class QPainterPath;
@@ -46,6 +47,7 @@ namespace DrawUtils {
     void drawShadow(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, const QColor &sc, qreal radius, const QPoint &offset);
     void drawShadow(QPainter *pa, const QRect &rect, const QPainterPath &path, const QColor &sc, int radius, const QPoint &offset);
     void drawRoundedRect(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, Corners corners, Qt::SizeMode mode = Qt::AbsoluteSize);
+    void drawFork(QPainter *pa, const QRectF &rect, const QColor &color, int width = 2);
 
     Q_DECLARE_OPERATORS_FOR_FLAGS(Corners)
 } // namespace DrawUtils

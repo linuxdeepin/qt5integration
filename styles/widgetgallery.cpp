@@ -62,6 +62,8 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 
     disableWidgetsCheckBox = new QCheckBox(tr("&Disable widgets"));
 
+    changeStyle("chameleon");
+
     createTopLeftGroupBox();
     createTopRightGroupBox();
     createBottomLeftTabWidget();
@@ -108,7 +110,6 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     mainLayout->setColumnStretch(1, 1);
 
     setWindowTitle(tr("Styles"));
-    changeStyle("chameleon");
 
     setCentralWidget(mainWidget);
 

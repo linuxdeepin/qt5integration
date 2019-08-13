@@ -186,6 +186,19 @@ void drawShadow(QPainter *pa, const QRect &rect, const QPainterPath &path, const
     pa->drawPixmap(shadow_rect, shadow);
 }
 
+void drawFork(QPainter *pa, const QRectF &rect, const QColor &color, int width)
+{
+    QPen pen;
+    pen.setWidth(width);
+    pen.setColor(color);
+
+    pa->setRenderHint(QPainter::Antialiasing, true);
+    pa->setPen(pen);
+    pa->setBrush(Qt::NoBrush);
+    pa->drawLine(rect.topLeft(), rect.bottomRight());
+    pa->drawLine(rect.bottomLeft(), rect.topRight());
+}
+
 void drawRoundedRect(QPainter *pa, const QRect &rect, qreal xRadius, qreal yRadius, Corners corners, Qt::SizeMode mode)
 {
     QRectF r = rect.normalized();

@@ -169,7 +169,11 @@ enum Metrics
 
     // progress bar
     ProgressBar_BorderWidth = 1,
-    ProgressBar_Radius = 4
+    ProgressBar_Radius = 4,
+
+    // icon
+    Icon_Size = 64,
+    Icon_Margins = 10
 };
 
 //* corners
