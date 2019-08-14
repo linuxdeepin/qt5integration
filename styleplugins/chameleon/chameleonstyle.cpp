@@ -183,7 +183,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 {
     switch (static_cast<int>(pe)) {
     case PE_PanelButtonCommand: {
-        if (const QStyleOptionButton *bopt = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+        if (const QStyleOptionButton *bopt = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             const QMargins &margins = frameExtentMargins();
 
             if (bopt->features & DStyleOptionButton::FloatingButton) {
@@ -344,7 +344,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_IndicatorCheckBox: {
-        QRectF standard = QRectF(opt->rect.adjusted(3,-3,3,-3));
+        QRectF standard = opt->rect;
+
         DrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
 
         if (opt->state & State_NoChange) {  //Qt::PartiallyChecked
@@ -356,7 +357,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             p->setBrush(getColor(opt, DPalette::Highlight));
             p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 1, 2);
             QRectF adjustment(standard);
-            adjustment.adjust(3, 0, 0, -3);
+            adjustment.adjust(2, 0, 0, -2);
+
             DrawUtils::drawMark(p, adjustment, getColor(opt, DPalette::Window), getColor(opt, DPalette::Highlight), 2);
         }
 
@@ -377,16 +379,16 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             QStyleOptionButton subopt = *btn;
             subopt.rect = subElementRect(SE_CheckBoxIndicator, btn, w);
-            proxy()->drawPrimitive(PE_IndicatorCheckBox,&subopt, p, w);
+            proxy()->drawPrimitive(PE_IndicatorCheckBox, &subopt, p, w);
             subopt.rect = subElementRect(SE_CheckBoxContents, btn, w);
             proxy()->drawControl(CE_CheckBoxLabel, &subopt, p, w);
 
             if (btn->state & State_HasFocus) {
-                QStyleOptionButton suboptCheck;
-                QStyleOptionFocusRect fropt;
-                fropt.QStyleOption::operator=(*btn);
-                fropt.rect = subElementRect(SE_CheckBoxFocusRect, btn, w);
-                proxy()->drawPrimitive(PE_FrameFocusRect, &suboptCheck, p, w);
+                QRect rect(subElementRect(SE_CheckBoxFocusRect, btn, w));
+
+                DrawUtils::drawBorder(p, rect, getColor(opt, DPalette::Highlight),
+                                      DStyle::pixelMetric(PM_FocusBorderWidth),
+                                      DStyle::pixelMetric(PM_FocusBorderSpacing) + 2);
             }
         }
         return;
@@ -443,6 +445,23 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         return opt->rect.adjusted(frame_margins * 2, 0, -frame_margins * 2, 0);
     }
+    case SE_CheckBoxFocusRect: {
+        QRect re;
+        re = subElementRect(SE_CheckBoxIndicator, opt, widget);
+        int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
+        re.adjust(-margin, -margin, margin, margin);
+        return re;
+    }
+    case SE_CheckBoxContents:
+    case SE_CheckBoxClickRect:
+    case SE_CheckBoxIndicator:
+        if (const QStyleOptionButton *vopt = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            QStyleOptionButton option(*vopt);
+            option.rect = opt->rect.marginsRemoved(frameExtentMargins());
+
+            return DStyle::subElementRect(r, &option, widget);
+        }
+        break;
     default:
         break;
     }
@@ -538,6 +557,9 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return Metrics::Shadow_YOffset;
     case PM_MenuBarItemSpacing:
         return Metrics::MenuBar_ItemSpacing;
+    case PM_IndicatorWidth:
+    case PM_IndicatorHeight:
+        return Metrics::CheckBox_FrameWidth;
     default:
         break;
     }

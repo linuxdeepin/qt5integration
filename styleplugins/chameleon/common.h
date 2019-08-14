@@ -74,6 +74,7 @@ enum Metrics
     CheckBox_Size = 20,
     CheckBox_FocusMarginWidth = 2,
     CheckBox_ItemSpacing = 4,
+    CheckBox_FrameWidth = 14,
 
     // menu
     Menu_ItemHMargin = 0,
