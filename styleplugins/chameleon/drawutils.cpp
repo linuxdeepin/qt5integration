@@ -306,6 +306,43 @@ void drawBorder(QPainter *pa, const QRectF &rect, const QBrush &brush, int borde
     pa->drawRoundedRect(rect.adjusted(1, 1, -1, -1), radius, radius) ;
 }
 
+void drawArrow(QPainter *pa, const QRectF &rect, const QColor &color, Qt::ArrowType arrow, int width)
+{
+    QPen pen;
+    pen.setWidth(width);
+    pen.setColor(color);
+    pa->setRenderHint(QPainter::Antialiasing, true);
+    pa->setPen(pen);
+    pa->setBrush(Qt::NoBrush);
+    const QPointF center = rect.center();
+
+    switch (arrow) {
+    case Qt::UpArrow: {
+        pa->drawLine(QPointF(center.x(), rect.y()), rect.bottomLeft());
+        pa->drawLine(QPointF(center.x(), rect.y()), rect.bottomRight());
+        break;
+    }
+    case Qt::LeftArrow:{
+        pa->drawLine(QPointF(rect.x(), center.y()), rect.bottomRight());
+        pa->drawLine(QPointF(rect.x(), center.y()), rect.topRight());
+        break;
+    }
+    case Qt::DownArrow: {
+        pa->drawLine(QPointF(center.x(), rect.bottom()), rect.topLeft());
+        pa->drawLine(QPointF(center.x(), rect.bottom()), rect.topRight());
+        break;
+    }
+    case Qt::RightArrow: {
+        pa->drawLine(QPointF(rect.right(), center.y()), rect.topLeft());
+        pa->drawLine(QPointF(rect.right(), center.y()), rect.bottomLeft());
+        break;
+    }
+    default:
+        break;
+    }
+
+}
+
 } // namespace DrawUtils
 
 }

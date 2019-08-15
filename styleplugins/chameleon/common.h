@@ -107,6 +107,7 @@ enum Metrics
     ScrollBar_NoButtonHeight = (ScrollBar_Extend-ScrollBar_SliderWidth)/2,
     ScrollBar_SingleButtonHeight = ScrollBar_Extend,
     ScrollBar_DoubleButtonHeight = 2*ScrollBar_Extend,
+    ScrollBar_SliderMinWidget = 36,
 
     // toolbars
     ToolBar_FrameWidth = 2,

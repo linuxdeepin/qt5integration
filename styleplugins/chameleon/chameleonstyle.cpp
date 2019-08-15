@@ -443,6 +443,35 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         break;
     }
+    case CE_ScrollBarSlider: {
+        p->setBrush(getColor(opt, QPalette::Highlight));
+        p->setPen(Qt::NoPen);
+        p->setRenderHint(QPainter::Antialiasing);
+        QRectF rect = opt->rect;
+
+        if (opt->state & QStyle::State_Horizontal) {
+            p->drawRoundedRect(rect, rect.height() / 2.0, rect.height() / 2.0);
+
+            QRectF rectArrow(0, 0, rect.height() / 2, rect.height() / 2);
+            rectArrow.moveCenter(rect.center());
+            rectArrow.moveLeft(rect.left() + rect.height() / 2);
+            DrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::LeftArrow);
+            rectArrow.moveCenter(rect.center());
+            rectArrow.moveRight(rect.right() - rect.height() / 2);
+            DrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::RightArrow);
+        } else {
+            p->drawRoundedRect(rect, rect.width() / 2.0, rect.width() / 2.0);
+
+            QRectF rectArrow(0, 0, rect.width() / 2.0, rect.width() / 2.0);
+            rectArrow.moveCenter(rect.center());
+            rectArrow.moveTop(rect.top() + rect.width() / 2.0);
+            DrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::UpArrow);
+            rectArrow.moveCenter(rect.center());
+            rectArrow.moveBottom(rect.bottom() - rect.width() / 2);
+            DrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::DownArrow);
+        }
+        break;
+    }
     default:
         break;
     }
@@ -535,6 +564,27 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
 void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
                                         QPainter *p, const QWidget *w) const
 {
+    switch (cc) {
+    case CC_ScrollBar: {
+        p->setBrush(getColor(opt, QPalette::Button));
+        p->setPen(Qt::NoPen);
+        QRectF rect = opt->rect;
+
+        if (opt->state & QStyle::State_Horizontal) {
+            rect.setHeight(rect.height() / 4);
+            rect.moveCenter(QRectF(opt->rect).center());
+            p->drawRoundedRect(rect, rect.height() / 2.0, rect.height() / 2.0);
+        } else {
+            rect.setWidth(rect.width() / 4);
+            rect.moveCenter(QRectF(opt->rect).center());
+            p->drawRoundedRect(rect, rect.width() / 2.0, rect.width() / 2.0);
+        }
+    }
+    break;
+    default:
+        break;
+    }
+
     DStyle::drawComplexControl(cc, opt, p, w);
 }
 
@@ -625,6 +675,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_ExclusiveIndicatorHeight:
     case PM_ExclusiveIndicatorWidth:
         return Metrics::CheckBox_FrameWidth;
+    case PM_ScrollBarSliderMin:
+        return ScrollBar_SliderMinWidget;
     default:
         break;
     }
@@ -637,6 +689,7 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
 {
     switch (sh) {
     case SH_ItemView_ShowDecorationSelected:
+    case SH_ScrollBar_Transient:
         return true;
     default:
         break;
@@ -760,6 +813,10 @@ void ChameleonStyle::polish(QWidget *w)
         view->viewport()->setAttribute(Qt::WA_Hover, true);
     }
 
+    if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
+        scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, false);
+    }
+
     if (DApplication::isDXcbPlatform()) {
         bool is_menu = qobject_cast<QMenu *>(w);
         bool is_tip = w->inherits("QTipLabel");
@@ -805,6 +862,10 @@ void ChameleonStyle::unpolish(QWidget *w)
 
     if (auto view = qobject_cast<QAbstractItemView *>(w)) {
         view->viewport()->setAttribute(Qt::WA_Hover, false);
+    }
+
+    if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
+        scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, true);
     }
 }
 

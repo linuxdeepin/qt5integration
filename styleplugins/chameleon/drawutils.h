@@ -53,6 +53,7 @@ namespace DrawUtils {
     void drawFork(QPainter *pa, const QRectF &rect, const QColor &color, int width = 2);
     void drawMark(QPainter *pa, const QRectF &rect, const QColor &boxInside, const QColor &boxOutside, const int penWidth, const int outLineLeng = 2);
     void drawBorder(QPainter *pa, const QRectF &rect, const QBrush &brush, int borderWidth, int radius);
+    void drawArrow(QPainter *pa, const QRectF &rect, const QColor &color, Qt::ArrowType arrow, int width = 2);
 
     Q_DECLARE_OPERATORS_FOR_FLAGS(Corners)
 } // namespace DrawUtils
