@@ -284,20 +284,18 @@ void drawMark(QPainter *pa, const QRectF &rect, const QColor &boxInside, const Q
     pa->drawLine(rect.x(), rect.center().y(), rect.center().x(), rect.bottom());
     pa->drawLine(rect.center().x(), rect.bottom(), rect.right(), rect.y());
 
-    int xWide = qRound64(rect.width() / 2);
-    int yHigh = qRound64(rect.height());
-    int length = qRound64(sqrt(pow(xWide, 2) + pow(yHigh, 2)));
-
     if (outLineLeng == 0)
         return;
 
-    int y = qRound64((yHigh * outLineLeng) / sqrt(length) - rect.y());
-    int Result = qRound64(rect.right() - rect.height() - y);
-    int x = qRound64((xWide * outLineLeng) / sqrt(length) + xWide + rect.x() + 2);
+    double xWide = (rect.width() / 2.0);
+    int yHigh = rect.height();
+    double length = sqrt(pow(xWide, 2) + pow(yHigh, 2));
+    double x = rect.right() + ( outLineLeng/ length) * xWide;
+    double y = rect.y() - ( outLineLeng/ length) * yHigh;
 
     pen.setColor(boxOutside);
     pa->setPen(pen);
-    pa->drawLine(rect.right(), rect.y(), x, Result);
+    pa->drawLine(QPointF(rect.topRight()), QPointF(x, y));
 }
 
 void drawBorder(QPainter *pa, const QRectF &rect, const QBrush &brush, int borderWidth, int radius)
