@@ -82,6 +82,7 @@ private:
     QMargins frameExtentMargins() const;
 
     bool drawSpinBox(const QStyleOptionSpinBox *opt, QPainter *p, const QWidget *w) const;
+    void updateSpinBoxButtonState(const QStyleOptionSpinBox *opt, QStyleOptionButton& button, bool isActive, bool isEnabled) const;
 };
 
 } // namespace chameleon

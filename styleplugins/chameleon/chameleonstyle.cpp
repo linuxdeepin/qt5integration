@@ -607,7 +607,51 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         painter->drawRoundedRect(frameRect - frameExtentMargins(), borderRadius, borderRadius);
     }
 
+    if (opt->subControls & SC_SpinBoxUp) {
+        bool upIsActive = opt->activeSubControls == SC_SpinBoxUp;
+        bool upIsEnabled = opt->stepEnabled & QAbstractSpinBox::StepUpEnabled && opt->state.testFlag(State_Enabled);
+        QRect subRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, widget);
+        QStyleOptionButton buttonOpt;
+        buttonOpt.rect = subRect;
+        updateSpinBoxButtonState(opt, buttonOpt, upIsActive, upIsEnabled);
+        proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOpt, painter, widget);
+
+        QRect arrowRect = subRect.adjusted(Metrics::Icon_Margins, Metrics::Icon_Margins, -Metrics::Icon_Margins, -Metrics::Icon_Margins);
+        DrawUtils::drawArrow(painter, arrowRect, getColor(&buttonOpt, QPalette::ButtonText), Qt::ArrowType::UpArrow);
+    }
+
+    if (opt->subControls & SC_SpinBoxDown) {
+        bool downIsActive = opt->activeSubControls == SC_SpinBoxDown;
+        bool downIsEnabled = opt->stepEnabled & QAbstractSpinBox::StepDownEnabled && opt->state.testFlag(State_Enabled);
+        QRect subRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, widget);
+        QStyleOptionButton buttonOpt;
+        buttonOpt.rect = subRect;
+        updateSpinBoxButtonState(opt, buttonOpt, downIsActive, downIsEnabled);
+        proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOpt, painter, widget);
+
+        QRect arrowRect = subRect.adjusted(Metrics::Icon_Margins, Metrics::Icon_Margins, -Metrics::Icon_Margins, -Metrics::Icon_Margins);
+        DrawUtils::drawArrow(painter, arrowRect, getColor(&buttonOpt, QPalette::ButtonText), Qt::ArrowType::DownArrow);
+    }
+
     return true;
+}
+
+void ChameleonStyle::updateSpinBoxButtonState(const QStyleOptionSpinBox *opt, QStyleOptionButton &buttonOpt, bool isActive, bool isEnabled) const
+{
+    State buttonState = opt->state;
+
+    if (!isActive) {
+        buttonState &= ~State_MouseOver;
+        buttonState &= ~State_Sunken;
+    }
+
+    if (!isEnabled) {
+        buttonState &= ~State_Enabled;
+        buttonState &= ~State_MouseOver;
+        buttonState &= ~State_Sunken;
+    }
+
+    buttonOpt.state = buttonState;
 }
 
 QStyle::SubControl ChameleonStyle::hitTestComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
