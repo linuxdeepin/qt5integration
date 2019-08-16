@@ -432,13 +432,48 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
     case SE_PushButtonFocusRect:
     case SE_ItemViewItemFocusRect:
         return opt->rect;
-    case SE_ItemViewItemDecoration:
+    case SE_ItemViewItemCheckIndicator: Q_FALLTHROUGH();
+    case SE_ItemViewItemDecoration: Q_FALLTHROUGH();
     case SE_ItemViewItemText:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
             QStyleOptionViewItem option(*vopt);
             option.rect = opt->rect.adjusted(frame_radius, 0, -frame_radius, 0);
-            return DStyle::subElementRect(r, &option, widget);
+
+            if (vopt->features & DStyleOptionViewItem::UseDStyleLayout) {
+                QRect checkRect, decorationRect, displayRect;
+                viewItemLayout(&option, &decorationRect, &displayRect, &checkRect, false);
+
+                switch (r) {
+                case SE_ItemViewItemCheckIndicator:
+                    return checkRect;
+                case SE_ItemViewItemDecoration:
+                    return decorationRect;
+                case SE_ItemViewItemText:
+                    return displayRect;
+                default:
+                    break;
+                }
+            } else {
+                // 默认把checkbox放置在右边，因此使用QCommonStyle的Item布局时先移除HasCheckIndicator标志
+                option.features &= ~QStyleOptionViewItem::HasCheckIndicator;
+
+                if (r == SE_ItemViewItemDecoration) {
+                    return DStyle::subElementRect(r, &option, widget);
+                }
+
+                QRect text_rect = DStyle::subElementRect(SE_ItemViewItemText, &option, widget);
+                int indicator_width = proxy()->pixelMetric(PM_IndicatorWidth, &option, widget);
+                int indicator_height = proxy()->pixelMetric(PM_IndicatorHeight, &option, widget);
+
+                const QRect indicator_rect = alignedRect(opt->direction, Qt::AlignRight | Qt::AlignVCenter,
+                                                         QSize(indicator_width, indicator_height), text_rect);
+
+                int margin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget);
+                text_rect.setRight(qMin(text_rect.right(), indicator_rect.left() - margin));
+
+                return r == SE_ItemViewItemText ? text_rect : indicator_rect;
+            }
         }
         break;
     case SE_LineEditContents: {
