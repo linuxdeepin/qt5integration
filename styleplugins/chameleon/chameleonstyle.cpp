@@ -584,7 +584,8 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
 #if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *option = qstyleoption_cast<const QStyleOptionSpinBox *>(opt))
-            if (drawSpinBox(option, p, w))return ;
+            if (drawSpinBox(option, p, w))
+                return;
         break;
 #endif
     default:
@@ -597,7 +598,6 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
 bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
                                  QPainter *painter, const QWidget *widget) const
 {
-
     if (opt->frame && (opt->subControls & SC_SpinBoxFrame)) {
         qreal borderRadius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
         QRect frameRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxFrame, widget);
@@ -606,6 +606,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         painter->setBrush(getColor(opt, QPalette::Button));
         painter->drawRoundedRect(frameRect - frameExtentMargins(), borderRadius, borderRadius);
     }
+
     return true;
 }
 
