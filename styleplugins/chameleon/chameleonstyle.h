@@ -80,6 +80,8 @@ private:
     QColor getColor(const QStyleOption *option, QPalette::ColorRole role) const;
     QColor getColor(const QStyleOption *option, DPalette::ColorType type, const QWidget *widget) const;
     QMargins frameExtentMargins() const;
+
+    bool drawSpinBox(const QStyleOptionSpinBox *opt, QPainter *p, const QWidget *w) const;
 };
 
 } // namespace chameleon

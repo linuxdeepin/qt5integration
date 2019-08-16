@@ -581,11 +581,32 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
         }
     }
     break;
+#if QT_CONFIG(spinbox)
+    case CC_SpinBox:
+        if (const QStyleOptionSpinBox *option = qstyleoption_cast<const QStyleOptionSpinBox *>(opt))
+            if (drawSpinBox(option, p, w))return ;
+        break;
+#endif
     default:
         break;
     }
 
     DStyle::drawComplexControl(cc, opt, p, w);
+}
+
+bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
+                                 QPainter *painter, const QWidget *widget) const
+{
+
+    if (opt->frame && (opt->subControls & SC_SpinBoxFrame)) {
+        qreal borderRadius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
+        QRect frameRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxFrame, widget);
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(getColor(opt, QPalette::Button));
+        painter->drawRoundedRect(frameRect - frameExtentMargins(), borderRadius, borderRadius);
+    }
+    return true;
 }
 
 QStyle::SubControl ChameleonStyle::hitTestComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
@@ -637,6 +658,13 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         }
         break;
     }
+    case CT_SpinBox: {
+        if (const QStyleOptionSpinBox *spinBoxOption = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
+            size += QSize(frame_margins * 2, frame_margins * 2);
+        }
+        break;
+    }
     default:
         break;
     }
@@ -677,6 +705,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return Metrics::CheckBox_FrameWidth;
     case PM_ScrollBarSliderMin:
         return ScrollBar_SliderMinWidget;
+    case PM_SpinBoxFrameWidth:
+        return Metrics::SpinBox_FrameWidth;
     default:
         break;
     }
