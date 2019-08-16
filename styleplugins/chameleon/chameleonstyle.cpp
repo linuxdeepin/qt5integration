@@ -343,9 +343,28 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         return;
     }
+    case PE_IndicatorRadioButton: {
+        QRect standard = opt->rect;
+
+        p->setRenderHint(QPainter::Antialiasing, true);
+
+        if (opt->state & State_On) {  //Qt::Checked
+            double padding = standard.width() / 2.0 / 2.0;
+            QPainterPath path;
+
+            path.addEllipse(standard);
+            path.addEllipse(standard.adjusted(padding, padding, -padding, -padding));
+
+            p->fillPath(path, getColor(opt, DPalette::Highlight));
+        } else if (opt->state & State_Off) {
+            p->setPen(QPen(getColor(opt, DPalette::WindowText), 1));
+            p->drawEllipse(standard.adjusted(1, 1, -1, -1));
+        }
+
+        return;
+    }
     case PE_IndicatorCheckBox: {
         QRectF standard = opt->rect;
-
         DrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
 
         if (opt->state & State_NoChange) {  //Qt::PartiallyChecked
@@ -356,10 +375,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             p->setPen(Qt::NoPen);
             p->setBrush(getColor(opt, DPalette::Highlight));
             p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 1, 2);
-            QRectF adjustment(standard);
-            adjustment.adjust(2, 0, 0, -2);
 
-            DrawUtils::drawMark(p, adjustment, getColor(opt, DPalette::Window), getColor(opt, DPalette::Highlight), 2);
+            DrawUtils::drawMark(p, standard.adjusted(2, 0, 0, -2), getColor(opt, DPalette::Window), getColor(opt, DPalette::Highlight), 2);
         }
 
         return;
@@ -375,21 +392,29 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                                  QPainter *p, const QWidget *w) const
 {
     switch (element) {
+    case CE_RadioButton:
     case CE_CheckBox:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            bool isRadio = (element == CE_RadioButton);
             QStyleOptionButton subopt = *btn;
-            subopt.rect = subElementRect(SE_CheckBoxIndicator, btn, w);
-            proxy()->drawPrimitive(PE_IndicatorCheckBox, &subopt, p, w);
+            subopt.rect = subElementRect(isRadio ? SE_RadioButtonIndicator : SE_CheckBoxIndicator, btn, w);
+            proxy()->drawPrimitive(isRadio ? PE_IndicatorRadioButton : PE_IndicatorCheckBox, &subopt, p, w);
+
             subopt.rect = subElementRect(SE_CheckBoxContents, btn, w);
             proxy()->drawControl(CE_CheckBoxLabel, &subopt, p, w);
 
             if (btn->state & State_HasFocus) {
-                QRect rect(subElementRect(SE_CheckBoxFocusRect, btn, w));
+                QRect rect(subElementRect(isRadio ? SE_RadioButtonFocusRect : SE_CheckBoxFocusRect, btn, w));
 
-                DrawUtils::drawBorder(p, rect, getColor(opt, DPalette::Highlight),
-                                      DStyle::pixelMetric(PM_FocusBorderWidth),
-                                      DStyle::pixelMetric(PM_FocusBorderSpacing) + 2);
+                if (isRadio) {
+                    p->setPen(QPen(getColor(opt, DPalette::Highlight), DStyle::pixelMetric(PM_FocusBorderWidth)));
+                    p->drawEllipse(rect.adjusted(1, 1, -1, -1));
+                } else {
+                    DrawUtils::drawBorder(p, rect, getColor(opt, DPalette::Highlight),
+                                          DStyle::pixelMetric(PM_FocusBorderWidth), DStyle::pixelMetric(PM_FocusBorderSpacing) + 2);
+                }
             }
+
         }
         return;
     case CE_PushButton: {
@@ -480,6 +505,7 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         return opt->rect.adjusted(frame_margins * 2, 0, -frame_margins * 2, 0);
     }
+    case SE_RadioButtonFocusRect:
     case SE_CheckBoxFocusRect: {
         QRect re;
         re = subElementRect(SE_CheckBoxIndicator, opt, widget);
@@ -487,13 +513,15 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         re.adjust(-margin, -margin, margin, margin);
         return re;
     }
+    case SE_RadioButtonIndicator:
+    case SE_RadioButtonContents:
+    case SE_RadioButtonClickRect:
     case SE_CheckBoxContents:
     case SE_CheckBoxClickRect:
     case SE_CheckBoxIndicator:
         if (const QStyleOptionButton *vopt = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             QStyleOptionButton option(*vopt);
             option.rect = opt->rect.marginsRemoved(frameExtentMargins());
-
             return DStyle::subElementRect(r, &option, widget);
         }
         break;
@@ -594,6 +622,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return Metrics::MenuBar_ItemSpacing;
     case PM_IndicatorWidth:
     case PM_IndicatorHeight:
+    case PM_ExclusiveIndicatorHeight:
+    case PM_ExclusiveIndicatorWidth:
         return Metrics::CheckBox_FrameWidth;
     default:
         break;
