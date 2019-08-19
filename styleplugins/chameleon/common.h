@@ -126,7 +126,7 @@ enum Metrics
     TitleBar_MarginWidth = 4,
 
     // sliders
-    Slider_TickLength = 10,
+    Slider_TickLength = 20,
     Slider_TickMarginWidth = 6,
     Slider_GrooveThickness = 2,
     Slider_ControlThickness = 24,

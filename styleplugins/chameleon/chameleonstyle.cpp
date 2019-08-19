@@ -596,6 +596,31 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 return;
         break;
 #endif
+    case CC_Slider :{
+        if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            QRectF rect = opt->rect;
+            float sliCentX = (slider->sliderValue * 1.0 / (slider->maximum - slider->minimum)) * rect.width();
+
+            //绘画滑槽
+            QPen pen;
+            pen.setStyle(Qt::DotLine);
+            pen.setWidthF(3);
+            pen.setColor(getColor(opt, QPalette::Highlight));
+            p->setPen(pen);
+            p->setRenderHint(QPainter::Antialiasing);
+            p->drawLine(QPointF(rect.left(), rect.height() / 2.0), QPointF(sliCentX, rect.height() / 2.0));
+            pen.setColor(Qt::gray);
+            p->setPen(pen);
+            p->drawLine(QPointF(rect.right(), rect.height() / 2.0), QPointF(sliCentX, rect.height() / 2.0));
+
+            //绘画滑块
+            pen.setStyle(Qt::SolidLine);
+            p->setPen(Qt::NoPen);
+            p->setBrush(getColor(opt, QPalette::Highlight));
+            p->drawRoundedRect(proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, w), 8, 8);
+        }
+        break;
+    }
     default:
         break;
     }
@@ -767,6 +792,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         }
         break;
     }
+    case CT_Slider: {
+        int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
+        size += QSize(frame_margins, frame_margins);
+        break;
+    }
     default:
         break;
     }
@@ -809,6 +839,10 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return ScrollBar_SliderMinWidget;
     case PM_SpinBoxFrameWidth:
         return Metrics::SpinBox_FrameWidth;
+    case PM_SliderLength:
+        return Metrics::Slider_TickLength;
+    case PM_SliderControlThickness:
+        return Metrics::Slider_ControlThickness;
     default:
         break;
     }
