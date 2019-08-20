@@ -554,26 +554,98 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
 #endif
     case CC_Slider : {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            QRectF rect = opt->rect;
-            float sliCentX = (slider->sliderValue * 1.0 / (slider->maximum - slider->minimum)) * rect.width();
+            //各个使用的矩形大小和位置
+            QRectF rect = opt->rect;                                                                            //Slider控件最大的矩形(包含如下三个)
+            QRectF rectHandle = proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, w);                    //滑块矩形
+            QRectF rectSliderTickmarks = proxy()->subControlRect(CC_Slider, opt, SC_SliderTickmarks, w);        //刻度的矩形
+            QRect rectGroove = proxy()->subControlRect(CC_Slider, opt, SC_SliderGroove, w);                     //滑槽的矩形
 
-            //绘画滑槽
+//            //测试(保留不删)
+//            p->fillRect(rect, Qt::gray);
+//            p->fillRect(rectSliderTickmarks, Qt::blue);
+//            p->fillRect(rectGroove, Qt::red);
+//            p->fillRect(rectHandle, Qt::green);
+//            qDebug()<<"---rect:"<<rect<<"  rectHandle:"<<rectHandle<<"   rectSliderTickmarks:"<<rectSliderTickmarks<<"   rectGroove:"<<rectGroove;
+
+            //预期准备工作
+            float sliCentX = (slider->sliderValue * 1.0 / (slider->maximum - slider->minimum)) * rect.width();  //为绘画滑槽(线)的计算准备
             QPen pen;
-            pen.setStyle(Qt::DotLine);
-            pen.setWidthF(3);
-            pen.setColor(getColor(opt, QPalette::Highlight));
-            p->setPen(pen);
-            p->setRenderHint(QPainter::Antialiasing);
-            p->drawLine(QPointF(rect.left(), rect.height() / 2.0), QPointF(sliCentX, rect.height() / 2.0));
-            pen.setColor(Qt::gray);
-            p->setPen(pen);
-            p->drawLine(QPointF(rect.right(), rect.height() / 2.0), QPointF(sliCentX, rect.height() / 2.0));
 
-            //绘画滑块
-            pen.setStyle(Qt::SolidLine);
-            p->setPen(Qt::NoPen);
-            p->setBrush(getColor(opt, QPalette::Highlight));
-            p->drawRoundedRect(proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, w), 8, 8);
+            //绘画 滑槽(线)
+            if (opt->subControls & SC_SliderGroove) {
+                pen.setStyle(Qt::DotLine);
+                pen.setWidthF(3);
+                pen.setColor(getColor(opt, QPalette::Highlight));
+                p->setPen(pen);
+                p->setRenderHint(QPainter::Antialiasing);
+                p->drawLine(QPointF(rectGroove.left(), rectHandle.top() + rectHandle.height() / 2.0), QPointF(sliCentX, rectHandle.top() + rectHandle.height() / 2.0));
+                pen.setColor(getColor(opt, QPalette::Foreground));
+                p->setPen(pen);
+                p->drawLine(QPointF(rectGroove.right(), rectHandle.top() + rectHandle.height() / 2.0), QPointF(sliCentX, rectHandle.top() + rectHandle.height() / 2.0));
+            }
+
+            //绘画 滑块
+            if (opt->subControls & SC_SliderHandle) {
+                pen.setStyle(Qt::SolidLine);
+                p->setPen(Qt::NoPen);
+                p->setBrush(getColor(opt, QPalette::Highlight));
+                p->drawRoundedRect(rectHandle, DStyle::pixelMetric(DStyle::PM_FrameRadius), DStyle::pixelMetric(DStyle::PM_FrameRadius));
+            }
+
+            //绘画 刻度,绘画方式了参考qfusionstyle.cpp
+            if (opt->subControls & SC_SliderTickmarks) {     //需要绘画刻度
+                p->setPen(opt->palette.foreground().color());
+                int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, w);
+                int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, w);
+                int interval = slider->tickInterval;
+                int ticks = slider->tickPosition;
+                if (interval <= 0) {
+                    interval = slider->singleStep;
+                    if (QStyle::sliderPositionFromValue(slider->minimum, slider->maximum, interval,
+                                                        available)
+                            - QStyle::sliderPositionFromValue(slider->minimum, slider->maximum,
+                                                              0, available) < 3)
+                        interval = slider->pageStep;
+                }
+                if (interval <= 0)
+                    interval = 1;
+
+                int v = slider->minimum;
+                int len = proxy()->pixelMetric(PM_SliderLength, slider, w);
+                while (v <= slider->maximum + 1) {
+                    if (v == slider->maximum + 1 && interval == 1)
+                        break;
+                    const int v_ = qMin(v, slider->maximum);
+                    int pos = sliderPositionFromValue(slider->minimum, slider->maximum, v_, available) + len / 2;
+                    int extra = 2 - ((v_ == slider->minimum || v_ == slider->maximum) ? 1 : 0);
+
+                    if (slider->orientation == Qt::Horizontal) {
+                        if (ticks & QSlider::TicksAbove) {
+                            p->drawLine(pos, slider->rect.top() + extra,
+                                              pos, slider->rect.top() + tickSize);
+                        }
+                        if (ticks & QSlider::TicksBelow) {
+                            p->drawLine(pos, slider->rect.bottom() - extra,
+                                              pos, slider->rect.bottom() - tickSize);
+                        }
+                    } else {
+                        if (ticks & QSlider::TicksAbove) {
+                            p->drawLine(slider->rect.left() + extra, pos,
+                                              slider->rect.left() + tickSize, pos);
+                        }
+                        if (ticks & QSlider::TicksBelow) {
+                            p->drawLine(slider->rect.right() - extra, pos,
+                                              slider->rect.right() - tickSize, pos);
+                        }
+                    }
+                    // in the case where maximum is max int
+                    int nextInterval = v + interval;
+                    if (nextInterval < v)
+                        break;
+                    v = nextInterval;
+                }
+            }
+
         }
         break;
     }
@@ -694,6 +766,87 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
             }
         }
     }
+    case CC_Slider: {
+        if (const QStyleOptionSlider *option = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            QRectF rect = option->rect;                                                    //Slider控件总的大小矩形
+            int slider_size = proxy()->pixelMetric(PM_SliderControlThickness, opt, w);     //滑块的高度
+            int tick_size = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, w);         //刻度的高度
+            QRectF slider_handle_rect = rect;                                              //滑块和滑漕的的最小公共矩形 (后面被用作临时且被改变的)
+
+            if (option->orientation == Qt::Horizontal) {
+                slider_handle_rect.setHeight(slider_size);
+                if (option->tickPosition == QSlider::TicksAbove) slider_handle_rect.moveBottom(rect.bottom());
+                if (option->tickPosition == QSlider::TicksBelow) slider_handle_rect.moveTop(rect.top());
+            } else {
+                slider_handle_rect.setWidth(slider_size);
+                if (option->tickPosition == QSlider::TicksRight)  slider_handle_rect.moveLeft(rect.left());
+                if (option->tickPosition == QSlider::TicksLeft)   slider_handle_rect.moveRight(rect.right());
+            }
+
+            QRectF rectStatic =  slider_handle_rect;   //rectStatic作为 滑块和滑漕的的最小公共矩形(不改变)
+
+            switch (sc) {
+            case SC_SliderGroove: {  //滑漕
+                qreal groove_size = slider_size / 4.0;
+                QRectF groove_rect;
+
+                if (option->orientation == Qt::Horizontal) {
+                    groove_rect.setWidth(slider_handle_rect.width());
+                    groove_rect.setHeight(groove_size);
+                } else {
+                    groove_rect.setWidth(groove_size);
+                    groove_rect.setHeight(slider_handle_rect.height());
+                }
+
+                groove_rect.moveCenter(slider_handle_rect.center());
+                return groove_rect.toRect();
+            }
+            case SC_SliderHandle: {  //滑块
+                int sliderPos = 0;
+                int len = proxy()->pixelMetric(PM_SliderLength, option, w);
+                bool horizontal = option->orientation == Qt::Horizontal;
+                sliderPos = sliderPositionFromValue(option->minimum, option->maximum, option->sliderPosition,
+                                                    (horizontal ? slider_handle_rect.width() : slider_handle_rect.height()) - len, option->upsideDown);
+                if (horizontal) {
+                    slider_handle_rect.moveLeft(slider_handle_rect.left() + sliderPos);
+                    slider_handle_rect.setWidth(len);
+                    slider_handle_rect.moveTop(rectStatic.top());
+                } else {
+                    slider_handle_rect.moveTop(slider_handle_rect.top() + sliderPos);
+                    slider_handle_rect.setHeight(len);
+                    slider_handle_rect.moveLeft(rectStatic.left());
+                }
+
+                return slider_handle_rect.toRect();
+            }
+            case SC_SliderTickmarks: {  //刻度的矩形
+                QRectF tick_rect = rect;
+
+                if (option->orientation == Qt::Horizontal) {
+                    tick_rect.setHeight(rect.height() - slider_handle_rect.height());
+
+                    if (option->tickPosition == QSlider::TicksAbove) {
+                        tick_rect.moveTop(rect.top());
+                    } else if (option->tickPosition == QSlider::TicksBelow){
+                        tick_rect.moveBottom(rect.bottom());
+                    }
+                } else {
+                    tick_rect.setWidth(rect.width() - slider_handle_rect.width());
+
+                    if (option->tickPosition == QSlider::TicksLeft) {
+                        tick_rect.moveLeft(rect.left());
+                    } else if (option->tickPosition == QSlider::TicksRight) {
+                        tick_rect.moveRight(rect.right());
+                    }
+                }
+
+                return tick_rect.toRect();
+            }
+            default:
+                break;
+            }
+        }
+    }
     break;
     default:
         break;
@@ -744,9 +897,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         break;
     }
     case CT_Slider: {
-        int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
-        size += QSize(frame_margins, frame_margins);
-        break;
+        if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            int height = proxy()->pixelMetric(PM_SliderControlThickness, opt, widget) + Metrics::Slider_TickmarkOffset;
+            size.setHeight(qMax(size.height(), height));
+            break;
+        }
     }
     case CT_MenuBarItem: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
@@ -784,13 +939,16 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_SpinBoxFrameWidth:
         return Metrics::SpinBox_FrameWidth;
     case PM_SliderLength:
-        return Metrics::Slider_TickLength;
+        return Metrics::Slider_TickLength;        //滑块的长度
     case PM_SliderControlThickness:
         return Metrics::Slider_ControlThickness;
     case PM_MenuBarHMargin:
         return Metrics::MenuBarItem_MarginWidth;
     case PM_MenuBarVMargin:
         return Metrics::MenuBarItem_MarginHeight;
+        return Metrics::Slider_ControlThickness;  //滑块高度
+    case PM_SliderTickmarkOffset:
+        return Slider_TickmarkOffset;             //刻度的高度
     default:
         break;
     }

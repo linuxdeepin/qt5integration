@@ -126,10 +126,11 @@ enum Metrics
     TitleBar_MarginWidth = 4,
 
     // sliders
-    Slider_TickLength = 20,
+    Slider_TickLength = 20,         //滑块的长度
     Slider_TickMarginWidth = 6,
     Slider_GrooveThickness = 2,
-    Slider_ControlThickness = 24,
+    Slider_ControlThickness = 24,   //滑块的高度
+    Slider_TickmarkOffset = 14,      //刻度的高度
 
     // tabbar
     TabBar_TabMarginHeight = 4,
