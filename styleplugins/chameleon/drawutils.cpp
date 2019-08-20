@@ -290,8 +290,8 @@ void drawMark(QPainter *pa, const QRectF &rect, const QColor &boxInside, const Q
     double xWide = (rect.width() / 2.0);
     int yHigh = rect.height();
     double length = sqrt(pow(xWide, 2) + pow(yHigh, 2));
-    double x = rect.right() + ( outLineLeng/ length) * xWide;
-    double y = rect.y() - ( outLineLeng/ length) * yHigh;
+    double x = rect.right() + (outLineLeng / length) * xWide;
+    double y = rect.y() - (outLineLeng / length) * yHigh;
 
     pen.setColor(boxOutside);
     pa->setPen(pen);
@@ -322,7 +322,7 @@ void drawArrow(QPainter *pa, const QRectF &rect, const QColor &color, Qt::ArrowT
         pa->drawLine(QPointF(center.x(), rect.y()), rect.bottomRight());
         break;
     }
-    case Qt::LeftArrow:{
+    case Qt::LeftArrow: {
         pa->drawLine(QPointF(rect.x(), center.y()), rect.bottomRight());
         pa->drawLine(QPointF(rect.x(), center.y()), rect.topRight());
         break;
@@ -341,6 +341,28 @@ void drawArrow(QPainter *pa, const QRectF &rect, const QColor &color, Qt::ArrowT
         break;
     }
 
+}
+
+void drawPlus(QPainter *painter, const QRectF &rect, const QColor &color, qreal width)
+{
+    qreal centerX = rect.center().x() ;
+    qreal centerY = rect.center().y() ;
+    QPen pen = color;
+    pen.setWidthF(width);
+    painter->setPen(pen);
+    painter->setBrush(Qt::NoBrush);
+    painter->drawLine(QPointF(rect.x(), centerY), QPointF(rect.right(), centerY));
+    painter->drawLine(QPointF(centerX, rect.y()), QPointF(centerX, rect.bottom()));
+}
+
+void drawSubtract(QPainter *painter, const QRectF &rect, const QColor &color, qreal width)
+{
+    qreal centerY = rect.center().y() ;
+    QPen pen = color;
+    pen.setWidthF(width);
+    painter->setPen(pen);
+    painter->setBrush(Qt::NoBrush);
+    painter->drawLine(QPointF(rect.left(), centerY), QPointF(rect.right(), centerY));
 }
 
 } // namespace DrawUtils

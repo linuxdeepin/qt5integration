@@ -554,6 +554,14 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
             return DStyle::subElementRect(r, &option, widget);
         }
         break;
+    case SE_PushButtonContents:
+        if (const QStyleOptionButton *vopt = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            QRect buttonContentRect = vopt->rect;
+            int buttonIconMargin = proxy()->pixelMetric(QStyle::PM_ButtonMargin, opt, widget) ;
+            buttonContentRect.adjust(buttonIconMargin, buttonIconMargin, -buttonIconMargin, -buttonIconMargin);
+            return buttonContentRect.marginsRemoved(frameExtentMargins());
+        }
+        break;
     default:
         break;
     }
@@ -616,8 +624,14 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         updateSpinBoxButtonState(opt, buttonOpt, upIsActive, upIsEnabled);
         proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOpt, painter, widget);
 
-        QRect arrowRect = subRect.adjusted(Metrics::Icon_Margins, Metrics::Icon_Margins, -Metrics::Icon_Margins, -Metrics::Icon_Margins);
-        DrawUtils::drawArrow(painter, arrowRect, getColor(&buttonOpt, QPalette::ButtonText), Qt::ArrowType::UpArrow);
+        if (opt->buttonSymbols & QAbstractSpinBox::PlusMinus) {
+            QRectF plusRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
+            qreal lineWidth = qMax(2.0, static_cast<qreal>( Metrics::SpinBox_ButtonIconWidth ));
+            DrawUtils::drawPlus(painter, plusRect, getColor(opt, QPalette::ButtonText), lineWidth);
+        } else {
+            QRect arrowRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
+            DrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::UpArrow);
+        }
     }
 
     if (opt->subControls & SC_SpinBoxDown) {
@@ -629,8 +643,14 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         updateSpinBoxButtonState(opt, buttonOpt, downIsActive, downIsEnabled);
         proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOpt, painter, widget);
 
-        QRect arrowRect = subRect.adjusted(Metrics::Icon_Margins, Metrics::Icon_Margins, -Metrics::Icon_Margins, -Metrics::Icon_Margins);
-        DrawUtils::drawArrow(painter, arrowRect, getColor(&buttonOpt, QPalette::ButtonText), Qt::ArrowType::DownArrow);
+        if (opt->buttonSymbols & QAbstractSpinBox::PlusMinus) {
+            QRectF subtractRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
+            qreal lineWidth = qMax(2.0, static_cast<qreal>( Metrics::SpinBox_ButtonIconWidth ));
+            DrawUtils::drawSubtract(painter, subtractRect, getColor(opt, QPalette::ButtonText), lineWidth);
+        } else {
+            QRect arrowRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
+            DrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::DownArrow);
+        }
     }
 
     return true;
@@ -663,6 +683,43 @@ QStyle::SubControl ChameleonStyle::hitTestComplexControl(QStyle::ComplexControl 
 QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex *opt,
                                      QStyle::SubControl sc, const QWidget *w) const
 {
+    switch (cc) {
+    case CC_SpinBox: {
+        if (const QStyleOptionSpinBox *option = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+
+            if (option->buttonSymbols & QAbstractSpinBox::PlusMinus) {
+                switch (sc) {
+                case SC_SpinBoxEditField: {
+                    QRect spinboxRect = option->rect;
+                    QRect dButtonRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, w);
+                    QRect uButtonRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w);
+                    spinboxRect.setLeft(dButtonRect.right());
+                    spinboxRect.setRight(uButtonRect.left());
+                    return spinboxRect;
+                }
+                break;
+                case SC_SpinBoxUp: {
+                    QRect buttonRect(option->rect.topLeft(), QSize(option->rect.height(),option->rect.height()) );
+                    buttonRect.moveRight(option->rect.right());
+                    return buttonRect.marginsRemoved(frameExtentMargins());
+                }
+                break;
+                case SC_SpinBoxDown: {
+                    QRect buttonRect(option->rect.topLeft(), QSize(option->rect.height(),option->rect.height()) );
+                    buttonRect.moveLeft(option->rect.left());
+                    return buttonRect.marginsRemoved(frameExtentMargins());
+                }
+                break;
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    break;
+    default:
+        break;
+    }
     return DStyle::subControlRect(cc, opt, sc, w);
 }
 

@@ -54,6 +54,8 @@ namespace DrawUtils {
     void drawMark(QPainter *pa, const QRectF &rect, const QColor &boxInside, const QColor &boxOutside, const int penWidth, const int outLineLeng = 2);
     void drawBorder(QPainter *pa, const QRectF &rect, const QBrush &brush, int borderWidth, int radius);
     void drawArrow(QPainter *pa, const QRectF &rect, const QColor &color, Qt::ArrowType arrow, int width = 2);
+    void drawPlus(QPainter *painter, const QRectF &rect, const QColor &color , qreal width);
+    void drawSubtract(QPainter *painter, const QRectF &rect, const QColor &color, qreal width);
 
     Q_DECLARE_OPERATORS_FOR_FLAGS(Corners)
 } // namespace DrawUtils
