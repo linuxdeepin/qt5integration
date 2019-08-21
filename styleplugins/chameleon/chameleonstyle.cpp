@@ -251,6 +251,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                     DStyleOptionBackgroundGroup option;
                     option.state = vopt->state;
                     option.position = DStyleOptionBackgroundGroup::ItemBackgroundPosition(vopt->viewItemPosition);
+                    option.dpalette = DPalette::get(w);
 
                     if (type != Dtk::RoundedBackground) {
                         option.directions = Qt::Vertical;
@@ -282,7 +283,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_ItemBackground: {
         if (const DStyleOptionBackgroundGroup *vopt = qstyleoption_cast<const DStyleOptionBackgroundGroup *>(opt)) {
-            const QColor &color = getColor(opt, DPalette::ItemBackground, w);
+            const QColor color = DStyle::generatedBrush(vopt, vopt->dpalette.brush(DPalette::ItemBackground),
+                                                        vopt->dpalette.currentColorGroup(), DPalette::ItemBackground).color();
 
             if (color.alpha() == 0) {
                 return;
