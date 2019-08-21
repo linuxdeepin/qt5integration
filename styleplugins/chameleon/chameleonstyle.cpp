@@ -474,11 +474,71 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         break;
     }
+    case CE_MenuBarItem: {
+        if (const QStyleOptionMenuItem *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
+            p->save();
+            QRect rect = mbi->rect;
+            drawMenuBarItem(mbi, rect, p, w);
+            p->restore();
+            return ;
+        }
+    }
+    break;
+    case CE_MenuBarEmptyArea: {
+        p->save();
+        QRect menubarRect = opt->rect - frameExtentMargins();
+        p->setPen(Qt::NoPen);
+        p->setBrush(getColor(opt, QPalette::Window));
+        p->drawRect(menubarRect);
+        p->restore();
+        return;
+    }
     default:
         break;
     }
 
     DStyle::drawControl(element, opt, p, w);
+}
+
+bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &rect, QPainter *painter, const QWidget *widget) const
+{
+    bool enabled(option->state & QStyle::State_Enabled);
+    bool mouseOver((option->state & QStyle::State_MouseOver) && enabled);
+    bool sunken((option->state & QStyle::State_Sunken) && enabled);
+
+    if (mouseOver || sunken) {
+        QBrush background(getColor(option, QPalette::Highlight));
+        qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
+
+        painter->setRenderHint(QPainter::Antialiasing);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(background);
+        painter->drawRoundedRect(rect, radius, radius);
+    }
+
+    if (option) {
+        int alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
+
+        if (!proxy()->styleHint(SH_UnderlineShortcut, option, widget))
+            alignment |= Qt::TextHideMnemonic;
+
+        int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+        QPixmap pix = option->icon.pixmap(widget ? widget->window()->windowHandle() : nullptr, QSize(iconExtent, iconExtent), (enabled) ? (mouseOver ? QIcon::Active : QIcon::Normal) : QIcon::Disabled);
+
+        if (!pix.isNull()) {
+            proxy()->drawItemPixmap(painter, option->rect, alignment, pix);
+        } else {
+            QStyleOptionMenuItem itemOption = *option;
+
+            if (sunken)
+                itemOption.palette.setBrush(QPalette::ButtonText, itemOption.palette.highlightedText());
+
+            proxy()->drawItemText(painter, itemOption.rect, alignment, itemOption.palette, enabled,
+                                  itemOption.text, QPalette::ButtonText);
+        }
+    }
+
+    return true;
 }
 
 QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *opt,
@@ -598,7 +658,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 return;
         break;
 #endif
-    case CC_Slider :{
+    case CC_Slider : {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QRectF rect = opt->rect;
             float sliCentX = (slider->sliderValue * 1.0 / (slider->maximum - slider->minimum)) * rect.width();
@@ -653,7 +713,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
 
         if (opt->buttonSymbols & QAbstractSpinBox::PlusMinus) {
             QRectF plusRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
-            qreal lineWidth = qMax(2.0, static_cast<qreal>( Metrics::SpinBox_ButtonIconWidth ));
+            qreal lineWidth = qMax(2.0, static_cast<qreal>(Metrics::SpinBox_ButtonIconWidth));
             DrawUtils::drawPlus(painter, plusRect, getColor(opt, QPalette::ButtonText), lineWidth);
         } else {
             QRect arrowRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
@@ -672,7 +732,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
 
         if (opt->buttonSymbols & QAbstractSpinBox::PlusMinus) {
             QRectF subtractRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
-            qreal lineWidth = qMax(2.0, static_cast<qreal>( Metrics::SpinBox_ButtonIconWidth ));
+            qreal lineWidth = qMax(2.0, static_cast<qreal>(Metrics::SpinBox_ButtonIconWidth));
             DrawUtils::drawSubtract(painter, subtractRect, getColor(opt, QPalette::ButtonText), lineWidth);
         } else {
             QRect arrowRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
@@ -724,19 +784,16 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                     spinboxRect.setRight(uButtonRect.left());
                     return spinboxRect;
                 }
-                break;
                 case SC_SpinBoxUp: {
-                    QRect buttonRect(option->rect.topLeft(), QSize(option->rect.height(),option->rect.height()) );
+                    QRect buttonRect(option->rect.topLeft(), QSize(option->rect.height(), option->rect.height()));
                     buttonRect.moveRight(option->rect.right());
                     return buttonRect.marginsRemoved(frameExtentMargins());
                 }
-                break;
                 case SC_SpinBoxDown: {
-                    QRect buttonRect(option->rect.topLeft(), QSize(option->rect.height(),option->rect.height()) );
+                    QRect buttonRect(option->rect.topLeft(), QSize(option->rect.height(), option->rect.height()));
                     buttonRect.moveLeft(option->rect.left());
                     return buttonRect.marginsRemoved(frameExtentMargins());
                 }
-                break;
                 default:
                     break;
                 }
@@ -788,15 +845,18 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         break;
     }
     case CT_SpinBox: {
-        if (const QStyleOptionSpinBox *spinBoxOption = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
-            size += QSize(frame_margins * 2, frame_margins * 2);
-        }
+        int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
+        size += QSize(frame_margins * 2, frame_margins * 2);
         break;
     }
     case CT_Slider: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         size += QSize(frame_margins, frame_margins);
+        break;
+    }
+    case CT_MenuBarItem: {
+        int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
+        size += QSize(frame_margins * 2, frame_margins * 2);
         break;
     }
     default:
@@ -845,6 +905,10 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return Metrics::Slider_TickLength;
     case PM_SliderControlThickness:
         return Metrics::Slider_ControlThickness;
+    case PM_MenuBarHMargin:
+        return Metrics::MenuBarItem_MarginWidth;
+    case PM_MenuBarVMargin:
+        return Metrics::MenuBarItem_MarginHeight;
     default:
         break;
     }
