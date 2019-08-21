@@ -6,8 +6,7 @@ CONFIG += plugin
 
 SOURCES += \
     $$PWD/main.cpp \
-    $$PWD/chameleonstyle.cpp \
-    $$PWD/drawutils.cpp
+    $$PWD/chameleonstyle.cpp
 
 DISTFILES += $${TARGET}.json
 
@@ -20,5 +19,4 @@ unix {
 
 HEADERS += \
     $$PWD/common.h \
-    $$PWD/chameleonstyle.h \
-    $$PWD/drawutils.h
+    $$PWD/chameleonstyle.h

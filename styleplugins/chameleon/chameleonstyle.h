@@ -34,7 +34,7 @@ public:
 
     void drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
                        const QWidget *w = nullptr) const override;
-    void drawControl(ControlElement element, const QStyleOption *opt, QPainter *p,
+    void drawControl(QStyle::ControlElement element, const QStyleOption *opt, QPainter *p,
                      const QWidget *w = nullptr) const override;
     QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = nullptr) const override;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,

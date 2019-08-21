@@ -20,7 +20,6 @@
  */
 #include "chameleonstyle.h"
 #include "common.h"
-#include "drawutils.h"
 
 #include <DNativeSettings>
 #include <DStyleOption>
@@ -201,7 +200,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                 shadow_rect.setHeight(qMin(shadow_rect.width(), shadow_rect.height()));
                 shadow_rect.moveCenter(opt->rect.center() + QPoint(shadow_xoffset / 2.0, shadow_yoffset / 2.0));
 
-                DrawUtils::drawShadow(p, shadow_rect, frame_radius, frame_radius,
+                DDrawUtils::drawShadow(p, shadow_rect, frame_radius, frame_radius,
                                       DStyle::adjustColor(color, 0, 0, +30), shadow_radius, QPoint(0, 0));
 
                 p->setPen(Qt::NoPen);
@@ -281,58 +280,6 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         }
         break;
     }
-    case PE_ItemBackground: {
-        if (const DStyleOptionBackgroundGroup *vopt = qstyleoption_cast<const DStyleOptionBackgroundGroup *>(opt)) {
-            const QColor color = DStyle::generatedBrush(vopt, vopt->dpalette.brush(DPalette::ItemBackground),
-                                                        vopt->dpalette.currentColorGroup(), DPalette::ItemBackground).color();
-
-            if (color.alpha() == 0) {
-                return;
-            }
-
-            int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-            p->setBrush(color);
-            p->setPen(Qt::NoPen);
-            p->setRenderHint(QPainter::Antialiasing);
-
-            if (vopt->directions != Qt::Horizontal && vopt->directions != Qt::Vertical) {
-                p->drawRoundedRect(vopt->rect, frame_radius, frame_radius);
-                break;
-            }
-
-            switch (vopt->position) {
-            case DStyleOptionBackgroundGroup::OnlyOne:
-                p->drawRoundedRect(vopt->rect, frame_radius, frame_radius);
-                break;
-            case DStyleOptionBackgroundGroup::Beginning: {
-                if (vopt->directions == Qt::Horizontal) {
-                    DrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius, DrawUtils::TopLeftCorner | DrawUtils::BottomLeftCorner);
-                } else {
-                    DrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius, DrawUtils::TopLeftCorner | DrawUtils::TopRightCorner);
-                }
-
-                break;
-            }
-            case DStyleOptionBackgroundGroup::End:
-                if (vopt->directions == Qt::Horizontal) {
-                    DrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius, DrawUtils::TopRightCorner | DrawUtils::BottomRightCorner);
-                } else {
-                    DrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius, DrawUtils::BottomLeftCorner | DrawUtils::BottomRightCorner);
-                }
-
-                break;
-            case DStyleOptionBackgroundGroup::Middle:
-                p->setRenderHint(QPainter::Antialiasing, false);
-                p->drawRect(vopt->rect);
-                break;
-            default:
-                break;
-            }
-
-            return;
-        }
-        break;
-    }
     case PE_PanelLineEdit: {
         p->setBrush(getColor(opt, QPalette::Button));
         p->setPen(Qt::NoPen);
@@ -367,7 +314,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_IndicatorCheckBox: {
         QRectF standard = opt->rect;
-        DrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
+        DDrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
 
         if (opt->state & State_NoChange) {  //Qt::PartiallyChecked
             QRectF lineRect(0, 0, standard.width() / 2.0, 2);
@@ -378,7 +325,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             p->setBrush(getColor(opt, DPalette::Highlight));
             p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 1, 2);
 
-            DrawUtils::drawMark(p, standard.adjusted(2, 0, 0, -2), getColor(opt, DPalette::Window), getColor(opt, DPalette::Highlight), 2);
+            DDrawUtils::drawMark(p, standard.adjusted(2, 0, 0, -2), getColor(opt, DPalette::Window), getColor(opt, DPalette::Highlight), 2);
         }
 
         return;
@@ -412,7 +359,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setPen(QPen(getColor(opt, DPalette::Highlight), DStyle::pixelMetric(PM_FocusBorderWidth)));
                     p->drawEllipse(rect.adjusted(1, 1, -1, -1));
                 } else {
-                    DrawUtils::drawBorder(p, rect, getColor(opt, DPalette::Highlight),
+                    DDrawUtils::drawBorder(p, rect, getColor(opt, DPalette::Highlight),
                                           DStyle::pixelMetric(PM_FocusBorderWidth), DStyle::pixelMetric(PM_FocusBorderSpacing) + 2);
                 }
             }
@@ -457,20 +404,20 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             QRectF rectArrow(0, 0, rect.height() / 2, rect.height() / 2);
             rectArrow.moveCenter(rect.center());
             rectArrow.moveLeft(rect.left() + rect.height() / 2);
-            DrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::LeftArrow);
+            DDrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::LeftArrow);
             rectArrow.moveCenter(rect.center());
             rectArrow.moveRight(rect.right() - rect.height() / 2);
-            DrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::RightArrow);
+            DDrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::RightArrow);
         } else {
             p->drawRoundedRect(rect, rect.width() / 2.0, rect.width() / 2.0);
 
             QRectF rectArrow(0, 0, rect.width() / 2.0, rect.width() / 2.0);
             rectArrow.moveCenter(rect.center());
             rectArrow.moveTop(rect.top() + rect.width() / 2.0);
-            DrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::UpArrow);
+            DDrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::UpArrow);
             rectArrow.moveCenter(rect.center());
             rectArrow.moveBottom(rect.bottom() - rect.width() / 2);
-            DrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::DownArrow);
+            DDrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::DownArrow);
         }
         break;
     }
@@ -714,10 +661,10 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         if (opt->buttonSymbols & QAbstractSpinBox::PlusMinus) {
             QRectF plusRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
             qreal lineWidth = qMax(2.0, static_cast<qreal>(Metrics::SpinBox_ButtonIconWidth));
-            DrawUtils::drawPlus(painter, plusRect, getColor(opt, QPalette::ButtonText), lineWidth);
+            DDrawUtils::drawPlus(painter, plusRect, getColor(opt, QPalette::ButtonText), lineWidth);
         } else {
             QRect arrowRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
-            DrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::UpArrow);
+            DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::UpArrow);
         }
     }
 
@@ -733,10 +680,10 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         if (opt->buttonSymbols & QAbstractSpinBox::PlusMinus) {
             QRectF subtractRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
             qreal lineWidth = qMax(2.0, static_cast<qreal>(Metrics::SpinBox_ButtonIconWidth));
-            DrawUtils::drawSubtract(painter, subtractRect, getColor(opt, QPalette::ButtonText), lineWidth);
+            DDrawUtils::drawSubtract(painter, subtractRect, getColor(opt, QPalette::ButtonText), lineWidth);
         } else {
             QRect arrowRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
-            DrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::DownArrow);
+            DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::DownArrow);
         }
     }
 
@@ -878,18 +825,6 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return 0;
     case PM_ButtonMargin:
         return Metrics::Button_MarginWidth;
-    case PM_FrameRadius:
-        return Metrics::Frame_FrameRadius;
-    case PM_FocusBorderWidth:
-        return Metrics::Frame_FrameWidth;
-    case PM_FocusBorderSpacing:
-        return Metrics::Frame_BorderSpacing;
-    case PM_ShadowRadius:
-        return Metrics::Shadow_Radius;
-    case PM_ShadowHOffset:
-        return Metrics::Shadow_XOffset;
-    case PM_ShadowVOffset:
-        return Metrics::Shadow_YOffset;
     case PM_MenuBarItemSpacing:
         return Metrics::MenuBar_ItemSpacing;
     case PM_IndicatorWidth:
@@ -952,7 +887,7 @@ QIcon ChameleonStyle::standardIcon(QStyle::StandardPixmap standardIcon, const QS
 
         QRectF contentRect(0, 0, rect.width() / 2.5, rect.height() / 2.5);
         contentRect.moveCenter(QRectF(rect).center());
-        DrawUtils::drawFork(&pan, contentRect, getColor(opt, QPalette::Text), 2);
+        DDrawUtils::drawFork(&pan, contentRect, getColor(opt, QPalette::Text), 2);
         pan.end();
 
         QPixmap pix = QPixmap::fromImage(image);
@@ -1120,7 +1055,7 @@ void ChameleonStyle::drawShadow(QPainter *p, const QRect &rect, const QColor &co
     int shadow_xoffset = DStyle::pixelMetric(PM_ShadowHOffset);
     int shadow_yoffset = DStyle::pixelMetric(PM_ShadowVOffset);
 
-    DrawUtils::drawShadow(p, rect, frame_radius, frame_radius, color, shadow_radius,
+    DDrawUtils::drawShadow(p, rect, frame_radius, frame_radius, color, shadow_radius,
                           QPoint(shadow_xoffset, shadow_yoffset));
 }
 
@@ -1130,7 +1065,7 @@ void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &br
     int border_spacing = DStyle::pixelMetric(PM_FocusBorderSpacing);
     int frame_radis = DStyle::pixelMetric(PM_FrameRadius) + border_spacing;
 
-    DrawUtils::drawBorder(p, rect, brush, border_width, frame_radis);
+    DDrawUtils::drawBorder(p, rect, brush, border_width, frame_radis);
 }
 
 QBrush ChameleonStyle::generatedBrush(StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, QPalette::ColorRole role, const QStyleOption *option) const
