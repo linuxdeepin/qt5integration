@@ -182,51 +182,24 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 {
     switch (static_cast<int>(pe)) {
     case PE_PanelButtonCommand: {
-        if (const QStyleOptionButton *bopt = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-            const QMargins &margins = frameExtentMargins();
+        const QMargins &margins = frameExtentMargins();
 
-            if (bopt->features & DStyleOptionButton::FloatingButton) {
-                QRect shadow_rect = opt->rect + margins;
-                const QRect content_rect = opt->rect - margins;
-                const QColor &color = getColor(opt, QPalette::Highlight);
+        drawShadow(p, opt->rect + margins, getColor(opt, QPalette::Shadow));
+        // 初始化button的渐变背景色
+        QLinearGradient lg(QPointF(0, opt->rect.top()),
+                           QPointF(0, opt->rect.bottom()));
+        lg.setColorAt(0, getColor(opt, QPalette::Light));
+        lg.setColorAt(1, getColor(opt, QPalette::Dark));
 
-                qreal frame_radius = content_rect.width() / 2.0;
-                int shadow_radius = DStyle::pixelMetric(PM_ShadowRadius);
-                int shadow_xoffset = DStyle::pixelMetric(PM_ShadowHOffset);
-                int shadow_yoffset = DStyle::pixelMetric(PM_ShadowVOffset);
+        p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
+        p->setBrush(lg);
+        p->setRenderHint(QPainter::Antialiasing);
 
-                shadow_rect.setTopLeft(shadow_rect.topLeft() + QPoint(shadow_xoffset, shadow_yoffset));
-                shadow_rect.setWidth(qMin(shadow_rect.width(), shadow_rect.height()));
-                shadow_rect.setHeight(qMin(shadow_rect.width(), shadow_rect.height()));
-                shadow_rect.moveCenter(opt->rect.center() + QPoint(shadow_xoffset / 2.0, shadow_yoffset / 2.0));
+        int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
 
-                DDrawUtils::drawShadow(p, shadow_rect, frame_radius, frame_radius,
-                                      DStyle::adjustColor(color, 0, 0, +30), shadow_radius, QPoint(0, 0));
+        p->drawRoundedRect(opt->rect - margins, frame_radius, frame_radius);
 
-                p->setPen(Qt::NoPen);
-                p->setBrush(getColor(opt, QPalette::Highlight));
-                p->setRenderHint(QPainter::Antialiasing);
-                p->drawEllipse(content_rect);
-            } else {
-                drawShadow(p, opt->rect + margins, getColor(opt, QPalette::Shadow));
-                // 初始化button的渐变背景色
-                QLinearGradient lg(QPointF(0, opt->rect.top()),
-                                   QPointF(0, opt->rect.bottom()));
-                lg.setColorAt(0, getColor(opt, QPalette::Light));
-                lg.setColorAt(1, getColor(opt, QPalette::Dark));
-
-                p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
-                p->setBrush(lg);
-                p->setRenderHint(QPainter::Antialiasing);
-
-                int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-
-                p->drawRoundedRect(opt->rect - margins, frame_radius, frame_radius);
-            }
-
-            return;
-        }
-        break;
+        return;
     }
     case PE_FrameFocusRect: {
         drawBorder(p, opt->rect, getColor(opt, QPalette::Highlight));
@@ -366,32 +339,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
         }
         return;
-    case CE_PushButton: {
-        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-            if (btn->features & DStyleOptionButton::FloatingButton) {
-                proxy()->drawControl(CE_PushButtonBevel, btn, p, w);
-                QStyleOptionButton subopt = *btn;
-                subopt.rect = proxy()->subElementRect(SE_PushButtonContents, btn, w);
-
-                if (!(btn->features & QStyleOptionButton::Flat))
-                    subopt.palette.setBrush(QPalette::ButtonText, subopt.palette.highlightedText());
-
-                proxy()->drawControl(CE_PushButtonLabel, &subopt, p, w);
-
-                if (btn->state.testFlag(QStyle::State_HasFocus)) {
-                    int border_width = DStyle::pixelMetric(PM_FocusBorderWidth);
-
-                    p->setPen(QPen(getColor(opt, QPalette::Highlight), border_width, Qt::SolidLine));
-                    p->setBrush(Qt::NoBrush);
-                    p->setRenderHint(QPainter::Antialiasing);
-                    p->drawEllipse(QRectF(opt->rect).adjusted(1, 1, -1, -1));
-                }
-
-                return;
-            }
-        }
-        break;
-    }
     case CE_ScrollBarSlider: {
         p->setBrush(getColor(opt, QPalette::Highlight));
         p->setPen(Qt::NoPen);
