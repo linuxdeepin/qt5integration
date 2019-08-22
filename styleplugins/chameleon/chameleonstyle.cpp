@@ -96,6 +96,7 @@ static QColor dark_qpalette[QPalette::NColorRoles] {
 };
 
 static QColor light_dpalette[DPalette::NColorTypes] {
+    QColor(),                       //NoType
     QColor(0, 0, 0, 255 * 0.03),    //ItemBackground
     QColor("#001A2E"),              //TextTitle
     QColor("#526A7F"),              //TextTips
@@ -107,6 +108,7 @@ static QColor light_dpalette[DPalette::NColorTypes] {
 };
 
 static QColor dark_dpalette[DPalette::NColorTypes] {
+    QColor(),                           //NoType
     QColor(255, 255, 255, 255 * 0.05),  //ItemBackground
     QColor("#C0C6D4"),                  //TextTitle
     QColor("#6D7C88"),                  //TextTips

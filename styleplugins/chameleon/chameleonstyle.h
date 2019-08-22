@@ -36,14 +36,14 @@ public:
                        const QWidget *w = nullptr) const override;
     void drawControl(QStyle::ControlElement element, const QStyleOption *opt, QPainter *p,
                      const QWidget *w = nullptr) const override;
-    QRect subElementRect(SubElement r, const QStyleOption *opt, const QWidget *widget = nullptr) const override;
+    QRect subElementRect(QStyle::SubElement r, const QStyleOption *opt, const QWidget *widget = nullptr) const override;
     void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                             const QWidget *w = nullptr) const override;
     SubControl hitTestComplexControl(ComplexControl cc, const QStyleOptionComplex *opt,
                                      const QPoint &pt, const QWidget *w = nullptr) const override;
     QRect subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc,
                          const QWidget *w = nullptr) const override;
-    QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
+    QSize sizeFromContents(QStyle::ContentsType ct, const QStyleOption *opt,
                            const QSize &contentsSize, const QWidget *widget = nullptr) const override;
 
     int pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt = nullptr, const QWidget *widget = nullptr) const override;
@@ -51,9 +51,9 @@ public:
     int styleHint(StyleHint sh, const QStyleOption *opt = nullptr, const QWidget *w = nullptr,
                   QStyleHintReturn *shret = nullptr) const override;
 
-    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *opt = nullptr,
+    QIcon standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOption *opt = nullptr,
                        const QWidget *widget = nullptr) const override;
-    QPixmap standardPixmap(StandardPixmap sp, const QStyleOption *opt = nullptr,
+    QPixmap standardPixmap(QStyle::StandardPixmap sp, const QStyleOption *opt = nullptr,
                            const QWidget *widget = nullptr) const override;
 
     QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
