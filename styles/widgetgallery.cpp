@@ -113,7 +113,32 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 
     setCentralWidget(mainWidget);
 
-    menuBar()->addAction("chameleon");
+    QMenu *firstLayer = new QMenu("first");
+    menuBar()->addAction("chameleon")->setMenu(firstLayer);
+    firstLayer->addAction("menu 1")->setIcon(QIcon::fromTheme("document-open"));
+    firstLayer->addAction("menu 2")->setEnabled(false);
+    firstLayer->addSection("Section");
+    firstLayer->addAction("menu 3")->setCheckable(true);
+    firstLayer->addSeparator();
+
+    QMenu *secondLayer = new QMenu("second");
+    firstLayer->addMenu(secondLayer);
+    QActionGroup *group = new QActionGroup(this);
+    group->setExclusive(true);
+    QAction* sa1 = new QAction("submenu 1");
+    sa1->setCheckable(true);
+    group->addAction(sa1);
+    QAction* sa2 = new QAction("submenu 2");
+    sa2->setCheckable(true);
+    sa2->setIcon(QIcon::fromTheme("application-exit"));
+    group->addAction(sa2);
+    QAction* sa3 = new QAction("submenu 3");
+    sa3->setCheckable(true);
+    sa3->setShortcut(QKeySequence::New);
+    group->addAction(sa3);
+    secondLayer->addActions(group->actions());
+    secondLayer->setLayoutDirection(Qt::RightToLeft);
+
     menuBar()->addAction("dlight");
     menuBar()->addAction("ddark");
     menuBar()->addAction("dsemidark");

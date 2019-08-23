@@ -41,6 +41,7 @@
 #include <QPainter>
 #include <QPaintEngine>
 #include <QAbstractItemView>
+#include <QBitmap>
 
 #include <qpa/qplatformwindow.h>
 
@@ -305,6 +306,26 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         return;
     }
+    case PE_IndicatorArrowUp: {
+        QRectF standard = opt->rect - frameExtentMargins();
+        DDrawUtils::drawArrow(p, standard, getColor(opt, QPalette::Foreground), Qt::UpArrow);
+        return;
+    }
+    case PE_IndicatorArrowDown: {
+        QRectF standard = opt->rect - frameExtentMargins();
+        DDrawUtils::drawArrow(p, standard, getColor(opt, QPalette::Foreground), Qt::DownArrow);
+        return;
+    }
+    case PE_IndicatorArrowLeft: {
+        QRectF standard = opt->rect - frameExtentMargins();
+        DDrawUtils::drawArrow(p, standard, getColor(opt, QPalette::Foreground), Qt::LeftArrow);
+        return;
+    }
+    case PE_IndicatorArrowRight: {
+        QRectF standard = opt->rect - frameExtentMargins();
+        DDrawUtils::drawArrow(p, standard, getColor(opt, QPalette::Foreground), Qt::RightArrow);
+        return;
+    }
     default:
         break;
     }
@@ -335,7 +356,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->drawEllipse(rect.adjusted(1, 1, -1, -1));
                 } else {
                     DDrawUtils::drawBorder(p, rect, getColor(opt, DPalette::Highlight),
-                                          DStyle::pixelMetric(PM_FocusBorderWidth), DStyle::pixelMetric(PM_FocusBorderSpacing) + 2);
+                                           DStyle::pixelMetric(PM_FocusBorderWidth), DStyle::pixelMetric(PM_FocusBorderSpacing) + 2);
                 }
             }
 
@@ -382,13 +403,23 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     break;
     case CE_MenuBarEmptyArea: {
         p->save();
-        QRect menubarRect = opt->rect - frameExtentMargins();
+        QRect menubarRect = opt->rect;
         p->setPen(Qt::NoPen);
         p->setBrush(getColor(opt, QPalette::Window));
         p->drawRect(menubarRect);
         p->restore();
+
         return;
     }
+    case CE_MenuItem: {
+        if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
+            p->save();
+            drawMenuItem(menuItem, p, w);
+            p->restore();
+            return ;
+        }
+    }
+    break;
     default:
         break;
     }
@@ -426,11 +457,225 @@ bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &
         } else {
             QStyleOptionMenuItem itemOption = *option;
 
-            if (sunken)
+            if (mouseOver || sunken)
                 itemOption.palette.setBrush(QPalette::ButtonText, itemOption.palette.highlightedText());
 
             proxy()->drawItemText(painter, itemOption.rect, alignment, itemOption.palette, enabled,
                                   itemOption.text, QPalette::ButtonText);
+        }
+    }
+
+    return true;
+}
+
+bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *painter, const QWidget *widget) const
+{
+    if (const QStyleOptionMenuItem *menuItem = option) {
+        //绘制背景
+        QRect menuRect = menuItem->rect;
+        painter->fillRect(menuRect, getColor(option, QPalette::ToolTipBase));
+
+        QColor highlight = getColor(option, QPalette::Highlight);
+        bool enabled = menuItem->state & State_Enabled;
+        bool selected = menuItem->state & State_Selected && enabled;
+        bool checkable = menuItem->checkType != QStyleOptionMenuItem::NotCheckable;
+        bool checked = menuItem->checked;
+        bool sunken = menuItem->state & State_Sunken;
+
+        //绘制分段
+        if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
+            int fontLabelWidth = 0;
+
+            if (!menuItem->text.isEmpty()) {
+                painter->setFont(menuItem->font);
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(Qt::NoBrush);
+                proxy()->drawItemText(painter, menuRect
+                                      , menuItem->direction == Qt::LeftToRight ? (Qt::AlignLeft | Qt::AlignVCenter) : (Qt::AlignRight | Qt::AlignVCenter)
+                                      , menuItem->palette, menuItem->state & State_Enabled, menuItem->text
+                                      , QPalette::WindowText);
+                fontLabelWidth = menuItem->fontMetrics.horizontalAdvance(menuItem->text) + Menu_SeparatorItemHMargin;
+            }
+
+            painter->setPen(getColor(option, QPalette::Button));
+            painter->setBrush(Qt::NoBrush);
+            bool reverse = menuItem->direction == Qt::RightToLeft;
+            painter->drawLine(QPointF(menuRect.left()  + (reverse ? 0 : fontLabelWidth), menuRect.center().y()),
+                              QPointF(menuRect.right()  - (reverse ? fontLabelWidth : 0), menuRect.center().y())) ;
+            return true;
+        }
+
+        //绘制选区
+        if (selected) {
+            QRect r = menuRect;
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(highlight);
+            painter->fillRect(r, highlight);
+        }
+
+        //绘制选择框
+        bool ignoreCheckMark = false;
+        const int checkColHOffset = MenuItem_MarginWidth ;
+        int checkColWidth = qMax<int>(menuRect.height(), menuItem->maxIconWidth);
+
+        if (qobject_cast<const QComboBox *>(widget) ||
+                (option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool()))
+            ignoreCheckMark = true;
+
+        if (!ignoreCheckMark) {
+            const qreal boxMargin = Menu_ItemVTextMargin ;
+            const qreal boxWidth = checkColWidth - 2 * boxMargin;
+            QRectF checkRectF(option->rect.left() + boxMargin + checkColHOffset, option->rect.center().y() - boxWidth / 2 + 1, boxWidth, boxWidth);
+            QRect checkRect = checkRectF.toRect();
+            checkRect.setWidth(checkRect.height());
+            /*checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);*/
+
+            if (checkable) {
+
+                if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) { //单选框
+
+                    if (checked || sunken) {
+                        painter->setRenderHint(QPainter::Antialiasing);
+                        painter->setPen(Qt::NoPen);
+
+                        QPalette::ColorRole textRole = !enabled ? QPalette::Text :
+                                                       selected ? QPalette::HighlightedText : QPalette::ButtonText;
+                        painter->setBrush(getColor(option, textRole));
+
+                        QColor markColor = getColor(option, textRole) ;
+                        DDrawUtils::drawMark(painter, checkRect - frameExtentMargins(), markColor, markColor, 2);
+                    }
+                } else { //复选框
+
+                    if (menuItem->icon.isNull() && (checked || selected)) {
+                        QPalette::ColorRole textRole = !enabled ? QPalette::Text :
+                                                       selected ? QPalette::HighlightedText : QPalette::ButtonText;
+                        QColor checkColor = getColor(option, textRole);
+                        DDrawUtils::drawMark(painter, checkRect - frameExtentMargins(), checkColor, checkColor, 2);
+                    }
+                }
+            }
+        } else { //ignore checkmark
+
+            if (menuItem->icon.isNull())
+                checkColWidth = 0;
+            else
+                checkColWidth = menuItem->maxIconWidth;
+        }
+
+        // 绘制图标
+        bool dis = !enabled;
+        bool act = selected;
+        if (!menuItem->icon.isNull()) {
+            QRect vCheckRect = QRect(menuItem->rect.x() + checkColHOffset, menuItem->rect.y(), checkColWidth, menuItem->rect.height());
+            /*= visualRect(opt->direction, menuItem->rect,QRect(menuItem->rect.x() + checkColHOffset, menuItem->rect.y(),checkcol, menuitem->rect.height()));*/
+            QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
+
+            if (act && !dis)
+                mode = QIcon::Active;
+
+            int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, option, widget);
+            QSize iconSize(smallIconSize, smallIconSize);
+#if QT_CONFIG(combobox)
+            if (const QComboBox *combo = qobject_cast<const QComboBox *>(widget))
+                iconSize = combo->iconSize();
+#endif
+            QPixmap pixmap;
+            if (checked)
+                pixmap = menuItem->icon.pixmap(iconSize, mode, QIcon::On);
+            else
+                pixmap = menuItem->icon.pixmap(iconSize, mode);
+
+            const int pixw = pixmap.width() / pixmap.devicePixelRatio();
+            const int pixh = pixmap.height() / pixmap.devicePixelRatio();
+            QRect pmr(0, 0, pixw, pixh);
+            pmr.moveCenter(vCheckRect.center());
+            painter->setPen(menuItem->palette.text().color());
+
+            if (!ignoreCheckMark && checkable && checked) {
+                //已经绘制了选择框就不绘制图标
+            } else {
+                painter->drawPixmap(pmr.topLeft(), pixmap);
+            }
+        }
+
+        // 绘制文本
+        int x, y, w, h;
+        menuRect.getRect(&x, &y, &w, &h);
+        int tab = menuItem->tabWidth;
+        QColor disableColor = getColor(option, QPalette::ToolTipText);
+
+        int xmargin = checkColHOffset + checkColWidth ;
+        int xpos = menuRect.x() + xmargin;
+        QRect textRect(xpos, y + MenuItem_ItemSpacing, w - xmargin - tab, h - 2 * MenuItem_ItemSpacing);
+        QRect vTextRect = textRect /*visualRect(option->direction, menuRect, textRect)*/; // 区分左右方向
+        QStringRef textRef(&menuItem->text);
+
+        if (selected)
+            painter->setPen(menuItem->palette.highlightedText().color());
+        else
+            painter->setPen(menuItem->palette.text().color());
+
+        painter->setBrush(Qt::NoBrush);
+
+        if (!textRef.isEmpty()) {
+            int tabIndex = textRef.indexOf(QLatin1Char('\t'));
+            int text_flags = Qt::AlignVCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
+
+            if (!styleHint(SH_UnderlineShortcut, menuItem, widget))
+                text_flags |= Qt::TextHideMnemonic;
+
+            text_flags |= Qt::AlignLeft;
+
+            if (tabIndex >= 0) {
+                QPoint vShortcutStartPoint = textRect.topRight();
+                vShortcutStartPoint.setX(vShortcutStartPoint.x() - Menu_PanelRightPadding);
+                QRect vShortcutRect = QRect(vShortcutStartPoint, QPoint(menuRect.right(), textRect.bottom()));
+                /* = visualRect(option->direction,menuRect,QRect(vShortcutStartPoint, QPoint(menuRect.right(), textRect.bottom())))*/;
+                const QString textToDraw = textRef.mid(tabIndex + 1).toString();
+
+                if (enabled && !selected && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
+                    painter->setPen(menuItem->palette.light().color());
+                    painter->drawText(vShortcutRect, text_flags, textToDraw);
+                    painter->setPen(disableColor);
+                }
+
+                painter->setBrush(Qt::NoBrush);
+                painter->drawText(vShortcutRect, text_flags, textToDraw);
+                textRef = textRef.left(tabIndex);
+            }
+
+            QFont font = menuItem->font;
+            font.setPointSizeF(QFontInfo(menuItem->font).pointSizeF());
+            painter->setFont(font);
+            const QString textToDraw = textRef.left(tabIndex).toString();
+
+            if (enabled && !selected && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
+                painter->setPen(menuItem->palette.light().color());
+                painter->drawText(vTextRect, text_flags, textToDraw);
+                painter->setPen(disableColor);
+            }
+
+            painter->setBrush(Qt::NoBrush);
+            painter->drawText(vTextRect, text_flags, textToDraw);
+        }
+
+        // 绘制箭头
+        if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
+            int dim = (menuRect.height() - 4) / 2;
+            QStyle::PrimitiveElement arrow;
+            arrow = option->direction == Qt::RightToLeft ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
+            int xpos = menuRect.left() + menuRect.width() - 3 - dim;
+            QRect  vSubMenuRect = visualRect(option->direction, menuRect,
+                                             QRect(xpos, menuRect.top() + menuRect.height() / 2 - dim / 2, dim, dim));
+            QStyleOptionMenuItem newMI = *menuItem;
+            newMI.rect = vSubMenuRect;
+            newMI.state = !enabled ? State_None : State_Enabled;
+            if (selected)
+                newMI.palette.setColor(QPalette::Foreground,
+                                       newMI.palette.highlightedText().color());
+
+            proxy()->drawPrimitive(arrow, &newMI, painter, widget);
         }
     }
 
@@ -894,6 +1139,60 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         size += QSize(frame_margins * 2, frame_margins * 2);
         break;
     }
+    case CT_MenuItem: {
+        if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
+            int m_width = size.width();
+            bool hideShortcutText = false;
+
+            if (hideShortcutText) {
+                m_width -= menuItem->tabWidth;
+                int tabIndex = menuItem->text.indexOf(QLatin1Char('\t'));
+
+                if (tabIndex != -1) {
+                    int textWidth = menuItem->fontMetrics.width(menuItem->text.mid(tabIndex + 1));
+
+                    if (menuItem->tabWidth == 0)
+                        m_width -= textWidth;
+                }
+            }
+
+            int maxpmw = menuItem->maxIconWidth;
+            int tabSpacing = MenuItem_TabSpacing;
+            if (menuItem->text.contains(QLatin1Char('\t'))) {
+                if (!hideShortcutText)
+                    m_width += tabSpacing;
+            } else {
+                if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {
+                    m_width += 2 * Menu_ArrowHMargin;
+                } else if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
+                    QFontMetrics fm(menuItem->font);
+                    QFont fontBold = menuItem->font;
+                    fontBold.setBold(true);
+                    QFontMetrics fmBold(fontBold);
+                    m_width += fmBold.width(menuItem->text) - fm.width(menuItem->text);
+                }
+            }
+            int checkcol = qMax<int>(maxpmw, Menu_CheckMarkWidth); // Windows always shows a check column
+            m_width += checkcol;
+            m_width += Menu_RightBorder ;
+            size.setWidth(m_width);
+            if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
+                if (!menuItem->text.isEmpty()) {
+                    size.setHeight(menuItem->fontMetrics.height());
+                } else {
+                    size.setHeight(size.height() + 4);
+                }
+            } else if (!menuItem->icon.isNull()) {
+                if (const QComboBox *combo = qobject_cast<const QComboBox *>(widget)) {
+                    size.setHeight(qMax(combo->iconSize().height() + 2, size.height()));
+                }
+            }
+        }
+
+        size.setWidth(size.width() + Menu_ItemHMargin * 2);
+        size.setHeight(size.height() + qMax(Menu_ItemVMargin * 2, 0));
+        break;
+    }
     default:
         break;
     }
@@ -927,14 +1226,21 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_SliderLength:
         return Metrics::Slider_TickLength;        //滑块的长度
     case PM_SliderControlThickness:
-        return Metrics::Slider_ControlThickness;
+        return Metrics::Slider_ControlThickness;  //滑块高度
     case PM_MenuBarHMargin:
         return Metrics::MenuBarItem_MarginWidth;
     case PM_MenuBarVMargin:
         return Metrics::MenuBarItem_MarginHeight;
-        return Metrics::Slider_ControlThickness;  //滑块高度
     case PM_SliderTickmarkOffset:
         return Slider_TickmarkOffset;             //刻度的高度
+    case PM_MenuHMargin:
+        return Metrics::Menu_HMargin;
+    case PM_MenuVMargin:
+        return Metrics::Menu_VMargin;
+    case PM_MenuBarPanelWidth:
+        return Menu_FrameWidth;
+    case PM_MenuDesktopFrameWidth:
+        return Menu_FrameWidth;
     default:
         break;
     }
@@ -948,6 +1254,10 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
     switch (sh) {
     case SH_ItemView_ShowDecorationSelected:
     case SH_ScrollBar_Transient:
+        return true;
+    //增加菜单鼠标事件跟踪
+    case SH_MenuBar_MouseTracking:
+    case SH_Menu_MouseTracking:
         return true;
     default:
         break;
@@ -1147,7 +1457,7 @@ void ChameleonStyle::drawShadow(QPainter *p, const QRect &rect, const QColor &co
     int shadow_yoffset = DStyle::pixelMetric(PM_ShadowVOffset);
 
     DDrawUtils::drawShadow(p, rect, frame_radius, frame_radius, color, shadow_radius,
-                          QPoint(shadow_xoffset, shadow_yoffset));
+                           QPoint(shadow_xoffset, shadow_yoffset));
 }
 
 void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &brush) const
