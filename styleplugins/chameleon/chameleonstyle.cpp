@@ -244,6 +244,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
                 if (!vopt->showDecorationSelected) {
                     select_rect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
+                } else {
+                    select_rect -= frameExtentMargins();
                 }
 
                 p->setPen(Qt::NoPen);
