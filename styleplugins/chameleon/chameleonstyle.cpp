@@ -418,8 +418,27 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             p->restore();
             return ;
         }
+        break;
     }
-    break;
+    case CE_PushButton: {
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            proxy()->drawControl(CE_PushButtonBevel, btn, p, w);
+            QStyleOptionButton subopt = *btn;
+            subopt.rect -= frameExtentMargins();
+            subopt.rect = proxy()->subElementRect(SE_PushButtonContents, &subopt, w);
+            proxy()->drawControl(CE_PushButtonLabel, &subopt, p, w);
+
+            if (btn->state & State_HasFocus) {
+                QStyleOptionFocusRect fropt;
+                fropt.QStyleOption::operator=(*btn);
+                fropt.rect = proxy()->subElementRect(SE_PushButtonFocusRect, btn, w);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, p, w);
+            }
+
+            return;
+        }
+        break;
+    }
     default:
         break;
     }
@@ -745,8 +764,10 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         if (const QStyleOptionButton *vopt = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             QRect buttonContentRect = vopt->rect;
             int buttonIconMargin = proxy()->pixelMetric(QStyle::PM_ButtonMargin, opt, widget) ;
-            buttonContentRect.adjust(buttonIconMargin, buttonIconMargin, -buttonIconMargin, -buttonIconMargin);
-            return buttonContentRect.marginsRemoved(frameExtentMargins());
+            buttonContentRect.adjust(buttonIconMargin / 2, buttonIconMargin / 2,
+                                     -buttonIconMargin / 2, -buttonIconMargin / 2);
+
+            return buttonContentRect;
         }
         break;
     default:
@@ -1203,48 +1224,6 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
 int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
                                 const QWidget *widget) const
 {
-    switch (static_cast<int>(m)) {
-    case PM_ButtonDefaultIndicator:
-    case PM_ButtonShiftHorizontal:
-    case PM_ButtonShiftVertical:
-    case PM_FocusFrameVMargin:
-    case PM_FocusFrameHMargin:
-        return 0;
-    case PM_ButtonMargin:
-        return Metrics::Button_MarginWidth;
-    case PM_MenuBarItemSpacing:
-        return Metrics::MenuBar_ItemSpacing;
-    case PM_IndicatorWidth:
-    case PM_IndicatorHeight:
-    case PM_ExclusiveIndicatorHeight:
-    case PM_ExclusiveIndicatorWidth:
-        return Metrics::CheckBox_FrameWidth;
-    case PM_ScrollBarSliderMin:
-        return ScrollBar_SliderMinWidget;
-    case PM_SpinBoxFrameWidth:
-        return Metrics::SpinBox_FrameWidth;
-    case PM_SliderLength:
-        return Metrics::Slider_TickLength;        //滑块的长度
-    case PM_SliderControlThickness:
-        return Metrics::Slider_ControlThickness;  //滑块高度
-    case PM_MenuBarHMargin:
-        return Metrics::MenuBarItem_MarginWidth;
-    case PM_MenuBarVMargin:
-        return Metrics::MenuBarItem_MarginHeight;
-    case PM_SliderTickmarkOffset:
-        return Slider_TickmarkOffset;             //刻度的高度
-    case PM_MenuHMargin:
-        return Metrics::Menu_HMargin;
-    case PM_MenuVMargin:
-        return Metrics::Menu_VMargin;
-    case PM_MenuBarPanelWidth:
-        return Menu_FrameWidth;
-    case PM_MenuDesktopFrameWidth:
-        return Menu_FrameWidth;
-    default:
-        break;
-    }
-
     return DStyle::pixelMetric(m, opt, widget);
 }
 
