@@ -784,7 +784,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             //各个使用的矩形大小和位置
             QRectF rect = opt->rect;                                                                            //Slider控件最大的矩形(包含如下三个)
             QRectF rectHandle = proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, w);                    //滑块矩形
-            QRectF rectSliderTickmarks = proxy()->subControlRect(CC_Slider, opt, SC_SliderTickmarks, w);        //刻度的矩形
+//            QRectF rectSliderTickmarks = proxy()->subControlRect(CC_Slider, opt, SC_SliderTickmarks, w);        //刻度的矩形
             QRect rectGroove = proxy()->subControlRect(CC_Slider, opt, SC_SliderGroove, w);                     //滑槽的矩形
 
 //            //测试(保留不删)
@@ -1071,7 +1071,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
         if (const QStyleOptionSlider *option = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             QRectF rect = option->rect;                                                    //Slider控件总的大小矩形
             int slider_size = proxy()->pixelMetric(PM_SliderControlThickness, opt, w);     //滑块的高度
-            int tick_size = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, w);         //刻度的高度
+//            int tick_size = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, w);         //刻度的高度
             QRectF slider_handle_rect = rect;                                              //滑块和滑漕的的最小公共矩形 (后面被用作临时且被改变的)
 
             if (option->orientation == Qt::Horizontal) {
@@ -1191,10 +1191,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     }
     case CT_Slider: {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            Q_UNUSED(slider);
             int height = proxy()->pixelMetric(PM_SliderControlThickness, opt, widget) + Metrics::Slider_TickmarkOffset;
             size.setHeight(qMax(size.height(), height));
-            break;
         }
+        break;
     }
     case CT_MenuBarItem: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
