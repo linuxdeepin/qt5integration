@@ -210,34 +210,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_PanelItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
-            bool valid_type = false;
-            Dtk::ItemBackgroundType type = static_cast<Dtk::ItemBackgroundType>(vopt->index.data(Dtk::BackgroundTypeRole).toInt(&valid_type));
-
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-
-            if (valid_type && Q_LIKELY(type <= Dtk::RoundedBackground)) {
-                if (type == Dtk::ClipCornerBackground) {
-                    QPainterPath path;
-                    path.addRoundedRect(w->rect(), frame_radius, frame_radius);
-                    p->setClipPath(path);
-                }
-
-                if (!vopt->showDecorationSelected || !vopt->state.testFlag(QStyle::State_Selected)) {
-                    DStyleOptionBackgroundGroup option;
-                    option.state = vopt->state;
-                    option.position = DStyleOptionBackgroundGroup::ItemBackgroundPosition(vopt->viewItemPosition);
-                    option.dpalette = DPalette::get(w);
-
-                    if (type != Dtk::RoundedBackground) {
-                        option.directions = Qt::Vertical;
-                        option.rect = vopt->rect;
-                    } else {
-                        option.rect = vopt->rect - frameExtentMargins();
-                    }
-
-                    DStyle::drawPrimitive(PE_ItemBackground, &option, p, w);
-                }
-            }
 
             if (vopt->state & QStyle::State_Selected) {
                 QRect select_rect = opt->rect;
@@ -1133,15 +1106,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                 size = QRect(QPoint(0, 0), size).marginsAdded(item_margins).size();
             }
 
-            bool valid_type = false;
-            Dtk::ItemBackgroundType type = static_cast<Dtk::ItemBackgroundType>(vopt->index.data(Dtk::BackgroundTypeRole).toInt(&valid_type));
-
-            if (!valid_type || type != Dtk::RoundedBackground) {
-                return size;
-            }
-
-            int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
-            size += QSize(frame_margins * 2, frame_margins * 2);
+            return size;
         }
         break;
     }
