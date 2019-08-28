@@ -57,6 +57,7 @@ enum Metrics
     SpinBox_FrameWidth = LineEdit_FrameWidth,
     SpinBox_ArrowButtonWidth = 20,
     SpinBox_ButtonIconWidth = 2,
+    SpinBox_MiniHeight = 44,
 
     // groupbox title margin
     GroupBox_TitleMarginWidth = 4,
