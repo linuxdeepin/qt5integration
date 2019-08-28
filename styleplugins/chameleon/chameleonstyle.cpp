@@ -1452,110 +1452,12 @@ void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &br
 
 QBrush ChameleonStyle::generatedBrush(StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, QPalette::ColorRole role, const QStyleOption *option) const
 {
-    Q_UNUSED(cg)
-
-    QColor colorNew = base.color();
-
-    if (!colorNew.isValid())
-        return base;
-
-    if ((flags & StyleState_Mask)  == SS_HoverState) {
-        switch (role) {
-        case QPalette::Light:
-        case QPalette::Dark:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, -10, 0, 0, 0, 0);
-            break;
-        case QPalette::Highlight:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, +20);
-            break;
-        default:
-            break;
-        }
-
-        return colorNew;
-    } else if ((flags & StyleState_Mask) == SS_PressState) {
-        QColor hightColor = option->palette.highlight().color();
-        hightColor.setAlphaF(0.1);
-
-        switch (role) {
-        case QPalette::Light: {
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, -20, 0, 0, +20, 0);
-            colorNew = DStyle::blendColor(colorNew, hightColor);
-            break;
-        }
-        case QPalette::Dark: {
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, -15, 0, 0, +20, 0);
-            colorNew = DStyle::blendColor(colorNew, hightColor);
-            break;
-        }
-        case QPalette::Highlight:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, -10);
-            break;
-        default:
-            break;
-        }
-
-        return colorNew;
-    }
-
-    return base;
+   return DStyle::generatedBrush(flags, base, cg, role, option);
 }
 
 QBrush ChameleonStyle::generatedBrush(DStyle::StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, DPalette::ColorType type, const QStyleOption *option) const
 {
-    Q_UNUSED(cg)
-    Q_UNUSED(option)
-
-    QColor colorNew = base.color();
-
-    if (!colorNew.isValid())
-        return base;
-
-    if ((flags & StyleState_Mask)  == SS_HoverState) {
-        switch (type) {
-        case DPalette::LightLively:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, +30, 0, 0, 0, 0);
-            break;
-        case DPalette::DarkLively:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, +10, 0, 0, 0, 0);
-            break;
-        case DPalette::ItemBackground:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, 0, 0, 0, 0, +10);
-            break;
-        default:
-            break;
-        }
-
-        return colorNew;
-    } else if ((flags & StyleState_Mask) == SS_PressState) {
-        switch (type) {
-        case DPalette::LightLively:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, -30, 0, 0, 0, 0);
-            break;
-        case DPalette::DarkLively:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, -20, 0, 0, 0, 0);
-            break;
-        default:
-            break;
-        }
-
-        return colorNew;
-    } else if ((flags & StyleState_Mask) == SS_NormalState) {
-        switch (type) {
-        case DPalette::LightLively:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, +40, 0, 0, 0, 0);
-            break;
-        case DPalette::DarkLively:
-            colorNew = DStyle::adjustColor(colorNew, 0, 0, +20, 0, 0, 0, 0);
-            break;
-        default:
-            break;
-        }
-
-        return colorNew;
-    }
-
-    return base;
+    return DStyle::generatedBrush(flags, base, cg, type, option);
 }
 
 QColor ChameleonStyle::getColor(const QStyleOption *option, QPalette::ColorRole role) const
