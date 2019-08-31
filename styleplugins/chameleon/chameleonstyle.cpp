@@ -904,7 +904,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         buttonOpt.rect = subRect;
         updateSpinBoxButtonState(opt, buttonOpt, upIsActive, upIsEnabled);
         bool isPlusMinus = opt->buttonSymbols & QAbstractSpinBox::PlusMinus;
-        QSize buttonSize = proxy()->sizeFromContents(CT_PushButton,&buttonOpt,buttonOpt.rect.size() / 3,widget);
+        QSize buttonSize = proxy()->sizeFromContents(CT_PushButton, &buttonOpt, buttonOpt.rect.size() / 3, widget);
 
         if (subRect.height() < buttonSize.height() && !isPlusMinus) { //绘制迷你型spinbox down button
             QLinearGradient lg(QPointF(0, buttonOpt.rect.top()),
@@ -942,7 +942,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         updateSpinBoxButtonState(opt, buttonOpt, downIsActive, downIsEnabled);
 
         bool isPlusMinus = opt->buttonSymbols & QAbstractSpinBox::PlusMinus;
-        QSize buttonSize = proxy()->sizeFromContents(CT_PushButton,&buttonOpt,buttonOpt.rect.size() / 3,widget);
+        QSize buttonSize = proxy()->sizeFromContents(CT_PushButton, &buttonOpt, buttonOpt.rect.size() / 3, widget);
 
         if (subRect.height() < buttonSize.height() && !isPlusMinus) { //绘制迷你型spinbox down button
             QLinearGradient lg(QPointF(0, buttonOpt.rect.top()),
@@ -1501,7 +1501,7 @@ void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &br
 
 QBrush ChameleonStyle::generatedBrush(StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, QPalette::ColorRole role, const QStyleOption *option) const
 {
-   return DStyle::generatedBrush(flags, base, cg, role, option);
+    return DStyle::generatedBrush(flags, base, cg, role, option);
 }
 
 QBrush ChameleonStyle::generatedBrush(DStyle::StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, DPalette::ColorType type, const QStyleOption *option) const
