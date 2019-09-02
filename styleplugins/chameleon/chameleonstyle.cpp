@@ -120,7 +120,7 @@ static QColor dark_dpalette[DPalette::NColorTypes] {
     QColor(0, 0, 0, 0.05 * 255)         //FrameBorder
 };
 
-static void initDisablePalette(QPalette &pa)
+static void initQPalette(QPalette &pa, QPalette::ColorGroup group, const QColor &superstratum)
 {
     for (int i = 0; i < QPalette::NColorRoles; ++i) {
         QPalette::ColorRole role = static_cast<QPalette::ColorRole>(i);
@@ -131,46 +131,19 @@ static void initDisablePalette(QPalette &pa)
 
         QColor color = pa.color(QPalette::Normal, role);
 
-        color.setAlpha(color.alpha() * 0.6);
-        pa.setColor(QPalette::Disabled, role, color);
+        color = DStyle::blendColor(color, superstratum);
+        pa.setColor(group, role, color);
     }
 }
 
-static void initInactivePalette(QPalette &pa)
-{
-    for (int i = 0; i < QPalette::NColorRoles; ++i) {
-        QPalette::ColorRole role = static_cast<QPalette::ColorRole>(i);
-
-        if (role == QPalette::Window) {
-            continue;
-        }
-
-        QColor color = pa.color(QPalette::Normal, role);
-
-        color.setAlpha(color.alpha() * 0.4);
-        pa.setColor(QPalette::Inactive, role, color);
-    }
-}
-
-static void initDisablePalette(DPalette &pa)
+static void initDPalette(DPalette &pa, QPalette::ColorGroup group, const QColor &superstratum)
 {
     for (int i = 0; i < DPalette::NColorTypes; ++i) {
         DPalette::ColorType role = static_cast<DPalette::ColorType>(i);
         QColor color = pa.color(DPalette::Normal, role);
 
-        color.setAlpha(color.alpha() * 0.6);
-        pa.setColor(QPalette::Disabled, role, color);
-    }
-}
-
-static void initInactivePalette(DPalette &pa)
-{
-    for (int i = 0; i < DPalette::NColorTypes; ++i) {
-        DPalette::ColorType role = static_cast<DPalette::ColorType>(i);
-        QColor color = pa.color(DPalette::Normal, role);
-
-        color.setAlpha(color.alpha() * 0.4);
-        pa.setColor(QPalette::Inactive, role, color);
+        color = DStyle::blendColor(color, superstratum);
+        pa.setColor(group, role, color);
     }
 }
 
@@ -1668,7 +1641,18 @@ int ChameleonStyle::layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy
 QPalette ChameleonStyle::standardPalette() const
 {
     QPalette pa;
-    const QColor *color_list = isDrakStyle() ? dark_qpalette : light_qpalette;
+    const QColor *color_list;
+    QColor disable_mask_color, inactive_mask_color;
+
+    if (isDrakStyle()) {
+        color_list = dark_qpalette;
+        disable_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.6));
+        inactive_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.4));
+    } else {
+        color_list = light_qpalette;
+        disable_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.8));
+        inactive_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.6));
+    }
 
     for (int i = 0; i < QPalette::NColorRoles; ++i) {
         QPalette::ColorRole role = static_cast<QPalette::ColorRole>(i);
@@ -1676,8 +1660,8 @@ QPalette ChameleonStyle::standardPalette() const
         pa.setColor(DPalette::Active, role, color_list[i]);
     }
 
-    initDisablePalette(pa);
-    initInactivePalette(pa);
+    initQPalette(pa, QPalette::Disabled, disable_mask_color);
+    initQPalette(pa, QPalette::Inactive, inactive_mask_color);
 
     return pa;
 }
@@ -1690,7 +1674,18 @@ void ChameleonStyle::polish(QPalette &pa)
 void ChameleonStyle::polish(QApplication *app)
 {
     DPalette pa = proxy()->standardPalette();
-    const QColor *color_list = isDrakStyle() ? dark_dpalette : light_dpalette;
+    const QColor *color_list;
+    QColor disable_mask_color, inactive_mask_color;
+
+    if (isDrakStyle()) {
+        color_list = dark_dpalette;
+        disable_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.6));
+        inactive_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.4));
+    } else {
+        color_list = light_dpalette;
+        disable_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.8));
+        inactive_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.6));
+    }
 
     for (int i = 0; i < DPalette::NColorTypes; ++i) {
         DPalette::ColorType type = static_cast<DPalette::ColorType>(i);
@@ -1698,8 +1693,8 @@ void ChameleonStyle::polish(QApplication *app)
         pa.setColor(DPalette::Active, type, color_list[i]);
     }
 
-    initDisablePalette(pa);
-    initInactivePalette(pa);
+    initDPalette(pa, QPalette::Disabled, disable_mask_color);
+    initDPalette(pa, QPalette::Inactive, inactive_mask_color);
 
     DPalette::setGeneric(pa);
     app->setPalette(pa);
