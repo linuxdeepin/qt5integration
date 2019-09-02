@@ -125,14 +125,14 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     firstLayer->addMenu(secondLayer);
     QActionGroup *group = new QActionGroup(this);
     group->setExclusive(true);
-    QAction* sa1 = new QAction("submenu 1");
+    QAction *sa1 = new QAction("submenu 1");
     sa1->setCheckable(true);
     group->addAction(sa1);
-    QAction* sa2 = new QAction("submenu 2");
+    QAction *sa2 = new QAction("submenu 2");
     sa2->setCheckable(true);
     sa2->setIcon(QIcon::fromTheme("application-exit"));
     group->addAction(sa2);
-    QAction* sa3 = new QAction("submenu 3");
+    QAction *sa3 = new QAction("submenu 3");
     sa3->setCheckable(true);
     sa3->setShortcut(QKeySequence::New);
     group->addAction(sa3);
@@ -199,6 +199,18 @@ void WidgetGallery::createTopLeftGroupBox()
     checkBox->setTristate(true);
     checkBox->setCheckState(Qt::PartiallyChecked);
 
+    connect(radioButton1, &QRadioButton::clicked, this, [&] {
+        bottomLeftTabWidget->setDocumentMode(!bottomLeftTabWidget->documentMode());
+    });
+    connect(radioButton2, &QRadioButton::clicked, this, [&] {
+        bottomLeftTabWidget->setTabShape(QTabWidget::Rounded);
+        bottomLeftTabWidget->update();
+    });
+    connect(radioButton3, &QRadioButton::clicked, this, [&] {
+        bottomLeftTabWidget->setTabShape(QTabWidget::Triangular);
+        bottomLeftTabWidget->update();
+    });
+
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(radioButton1);
     layout->addWidget(radioButton2);
@@ -237,6 +249,9 @@ void WidgetGallery::createBottomLeftTabWidget()
     bottomLeftTabWidget->setSizePolicy(QSizePolicy::Preferred,
                                        QSizePolicy::Ignored);
 
+    bottomLeftTabWidget->setTabsClosable(true);
+    bottomLeftTabWidget->setTabShape(QTabWidget::Triangular);
+
     QWidget *tab1 = new QWidget;
     tableWidget = new QTableWidget(10, 10);
 
@@ -262,6 +277,10 @@ void WidgetGallery::createBottomLeftTabWidget()
 
     bottomLeftTabWidget->addTab(tab1, tr("&Table"));
     bottomLeftTabWidget->addTab(tab2, tr("Text &Edit"));
+    bottomLeftTabWidget->addTab(new QWidget(), "tab 1");
+    bottomLeftTabWidget->addTab(new QWidget(), "tab 2");
+    bottomLeftTabWidget->addTab(new QWidget(), "tab 3");
+    bottomLeftTabWidget->addTab(new QWidget(), "tab 4");
 }
 
 void WidgetGallery::createBottomRightGroupBox()

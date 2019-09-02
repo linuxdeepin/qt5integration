@@ -135,13 +135,13 @@ enum Metrics
     Slider_TickmarkOffset = 14,      //刻度的高度
 
     // tabbar
-    TabBar_TabMarginHeight = 4,
-    TabBar_TabMarginWidth = 8,
+    TabBar_TabMarginHeight = 8,
+    TabBar_TabMarginWidth = 12,
     TabBar_TabMinWidth = 80,
-    TabBar_TabMinHeight = 28,
+    TabBar_TabMinHeight = 20,
     TabBar_TabItemSpacing = 8,
-    TabBar_TabOverlap = 1,
-    TabBar_BaseOverlap = 2,
+    TabBar_TabOverlap = 0,
+    TabBar_BaseOverlap = 0,
 
     // tab widget
     TabWidget_MarginWidth = 4,
