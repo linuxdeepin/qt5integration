@@ -405,6 +405,18 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
     }
     break;
+    case CE_RubberBand: {
+        if (const QStyleOptionRubberBand *rubber = qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {
+            QColor color = opt->palette.highlight().color();
+            color.setAlphaF(0.1);
+            p->setBrush(color);
+            color.setAlphaF(0.2);
+            p->setPen(QPen(color, 1));
+            p->drawRect(opt->rect.adjusted(0, 0, -1, -1));
+            return;
+        }
+        break;
+    }
     default:
         break;
     }
