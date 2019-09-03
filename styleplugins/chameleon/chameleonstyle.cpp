@@ -330,58 +330,16 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
         if (opt->state & QStyle::State_Horizontal) {
             QRectF rectHand = rect;
-            QRectF rectTemp = rect;   //标记为没改变的槽矩形rect
             rectHand.setHeight(rect.height() / 4);
             rectHand.moveCenter(QRectF(rect).center());
             p->setBrush(getColor(opt, QPalette::Button));
             p->drawRoundedRect(rectHand, rectHand.height() / 2.0, rectHand.height() / 2.0);
-
-            if (opt->state & State_MouseOver) {
-                int width = proxy()->pixelMetric(PM_ScrollBarSliderMin, opt, w);   //蓝色带箭头的圆角矩形, 其宽为定值36
-                rect.setWidth(width);
-                p->setBrush(getColor(opt, QPalette::Highlight));
-
-                rect.moveCenter(QPointF(point.x(), rectHand.center().y()));
-                rect.moveLeft(qMax(rectHand.left(), rect.left()));
-                rect.moveRight(qMin(rectHand.right(), rect.right()));
-                p->drawRoundedRect(rect, rect.height() / 2.0, rect.height() / 2.0);
-
-                QRectF rectArrow(0, 0, rect.height() / 4.0, rect.height() / 2.0);
-                rectArrow.moveCenter(rect.center());
-
-                rectArrow.moveLeft(rect.left() + rect.height() / 2);
-                DDrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::LeftArrow);
-                rectArrow.moveCenter(rect.center());
-                rectArrow.moveRight(rect.right() - rect.height() / 2);
-                DDrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::RightArrow);
-            }
         } else {
             QRectF rectHand = rect;
-            QRectF rectTemp = rect;
             rectHand.setWidth(rectHand.width() / 4);
             rectHand.moveCenter(QRectF(rect).center());
             p->setBrush(getColor(opt, QPalette::Button));
             p->drawRoundedRect(rectHand, rectHand.width() / 2.0, rectHand.width() / 2.0);
-
-            if (opt->state & State_MouseOver) {
-                int height = proxy()->pixelMetric(PM_ScrollBarSliderMin, opt, w);
-                rect.setHeight(height);
-                p->setBrush(getColor(opt, QPalette::Highlight));
-
-                rect.moveCenter(QPointF(rectHand.center().x(), point.y()));
-                rect.moveTop(qMax(rectHand.top(), rect.top()));
-                rect.moveBottom(qMin(rectHand.bottom(), rect.bottom()));
-                p->drawRoundedRect(rect, rect.width() / 2.0, rect.width() / 2.0);
-
-                QRectF rectArrow(0, 0, rect.width() / 2.0, rect.width() / 4.0);
-                rectArrow.moveCenter(rect.center());
-                rectArrow.moveTop(rect.top() + rect.width() / 2.0);
-                DDrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::UpArrow);
-                rectArrow.moveCenter(rect.center());
-                rectArrow.moveBottom(rect.bottom() - rect.width() / 2);
-                DDrawUtils::drawArrow(p, rectArrow, getColor(opt, QPalette::HighlightedText), Qt::DownArrow);
-            }
-
         }
         break;
     }
