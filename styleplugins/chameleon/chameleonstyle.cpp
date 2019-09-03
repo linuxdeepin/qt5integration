@@ -1161,6 +1161,53 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
         }
         break;
     }
+    case CC_ComboBox: {
+        if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
+            QRect rect(0, 0, cb->rect.width(), cb->rect.height());
+            QStyleOptionComboBox comboBoxCopy = *cb;
+            comboBoxCopy.rect = rect;
+            QRect downArrowRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy,
+                                                          SC_ComboBoxArrow, w);
+            // Draw a line edit
+            if (cb->editable) {
+                QStyleOptionFrame  buttonOption;
+                buttonOption.QStyleOption::operator=(*cb);
+                buttonOption.rect = rect;
+                buttonOption.state = (cb->state & (State_Enabled | State_MouseOver | State_HasFocus))
+                        | State_KeyboardFocusChange; // Always show hig
+
+                if (opt->state & State_Sunken) {
+                    buttonOption.state |= State_Sunken;
+                    buttonOption.state &= ~State_MouseOver;
+                }
+
+                if (cb->frame)
+                    proxy()->drawPrimitive(PE_FrameLineEdit, &buttonOption, p, w);
+
+                buttonOption.rect.setLeft(cb->direction == Qt::LeftToRight ?
+                                              downArrowRect.left() - 6: downArrowRect.right() + 6);
+                proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, p, w);
+            } else {
+                QStyleOptionButton buttonOption;
+                buttonOption.QStyleOption::operator=(*cb);
+                buttonOption.rect = rect;
+                buttonOption.state = cb->state & (State_Enabled | State_MouseOver | State_HasFocus | State_KeyboardFocusChange);
+                if (opt->state & State_Sunken) {
+                    buttonOption.state |= State_Sunken;
+                    buttonOption.state &= ~State_MouseOver;
+                }
+                proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, p, w);
+            }
+            if (cb->subControls & SC_ComboBoxArrow) {
+                // Draw the up/down arrow
+                QColor arrowColor = opt->palette.buttonText().color();
+                arrowColor.setAlpha(160);
+                QStyleOption arrow_opt = *opt;
+                arrow_opt.rect = downArrowRect;
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrow_opt, p, w);
+            }
+        }
+    }
     default:
         break;
     }
@@ -1432,8 +1479,25 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 break;
             }
         }
+        break;
     }
-    break;
+    case CC_ComboBox: {
+        DStyleHelper dstyle(proxy());
+        int fr = dstyle.pixelMetric(PM_FrameRadius, opt, w);
+
+        if (sc == SC_ComboBoxArrow) {
+            QRect rect(0, 0, opt->rect.height() / 2, opt->rect.height() / 2);
+            rect.moveCenter(opt->rect.center());
+            rect.moveRight(opt->rect.right() - fr);
+            return rect;
+        } else if (sc == SC_ComboBoxEditField) {
+            const QRect arrow_rect = proxy()->subControlRect(cc, opt, SC_ComboBoxArrow, w);
+            QRect rect = opt->rect.adjusted(fr, 0, 0, 0);
+            rect.setRight(arrow_rect.left());
+            return rect;
+        }
+        break;
+    }
     default:
         break;
     }
@@ -1451,6 +1515,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         size += QSize(button_margin, button_margin);
         Q_FALLTHROUGH();
     }
+    case CT_ComboBox:
     case CT_PushButton: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         size += QSize(frame_margins * 2, frame_margins * 2);
