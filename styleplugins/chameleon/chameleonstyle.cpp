@@ -286,6 +286,25 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->drawRect(opt->rect);
         return;
     }
+    case PE_IndicatorItemViewItemCheck: {
+        QRectF standard = opt->rect;
+        p->setRenderHint(QPainter::Antialiasing, true);
+
+        if (opt->state & State_NoChange) {  //Qt::PartiallyChecked
+            p->setPen(QPen(getColor(opt, DPalette::Highlight),1));
+            p->drawEllipse(standard);
+        } else if (opt->state & State_On) {  //Qt::Checked
+            QRectF mark(0, 0, standard.width() / 2, standard.height() / 2);
+            mark.moveCenter(standard.center());
+
+            p->setPen(Qt::NoPen);
+            p->setBrush(getColor(opt, DPalette::Highlight));
+            p->drawEllipse(standard);
+
+            DDrawUtils::drawMark(p, mark, getColor(opt, DPalette::Window), getColor(opt, DPalette::Highlight), 1, 0);
+        }
+        return;
+    }
     default:
         break;
     }
