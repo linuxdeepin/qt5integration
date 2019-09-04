@@ -43,6 +43,7 @@
 #include <QAbstractItemView>
 #include <QBitmap>
 
+#include <qdrawutil.h>
 #include <qpa/qplatformwindow.h>
 
 DGUI_USE_NAMESPACE
@@ -413,6 +414,80 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             color.setAlphaF(0.2);
             p->setPen(QPen(color, 1));
             p->drawRect(opt->rect.adjusted(0, 0, -1, -1));
+            return;
+        }
+        break;
+    }
+    case CE_ShapedFrame: {
+        if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
+            int frameShape  = f->frameShape;
+            int frameShadow = QFrame::Plain;
+            if (f->state & QStyle::State_Sunken) {
+                frameShadow = QFrame::Sunken;
+            } else if (f->state & QStyle::State_Raised) {
+                frameShadow = QFrame::Raised;
+            }
+
+            int lw = f->lineWidth;
+            int mlw = f->midLineWidth;
+            QPalette::ColorRole foregroundRole = QPalette::WindowText;
+            if (w)
+                foregroundRole = w->foregroundRole();
+
+            switch (frameShape) {
+            case QFrame::Box:
+                if (frameShadow == QFrame::Plain) {
+                    qDrawPlainRect(p, f->rect, f->palette.color(foregroundRole), lw);
+                } else {
+                    qDrawShadeRect(p, f->rect, f->palette, frameShadow == QFrame::Sunken, lw, mlw);
+                }
+                break;
+            case QFrame::StyledPanel:
+                //keep the compatibility with Qt 4.4 if there is a proxy style.
+                //be sure to call drawPrimitive(QStyle::PE_Frame) on the proxy style
+                if (w) {
+                    w->style()->drawPrimitive(QStyle::PE_Frame, opt, p, w);
+                } else {
+                    proxy()->drawPrimitive(QStyle::PE_Frame, opt, p, w);
+                }
+                break;
+            case QFrame::Panel:
+                if (frameShadow == QFrame::Plain) {
+                    qDrawPlainRect(p, f->rect, f->palette.color(foregroundRole), lw);
+                } else {
+                    qDrawShadePanel(p, f->rect, f->palette, frameShadow == QFrame::Sunken, lw);
+                }
+                break;
+            case QFrame::WinPanel:
+                if (frameShadow == QFrame::Plain) {
+                    qDrawPlainRect(p, f->rect, f->palette.color(foregroundRole), lw);
+                } else {
+                    qDrawWinPanel(p, f->rect, f->palette, frameShadow == QFrame::Sunken);
+                }
+                break;
+            case QFrame::HLine:
+            case QFrame::VLine: {
+                QPoint p1, p2;
+                if (frameShape == QFrame::HLine) {
+                    p1 = QPoint(opt->rect.x(), opt->rect.y() + opt->rect.height() / 2);
+                    p2 = QPoint(opt->rect.x() + opt->rect.width(), p1.y());
+                } else {
+                    p1 = QPoint(opt->rect.x() + opt->rect.width() / 2, opt->rect.y());
+                    p2 = QPoint(p1.x(), p1.y() + opt->rect.height());
+                }
+                if (frameShadow == QFrame::Plain) {
+                    QPen oldPen = p->pen();
+                    QColor color = opt->palette.color(foregroundRole);
+                    color.setAlphaF(0.1);
+                    p->setPen(QPen(color, lw));
+                    p->drawLine(p1, p2);
+                    p->setPen(oldPen);
+                } else {
+                    qDrawShadeLine(p, p1, p2, f->palette, frameShadow == QFrame::Sunken, lw, mlw);
+                }
+                break;
+                }
+            }
             return;
         }
         break;
