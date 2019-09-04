@@ -1131,9 +1131,9 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
     case CC_Slider : {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             //各个使用的矩形大小和位置
-            QRectF rect = opt->rect;                                                                            //Slider控件最大的矩形(包含如下三个)
+//            QRectF rect = opt->rect;                                                                            //Slider控件最大的矩形(包含如下三个)
             QRectF rectHandle = proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, w);                    //滑块矩形
-//            QRectF rectSliderTickmarks = proxy()->subControlRect(CC_Slider, opt, SC_SliderTickmarks, w);        //刻度的矩形
+            QRectF rectSliderTickmarks = proxy()->subControlRect(CC_Slider, opt, SC_SliderTickmarks, w);        //刻度的矩形
             QRect rectGroove = proxy()->subControlRect(CC_Slider, opt, SC_SliderGroove, w);                     //滑槽的矩形
 
 //            //测试(保留不删)
@@ -1143,10 +1143,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
 //            p->fillRect(rectHandle, Qt::green);
 //            qDebug()<<"---rect:"<<rect<<"  rectHandle:"<<rectHandle<<"   rectSliderTickmarks:"<<rectSliderTickmarks<<"   rectGroove:"<<rectGroove;
 
-            //预期准备工作
-            float sliCentX = (slider->sliderValue * 1.0 / (slider->maximum - slider->minimum)) * rect.width();  //为绘画滑槽(线)的计算准备
             QPen pen;
-
             //绘画 滑槽(线)
             if (opt->subControls & SC_SliderGroove) {
                 pen.setStyle(Qt::DotLine);
@@ -1154,10 +1151,10 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 pen.setColor(getColor(opt, QPalette::Highlight));
                 p->setPen(pen);
                 p->setRenderHint(QPainter::Antialiasing);
-                p->drawLine(QPointF(rectGroove.left(), rectHandle.top() + rectHandle.height() / 2.0), QPointF(sliCentX, rectHandle.top() + rectHandle.height() / 2.0));
+                p->drawLine(QPointF(rectGroove.left(), rectHandle.center().y()), QPointF(rectHandle.left(), rectHandle.center().y()));
                 pen.setColor(getColor(opt, QPalette::Foreground));
                 p->setPen(pen);
-                p->drawLine(QPointF(rectGroove.right(), rectHandle.top() + rectHandle.height() / 2.0), QPointF(sliCentX, rectHandle.top() + rectHandle.height() / 2.0));
+                p->drawLine(QPointF(rectGroove.right(), rectHandle.center().y()), QPointF(rectHandle.right(), rectHandle.center().y()));
             }
 
             //绘画 滑块
@@ -1169,50 +1166,23 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             }
 
             //绘画 刻度,绘画方式了参考qfusionstyle.cpp
-            if (opt->subControls & SC_SliderTickmarks) {     //需要绘画刻度
+            if (opt->subControls & SC_SliderTickmarks) {                                   //需要绘画刻度
                 p->setPen(opt->palette.foreground().color());
-                int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, w);
-                int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, w);
-                int interval = slider->tickInterval;
-                int ticks = slider->tickPosition;
-                if (interval <= 0) {
-                    interval = slider->singleStep;
-                    if (QStyle::sliderPositionFromValue(slider->minimum, slider->maximum, interval,
-                                                        available)
-                            - QStyle::sliderPositionFromValue(slider->minimum, slider->maximum,
-                                                              0, available) < 3)
-                        interval = slider->pageStep;
-                }
-                if (interval <= 0)
-                    interval = 1;
+                int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, w);  //可用空间
+                int interval = slider->tickInterval;                                       //标记间隔
+//                int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, w);      //标记偏移
+//                int ticks = slider->tickPosition;                                          //标记位置
 
                 int v = slider->minimum;
                 int len = proxy()->pixelMetric(PM_SliderLength, slider, w);
-                while (v <= slider->maximum + 1) {
-                    if (v == slider->maximum + 1 && interval == 1)
-                        break;
+                while (v <= slider->maximum) {
                     const int v_ = qMin(v, slider->maximum);
                     int pos = sliderPositionFromValue(slider->minimum, slider->maximum, v_, available) + len / 2;
-                    int extra = 2 - ((v_ == slider->minimum || v_ == slider->maximum) ? 1 : 0);
 
                     if (slider->orientation == Qt::Horizontal) {
-                        if (ticks & QSlider::TicksAbove) {
-                            p->drawLine(pos, slider->rect.top() + extra,
-                                        pos, slider->rect.top() + tickSize);
-                        }
-                        if (ticks & QSlider::TicksBelow) {
-                            p->drawLine(pos, slider->rect.bottom() - extra,
-                                        pos, slider->rect.bottom() - tickSize);
-                        }
+                            p->drawLine(pos, rectSliderTickmarks.top(), pos, rectSliderTickmarks.bottom());
                     } else {
-                        if (ticks & QSlider::TicksAbove) {
-                            p->drawLine(slider->rect.left() + extra, pos,
-                                        slider->rect.left() + tickSize, pos);
-                        }
-                        if (ticks & QSlider::TicksBelow) {
-                            p->drawLine(slider->rect.right() - extra, pos,
-                                        slider->rect.right() - tickSize, pos);
-                        }
+                            p->drawLine(rectSliderTickmarks.left(), pos, rectSliderTickmarks.right(), pos);
                     }
                     // in the case where maximum is max int
                     int nextInterval = v + interval;
