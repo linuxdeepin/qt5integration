@@ -206,7 +206,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         break;
     }
     case PE_PanelLineEdit: {
-        p->setBrush(getColor(opt, QPalette::Button));
+        p->setBrush(opt->palette.button());
         p->setPen(Qt::NoPen);
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
         p->drawRoundedRect(opt->rect - frameExtentMargins(), frame_radius, frame_radius);
@@ -1269,7 +1269,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         QRect frameRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxFrame, widget);
         painter->setRenderHint(QPainter::Antialiasing, true);
         painter->setPen(Qt::NoPen);
-        painter->setBrush(getColor(opt, QPalette::Button));
+        painter->setBrush(opt->palette.button());
         painter->drawRoundedRect(frameRect, borderRadius, borderRadius);
     }
 
