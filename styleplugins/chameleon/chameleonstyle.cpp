@@ -809,8 +809,6 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
     if (const QStyleOptionMenuItem *menuItem = option) {
         //绘制背景
         QRect menuRect = menuItem->rect;
-        painter->fillRect(menuRect, getColor(option, QPalette::ToolTipBase));
-
         QColor highlight = getColor(option, QPalette::Highlight);
         bool enabled = menuItem->state & State_Enabled;
         bool selected = menuItem->state & State_Selected && enabled;
@@ -1401,7 +1399,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 } else {
                     QRect baseRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxFrame, w);
                     bool isMiniMode = baseRect.height() < proxy()->pixelMetric(PM_SpinBoxSliderHeight, opt, w);
-                    int width = isMiniMode ? baseRect.height() * 4 / 3 : baseRect.height() / 2;
+                    int width = isMiniMode ? qRound(baseRect.height() * 2.0 / 3.0) : baseRect.height() / 2;
                     QRect buttonRect(QPoint(baseRect.right() - width, baseRect.top())
                                      , QSize(width, baseRect.height() / 2));
                     return buttonRect;
@@ -1418,7 +1416,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 } else {
                     QRect baseRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxFrame, w);
                     bool isMiniMode = baseRect.height() < proxy()->pixelMetric(PM_SpinBoxSliderHeight, opt, w);
-                    int width = isMiniMode ? baseRect.height() * 4 / 3 : baseRect.height() / 2;
+                    int width = isMiniMode ? qRound(baseRect.height() * 2.0 / 3.0) : baseRect.height() / 2;
                     QRect buttonRect(QPoint(baseRect.right() - width, baseRect.center().y())
                                      , QSize(width, baseRect.height() / 2));
                     return buttonRect;
