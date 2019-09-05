@@ -291,7 +291,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->setRenderHint(QPainter::Antialiasing, true);
 
         if (opt->state & State_NoChange) {  //Qt::PartiallyChecked
-            p->setPen(QPen(getColor(opt, DPalette::Highlight),1));
+            p->setPen(QPen(getColor(opt, DPalette::Highlight), 1));
             p->drawEllipse(standard);
         } else if (opt->state & State_On) {  //Qt::Checked
             QRectF mark(0, 0, standard.width() / 2, standard.height() / 2);
@@ -505,7 +505,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     qDrawShadeLine(p, p1, p2, f->palette, frameShadow == QFrame::Sunken, lw, mlw);
                 }
                 break;
-                }
+            }
             }
             return;
         }
@@ -601,13 +601,13 @@ bool ChameleonStyle::drawTabBar(QPainter *painter,  const QStyleOptionTab *tab, 
     }
 
     QColor lineColor = !isTriangularMode || selected ? Qt::transparent : getColor(tab, QPalette::Light);
-    QColor tabFrameColor = selected ? getColor(tab, QPalette::Window) : getColor(tab, QPalette::Dark);
+    QColor tabFrameColor = selected ? getColor(tab, QPalette::Window) : getColor(tab, QPalette::Button);
 
     if (!(tab->features & QStyleOptionTab::HasFrame))
         tabFrameColor = getColor(tab, QPalette::Shadow);
 
     if (!isTriangularMode)
-        tabFrameColor = selected ? getColor(tab, QPalette::Highlight) : getColor(tab, QPalette::Window);
+        tabFrameColor = selected ? getColor(tab, QPalette::Highlight) : getColor(tab, QPalette::Button);
 
     QPen outlinePen(lineColor, proxy()->pixelMetric(PM_DefaultFrameWidth, tab, widget));
     QRect drawRect = rect;
@@ -615,9 +615,10 @@ bool ChameleonStyle::drawTabBar(QPainter *painter,  const QStyleOptionTab *tab, 
     painter->setBrush(tabFrameColor);
     painter->setRenderHint(QPainter::Antialiasing, true);
 
-    if (!isTriangularMode && selected) {
+    if (!isTriangularMode) {
         int buttonRadius = DStyle::pixelMetric(PM_FrameRadius, tab, widget);
-        int buttonBorder = proxy()->pixelMetric(PM_DefaultFrameWidth, tab, widget);
+        int buttonBorder = DStyle::pixelMetric(PM_FrameMargins, tab, widget);
+
         painter->drawRoundedRect(drawRect.adjusted(buttonBorder, buttonBorder, -buttonBorder, -buttonBorder), buttonRadius, buttonRadius);
     } else {
         painter->drawRect(drawRect);
@@ -696,26 +697,10 @@ bool ChameleonStyle::drawTabBarCloseButton(QPainter *painter, const QStyleOption
     QStyleOptionButton buttonOpt;
     buttonOpt.rect = tab->rect;
     buttonOpt.state = tab->state;
-
-    if (Q_LIKELY((tab->state | QStyle::State_MouseOver) != tab->state
-                 && !tb->tabRect(index).contains(tb->mapFromGlobal(QCursor::pos())))) {
-        //鼠标在上面
-    }
-
-    if (tb->currentIndex() == index) { //激活的按钮
-        proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOpt, painter, widget);
-        qreal lineWidth = proxy()->pixelMetric(PM_DefaultFrameWidth, tab, widget);
-        QRect iconRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
-        DDrawUtils::drawPlus(painter, iconRect - frameExtentMargins(), getColor(&buttonOpt, QPalette::ButtonText), lineWidth);
-        return true;
-    }
-
-    proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOpt, painter, widget);
-    QRect iconRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
-    painter->setPen(getColor(&buttonOpt, QPalette::ButtonText));
+    QColor iconColor = getColor(&buttonOpt, QPalette::ButtonText);
+    painter->setPen(QPen(iconColor, 2));
     painter->setBrush(getColor(&buttonOpt, QPalette::Button));
-    QIcon closeIcon = proxy()->standardIcon(SP_LineEditClearButton, tab, widget);
-    painter->drawPixmap(iconRect, closeIcon.pixmap(iconRect.size()));
+    DDrawUtils::drawCloseButton(painter, buttonOpt.rect);
 
     return true;
 }
@@ -730,49 +715,48 @@ bool ChameleonStyle::drawTabBarScrollButton(QPainter *painter, const QStyleOptio
     if (tabButton->arrowType() == Qt::NoArrow || !tabButton->icon().isNull())
         return false;
 
-    QStyleOptionToolButton toolButton(*qstyleoption_cast<const QStyleOptionToolButton *>(opt));
-    bool isHover = (toolButton.state & State_MouseOver);
-    int vMargin = proxy()->pixelMetric(PM_TabBarTabVSpace) / 2;
-    int buttonMargin = proxy()->pixelMetric(PM_ButtonMargin);
     QTabBar *tabBar = qobject_cast<QTabBar *>(buttonWidget->parent());
+    bool isTriangularMode = false;
 
-    if (tabBar
-            && (tabBar->shape() == QTabBar::RoundedEast
-                || tabBar->shape() == QTabBar::RoundedWest
-                || tabBar->shape() == QTabBar::TriangularEast
-                || tabBar->shape() == QTabBar::TriangularWest)
-       ) {
-        toolButton.rect -= QMargins(vMargin, 1, vMargin, 0);
-    } else {
-        toolButton.rect -= QMargins(0, 1 + vMargin, 0, vMargin);
-    }
-
-    DDrawUtils::Corners corner;
-    switch (tabButton->arrowType()) {
-    case Qt::LeftArrow:
-        corner = DDrawUtils::Corner::TopLeftCorner | DDrawUtils::Corner::BottomLeftCorner;
-        break;
-    case Qt::RightArrow:
-        corner = DDrawUtils::Corner::TopRightCorner | DDrawUtils::Corner::BottomRightCorner;
-        break;
-    case Qt::UpArrow:
-        corner = DDrawUtils::Corner::TopLeftCorner | DDrawUtils::Corner::TopRightCorner;
-        break;
-    case Qt::DownArrow:
-        corner = DDrawUtils::Corner::BottomLeftCorner | DDrawUtils::Corner::BottomRightCorner;
+    switch (tabBar->shape()) {
+    case QTabBar::TriangularNorth:
+    case QTabBar::TriangularSouth:
+    case QTabBar::TriangularEast:
+    case QTabBar::TriangularWest:
+        isTriangularMode = true;
         break;
     default:
         break;
     }
 
-    int radius = DStyle::pixelMetric(PM_FrameRadius);
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(isHover ? toolButton.palette.light() : toolButton.palette.button());
+    QStyleOptionToolButton toolButton(*qstyleoption_cast<const QStyleOptionToolButton *>(opt));
+    int frameMargin = DStyle::pixelMetric(PM_FrameMargins);
+    toolButton.rect -= QMargins(frameMargin, frameMargin, frameMargin, frameMargin);
+
+    QPoint center = toolButton.rect.center();
+    qreal sizeRatio = isTriangularMode ? (4.0 / 7.0) : 1.0;
+    int minBoundWidth = qMin(toolButton.rect.width(), toolButton.rect.height());
+    toolButton.rect.setWidth(qRound(minBoundWidth * sizeRatio));
+    toolButton.rect.setHeight(qRound(minBoundWidth * sizeRatio));
+    toolButton.rect.moveCenter(center);
+    DDrawUtils::Corners corner = static_cast<DDrawUtils::Corners>(0xff);
+
+    int radius = isTriangularMode ? toolButton.rect.width() / 2 :  DStyle::pixelMetric(PM_FrameRadius);
+    QLinearGradient lg(QPointF(0, opt->rect.top()),
+                       QPointF(0, opt->rect.bottom()));
+    lg.setColorAt(0, getColor(opt, QPalette::Light));
+    lg.setColorAt(1, getColor(opt, QPalette::Dark));
+
+    painter->setPen(QPen(getColor(opt, DPalette::FrameBorder, buttonWidget), Metrics::Painter_PenWidth));
+    painter->setBrush(lg);
+    painter->setRenderHint(QPainter::Antialiasing);
+    drawRoundedShadow(painter, toolButton.rect + frameExtentMargins() * 1.5, getColor(&toolButton, QPalette::Shadow), radius);
     DDrawUtils::drawRoundedRect(painter, toolButton.rect, radius, radius, corner);
 
     QPoint originCenter = toolButton.rect.center();
-    toolButton.rect.setWidth(toolButton.rect.width() - buttonMargin);
-    toolButton.rect.setHeight(toolButton.rect.height() - buttonMargin);
+    qreal buttonSizeRatio = isTriangularMode ?  3.0 / 4.0 : 1.0 / 2.0;
+    toolButton.rect.setWidth(qRound(toolButton.rect.width() * buttonSizeRatio));
+    toolButton.rect.setHeight(qRound(toolButton.rect.height() * buttonSizeRatio));
     toolButton.rect.moveCenter(originCenter);
     proxy()->drawControl(CE_ToolButtonLabel, &toolButton, painter, buttonWidget);
 
@@ -1103,6 +1087,22 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
             return buttonContentRect;
         }
         break;
+    case SE_TabBarScrollLeftButton: {
+        const bool vertical = opt->rect.width() < opt->rect.height();
+        const int buttonWidth = proxy()->pixelMetric(PM_TabBarScrollButtonWidth, opt, widget);
+        QRect buttonRect = vertical ? QRect(0, 0, opt->rect.width(), buttonWidth)
+                           : QRect(0, 0, buttonWidth, opt->rect.height());
+
+        return buttonRect;
+    }
+    case SE_TabBarScrollRightButton: {
+        const bool vertical = opt->rect.width() < opt->rect.height();
+        const int buttonWidth = proxy()->pixelMetric(PM_TabBarScrollButtonWidth, opt, widget);
+        QRect buttonRect = vertical ? QRect(0, opt->rect.height() - buttonWidth, opt->rect.width(), buttonWidth)
+                           : QRect(opt->rect.width() - buttonWidth, 0, buttonWidth, opt->rect.height());
+
+        return buttonRect;
+    }
     default:
         break;
     }
@@ -1180,9 +1180,9 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                     int pos = sliderPositionFromValue(slider->minimum, slider->maximum, v_, available) + len / 2;
 
                     if (slider->orientation == Qt::Horizontal) {
-                            p->drawLine(pos, rectSliderTickmarks.top(), pos, rectSliderTickmarks.bottom());
+                        p->drawLine(pos, rectSliderTickmarks.top(), pos, rectSliderTickmarks.bottom());
                     } else {
-                            p->drawLine(rectSliderTickmarks.left(), pos, rectSliderTickmarks.right(), pos);
+                        p->drawLine(rectSliderTickmarks.left(), pos, rectSliderTickmarks.right(), pos);
                     }
                     // in the case where maximum is max int
                     int nextInterval = v + interval;
@@ -1208,7 +1208,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 buttonOption.QStyleOption::operator=(*cb);
                 buttonOption.rect = rect;
                 buttonOption.state = (cb->state & (State_Enabled | State_MouseOver | State_HasFocus))
-                        | State_KeyboardFocusChange; // Always show hig
+                                     | State_KeyboardFocusChange; // Always show hig
 
                 if (opt->state & State_Sunken) {
                     buttonOption.state |= State_Sunken;
@@ -1219,7 +1219,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                     proxy()->drawPrimitive(PE_FrameLineEdit, &buttonOption, p, w);
 
                 buttonOption.rect.setLeft(cb->direction == Qt::LeftToRight ?
-                                              downArrowRect.left() - 6: downArrowRect.right() + 6);
+                                          downArrowRect.left() - 6 : downArrowRect.right() + 6);
                 proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, p, w);
             } else {
                 QStyleOptionButton buttonOption;
@@ -1659,9 +1659,9 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_TabCloseIndicatorHeight:
         return 20;
     case PM_TabBarTabVSpace:
-        return TabBar_TabMarginHeight;
-    case PM_TabBarTabHSpace:
-        return TabBar_TabMarginWidth;
+        return TabBar_TabMarginHeight * 2;
+    case PM_TabBarTabHSpace :
+        return TabBar_TabMarginWidth * 2;
     case PM_TabBarTabOverlap:
         return TabBar_TabOverlap;
     case PM_TabBarBaseOverlap:
@@ -1669,10 +1669,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_TabBarTabShiftHorizontal:
     case PM_TabBarTabShiftVertical:
         return 0;
-    case PM_TabBar_ScrollButtonOverlap:
-        return 2;
     case PM_TabBarScrollButtonWidth:
-        return 20;
+        return 40;
     default:
         break;
     }
@@ -1916,6 +1914,17 @@ void ChameleonStyle::drawShadow(QPainter *p, const QRect &rect, const QColor &co
     DDrawUtils::drawShadow(p, rect, frame_radius, frame_radius, color, shadow_radius,
                            QPoint(shadow_xoffset, shadow_yoffset));
 }
+
+void ChameleonStyle::drawRoundedShadow(QPainter *p, const QRect &rect, const QColor &color, int frame_radius) const
+{
+    int shadow_radius = DStyle::pixelMetric(PM_ShadowRadius);
+    int shadow_xoffset = DStyle::pixelMetric(PM_ShadowHOffset);
+    int shadow_yoffset = DStyle::pixelMetric(PM_ShadowVOffset);
+
+    DDrawUtils::drawShadow(p, rect, frame_radius, frame_radius, color, shadow_radius,
+                           QPoint(shadow_xoffset, shadow_yoffset));
+}
+
 
 void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &brush) const
 {
