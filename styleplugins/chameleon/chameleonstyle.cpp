@@ -392,6 +392,17 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         break;
     }
+    case CE_MenuScroller: {
+        QStyleOption arrowOpt = *opt;
+        arrowOpt.state |= State_Enabled;
+        int minSize = qMin(arrowOpt.rect.width(), arrowOpt.rect.height());
+        arrowOpt.rect.setWidth(minSize);
+        arrowOpt.rect.setHeight(minSize);
+        arrowOpt.rect.moveCenter(opt->rect.center());
+        proxy()->drawPrimitive(((opt->state & State_DownArrow) ? PE_IndicatorArrowDown : PE_IndicatorArrowUp),
+                               &arrowOpt, p, w);
+        return;
+    }
     case CE_PushButton: {
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             proxy()->drawControl(CE_PushButtonBevel, btn, p, w);
@@ -1669,6 +1680,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return 0;
     case PM_TabBarScrollButtonWidth:
         return 40;
+    case PM_MenuScrollerHeight:
+        return 10 + Metrics::Frame_FrameWidth ;
     default:
         break;
     }
