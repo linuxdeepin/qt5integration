@@ -58,7 +58,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     styleLabel->setBuddy(styleComboBox);
 
     useStylePaletteCheckBox = new QCheckBox(tr("&Use style's standard palette"));
-    useStylePaletteCheckBox->setChecked(true);
+    useStylePaletteCheckBox->setChecked(false);
 
     disableWidgetsCheckBox = new QCheckBox(tr("&Disable widgets"));
 
@@ -167,10 +167,12 @@ void WidgetGallery::changeStyle(const QString &styleName)
 void WidgetGallery::changePalette()
 //! [7] //! [8]
 {
-    if (useStylePaletteCheckBox->isChecked())
+    if (useStylePaletteCheckBox->isChecked()) {
         QApplication::setPalette(QApplication::style()->standardPalette());
-    else
-        QApplication::setPalette(originalPalette);
+     } else {
+//        QApplication::setPalette(originalPalette);
+        QApplication::setAttribute(Qt::AA_SetPalette, false);
+    }
 }
 //! [8]
 

@@ -45,6 +45,7 @@ public:
 #endif
 
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
+    const QPalette *palette(Palette type) const override;
     const QFont *font(Font type) const Q_DECL_OVERRIDE;
     DThemeSettings *settings() const;
     static DThemeSettings *getSettings();

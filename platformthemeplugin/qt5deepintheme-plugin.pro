@@ -1,5 +1,5 @@
 
-QT       += dbus x11extras
+QT       += dbus x11extras dtkgui
 QT       += core-private gui-private
 greaterThan(QT_MAJOR_VERSION, 4) {
   QT += widgets widgets-private
@@ -22,7 +22,7 @@ qtCompileTest(dthemed_icon_lookup) {
     HEADERS += diconengine.h
 }
 
-PKGCONFIG += mtdev Qt5Xdg x11 Qt5XdgIconLoader dtkcore
+PKGCONFIG += mtdev Qt5Xdg x11 Qt5XdgIconLoader
 
 PKG_CONFIG = $$pkgConfigExecutable()
 XDG_ICON_VERSION = $$system($$PKG_CONFIG --modversion Qt5XdgIconLoader)

@@ -22,6 +22,9 @@
 #include "dthemesettings.h"
 #include "diconengine.h"
 
+#include <DGuiApplicationHelper>
+#include <DPlatformTheme>
+
 #include <QVariant>
 #include <QDebug>
 #include <QGuiApplication>
@@ -54,6 +57,8 @@
 #include <X11/Xlib.h>
 
 #include <cxxabi.h>
+
+DGUI_USE_NAMESPACE
 
 #if XDG_ICON_VERSION_MAR >= 3
 namespace DEEPIN_QT_THEME {
@@ -711,6 +716,19 @@ static bool isDarkColor(const QColor &color)
     return true;
 }
 
+class PlatformTheme
+{
+public:
+    PlatformTheme() {
+        theme = DGuiApplicationHelper::instance()->applicationTheme();
+        QObject::connect(theme, &DPlatformTheme::iconThemeNameChanged, &onIconThemeSetCallback);
+    }
+
+    DPlatformTheme *theme;
+};
+
+Q_GLOBAL_STATIC(PlatformTheme, _pTheme)
+
 QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
@@ -721,10 +739,7 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         break;
     }
     case QPlatformTheme::SystemIconThemeName:
-        if (settings()->isSetIconThemeName())
-            return settings()->iconThemeName();
-
-        return QVariant();
+        return _pTheme->theme->iconThemeName();
     case QPlatformTheme::SystemIconFallbackThemeName: {
         const QColor &color = qGuiApp->palette().window().color();
 
@@ -743,6 +758,18 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     }
 
     return QGenericUnixTheme::themeHint(hint);
+}
+
+const QPalette *QDeepinTheme::palette(QPlatformTheme::Palette type) const
+{
+    if (type != SystemPalette) {
+        return QGenericUnixTheme::palette(type);
+    }
+
+    static QPalette palette;
+    palette = DGuiApplicationHelper::instance()->applicationPalette();
+
+    return &palette;
 }
 
 const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
@@ -825,7 +852,6 @@ DThemeSettings *QDeepinTheme::settings() const
 
         QObject::connect(m_settings, &DThemeSettings::systemFontChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
         QObject::connect(m_settings, &DThemeSettings::systemFontPointSizeChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
-        QObject::connect(m_settings, &DThemeSettings::iconThemeNameChanged, m_settings, &onIconThemeSetCallback, Qt::UniqueConnection);
 
         if (enabledRTScreenScale()) {
 #ifdef QT_NO_DEBUG

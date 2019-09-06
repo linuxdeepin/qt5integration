@@ -25,6 +25,7 @@
 #include <DStyleOption>
 #include <DApplication>
 #include <DPlatformWindowHandle>
+#include <DGuiApplicationHelper>
 
 #include <QVariant>
 #include <QDebug>
@@ -50,103 +51,6 @@ DGUI_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
 
 namespace chameleon {
-
-static QColor light_qpalette[QPalette::NColorRoles] {
-    QColor("#414d68"),                  //WindowText
-    QColor("#e5e5e5"),                  //Button
-    QColor("#e6e6e6"),                  //Light
-    QColor("#e5e5e5"),                  //Midlight
-    QColor("#e3e3e3"),                  //Dark
-    QColor("#e4e4e4"),                  //Mid
-    QColor("#414d68"),                  //Text
-    QColor("#3768ff"),                  //BrightText
-    QColor("#414d68"),                  //ButtonText
-    Qt::white,                          //Base
-    QColor("#f8f8f8"),                  //Window
-    QColor(0, 0, 0, 0.7 * 255),         //Shadow
-    QColor("#0081ff"),                  //Highlight
-    Qt::white,                          //HighlightedText
-    QColor("#0082fa"),                  //Link
-    QColor("#ad4579"),                  //LinkVisited
-    QColor(0, 0, 0, 0.03 * 255),        //AlternateBase
-    Qt::white,                          //NoRole
-    QColor(255, 255, 255, 0.8 * 255),   //ToolTipBase
-    Qt::black                           //ToolTipText
-};
-
-static QColor dark_qpalette[QPalette::NColorRoles] {
-    QColor("#c0c6d4"),                  //WindowText
-    QColor("#444444"),                  //Button
-    QColor("#484848"),                  //Light
-    QColor("#474747"),                  //Midlight
-    QColor("#414141"),                  //Dark
-    QColor("#434343"),                  //Mid
-    QColor("#c0c6d4"),                  //Text
-    QColor("#3768ff"),                  //BrightText
-    QColor("#c0c6d4"),                  //ButtonText
-    QColor("#454545"),                  //Base
-    QColor("#252525"),                  //Window
-    QColor(0, 0, 0, 0.05 * 255),        //Shadow
-    QColor("#0081ff"),                  //Highlight
-    QColor("#b8d3ff"),                  //HighlightedText
-    QColor("#0082fa"),                  //Link
-    QColor("#ad4579"),                  //LinkVisited
-    QColor(0, 0, 0, 0.05 * 255),        //AlternateBase
-    Qt::black,                          //NoRole
-    QColor(45, 45, 45, 0.8 * 255),      //ToolTipBase
-    QColor("#c0c6d4")                   //ToolTipText
-};
-
-static QColor light_dpalette[DPalette::NColorTypes] {
-    QColor(),                       //NoType
-    QColor(0, 0, 0, 255 * 0.03),    //ItemBackground
-    QColor("#001A2E"),              //TextTitle
-    QColor("#526A7F"),              //TextTips
-    QColor("#FF5736"),              //TextWarning
-    QColor("#0082FA"),              //TextLively
-    QColor("#25b7ff"),              //LightLively
-    QColor("#0098ff"),              //DarkLively
-    QColor(0, 0, 0, 0.03 * 255)     //FrameBorder
-};
-
-static QColor dark_dpalette[DPalette::NColorTypes] {
-    QColor(),                           //NoType
-    QColor(255, 255, 255, 255 * 0.05),  //ItemBackground
-    QColor("#C0C6D4"),                  //TextTitle
-    QColor("#6D7C88"),                  //TextTips
-    QColor("#FF5736"),                  //TextWarning
-    QColor("#0082FA"),                  //TextLively
-    QColor("#0056c1"),                  //LightLively
-    QColor("#004c9c"),                  //DarkLively
-    QColor(0, 0, 0, 0.05 * 255)         //FrameBorder
-};
-
-static void initQPalette(QPalette &pa, QPalette::ColorGroup group, const QColor &superstratum)
-{
-    for (int i = 0; i < QPalette::NColorRoles; ++i) {
-        QPalette::ColorRole role = static_cast<QPalette::ColorRole>(i);
-
-        if (role == QPalette::Window) {
-            continue;
-        }
-
-        QColor color = pa.color(QPalette::Normal, role);
-
-        color = DStyle::blendColor(color, superstratum);
-        pa.setColor(group, role, color);
-    }
-}
-
-static void initDPalette(DPalette &pa, QPalette::ColorGroup group, const QColor &superstratum)
-{
-    for (int i = 0; i < DPalette::NColorTypes; ++i) {
-        DPalette::ColorType role = static_cast<DPalette::ColorType>(i);
-        QColor color = pa.color(DPalette::Normal, role);
-
-        color = DStyle::blendColor(color, superstratum);
-        pa.setColor(group, role, color);
-    }
-}
 
 ChameleonStyle::ChameleonStyle()
     : DStyle()
@@ -1765,70 +1669,6 @@ int ChameleonStyle::layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy
                                   Qt::Orientation orientation, const QStyleOption *option, const QWidget *widget) const
 {
     return DStyle::layoutSpacing(control1, control2, orientation, option, widget);
-}
-
-QPalette ChameleonStyle::standardPalette() const
-{
-    QPalette pa;
-    const QColor *color_list;
-    QColor disable_mask_color, inactive_mask_color;
-
-    if (isDrakStyle()) {
-        color_list = dark_qpalette;
-        disable_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.6));
-        inactive_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.4));
-    } else {
-        color_list = light_qpalette;
-        disable_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.8));
-        inactive_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.6));
-    }
-
-    for (int i = 0; i < QPalette::NColorRoles; ++i) {
-        QPalette::ColorRole role = static_cast<QPalette::ColorRole>(i);
-
-        pa.setColor(DPalette::Active, role, color_list[i]);
-    }
-
-    initQPalette(pa, QPalette::Disabled, disable_mask_color);
-    initQPalette(pa, QPalette::Inactive, inactive_mask_color);
-
-    return pa;
-}
-
-void ChameleonStyle::polish(QPalette &pa)
-{
-    DStyle::polish(pa);
-}
-
-void ChameleonStyle::polish(QApplication *app)
-{
-    DPalette pa = proxy()->standardPalette();
-    const QColor *color_list;
-    QColor disable_mask_color, inactive_mask_color;
-
-    if (isDrakStyle()) {
-        color_list = dark_dpalette;
-        disable_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.6));
-        inactive_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.4));
-    } else {
-        color_list = light_dpalette;
-        disable_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.8));
-        inactive_mask_color.setRgba(qRgba(255, 255, 255, 255 * 0.6));
-    }
-
-    for (int i = 0; i < DPalette::NColorTypes; ++i) {
-        DPalette::ColorType type = static_cast<DPalette::ColorType>(i);
-
-        pa.setColor(DPalette::Active, type, color_list[i]);
-    }
-
-    initDPalette(pa, QPalette::Disabled, disable_mask_color);
-    initDPalette(pa, QPalette::Inactive, inactive_mask_color);
-
-    DPalette::setGeneric(pa);
-    app->setPalette(pa);
-
-    DStyle::polish(app);
 }
 
 void ChameleonStyle::polish(QWidget *w)

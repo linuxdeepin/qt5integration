@@ -62,9 +62,6 @@ public:
                       Qt::Orientation orientation, const QStyleOption *option = nullptr,
                       const QWidget *widget = nullptr) const override;
 
-    QPalette standardPalette() const override;
-    void polish(QPalette &pa) override;
-    void polish(QApplication *app) override;
     void polish(QWidget *w) override;
     void unpolish(QWidget *w) override;
     void unpolish(QApplication *application) override;
