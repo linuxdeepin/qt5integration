@@ -1682,6 +1682,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return 40;
     case PM_MenuScrollerHeight:
         return 10 + Metrics::Frame_FrameWidth ;
+    case PM_MenuPanelWidth:
+        return 0;
     default:
         break;
     }
