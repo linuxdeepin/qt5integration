@@ -25,7 +25,7 @@
 #include <DStyleOption>
 #include <DApplication>
 #include <DPlatformWindowHandle>
-#include <DGuiApplicationHelper>
+#include <DApplicationHelper>
 
 #include <QVariant>
 #include <QDebug>
@@ -1805,7 +1805,7 @@ QColor ChameleonStyle::getColor(const QStyleOption *option, QPalette::ColorRole 
 
 QColor ChameleonStyle::getColor(const QStyleOption *option, DPalette::ColorType type, const QWidget *widget) const
 {
-    const DPalette &pa = DPalette::get(widget, option->palette);
+    const DPalette &pa = DApplicationHelper::instance()->palette(widget, option->palette);
 
     return DStyle::generatedBrush(option, pa.brush(type), pa.currentColorGroup(), type).color();
 }
