@@ -309,6 +309,7 @@ void WidgetGallery::createBottomRightGroupBox()
     comboBoxEdit->addItem(QIcon::fromTheme("state-ok"), "state-ok");
     comboBoxEdit->addItem(QIcon::fromTheme("crosshairs"), "crosshairs");
     comboBoxEdit->addItem(QIcon::fromTheme("audio-volume-low-symbolic"), "audio-volume-low-symbolic");
+    comboBoxEdit->setEditable(true);
 
     slider = new QSlider(Qt::Horizontal, bottomRightGroupBox);
     slider->setRange(0, 100);

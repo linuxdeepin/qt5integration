@@ -678,6 +678,83 @@ bool ChameleonStyle::drawTabBarScrollButton(QPainter *painter, const QStyleOptio
     return true;
 }
 
+bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox *comboBox, const QWidget *widget) const
+{
+    QRect rect(0, 0, comboBox->rect.width(), comboBox->rect.height());
+    QStyleOptionComboBox comboBoxCopy = *comboBox;
+    comboBoxCopy.rect = rect ;
+    QRect downArrowRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy, SC_ComboBoxArrow, widget);
+
+    if (comboBox->frame && comboBox->subControls & SC_ComboBoxFrame) {
+        int frameRadius = DStyle::pixelMetric(PM_FrameRadius);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(comboBoxCopy.palette.button());
+        DDrawUtils::drawRoundedRect(painter, comboBoxCopy.rect - frameExtentMargins(), frameRadius, frameRadius,
+                                    DDrawUtils::Corner::TopLeftCorner
+                                    | DDrawUtils::Corner::TopRightCorner
+                                    | DDrawUtils::Corner::BottomLeftCorner
+                                    | DDrawUtils::Corner::BottomRightCorner);
+    }
+
+
+    QStyleOptionButton buttonOption;
+    buttonOption.QStyleOption::operator=(*comboBox);
+    if (comboBox->editable) {
+        buttonOption.rect = rect - frameExtentMargins();
+        buttonOption.state = (comboBox->state & (State_Enabled | State_MouseOver | State_HasFocus))
+                             | State_KeyboardFocusChange; // Always show hig
+
+        if (comboBox->state & State_Sunken) {
+            buttonOption.state |= State_Sunken;
+            buttonOption.state &= ~State_MouseOver;
+        }
+
+        if (comboBox->direction == Qt::LeftToRight)
+            buttonOption.rect.setLeft(downArrowRect.left());
+        else
+            buttonOption.rect.setRight(downArrowRect.right());
+
+        downArrowRect.moveCenter(buttonOption.rect.center());
+        proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, painter, widget);
+    } else {
+        buttonOption.rect = rect;
+        buttonOption.state = comboBox->state & (State_Enabled | State_MouseOver | State_HasFocus | State_KeyboardFocusChange);
+
+        if (comboBox->state & State_Sunken) {
+            buttonOption.state |= State_Sunken;
+            buttonOption.state &= ~State_MouseOver;
+        }
+
+        downArrowRect.moveCenter(buttonOption.rect.center());
+
+        if (comboBox->direction == Qt::LeftToRight) {
+            downArrowRect.moveRight(buttonOption.rect.right());
+        } else {
+            downArrowRect.moveLeft(buttonOption.rect.left());
+        }
+
+        proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, painter, widget);
+    }
+
+    if (comboBox->subControls & SC_ComboBoxArrow) {
+        QStyleOption arrowOpt = *comboBox;
+        arrowOpt.rect =  downArrowRect - frameExtentMargins();
+
+        if (comboBox->editable) {
+            arrowOpt.rect.setSize(QSize(qRound(buttonOption.rect.width() / 3.0), qRound(buttonOption.rect.height() / 3.0)));
+            arrowOpt.rect.moveCenter(buttonOption.rect.center());
+        }else{
+            QPoint center = arrowOpt.rect.center();
+            arrowOpt.rect.setSize(QSize(qRound(arrowOpt.rect.height() / 1.2), qRound(arrowOpt.rect.height() / 1.2)));
+            arrowOpt.rect.moveCenter(center);
+        }
+
+        proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
+    }
+
+    return true;
+}
+
 bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &rect, QPainter *painter, const QWidget *widget) const
 {
     bool enabled(option->state & QStyle::State_Enabled);
@@ -1109,51 +1186,11 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
         break;
     }
     case CC_ComboBox: {
-        if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
-            QRect rect(0, 0, cb->rect.width(), cb->rect.height());
-            QStyleOptionComboBox comboBoxCopy = *cb;
-            comboBoxCopy.rect = rect;
-            QRect downArrowRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy,
-                                                          SC_ComboBoxArrow, w);
-            // Draw a line edit
-            if (cb->editable) {
-                QStyleOptionFrame  buttonOption;
-                buttonOption.QStyleOption::operator=(*cb);
-                buttonOption.rect = rect;
-                buttonOption.state = (cb->state & (State_Enabled | State_MouseOver | State_HasFocus))
-                                     | State_KeyboardFocusChange; // Always show hig
-
-                if (opt->state & State_Sunken) {
-                    buttonOption.state |= State_Sunken;
-                    buttonOption.state &= ~State_MouseOver;
-                }
-
-                if (cb->frame)
-                    proxy()->drawPrimitive(PE_FrameLineEdit, &buttonOption, p, w);
-
-                buttonOption.rect.setLeft(cb->direction == Qt::LeftToRight ?
-                                          downArrowRect.left() - 6 : downArrowRect.right() + 6);
-                proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, p, w);
-            } else {
-                QStyleOptionButton buttonOption;
-                buttonOption.QStyleOption::operator=(*cb);
-                buttonOption.rect = rect;
-                buttonOption.state = cb->state & (State_Enabled | State_MouseOver | State_HasFocus | State_KeyboardFocusChange);
-                if (opt->state & State_Sunken) {
-                    buttonOption.state |= State_Sunken;
-                    buttonOption.state &= ~State_MouseOver;
-                }
-                proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, p, w);
-            }
-            if (cb->subControls & SC_ComboBoxArrow) {
-                // Draw the up/down arrow
-                QColor arrowColor = opt->palette.buttonText().color();
-                arrowColor.setAlpha(160);
-                QStyleOption arrow_opt = *opt;
-                arrow_opt.rect = downArrowRect;
-                proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrow_opt, p, w);
-            }
+        if (const QStyleOptionComboBox *comboBox = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
+            if (drawComboBox(p, comboBox, w))
+                return;
         }
+        break;
     }
     default:
         break;
@@ -1429,19 +1466,45 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
         break;
     }
     case CC_ComboBox: {
-        DStyleHelper dstyle(proxy());
-        int fr = dstyle.pixelMetric(PM_FrameRadius, opt, w);
+        if (const QStyleOptionComboBox *option = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
+            DStyleHelper dstyle(proxy());
+            int frameMargins = dstyle.pixelMetric(PM_FrameMargins, opt, w);
 
-        if (sc == SC_ComboBoxArrow) {
-            QRect rect(0, 0, opt->rect.height() / 2, opt->rect.height() / 2);
-            rect.moveCenter(opt->rect.center());
-            rect.moveRight(opt->rect.right() - fr);
-            return rect;
-        } else if (sc == SC_ComboBoxEditField) {
-            const QRect arrow_rect = proxy()->subControlRect(cc, opt, SC_ComboBoxArrow, w);
-            QRect rect = opt->rect.adjusted(fr, 0, 0, 0);
-            rect.setRight(arrow_rect.left());
-            return rect;
+            switch (sc) {
+            case SC_ComboBoxArrow: {
+                QRect rect(0, 0, opt->rect.height(), opt->rect.height()) ;
+                int boxHeight = qAbs(rect.height());
+
+                if (opt->direction == Qt::LeftToRight)
+                    rect.moveRight(opt->rect.right());
+                else
+                    rect.moveLeft(opt->rect.left());
+
+                int buttonRectSize = qRound(boxHeight * 2.0 / 3.0);
+                rect.setSize(QSize(buttonRectSize, buttonRectSize));
+
+                return rect;
+            }
+            case SC_ComboBoxEditField: {
+                QRect rect = opt->rect;
+                const QRect arrow_rect = proxy()->subControlRect(cc, opt, SC_ComboBoxArrow, w);
+
+                if (opt->direction == Qt::LeftToRight) {
+                    rect.setRight(arrow_rect.left());
+                    rect.adjust(frameMargins, 0, 0, 0);
+                } else {
+                    rect.setLeft(arrow_rect.right());
+                    rect.adjust(0, 0, -frameMargins, 0);
+                }
+
+                return rect;
+            }
+            case SC_ComboBoxFrame: {
+                return opt->rect;
+            }
+            default:
+                break;
+            }
         }
         break;
     }
@@ -1588,6 +1651,10 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return 10 + Metrics::Frame_FrameWidth ;
     case PM_MenuPanelWidth:
         return 0;
+    case PM_ComboBoxFrameWidth: { //这是ComboBox VMargin
+        const QStyleOptionComboBox *comboBoxOption(qstyleoption_cast< const QStyleOptionComboBox *>(opt));
+        return comboBoxOption && comboBoxOption->editable ? Metrics::ComboBox_FrameWidth : Metrics::LineEdit_FrameWidth ;
+    }
     default:
         break;
     }
@@ -1609,6 +1676,10 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
     //增加TabBar超出范围的左右导航按钮
     case SH_TabBar_PreferNoArrows:
         return false;
+    case SH_ComboBox_Popup:
+        return true;
+    case SH_ComboBox_PopupFrameStyle:
+        return true;
     default:
         break;
     }

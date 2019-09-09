@@ -51,7 +51,7 @@ enum Metrics
     LineEdit_LeftMargin = 3,
 
     // combobox
-    ComboBox_FrameWidth = 6,
+    ComboBox_FrameWidth = 5,
 
     // spinbox
     SpinBox_FrameWidth = LineEdit_FrameWidth,
