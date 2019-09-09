@@ -1544,11 +1544,6 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         }
         break;
     }
-    case CT_SpinBox: {
-        int frame_margins = proxy()->pixelMetric(PM_ButtonMargin, opt, widget);
-        size += QSize(frame_margins, frame_margins);
-        break;
-    }
     case CT_Slider: {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             Q_UNUSED(slider);
@@ -1630,7 +1625,7 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_SpinBoxSliderHeight:
         return SpinBox_MiniHeight;
     case PM_SpinBoxFrameWidth:
-        return 0;
+        return SpinBox_FrameWidth;
     case PM_TabCloseIndicatorWidth:
     case PM_TabCloseIndicatorHeight:
         return 20;

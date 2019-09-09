@@ -54,7 +54,7 @@ enum Metrics
     ComboBox_FrameWidth = 5,
 
     // spinbox
-    SpinBox_FrameWidth = LineEdit_FrameWidth,
+    SpinBox_FrameWidth = 1,
     SpinBox_ArrowButtonWidth = 20,
     SpinBox_ButtonIconWidth = 2,
     SpinBox_MiniHeight = 44,
