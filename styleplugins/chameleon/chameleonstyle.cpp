@@ -159,26 +159,6 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         return;
     }
-    case PE_IndicatorArrowUp: {
-        QRectF standard = opt->rect - frameExtentMargins();
-        DDrawUtils::drawArrow(p, standard, getColor(opt, QPalette::Foreground), Qt::UpArrow);
-        return;
-    }
-    case PE_IndicatorArrowDown: {
-        QRectF standard = opt->rect - frameExtentMargins();
-        DDrawUtils::drawArrow(p, standard, getColor(opt, QPalette::Foreground), Qt::DownArrow);
-        return;
-    }
-    case PE_IndicatorArrowLeft: {
-        QRectF standard = opt->rect - frameExtentMargins();
-        DDrawUtils::drawArrow(p, standard, getColor(opt, QPalette::Foreground), Qt::LeftArrow);
-        return;
-    }
-    case PE_IndicatorArrowRight: {
-        QRectF standard = opt->rect - frameExtentMargins();
-        DDrawUtils::drawArrow(p, standard, getColor(opt, QPalette::Foreground), Qt::RightArrow);
-        return;
-    }
     case PE_IndicatorTabClose: {
         if (drawTabBarCloseButton(p, opt, w))
             return;
