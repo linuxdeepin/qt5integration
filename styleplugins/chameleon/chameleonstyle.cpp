@@ -1182,7 +1182,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
     case CC_Slider : {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             //各个使用的矩形大小和位置
-//            QRectF rect = opt->rect;                                                                            //Slider控件最大的矩形(包含如下三个)
+            QRectF rect = opt->rect;                                                                            //Slider控件最大的矩形(包含如下三个)
             QRectF rectHandle = proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, w);                    //滑块矩形
             QRectF rectSliderTickmarks = proxy()->subControlRect(CC_Slider, opt, SC_SliderTickmarks, w);        //刻度的矩形
             QRect rectGroove = proxy()->subControlRect(CC_Slider, opt, SC_SliderGroove, w);                     //滑槽的矩形
@@ -1197,15 +1197,27 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             QPen pen;
             //绘画 滑槽(线)
             if (opt->subControls & SC_SliderGroove) {
-                pen.setStyle(Qt::DotLine);
+                pen.setStyle(Qt::CustomDashLine);
+                QVector<qreal> dashes;
+                qreal space = 1.3;
+                dashes << 0.1 << space;
+                pen.setDashPattern(dashes);
                 pen.setWidthF(3);
                 pen.setColor(getColor(opt, QPalette::Highlight));
                 p->setPen(pen);
                 p->setRenderHint(QPainter::Antialiasing);
-                p->drawLine(QPointF(rectGroove.left(), rectHandle.center().y()), QPointF(rectHandle.left(), rectHandle.center().y()));
-                pen.setColor(getColor(opt, QPalette::Foreground));
-                p->setPen(pen);
-                p->drawLine(QPointF(rectGroove.right(), rectHandle.center().y()), QPointF(rectHandle.right(), rectHandle.center().y()));
+
+                if (slider->orientation == Qt::Horizontal) {
+                    p->drawLine(QPointF(rectGroove.left(), rectHandle.center().y()), QPointF(rectHandle.left(), rectHandle.center().y()));
+                    pen.setColor(getColor(opt, QPalette::Foreground));
+                    p->setPen(pen);
+                    p->drawLine(QPointF(rectGroove.right(), rectHandle.center().y()), QPointF(rectHandle.right(), rectHandle.center().y()));
+                } else {
+                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom()), QPointF(rectGroove.center().x(),  rectHandle.bottom()));
+                    pen.setColor(getColor(opt, QPalette::Foreground));
+                    p->setPen(pen);
+                    p->drawLine(QPointF(rectGroove.center().x(),  rectGroove.top()), QPointF(rectGroove.center().x(),  rectHandle.top()));
+                }
             }
 
             //绘画 滑块
@@ -1217,7 +1229,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             }
 
             //绘画 刻度,绘画方式了参考qfusionstyle.cpp
-            if (opt->subControls & SC_SliderTickmarks) {                                   //需要绘画刻度
+            if ((opt->subControls & SC_SliderTickmarks) && slider->tickInterval) {                                   //需要绘画刻度
                 p->setPen(opt->palette.foreground().color());
                 int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, w);  //可用空间
                 int interval = slider->tickInterval;                                       //标记间隔
@@ -1226,14 +1238,24 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
 
                 int v = slider->minimum;
                 int len = proxy()->pixelMetric(PM_SliderLength, slider, w);
-                while (v <= slider->maximum) {
+                while (v <= slider->maximum + 1) {                                          //此处不添加+1的话, 会少绘画一根线
                     const int v_ = qMin(v, slider->maximum);
                     int pos = sliderPositionFromValue(slider->minimum, slider->maximum, v_, available) + len / 2;
 
                     if (slider->orientation == Qt::Horizontal) {
-                        p->drawLine(pos, rectSliderTickmarks.top(), pos, rectSliderTickmarks.bottom());
+                        if(slider->tickPosition == QSlider::TicksBothSides) {               //两侧都会绘画, 总的矩形-中心滑槽滑块最小公共矩形
+                            p->drawLine(pos, rect.top(), pos, rectHandle.top());
+                            p->drawLine(pos, rect.bottom(), pos, rectHandle.bottom());
+                        } else {
+                            p->drawLine(pos, rectSliderTickmarks.top(), pos, rectSliderTickmarks.bottom());
+                        }
                     } else {
-                        p->drawLine(rectSliderTickmarks.left(), pos, rectSliderTickmarks.right(), pos);
+                        if(slider->tickPosition == QSlider::TicksBothSides) {
+                            p->drawLine(rect.left(), pos, rectHandle.left(), pos);
+                            p->drawLine(rect.right(), pos, rectHandle.right(), pos);
+                        } else {
+                            p->drawLine(rectSliderTickmarks.left(), pos, rectSliderTickmarks.right(), pos);
+                        }
                     }
                     // in the case where maximum is max int
                     int nextInterval = v + interval;
@@ -1455,10 +1477,12 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 slider_handle_rect.setHeight(slider_size);
                 if (option->tickPosition == QSlider::TicksAbove) slider_handle_rect.moveBottom(rect.bottom());
                 if (option->tickPosition == QSlider::TicksBelow) slider_handle_rect.moveTop(rect.top());
+                if (option->tickPosition == QSlider::TicksBothSides) slider_handle_rect.moveCenter(rect.center());
             } else {
                 slider_handle_rect.setWidth(slider_size);
                 if (option->tickPosition == QSlider::TicksRight)  slider_handle_rect.moveLeft(rect.left());
                 if (option->tickPosition == QSlider::TicksLeft)   slider_handle_rect.moveRight(rect.right());
+                if (option->tickPosition == QSlider::TicksBothSides) slider_handle_rect.moveCenter(rect.center());
             }
 
             QRectF rectStatic =  slider_handle_rect;   //rectStatic作为 滑块和滑漕的的最小公共矩形(不改变)
