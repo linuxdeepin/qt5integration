@@ -86,7 +86,7 @@ enum Metrics
     Menu_RightBorder = 10,
     Menu_ItemFrameWidth = 8,
     Menu_ItemHTextMargin = 3,
-    Menu_ItemVTextMargin = 8,
+    Menu_ItemVTextMargin = 4,
     Menu_FrameWidth = 0,
     Menu_HMargin = 0,
     Menu_VMargin = 10,
@@ -96,7 +96,7 @@ enum Metrics
     MenuItem_ItemSpacing = 4,
     MenuItem_AcceleratorSpace = 16,
     MenuItem_TabSpacing = 16,
-    MenuButton_IndicatorWidth = 20,
+    MenuButton_IndicatorMargin = 8,
 
     // menu bar
     MenuBar_ItemSpacing = 6,

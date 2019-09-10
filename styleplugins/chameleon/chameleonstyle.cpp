@@ -723,7 +723,7 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
         if (comboBox->editable) {
             arrowOpt.rect.setSize(QSize(qRound(buttonOption.rect.width() / 3.0), qRound(buttonOption.rect.height() / 3.0)));
             arrowOpt.rect.moveCenter(buttonOption.rect.center());
-        }else{
+        } else {
             QPoint center = arrowOpt.rect.center();
             arrowOpt.rect.setSize(QSize(qRound(arrowOpt.rect.height() / 1.2), qRound(arrowOpt.rect.height() / 1.2)));
             arrowOpt.rect.moveCenter(center);
@@ -822,14 +822,15 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         //绘制选择框
         bool ignoreCheckMark = false;
         const int checkColHOffset = MenuItem_MarginWidth ;
-        int checkColWidth = qMax<int>(menuRect.height(), menuItem->maxIconWidth);
+        int minCheckColWidth = menuItem->menuHasCheckableItems ? menuRect.height() : Menu_PanelRightPadding;
+        int checkColWidth = qMax<int>(minCheckColWidth, menuItem->maxIconWidth);
 
         if (qobject_cast<const QComboBox *>(widget) ||
                 (option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool()))
             ignoreCheckMark = true;
 
         if (!ignoreCheckMark) {
-            const qreal boxMargin = Menu_ItemVTextMargin ;
+            const qreal boxMargin = MenuButton_IndicatorMargin;
             const qreal boxWidth = checkColWidth - 2 * boxMargin;
             QRectF checkRectF(option->rect.left() + boxMargin + checkColHOffset, option->rect.center().y() - boxWidth / 2 + 1, boxWidth, boxWidth);
             QRect checkRect = checkRectF.toRect();
@@ -861,10 +862,10 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
                     }
                 }
             }
-        } else { //ignore checkmark
+        } else { //ignore checkmark //用于combobox
 
             if (menuItem->icon.isNull())
-                checkColWidth = 0;
+                checkColWidth = Menu_PanelRightPadding;
             else
                 checkColWidth = menuItem->maxIconWidth;
         }
@@ -913,7 +914,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
         int xmargin = checkColHOffset + checkColWidth ;
         int xpos = menuRect.x() + xmargin;
-        QRect textRect(xpos, y + MenuItem_ItemSpacing, w - xmargin - tab, h - 2 * MenuItem_ItemSpacing);
+        QRect textRect(xpos, y + Menu_ItemHTextMargin, w - xmargin - tab, h - 2 * Menu_ItemVTextMargin);
         QRect vTextRect = textRect /*visualRect(option->direction, menuRect, textRect)*/; // 区分左右方向
         QStringRef textRef(&menuItem->text);
 
@@ -1570,9 +1571,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                     m_width += fmBold.width(menuItem->text) - fm.width(menuItem->text);
                 }
             }
-            int checkcol = qMax<int>(maxpmw, Menu_CheckMarkWidth); // Windows always shows a check column
+
+            int checkcol = qMax<int>(maxpmw, Menu_CheckMarkWidth);
             m_width += checkcol;
-            m_width += Menu_RightBorder ;
+            m_width += Menu_RightBorder;
+            m_width += Menu_PanelRightPadding;
             size.setWidth(m_width);
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 if (!menuItem->text.isEmpty()) {
