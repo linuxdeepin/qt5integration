@@ -306,9 +306,9 @@ void WidgetGallery::createBottomRightGroupBox()
     dateTimeEdit->setDateTime(QDateTime::currentDateTime());
 
     comboBoxEdit = new QComboBox(bottomRightGroupBox);
-    comboBoxEdit->addItem(QIcon::fromTheme("state-ok"), "state-ok");
-    comboBoxEdit->addItem(QIcon::fromTheme("crosshairs"), "crosshairs");
-    comboBoxEdit->addItem(QIcon::fromTheme("audio-volume-low-symbolic"), "audio-volume-low-symbolic");
+    comboBoxEdit->addItem(QIcon::fromTheme("dde-file-manager"), "dde-file-manager");
+    comboBoxEdit->addItem(QIcon::fromTheme("dde-introduction"), "dde-introduction");
+    comboBoxEdit->addItem(QIcon::fromTheme("deepin-deb-installer"), "deepin-deb-installer");
     comboBoxEdit->setEditable(true);
 
     slider = new QSlider(Qt::Horizontal, bottomRightGroupBox);

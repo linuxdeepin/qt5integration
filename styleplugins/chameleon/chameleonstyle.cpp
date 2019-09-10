@@ -406,6 +406,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         break;
     }
+    case CE_ComboBoxLabel: {
+        if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
+            if (drawComboBoxLabel(p, cb, w))
+                return;
+        }
+        break;
+    }
     default:
         break;
     }
@@ -725,11 +732,84 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
             arrowOpt.rect.moveCenter(buttonOption.rect.center());
         } else {
             QPoint center = arrowOpt.rect.center();
-            arrowOpt.rect.setSize(QSize(qRound(arrowOpt.rect.height() / 1.2), qRound(arrowOpt.rect.height() / 1.2)));
+            arrowOpt.rect.setSize(QSize(qRound(arrowOpt.rect.height() / 2.4), qRound(arrowOpt.rect.height() / 2.4)));
             arrowOpt.rect.moveCenter(center);
         }
 
         proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
+    }
+
+    return true;
+}
+
+bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComboBox *cb, const QWidget *widget) const
+{
+    const bool hasText(!cb->currentText.isEmpty());
+    const bool hasIcon(!cb->currentIcon.isNull());
+    const bool enabled(cb->state & QStyle::State_Enabled);
+    const bool sunken(cb->state & (QStyle::State_On | QStyle::State_Sunken));
+    const bool mouseOver(cb->state & QStyle::State_MouseOver);
+    const bool hasFocus(cb->state & QStyle::State_HasFocus);
+    const bool flat(!cb->frame);
+    const bool editable(cb->editable);
+
+    QRect contentsRect(cb->rect);
+    if (sunken && !flat) contentsRect.translate(1, 1);
+    contentsRect.adjust(Metrics::Layout_ChildMarginWidth, 0, -Metrics::Layout_ChildMarginWidth, 0);
+
+    QSize iconSize;
+    if (hasIcon) {
+        iconSize = cb->iconSize;
+        if (!iconSize.isValid()) {
+            const int metric(widget->style()->pixelMetric(QStyle::PM_SmallIconSize, cb, widget));
+            iconSize = QSize(metric, metric);
+        }
+    }
+
+    int textFlags(Qt::AlignVCenter | Qt::AlignLeft);
+    const QSize textSize(cb->fontMetrics.size(textFlags, cb->currentText));
+
+    if (styleHint(SH_UnderlineShortcut, cb, widget))
+        textFlags |= Qt::TextShowMnemonic;
+    else
+        textFlags |= Qt::TextHideMnemonic;
+
+    QRect iconRect;
+    QRect textRect;
+
+    if (hasText && !hasIcon) textRect = contentsRect;
+    else if (hasIcon && !hasText) iconRect = contentsRect;
+    else {
+        const int contentsWidth(iconSize.width() + textSize.width() + Metrics::Button_ItemSpacing);
+        const int contentLeftPadding = flat ? (contentsRect.width() - contentsWidth) / 2 : frameExtentMargins().left();
+        iconRect = QRect(QPoint(contentsRect.left() + contentLeftPadding,
+                                contentsRect.top() + (contentsRect.height() - iconSize.height()) / 2), iconSize);
+        textRect = QRect(QPoint(iconRect.right() + Metrics::Button_ItemSpacing + 1,
+                                contentsRect.top() + (contentsRect.height() - textSize.height()) / 2), textSize);
+    }
+
+    // handle right to left
+    if (iconRect.isValid()) iconRect = visualRect(cb->direction, cb->rect, iconRect);
+    if (textRect.isValid()) textRect = visualRect(cb->direction, cb->rect, textRect);
+
+    // render icon
+    if (hasIcon && iconRect.isValid()) {
+        // icon state and mode
+        const QIcon::State iconState(sunken ? QIcon::On : QIcon::Off);
+        QIcon::Mode iconMode;
+        if (!enabled) iconMode = QIcon::Disabled;
+        else if (!flat && hasFocus) iconMode = QIcon::Selected;
+        else if (mouseOver && flat) iconMode = QIcon::Active;
+        else iconMode = QIcon::Normal;
+
+        const QPixmap pixmap = cb->currentIcon.pixmap(iconSize, iconMode, iconState);
+        proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
+    }
+
+    // render text
+    if (hasText && textRect.isValid() && !editable) {
+        painter->setPen(getColor(cb, QPalette::ButtonText));
+        painter->drawText(textRect, textFlags, cb->currentText);
     }
 
     return true;
@@ -1461,7 +1541,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 else
                     rect.moveLeft(opt->rect.left());
 
-                int buttonRectSize = qRound(boxHeight * 2.0 / 3.0);
+                int buttonRectSize = boxHeight;
                 rect.setSize(QSize(buttonRectSize, buttonRectSize));
 
                 return rect;

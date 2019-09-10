@@ -88,6 +88,7 @@ private:
     bool drawTabBarCloseButton(QPainter *painter,const QStyleOption *tab , const QWidget *widget) const;
     bool drawTabBarScrollButton(QPainter *painter, const QStyleOption *opt, const QWidget *buttonWidget) const;
     bool drawComboBox(QPainter *painter, const QStyleOptionComboBox *comboBox, const QWidget *widget) const;
+    bool drawComboBoxLabel(QPainter *painter, const QStyleOptionComboBox *comboBox, const QWidget *widget) const;
 };
 
 } // namespace chameleon
