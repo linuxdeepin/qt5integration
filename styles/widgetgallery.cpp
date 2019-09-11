@@ -301,6 +301,7 @@ void WidgetGallery::createBottomRightGroupBox()
     spinBox->setPrefix(" Prefix ");
     spinBox->setSuffix(" Suffix ");
     spinBox->setAlignment(Qt::AlignCenter);
+    spinBox->setFrame(false);
 
     dateTimeEdit = new QDateTimeEdit(bottomRightGroupBox);
     dateTimeEdit->setDateTime(QDateTime::currentDateTime());
