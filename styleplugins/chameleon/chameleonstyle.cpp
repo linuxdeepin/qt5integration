@@ -243,13 +243,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
         if (opt->state & QStyle::State_Horizontal) {
             QRectF rectHand = rect;
-            rectHand.setHeight(rect.height() / 4);
+            rectHand.setHeight(rect.height() / 2);
             rectHand.moveCenter(QRectF(rect).center());
             p->setBrush(getColor(opt, QPalette::Button));
             p->drawRoundedRect(rectHand, rectHand.height() / 2.0, rectHand.height() / 2.0);
         } else {
             QRectF rectHand = rect;
-            rectHand.setWidth(rectHand.width() / 4);
+            rectHand.setWidth(rectHand.width() / 2);
             rectHand.moveCenter(QRectF(rect).center());
             p->setBrush(getColor(opt, QPalette::Button));
             p->drawRoundedRect(rectHand, rectHand.width() / 2.0, rectHand.width() / 2.0);
@@ -1667,6 +1667,13 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         size.setWidth(size.width() + Menu_ItemHMargin * 2);
         size.setHeight(size.height() + qMax(Menu_ItemVMargin * 2, 0));
         break;
+    }
+    case CT_ScrollBar: {
+        if (size.width() > size.height())
+            size.setHeight(size.height() / 2.0);
+        if (size.width() < size.height())
+            size.setWidth(size.width() / 2.0);
+        return size;
     }
     default:
         break;
