@@ -67,15 +67,23 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 //        qDebug() << "### pushbutton state " << (int)opt->state;
         const QMargins &margins = frameExtentMargins();
 
-        drawShadow(p, opt->rect + margins, getColor(opt, QPalette::Shadow));
-        // 初始化button的渐变背景色
-        QLinearGradient lg(QPointF(0, opt->rect.top()),
-                           QPointF(0, opt->rect.bottom()));
-        lg.setColorAt(0, getColor(opt, QPalette::Light));
-        lg.setColorAt(1, getColor(opt, QPalette::Dark));
+        // checked
+        if (opt->state & State_On) {
+            const QColor &color = getColor(opt, QPalette::Highlight);
+            drawShadow(p, opt->rect + margins, adjustColor(color, 0, 0, +30));
+            p->setBrush(color);
+        } else {
+            drawShadow(p, opt->rect + margins, getColor(opt, QPalette::Shadow));
+            // 初始化button的渐变背景色
+            QLinearGradient lg(QPointF(0, opt->rect.top()),
+                               QPointF(0, opt->rect.bottom()));
+            lg.setColorAt(0, getColor(opt, QPalette::Light));
+            lg.setColorAt(1, getColor(opt, QPalette::Dark));
+
+            p->setBrush(lg);
+        }
 
         p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
-        p->setBrush(lg);
         p->setRenderHint(QPainter::Antialiasing);
 
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
@@ -422,6 +430,71 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         break;
     }
+    case CE_PushButtonLabel:
+        if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            QRect textRect = button->rect;
+            uint tf = Qt::AlignVCenter | Qt::TextShowMnemonic;
+            if (!proxy()->styleHint(SH_UnderlineShortcut, button, w))
+                tf |= Qt::TextHideMnemonic;
+
+            const QPalette::ColorRole &text_color_role = opt->state & State_On ? QPalette::HighlightedText : QPalette::ButtonText;
+
+            if (!button->icon.isNull()) {
+                //Center both icon and text
+                QRect iconRect;
+                QIcon::Mode mode = button->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
+                if (mode == QIcon::Normal && button->state & State_HasFocus)
+                    mode = QIcon::Active;
+                QIcon::State state = QIcon::Off;
+                if (button->state & State_On)
+                    state = QIcon::On;
+
+                int pixmapWidth = button->iconSize.width();
+                int pixmapHeight = button->iconSize.height();
+                int labelWidth = pixmapWidth;
+                int labelHeight = pixmapHeight;
+                int iconSpacing = 4;//### 4 is currently hardcoded in QPushButton::sizeHint()
+                int textWidth = button->fontMetrics.boundingRect(opt->rect, tf, button->text).width();
+                if (!button->text.isEmpty())
+                    labelWidth += (textWidth + iconSpacing);
+
+                iconRect = QRect(textRect.x() + (textRect.width() - labelWidth) / 2,
+                                 textRect.y() + (textRect.height() - labelHeight) / 2,
+                                 pixmapWidth, pixmapHeight);
+
+                iconRect = visualRect(button->direction, textRect, iconRect);
+
+                tf |= Qt::AlignLeft; //left align, we adjust the text-rect instead
+
+                if (button->direction == Qt::RightToLeft)
+                    textRect.setRight(iconRect.left() - iconSpacing);
+                else
+                    textRect.setLeft(iconRect.left() + iconRect.width() + iconSpacing);
+
+                if (button->state & (State_On | State_Sunken))
+                    iconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, w),
+                                       proxy()->pixelMetric(PM_ButtonShiftVertical, opt, w));
+                p->setPen(opt->palette.color(text_color_role)); // 图标可能以文本颜色绘制
+                button->icon.paint(p, iconRect, Qt::AlignCenter, mode, state);
+            } else {
+                tf |= Qt::AlignHCenter;
+            }
+            if (button->state & (State_On | State_Sunken))
+                textRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, w),
+                                   proxy()->pixelMetric(PM_ButtonShiftVertical, opt, w));
+
+            if (button->features & QStyleOptionButton::HasMenu) {
+                int indicatorSize = proxy()->pixelMetric(PM_MenuButtonIndicator, button, w);
+                if (button->direction == Qt::LeftToRight)
+                    textRect = textRect.adjusted(0, 0, -indicatorSize, 0);
+                else
+                    textRect = textRect.adjusted(indicatorSize, 0, 0, 0);
+            }
+            proxy()->drawItemText(p, textRect, tf, button->palette, (button->state & State_Enabled),
+                                  button->text, text_color_role);
+            return;
+        }
+        break;
     default:
         break;
     }
