@@ -21,6 +21,7 @@
 #include "filedialogmanager_interface.h"
 #include "dthemesettings.h"
 #include "diconengine.h"
+#include "dbuiltiniconengine.h"
 
 #include <DGuiApplicationHelper>
 #include <DPlatformTheme>
@@ -672,18 +673,28 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 #elif XDG_ICON_VERSION_MAR < 3
     return XdgIconEngineCreator::create(iconName);
 #else
-    return new XdgIconProxyEngine(new XdgIconLoaderEngine(iconName));
+    static QSet<QString> builtin_icon_cache;
+
+    if (builtin_icon_cache.contains(iconName)) {
+        return new DBuiltinIconEngine(iconName);
+    }
+
+    XdgIconLoaderEngine *engine = new XdgIconLoaderEngine(iconName);
+
+    if (engine->isNull()) {
+        // 记录下来此种类型的icon为内置图标
+        // 一般情况下，内置类型的图标极少会被外部图标主题覆盖
+        // 因此，此处添加的缓存不考虑更新
+        builtin_icon_cache.insert(iconName);
+        return new DBuiltinIconEngine(iconName);
+    }
+
+    return new XdgIconProxyEngine(engine);
 #endif
 }
 
 QPixmap QDeepinTheme::standardPixmap(QPlatformTheme::StandardPixmap sp, const QSizeF &size) const
 {
-    switch (sp) {
-    case ArrowRight:
-        return QPixmap(":/images/arrow-light.png");
-    default: break;
-    }
-
     return QGenericUnixTheme::standardPixmap(sp, size);
 }
 
@@ -702,19 +713,6 @@ QPixmap QDeepinTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &si
     return XdgIcon::fromTheme(m_mimeDatabase.mimeTypeForFile(fileInfo).iconName()).pixmap(size.toSize());
 }
 #endif
-
-static bool isDarkColor(const QColor &color)
-{
-    QColor rgb_color = color.toRgb();
-    // 获取rgb颜色的亮度
-    float luminance = 0.299 * rgb_color.redF() + 0.587 * rgb_color.greenF() + 0.114 * rgb_color.blueF();
-
-    if (qRound(luminance * 255) > 191) {
-        return false;
-    }
-
-    return true;
-}
 
 class PlatformTheme
 {
@@ -740,15 +738,6 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     }
     case QPlatformTheme::SystemIconThemeName:
         return _pTheme->theme->iconThemeName();
-    case QPlatformTheme::SystemIconFallbackThemeName: {
-        const QColor &color = qGuiApp->palette().window().color();
-
-        if (color.isValid() && isDarkColor(color)) {
-            return QVariant("deepin-app-dark");
-        }
-
-        return QVariant("deepin-app-light");
-    }
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(QGenericUnixTheme::xdgIconThemePaths() << QDir::homePath() + "/.local/share/icons");
     case UseFullScreenForPopupMenu:

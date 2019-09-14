@@ -51,17 +51,6 @@ public:
     int styleHint(StyleHint sh, const QStyleOption *opt = nullptr, const QWidget *w = nullptr,
                   QStyleHintReturn *shret = nullptr) const override;
 
-    QIcon standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOption *opt = nullptr,
-                       const QWidget *widget = nullptr) const override;
-    QPixmap standardPixmap(QStyle::StandardPixmap sp, const QStyleOption *opt = nullptr,
-                           const QWidget *widget = nullptr) const override;
-
-    QPixmap generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
-                                const QStyleOption *opt) const override;
-    int layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
-                      Qt::Orientation orientation, const QStyleOption *option = nullptr,
-                      const QWidget *widget = nullptr) const override;
-
     void polish(QWidget *w) override;
     void unpolish(QWidget *w) override;
     void unpolish(QApplication *application) override;

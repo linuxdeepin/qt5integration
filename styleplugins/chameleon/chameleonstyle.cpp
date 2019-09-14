@@ -1746,61 +1746,6 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
     return DStyle::styleHint(sh, opt, w, shret);
 }
 
-QIcon ChameleonStyle::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOption *opt,
-                                   const QWidget *widget) const
-{
-    switch (standardIcon) {
-    case SP_LineEditClearButton: {
-        QRect rect(0, 0, Metrics::Icon_Size, Metrics::Icon_Size);
-        qreal sclae = widget ? widget->devicePixelRatioF() : qApp->devicePixelRatio();
-        QImage image(rect.size() * sclae, QImage::Format_ARGB32_Premultiplied);
-
-        rect.adjust(Metrics::Icon_Margins, Metrics::Icon_Margins, -Metrics::Icon_Margins, -Metrics::Icon_Margins);
-        image.fill(Qt::transparent);
-        image.setDevicePixelRatio(sclae);
-
-        QPainter pan;
-        pan.begin(&image);
-        pan.setBrush(getColor(opt, QPalette::Base));
-        pan.setPen(Qt::NoPen);
-        pan.setRenderHint(QPainter::Antialiasing, true);
-        pan.drawEllipse(rect);
-
-        QRectF contentRect(0, 0, rect.width() / 2.5, rect.height() / 2.5);
-        contentRect.moveCenter(QRectF(rect).center());
-        DDrawUtils::drawFork(&pan, contentRect, getColor(opt, QPalette::Text), 2);
-        pan.end();
-
-        QPixmap pix = QPixmap::fromImage(image);
-        pix.setDevicePixelRatio(image.devicePixelRatio());
-
-        return QIcon(pix);
-    }
-    break;
-    default:
-        break;
-    }
-    return DStyle::standardIcon(standardIcon, opt, widget);
-}
-
-QPixmap ChameleonStyle::standardPixmap(QStyle::StandardPixmap sp, const QStyleOption *opt,
-                                       const QWidget *widget) const
-{
-    return DStyle::standardPixmap(sp, opt, widget);
-}
-
-QPixmap ChameleonStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
-                                            const QStyleOption *opt) const
-{
-    return DStyle::generatedIconPixmap(iconMode, pixmap, opt);
-}
-
-int ChameleonStyle::layoutSpacing(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
-                                  Qt::Orientation orientation, const QStyleOption *option, const QWidget *widget) const
-{
-    return DStyle::layoutSpacing(control1, control2, orientation, option, widget);
-}
-
 void ChameleonStyle::polish(QWidget *w)
 {
     DStyle::polish(w);

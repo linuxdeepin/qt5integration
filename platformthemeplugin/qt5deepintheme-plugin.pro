@@ -41,13 +41,15 @@ SOURCES += qdeepintheme.cpp \
     qdeepinfiledialoghelper.cpp \
     diconproxyengine.cpp \
     dthemesettings.cpp \
-    xdgiconenginecreator.cpp
+    xdgiconenginecreator.cpp \
+    dbuiltiniconengine.cpp
 
 HEADERS += qdeepintheme.h \
     qdeepinfiledialoghelper.h \
     diconproxyengine.h \
     dthemesettings.h \
-    xdgiconenginecreator.h
+    xdgiconenginecreator.h \
+    dbuiltiniconengine.h
 
 DISTFILES += \
     deepin.json
@@ -56,9 +58,6 @@ unix {
     target.path = $$[QT_INSTALL_PLUGINS]/platformthemes
     INSTALLS += target
 }
-
-RESOURCES += \
-    $$PWD/icon-theme/deepin-icon-theme.qrc
 
 CONFIG(release, debug|release) {
     DEFINES += QT_NO_DEBUG_OUTPUT
