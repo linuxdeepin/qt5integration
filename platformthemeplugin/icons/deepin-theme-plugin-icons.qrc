@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/icons/deepin/builtin">
+        <file>texts/edit_16px.svg</file>
+        <file>texts/caps_lock_16px.svg</file>
+        <file>texts/volume_high_24px.svg</file>
+        <file>texts/volume_low_24px.svg</file>
+        <file>texts/volume_mute_24px.svg</file>
+        <file>texts/password_hide_24px.svg</file>
+        <file>texts/password_show_24px.svg</file>
+        <file>texts/sound_right_24px.svg</file>
+        <file>texts/sound_left_24px.svg</file>
+    </qresource>
+</RCC>
