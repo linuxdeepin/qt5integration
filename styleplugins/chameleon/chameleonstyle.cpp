@@ -1558,6 +1558,9 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 return slider_handle_rect.toRect();
             }
             case SC_SliderTickmarks: {  //刻度的矩形
+                if (option->tickPosition & QSlider::NoTicks)
+                    return QRect(0, 0, 0, 0);
+
                 QRectF tick_rect = rect;
 
                 if (option->orientation == Qt::Horizontal) {
@@ -1667,9 +1670,30 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     }
     case CT_Slider: {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            Q_UNUSED(slider);
-            int height = proxy()->pixelMetric(PM_SliderControlThickness, opt, widget) + Metrics::Slider_TickmarkOffset;
-            size.setHeight(qMax(size.height(), height));
+            /*2019-09-19　约定枚举值含义　　　　　中文含义
+             * PM_SliderThickness:　　　　　　Slider总的高度　＝　滑块高度＋刻度高度
+             * PM_SliderControlThickness:   只是滑块的单独高度
+             * PM_SliderLength:             只是滑块的长度
+             * PM_SliderTickmarkOffset:     用作slider的刻度线的高度
+             * PM_SliderSpaceAvailable      暂时未用到
+             */
+
+            int sliderContHeight = proxy()->pixelMetric(PM_SliderControlThickness, opt, widget);
+            int tickMarkHeight = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, widget);
+            sliderContHeight += tickMarkHeight;
+
+            if (slider->tickPosition == QSlider::NoTicks) {
+                sliderContHeight -= tickMarkHeight;
+            } else if (slider->tickPosition == QSlider::TicksBothSides) {
+                sliderContHeight += tickMarkHeight;
+            } else {
+            }
+
+            if (slider->orientation == Qt::Horizontal){
+                size.setHeight(qMax(size.height(), sliderContHeight));
+            } else {
+                size.setWidth(qMax(size.width(), sliderContHeight));
+            }
         }
         break;
     }
