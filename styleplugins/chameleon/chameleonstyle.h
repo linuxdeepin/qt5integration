@@ -67,6 +67,7 @@ private:
     QColor getColor(const QStyleOption *option, QPalette::ColorRole role) const;
     QColor getColor(const QStyleOption *option, DPalette::ColorType type, const QWidget *widget) const;
     QMargins frameExtentMargins() const;
+    QRect drawButtonDownArrow(const QStyleOption *opt, QPainter *p, const QWidget *w) const;
 
     bool drawSpinBox(const QStyleOptionSpinBox *opt, QPainter *p, const QWidget *w) const;
     void updateSpinBoxButtonState(const QStyleOptionSpinBox *opt, QStyleOptionButton& button, bool isActive, bool isEnabled) const;

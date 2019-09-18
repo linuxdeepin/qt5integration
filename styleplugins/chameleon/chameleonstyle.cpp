@@ -338,6 +338,27 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         break;
     }
+    case CE_PushButtonBevel: {
+            if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+                QRect br = btn->rect;
+                int dbi = proxy()->pixelMetric(PM_ButtonDefaultIndicator, btn, w);
+                if (btn->features & QStyleOptionButton::DefaultButton)
+                    proxy()->drawPrimitive(PE_FrameDefaultButton, opt, p, w);
+                if (btn->features & QStyleOptionButton::AutoDefaultButton)
+                    br.setCoords(br.left() + dbi, br.top() + dbi, br.right() - dbi, br.bottom() - dbi);
+                if (!(btn->features & (QStyleOptionButton::Flat | QStyleOptionButton::CommandLinkButton))
+                    || btn->state & (State_Sunken | State_On)
+                    || (btn->features & QStyleOptionButton::CommandLinkButton && btn->state & State_MouseOver)) {
+                    QStyleOptionButton tmpBtn = *btn;
+                    tmpBtn.rect = br;
+                    proxy()->drawPrimitive(PE_PanelButtonCommand, &tmpBtn, p, w);
+                }
+                if (btn->features & QStyleOptionButton::HasMenu) {
+                    drawButtonDownArrow(btn, p, w);
+                }
+            }
+            return;
+        }
     case CE_TabBarTabShape: {
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
             if (drawTabBar(p, tab, w))
@@ -1653,6 +1674,8 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     case CT_PushButton: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         size += QSize(frame_margins * 2, frame_margins * 2);
+        QRect rectArrowAndLine = drawButtonDownArrow(opt, nullptr, widget);
+        size.setWidth(size.width() + rectArrowAndLine.width());
         break;
     }
     case CT_ItemViewItem: {
@@ -1980,6 +2003,46 @@ QMargins ChameleonStyle::frameExtentMargins() const
     int margins = DStyle::pixelMetric(PM_FrameMargins);
 
     return QMargins(margins, margins, margins, margins);
+}
+
+QRect ChameleonStyle::drawButtonDownArrow(const QStyleOption *opt, QPainter *p, const QWidget *w) const
+{
+    const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt);
+
+    if (!btn)
+        return QRect(-1, -1, -1, -1);
+
+    QRect rectOpt = btn->rect;
+    int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+    int arrowWidget = DStyle::pixelMetric(PM_MenuButtonIndicator, opt, w);
+    int arrowHeight = arrowWidget * 0.5;
+    QRect rectArrow(0, 0 , arrowWidget, arrowHeight);
+    rectArrow.moveCenter(rectOpt.center());
+    rectArrow.moveRight(rectOpt.right() - radius);
+
+    QStyleOptionButton newBtn = *btn;                 //单独绘画矩形|和下箭头作为一个单独区域
+    QRect &newRect = newBtn.rect;
+    newRect.setHeight(rectOpt.height() - 2 * radius);
+    newRect.setWidth(arrowWidget + 3 * radius);       //将竖线也包含进来
+    newRect.moveCenter(rectOpt.center());
+    newRect.moveRight(rectOpt.right());
+
+    if (p == nullptr || w == nullptr)
+        return newRect;
+
+    QPen pen;
+    p->setPen(pen);
+    int lineHeight = newRect.height() * 0.5;
+
+    QPoint lineTop(newRect.left() + radius, newRect.center().y() - lineHeight / 2.0);
+    QPoint lineBottom(newRect.left() + radius, newRect.center().y() + lineHeight / 2.0);
+    p->drawLine(lineTop, lineBottom);
+
+    QStyleOptionButton arrowDrawBtn  = newBtn;
+    arrowDrawBtn.rect = rectArrow;
+    proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowDrawBtn, p, w);
+
+    return newRect;
 }
 
 } // namespace chameleon
