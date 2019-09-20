@@ -1303,7 +1303,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 dashes << 0.1 << space;
                 pen.setDashPattern(dashes);
                 pen.setWidthF(3);
-                pen.setColor(getColor(opt, QPalette::Highlight));
+                pen.setBrush((opt->activeSubControls & SC_SliderHandle) ? getColor(opt, QPalette::Highlight) : opt->palette.highlight());
                 p->setPen(pen);
                 p->setRenderHint(QPainter::Antialiasing);
 
@@ -1324,7 +1324,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             if (opt->subControls & SC_SliderHandle) {
                 pen.setStyle(Qt::SolidLine);
                 p->setPen(Qt::NoPen);
-                p->setBrush(getColor(opt, QPalette::Highlight));
+                p->setBrush((opt->activeSubControls & SC_SliderHandle) ? getColor(opt, QPalette::Highlight) : opt->palette.highlight());
                 p->drawRoundedRect(rectHandle, DStyle::pixelMetric(DStyle::PM_FrameRadius), DStyle::pixelMetric(DStyle::PM_FrameRadius));
             }
 
@@ -1852,6 +1852,8 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
         return true;
     case SH_ComboBox_PopupFrameStyle:
         return true;
+    case SH_Slider_AbsoluteSetButtons:
+        return Qt::LeftButton | Qt::MidButton;
     default:
         break;
     }
