@@ -1674,8 +1674,13 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     case CT_PushButton: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         size += QSize(frame_margins * 2, frame_margins * 2);
-        QRect rectArrowAndLine = drawButtonDownArrow(opt, nullptr, widget);
-        size.setWidth(size.width() + rectArrowAndLine.width());
+
+        if (const QStyleOptionButton *bopt = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+            if (bopt->features & QStyleOptionButton::HasMenu) {
+                QRect rectArrowAndLine = drawButtonDownArrow(opt, nullptr, widget);
+                size.rwidth() += rectArrowAndLine.width();
+            }
+        }
         break;
     }
     case CT_ItemViewItem: {
