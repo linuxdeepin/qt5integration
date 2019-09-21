@@ -1035,7 +1035,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         drawMenuItemBackground(option, painter);
 
         //绘制选择框
-        bool ignoreCheckMark = true;
+        bool ignoreCheckMark = false;
         const int checkColHOffset = MenuItem_MarginWidth ;
         int minCheckColWidth = menuItem->menuHasCheckableItems ? menuRect.height() : Menu_PanelRightPadding;
         int checkColWidth = qMax<int>(minCheckColWidth, menuItem->maxIconWidth);
