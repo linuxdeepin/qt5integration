@@ -899,8 +899,12 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
     QRect iconRect;
     QRect textRect;
 
-    if (hasText && !hasIcon) textRect = contentsRect;
-    else if (hasIcon && !hasText) iconRect = contentsRect;
+    if (hasText && !hasIcon) {
+        textRect = contentsRect;
+        int frame_radius = DStyle::pixelMetric(PM_FrameRadius, cb, widget);
+        textRect.adjust(frame_radius, frame_radius, -frame_radius, -frame_radius);
+        textRect.moveCenter(contentsRect.center());
+    }
     else {
         const int contentsWidth(iconSize.width() + textSize.width() + Metrics::Button_ItemSpacing);
         const int contentLeftPadding = flat ? (contentsRect.width() - contentsWidth) / 2 : frameExtentMargins().left();
@@ -924,8 +928,7 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
         else if (mouseOver && flat) iconMode = QIcon::Active;
         else iconMode = QIcon::Normal;
 
-        const QPixmap pixmap = cb->currentIcon.pixmap(iconSize, iconMode, iconState);
-        proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
+        cb->currentIcon.paint(painter, iconRect, Qt::AlignLeft);
     }
 
     // render text
