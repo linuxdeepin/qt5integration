@@ -940,6 +940,57 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
     return true;
 }
 
+void ChameleonStyle::drawSliderHandle(const QStyleOptionComplex *opt, QRectF& rectHandle, QPainter *p) const
+{
+    if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+        if (slider->tickPosition == QSlider::NoTicks) {
+            p->drawRoundedRect(rectHandle, DStyle::pixelMetric(DStyle::PM_FrameRadius), DStyle::pixelMetric(DStyle::PM_FrameRadius));
+        } else {
+            qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
+            QRectF rectRoundedPart(0, 0, 0, 0);
+
+            if (slider->orientation == Qt::Horizontal) {
+                if (slider->tickPosition == QSlider::TicksAbove) {  //尖角朝上
+                    rectRoundedPart = QRectF(rectHandle.left(), rectHandle.bottom() - 2 * radius, rectHandle.width(), 2 * radius);
+                    QPointF polygon[5] = { QPointF(rectHandle.left(), rectHandle.bottom() - radius)
+                                           , QPointF(rectHandle.left(), rectHandle.top() + radius)
+                                           , QPointF(rectHandle.center().x(), rectHandle.top())
+                                           , QPointF(rectHandle.right(), rectHandle.top() + radius)
+                                           , QPointF(rectHandle.right(), rectHandle.bottom() - radius)};
+                    p->drawPolygon(polygon, 5);
+                } else { //尖角朝下
+                    rectRoundedPart = QRectF(rectHandle.left(), rectHandle.top(), rectHandle.width(), 2 * radius);
+                    QPointF polygon[5] = {   QPointF(rectHandle.left(), rectHandle.top() + radius)
+                                           , QPointF(rectHandle.left(), rectHandle.bottom() - radius)
+                                           , QPointF(rectHandle.center().x(), rectHandle.bottom())
+                                           , QPointF(rectHandle.right(), rectHandle.bottom() - radius)
+                                           , QPointF(rectHandle.right(), rectHandle.top() + radius)};
+                    p->drawPolygon(polygon, 5);
+                }
+            } else {
+                if (slider->tickPosition == QSlider::TicksLeft) {  //尖角朝左
+                    rectRoundedPart = QRectF(rectHandle.right() - 2 * radius, rectHandle.top(), 2 * radius, rectHandle.height());
+                    QPointF polygon[5] = {   QPointF(rectHandle.right() - radius, rectHandle.top())
+                                           , QPointF(rectHandle.left() + radius, rectHandle.top())
+                                           , QPointF(rectHandle.left(), rectHandle.center().y())
+                                           , QPointF(rectHandle.left() + radius, rectHandle.bottom())
+                                           , QPointF(rectHandle.right() - radius, rectHandle.bottom())};
+                    p->drawPolygon(polygon, 5);
+                } else { //尖角朝右
+                    rectRoundedPart = QRectF(rectHandle.left(), rectHandle.top(), 2 * radius, rectHandle.height());
+                    QPointF polygon[5] = {   QPointF(rectHandle.left() + radius, rectHandle.top())
+                                           , QPointF(rectHandle.right() - radius, rectHandle.top())
+                                           , QPointF(rectHandle.right(), rectHandle.center().y())
+                                           , QPointF(rectHandle.right() - radius, rectHandle.bottom())
+                                           , QPointF(rectHandle.left() + radius, rectHandle.bottom())};
+                    p->drawPolygon(polygon, 5);
+                }
+            }
+            p->drawRoundedRect(rectRoundedPart, DStyle::pixelMetric(DStyle::PM_FrameRadius), DStyle::pixelMetric(DStyle::PM_FrameRadius));
+        }
+    }
+}
+
 bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &rect, QPainter *painter, const QWidget *widget) const
 {
     bool enabled(option->state & QStyle::State_Enabled);
@@ -1328,7 +1379,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 pen.setStyle(Qt::SolidLine);
                 p->setPen(Qt::NoPen);
                 p->setBrush((opt->activeSubControls & SC_SliderHandle) ? getColor(opt, QPalette::Highlight) : opt->palette.highlight());
-                p->drawRoundedRect(rectHandle, DStyle::pixelMetric(DStyle::PM_FrameRadius), DStyle::pixelMetric(DStyle::PM_FrameRadius));
+                drawSliderHandle(opt, rectHandle, p);
             }
 
             //绘画 刻度,绘画方式了参考qfusionstyle.cpp
