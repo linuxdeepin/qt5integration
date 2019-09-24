@@ -353,9 +353,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     tmpBtn.rect = br;
                     proxy()->drawPrimitive(PE_PanelButtonCommand, &tmpBtn, p, w);
                 }
-                if (btn->features & QStyleOptionButton::HasMenu) {
-                    drawButtonDownArrow(btn, p, w);
-                }
             }
             return;
         }
@@ -520,11 +517,15 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                                    proxy()->pixelMetric(PM_ButtonShiftVertical, opt, w));
 
             if (button->features & QStyleOptionButton::HasMenu) {
-                int indicatorSize = proxy()->pixelMetric(PM_MenuButtonIndicator, button, w);
-                if (button->direction == Qt::LeftToRight)
-                    textRect = textRect.adjusted(0, 0, -indicatorSize, 0);
-                else
-                    textRect = textRect.adjusted(indicatorSize, 0, 0, 0);
+                QRect rectArrowAndLine = drawButtonDownArrow(opt, nullptr, w);
+                int frameRadius = DStyle::pixelMetric(PM_FrameRadius);
+                drawButtonDownArrow(button, p, w);
+
+                if (button->direction == Qt::LeftToRight) {
+                    textRect.setRight(rectArrowAndLine.left() - frameRadius);
+                } else {
+                    textRect.setLeft(rectArrowAndLine.right() + frameRadius);
+                }
             }
             proxy()->drawItemText(p, textRect, tf, button->palette, (button->state & State_Enabled),
                                   button->text, text_color_role);
@@ -1730,10 +1731,8 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         size += QSize(frame_margins * 2, frame_margins * 2);
 
         if (const QStyleOptionButton *bopt = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
-            if (bopt->features & QStyleOptionButton::HasMenu) {
-                QRect rectArrowAndLine = drawButtonDownArrow(opt, nullptr, widget);
-                size.rwidth() += rectArrowAndLine.width();
-            }
+            if (bopt->features & QStyleOptionButton::HasMenu)
+                size.rwidth() += frame_margins;   //qt源码会在带有menu的btn样式中,添加一个箭头矩形的width
         }
         break;
     }
@@ -2073,31 +2072,31 @@ QRect ChameleonStyle::drawButtonDownArrow(const QStyleOption *opt, QPainter *p, 
     if (!btn)
         return QRect(-1, -1, -1, -1);
 
-    QRect rectOpt = btn->rect;
-    int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+    QRect rectOpt = btn->rect;                      //实际绘画箭头所占的小矩形
     int arrowWidget = DStyle::pixelMetric(PM_MenuButtonIndicator, opt, w);
-    int arrowHeight = arrowWidget * 0.5;
+    int arrowHeight = arrowWidget * 5 / 8;
     QRect rectArrow(0, 0 , arrowWidget, arrowHeight);
     rectArrow.moveCenter(rectOpt.center());
-    rectArrow.moveRight(rectOpt.right() - radius);
 
-    QStyleOptionButton newBtn = *btn;                 //单独绘画矩形|和下箭头作为一个单独区域
+    QStyleOptionButton newBtn = *btn;                 //绘画箭头的大矩形(不要竖线)
     QRect &newRect = newBtn.rect;
-    newRect.setHeight(rectOpt.height() - 2 * radius);
-    newRect.setWidth(arrowWidget + 3 * radius);       //将竖线也包含进来
+    newRect.setHeight(rectOpt.height());
+    newRect.setWidth(arrowWidget);
     newRect.moveCenter(rectOpt.center());
-    newRect.moveRight(rectOpt.right());
+
+    if (btn->direction == Qt::LeftToRight) {
+        rectArrow.moveRight(rectOpt.right());
+        newRect.moveRight(rectOpt.right());
+    } else {
+        rectArrow.moveLeft(rectOpt.left());
+        newRect.moveLeft(rectOpt.left());
+    }
 
     if (p == nullptr || w == nullptr)
         return newRect;
 
     QPen pen;
     p->setPen(pen);
-    int lineHeight = newRect.height() * 0.5;
-
-    QPoint lineTop(newRect.left() + radius, newRect.center().y() - lineHeight / 2.0);
-    QPoint lineBottom(newRect.left() + radius, newRect.center().y() + lineHeight / 2.0);
-    p->drawLine(lineTop, lineBottom);
 
     QStyleOptionButton arrowDrawBtn  = newBtn;
     arrowDrawBtn.rect = rectArrow;
