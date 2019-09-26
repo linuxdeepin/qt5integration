@@ -27,6 +27,7 @@
 #include <DPlatformWindowHandle>
 #include <DApplicationHelper>
 #include <DWindowManagerHelper>
+#include <DSlider>
 
 #include <QVariant>
 #include <QDebug>
@@ -941,17 +942,23 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
     return true;
 }
 
-void ChameleonStyle::drawSliderHandle(const QStyleOptionComplex *opt, QRectF& rectHandle, QPainter *p) const
+void ChameleonStyle::drawSliderHandle(const QStyleOptionComplex *opt, QRectF& rectHandle, QPainter *p, const QWidget *w) const
 {
     if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-        if (slider->tickPosition == QSlider::NoTicks) {
+        const DSlider *dslider = qobject_cast<const DSlider *>(w);
+        QSlider::TickPosition tickPosition = slider->tickPosition;
+
+        if (dslider)
+            tickPosition = dslider->tickPosition();
+
+        if (tickPosition == QSlider::NoTicks) {
             p->drawRoundedRect(rectHandle, DStyle::pixelMetric(DStyle::PM_FrameRadius), DStyle::pixelMetric(DStyle::PM_FrameRadius));
         } else {
             qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
             QRectF rectRoundedPart(0, 0, 0, 0);
 
             if (slider->orientation == Qt::Horizontal) {
-                if (slider->tickPosition == QSlider::TicksAbove) {  //尖角朝上
+                if (tickPosition == QSlider::TicksAbove) {  //尖角朝上
                     rectRoundedPart = QRectF(rectHandle.left(), rectHandle.bottom() - 2 * radius, rectHandle.width(), 2 * radius);
                     QPointF polygon[5] = { QPointF(rectHandle.left(), rectHandle.bottom() - radius)
                                            , QPointF(rectHandle.left(), rectHandle.top() + radius)
@@ -969,7 +976,7 @@ void ChameleonStyle::drawSliderHandle(const QStyleOptionComplex *opt, QRectF& re
                     p->drawPolygon(polygon, 5);
                 }
             } else {
-                if (slider->tickPosition == QSlider::TicksLeft) {  //尖角朝左
+                if (tickPosition == QSlider::TicksLeft) {  //尖角朝左
                     rectRoundedPart = QRectF(rectHandle.right() - 2 * radius, rectHandle.top(), 2 * radius, rectHandle.height());
                     QPointF polygon[5] = {   QPointF(rectHandle.right() - radius, rectHandle.top())
                                            , QPointF(rectHandle.left() + radius, rectHandle.top())
@@ -1380,7 +1387,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 pen.setStyle(Qt::SolidLine);
                 p->setPen(Qt::NoPen);
                 p->setBrush((opt->activeSubControls & SC_SliderHandle) ? getColor(opt, QPalette::Highlight) : opt->palette.highlight());
-                drawSliderHandle(opt, rectHandle, p);
+                drawSliderHandle(opt, rectHandle, p, w);
             }
 
             //绘画 刻度,绘画方式了参考qfusionstyle.cpp
