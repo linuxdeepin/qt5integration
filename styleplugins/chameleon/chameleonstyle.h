@@ -61,7 +61,7 @@ public:
 private:
     bool isDrakStyle() const;
     void drawShadow(QPainter *p, const QRect &rect, const QColor &color) const;
-    void drawBorder(QPainter *p, const QRect &rect, const QBrush &brush) const;
+    void drawBorder(QPainter *p, const QStyleOption *opt) const;
     void drawRoundedShadow(QPainter *p, const QRect &rect, const QColor &color,int frame_radius) const;
 
     QColor getColor(const QStyleOption *option, QPalette::ColorRole role) const;

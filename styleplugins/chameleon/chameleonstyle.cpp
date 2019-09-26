@@ -72,10 +72,10 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         // checked
         if (opt->state & State_On) {
             const QColor &color = getColor(opt, QPalette::Highlight);
-            drawShadow(p, opt->rect + margins, adjustColor(color, 0, 0, +30));
+            drawShadow(p, opt->rect, adjustColor(color, 0, 0, +30));
             p->setBrush(color);
         } else {
-            drawShadow(p, opt->rect + margins, getColor(opt, QPalette::Shadow));
+            drawShadow(p, opt->rect - margins, getColor(opt, QPalette::Shadow));
             // 初始化button的渐变背景色
             QLinearGradient lg(QPointF(0, opt->rect.top()),
                                QPointF(0, opt->rect.bottom()));
@@ -95,7 +95,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_FrameFocusRect: {
-        drawBorder(p, opt->rect, getColor(opt, QPalette::Highlight));
+        drawBorder(p, opt);
         return;
     }
     case PE_PanelItemViewItem: {
@@ -772,7 +772,7 @@ bool ChameleonStyle::drawTabBarScrollButton(QPainter *painter, const QStyleOptio
     painter->setPen(QPen(getColor(opt, DPalette::FrameBorder, buttonWidget), Metrics::Painter_PenWidth));
     painter->setBrush(lg);
     painter->setRenderHint(QPainter::Antialiasing);
-    drawRoundedShadow(painter, toolButton.rect + frameExtentMargins() * 1.5, getColor(&toolButton, QPalette::Shadow), radius);
+    drawShadow(painter, toolButton.rect + frameExtentMargins() * 1.5, getColor(&toolButton, QPalette::Shadow));
     DDrawUtils::drawRoundedRect(painter, toolButton.rect, radius, radius, corner);
 
     QPoint originCenter = toolButton.rect.center();
@@ -2015,32 +2015,38 @@ bool ChameleonStyle::isDrakStyle() const
 void ChameleonStyle::drawShadow(QPainter *p, const QRect &rect, const QColor &color) const
 {
     int frame_radius = DStyle::pixelMetric(PM_FrameRadius);
-    int shadow_radius = DStyle::pixelMetric(PM_ShadowRadius);
     int shadow_xoffset = DStyle::pixelMetric(PM_ShadowHOffset);
     int shadow_yoffset = DStyle::pixelMetric(PM_ShadowVOffset);
 
-    DDrawUtils::drawShadow(p, rect, frame_radius, frame_radius, color, shadow_radius,
-                           QPoint(shadow_xoffset, shadow_yoffset));
+    QRect shadow = rect;
+    QPoint pointOffset(rect.center().x() + shadow_xoffset, rect.center().y() + shadow_yoffset);
+    shadow.moveCenter(pointOffset);
+
+    p->setBrush(color);
+    p->setPen(Qt::NoPen);
+    p->setRenderHint(QPainter::Antialiasing);
+    p->drawRoundedRect(shadow, frame_radius, frame_radius);
 }
 
-void ChameleonStyle::drawRoundedShadow(QPainter *p, const QRect &rect, const QColor &color, int frame_radius) const
+void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt) const
 {
-    int shadow_radius = DStyle::pixelMetric(PM_ShadowRadius);
-    int shadow_xoffset = DStyle::pixelMetric(PM_ShadowHOffset);
-    int shadow_yoffset = DStyle::pixelMetric(PM_ShadowVOffset);
+    int frame_radius = DStyle::pixelMetric(PM_FrameRadius);
+    int margins = DStyle::pixelMetric(PM_FrameMargins);
 
-    DDrawUtils::drawShadow(p, rect, frame_radius, frame_radius, color, shadow_radius,
-                           QPoint(shadow_xoffset, shadow_yoffset));
-}
+    QRect border = opt->rect.adjusted(margins, margins, -margins, -margins);
+    p->setRenderHint(QPainter::Antialiasing);
+    QPen pen;
+    pen.setWidth(2);
+    pen.setColor(getColor(opt, QPalette::Highlight));
+    p->setPen(pen);
+    p->setBrush(Qt::NoBrush);
+    p->drawRoundedRect(border, frame_radius, frame_radius);
 
-
-void ChameleonStyle::drawBorder(QPainter *p, const QRect &rect, const QBrush &brush) const
-{
-    int border_width = DStyle::pixelMetric(PM_FocusBorderWidth);
-    int border_spacing = DStyle::pixelMetric(PM_FocusBorderSpacing);
-    int frame_radis = DStyle::pixelMetric(PM_FrameRadius) + border_spacing;
-
-    DDrawUtils::drawBorder(p, rect, brush, border_width, frame_radis);
+    pen.setWidth(1);
+    pen.setColor(getColor(opt, QPalette::Base));
+    p->setPen(pen);
+    const int offset = 2;
+    p->drawRoundedRect(border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius);
 }
 
 QBrush ChameleonStyle::generatedBrush(StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, QPalette::ColorRole role, const QStyleOption *option) const
