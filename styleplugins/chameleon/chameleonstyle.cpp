@@ -945,7 +945,7 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
 void ChameleonStyle::drawSliderHandle(const QStyleOptionComplex *opt, QRectF& rectHandle, QPainter *p, const QWidget *w) const
 {
     if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-        const DSlider *dslider = qobject_cast<const DSlider *>(w);
+        const DSlider *dslider = qobject_cast<const DSlider *>(w->parent());
         QSlider::TickPosition tickPosition = slider->tickPosition;
 
         if (dslider)
