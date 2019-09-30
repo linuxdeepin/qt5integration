@@ -533,6 +533,92 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             return;
         }
         break;
+    case CE_ProgressBar: {  //显示进度区域
+        if (const QStyleOptionProgressBar *progBar =  qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
+            p->setRenderHint(QPainter::Antialiasing);
+            p->setPen(Qt::NoPen);
+            p->drawRect(opt->rect);
+
+            QStyleOptionProgressBar progGroove = *progBar;
+            proxy()->drawControl(CE_ProgressBarGroove, &progGroove, p, w);
+
+            QStyleOptionProgressBar progContent = *progBar;
+            proxy()->drawControl(CE_ProgressBarContents, &progContent, p, w);
+
+            if (progBar->textVisible) {
+                QStyleOptionProgressBar progLabel = *progBar;
+                proxy()->drawControl(CE_ProgressBarLabel, &progLabel, p, w);
+            }
+        }
+        return;
+    }
+    case CE_ProgressBarGroove: {  //滑槽显示
+        int  frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt,w);
+        p->setBrush(getColor(opt, DPalette::Button));
+        p->drawRoundedRect(opt->rect, frameRadius, frameRadius);
+        return;
+    }
+    case CE_ProgressBarContents: { //进度滑块显示
+        if (const QStyleOptionProgressBar *progBar =  qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
+            QRect rect = progBar->rect;   //滑块区域矩形
+            int min = progBar->minimum;
+            int max = progBar->maximum;
+            int val = progBar->progress;
+            int drawWidth = (val * 1.0 / (max - min)) * rect.width();
+            int  frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt,w);
+            rect = QRect(rect.left(), rect.top(), drawWidth, rect.height());
+
+            p->setPen(Qt::NoPen);
+            QPointF pointStart(rect.left(), rect.center().y());
+            QPointF pointEnd(rect.right(), rect.center().y());
+            QLinearGradient linear(pointStart, pointEnd);
+            linear.setColorAt(0, getColor(opt, DPalette::DarkLively, w));
+            linear.setColorAt(1, getColor(opt, DPalette::LightLively, w));
+            linear.setSpread(QGradient::PadSpread);
+            p->setBrush(linear);
+
+            if (progBar->textVisible) {
+                QPainterPath pathRect;
+                pathRect.addRect(rect);
+                QPainterPath pathRoundRect;
+                pathRoundRect.addRoundedRect(opt->rect, frameRadius, frameRadius);
+                QPainterPath inter = pathRoundRect.intersected(pathRect);
+                p->drawPath(inter);
+            } else {
+                int  frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt,w);
+                p->drawRoundedRect(rect, frameRadius, frameRadius);
+            }
+        }
+        return;
+    }
+    case CE_ProgressBarLabel: {
+        if (const QStyleOptionProgressBar *progBar =  qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
+            double val = progBar->progress * 1.0 / (progBar->maximum - progBar->minimum);
+            int drawWidth = val * opt->rect.width();
+            QRect rect = progBar->fontMetrics.boundingRect(progBar->rect, progBar->textAlignment, progBar->text);
+
+            if (rect.left() <= drawWidth && drawWidth <= rect.right()) {
+                double division = (drawWidth - rect.left()) / (rect.width() * 1.0);
+                QPointF pointStart(rect.left(), rect.center().y());
+                QPointF pointEnd(rect.right(), rect.center().y());
+                QLinearGradient linear(pointStart, pointEnd);
+                linear.setColorAt(0, getColor(opt, DPalette::HighlightedText));
+                linear.setColorAt(division, getColor(opt, DPalette::HighlightedText));
+                linear.setColorAt(division + 0.01, getColor(opt, DPalette::ButtonText));
+                linear.setColorAt(1, getColor(opt, DPalette::ButtonText));
+                linear.setSpread(QGradient::PadSpread);
+
+                p->setPen(QPen(QBrush(linear), 1));      //设置画笔渐变色
+            } else if (drawWidth < rect.left()) {
+                p->setPen(getColor(opt, DPalette::ButtonText));
+            } else {
+                p->setPen(getColor(opt, DPalette::HighlightedText));
+            }
+
+            p->drawText(progBar->rect, progBar->textAlignment, progBar->text);
+        }
+        return;
+    }
     default:
         break;
     }
