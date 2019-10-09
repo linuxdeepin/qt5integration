@@ -545,7 +545,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             QStyleOptionProgressBar progContent = *progBar;
             proxy()->drawControl(CE_ProgressBarContents, &progContent, p, w);
 
-            if (progBar->textVisible) {
+            if (progBar->textVisible && progBar->orientation == Qt::Horizontal) {
                 QStyleOptionProgressBar progLabel = *progBar;
                 proxy()->drawControl(CE_ProgressBarLabel, &progLabel, p, w);
             }
@@ -564,9 +564,16 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int min = progBar->minimum;
             int max = progBar->maximum;
             int val = progBar->progress;
-            int drawWidth = (val * 1.0 / (max - min)) * rect.width();
-            int  frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt,w);
-            rect = QRect(rect.left(), rect.top(), drawWidth, rect.height());
+            int drawWidth = 0;
+            int  frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+
+            if (progBar->orientation == Qt::Horizontal) {
+                drawWidth = (val * 1.0 / (max - min)) * rect.width();
+                rect = QRect(rect.left(), rect.top(), drawWidth, rect.height());
+            } else {
+                drawWidth = (val * 1.0 / (max - min)) * rect.height();
+                rect = QRect(rect.left(), rect.bottom() - drawWidth, rect.width(), drawWidth);
+            }
 
             p->setPen(Qt::NoPen);
             QPointF pointStart(rect.left(), rect.center().y());
