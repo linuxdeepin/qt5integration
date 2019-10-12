@@ -63,6 +63,7 @@ private:
     void drawShadow(QPainter *p, const QRect &rect, const QColor &color) const;
     void drawBorder(QPainter *p, const QStyleOption *opt) const;
     void drawRoundedShadow(QPainter *p, const QRect &rect, const QColor &color,int frame_radius) const;
+    bool isNoticks(const QStyleOptionSlider *slider, QPainter *p, const QWidget *w) const;
 
     QColor getColor(const QStyleOption *option, QPalette::ColorRole role) const;
     QColor getColor(const QStyleOption *option, DPalette::ColorType type, const QWidget *widget) const;

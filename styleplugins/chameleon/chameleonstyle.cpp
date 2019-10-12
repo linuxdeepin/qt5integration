@@ -1563,14 +1563,24 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 p->setPen(pen);
                 p->setRenderHint(QPainter::Antialiasing);
 
+                //pen.color 默认进来就是高亮色Highlight
+                if (!isNoticks(slider, p, w)) {
+                    pen.setColor(getColor(opt, QPalette::Foreground));
+                    p->setPen(pen);
+                }
+
+                QColor color = getColor(opt, QPalette::Foreground);  //绘画的右侧/上侧的滑槽颜色一定是灰
+
                 if (slider->orientation == Qt::Horizontal) {
                     p->drawLine(QPointF(rectGroove.left(), rectHandle.center().y()), QPointF(rectHandle.left(), rectHandle.center().y()));
-                    pen.setColor(getColor(opt, QPalette::Foreground));
+
+                    pen.setColor(color);
                     p->setPen(pen);
                     p->drawLine(QPointF(rectGroove.right(), rectHandle.center().y()), QPointF(rectHandle.right(), rectHandle.center().y()));
                 } else {
                     p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom()), QPointF(rectGroove.center().x(),  rectHandle.bottom()));
-                    pen.setColor(getColor(opt, QPalette::Foreground));
+
+                    pen.setColor(color);
                     p->setPen(pen);
                     p->drawLine(QPointF(rectGroove.center().x(),  rectGroove.top()), QPointF(rectGroove.center().x(),  rectHandle.top()));
                 }
@@ -2241,6 +2251,17 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt) const
     p->setPen(pen);
     const int offset = 2;
     p->drawRoundedRect(border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius);
+}
+
+bool ChameleonStyle::isNoticks(const QStyleOptionSlider *slider, QPainter *p, const QWidget *w) const
+{
+    const DSlider *dslider = qobject_cast<const DSlider *>(w->parent());
+    QSlider::TickPosition tickPosition = slider->tickPosition;
+
+    if (dslider)
+        tickPosition = dslider->tickPosition();
+
+    return tickPosition == QSlider::NoTicks;
 }
 
 QBrush ChameleonStyle::generatedBrush(StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, QPalette::ColorRole role, const QStyleOption *option) const
