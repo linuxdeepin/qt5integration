@@ -1462,7 +1462,8 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         break;
     case SE_LineEditContents: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
-        return opt->rect.adjusted(frame_margins * 2, 0, -frame_margins * 2, 0);
+        int left_margins = DStyle::pixelMetric(PM_ContentsMargins, opt, widget);
+        return opt->rect.adjusted(frame_margins + left_margins, 0, -(frame_margins + left_margins), 0);
     }
     case SE_RadioButtonFocusRect:
     case SE_CheckBoxFocusRect: {
