@@ -1480,7 +1480,8 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
     case SE_CheckBoxIndicator:
         if (const QStyleOptionButton *vopt = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             QStyleOptionButton option(*vopt);
-            option.rect = opt->rect.marginsRemoved(frameExtentMargins());
+            int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing); //来自SE_CheckBoxFocusRect状态时
+            option.rect.translate(margin, 0);   //需往右偏margin数值，FocusRect框显示正常；故对应其size的width也增加margin
             return DStyle::subElementRect(r, &option, widget);
         }
         break;
@@ -2056,6 +2057,27 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         if (size.width() < size.height())
             size.setWidth(size.width() / 2.0);
         return size;
+    }
+    case CT_CheckBox: {
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            bool isRadio = (ct == CT_RadioButton);             //参考qcommstyle.cpp的CT_CheckBox
+
+            int w = proxy()->pixelMetric(isRadio ? PM_ExclusiveIndicatorWidth : PM_IndicatorWidth, btn, widget);
+            int h = proxy()->pixelMetric(isRadio ? PM_ExclusiveIndicatorHeight : PM_IndicatorHeight, btn, widget);
+
+            int margins = 0;
+            // we add 4 pixels for label margins
+            if (!btn->icon.isNull() || !btn->text.isEmpty())
+                margins = 4 + proxy()->pixelMetric(isRadio ? PM_RadioButtonLabelSpacing : PM_CheckBoxLabelSpacing, opt, widget);
+
+            int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
+
+            QSize sz(contentsSize);
+            sz += QSize(w + margins + margin, 4);  //margin为绘后面重绘时，进行了translate右偏移的数值，故需加进来
+            sz.setHeight(qMax(sz.height(), h));
+
+            return sz;
+        }
     }
     default:
         break;
