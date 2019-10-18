@@ -1676,8 +1676,10 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         if (isPlusMinus) {
             buttonOpt.rect -= frameExtentMargins();
             QRectF plusRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
+            QRectF cent_rect(0, 0, plusRect.width() / 2, plusRect.height() / 2);
+            cent_rect.moveCenter(plusRect.center());
             qreal lineWidth = qMax(2.0, static_cast<qreal>(Metrics::SpinBox_ButtonIconWidth));
-            DDrawUtils::drawPlus(painter, plusRect, getColor(opt, QPalette::ButtonText), lineWidth);
+            DDrawUtils::drawPlus(painter, cent_rect, getColor(opt, QPalette::ButtonText), lineWidth);
         } else {
             QRect arrowRect = subRect;
             arrowRect.setWidth(arrowRect.width() / 3);
@@ -1700,8 +1702,10 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         if (isPlusMinus) {
             buttonOpt.rect -= frameExtentMargins();
             QRectF subtractRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
+            QRectF cent_rect(0, 0, subtractRect.width() / 2, subtractRect.height() / 2);
+            cent_rect.moveCenter(subtractRect.center());
             qreal lineWidth = qMax(2.0, static_cast<qreal>(Metrics::SpinBox_ButtonIconWidth));
-            DDrawUtils::drawSubtract(painter, subtractRect, getColor(opt, QPalette::ButtonText), lineWidth);
+            DDrawUtils::drawSubtract(painter, cent_rect, getColor(opt, QPalette::ButtonText), lineWidth);
         } else {
             QRect arrowRect = subRect;
             arrowRect.setWidth(arrowRect.width() / 3);
