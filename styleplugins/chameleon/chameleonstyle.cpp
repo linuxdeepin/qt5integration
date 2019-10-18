@@ -2150,6 +2150,8 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
         return true;
     case SH_Slider_AbsoluteSetButtons:
         return Qt::LeftButton | Qt::MidButton;
+    case SH_ToolTipLabel_Opacity:
+        return 255;
     default:
         break;
     }
