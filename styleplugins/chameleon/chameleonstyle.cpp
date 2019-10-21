@@ -2261,6 +2261,11 @@ void ChameleonStyle::drawShadow(QPainter *p, const QRect &rect, const QColor &co
 
 void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt) const
 {
+    const QColor &focus_color = getColor(opt, QPalette::Highlight);
+
+    if (!focus_color.isValid() || focus_color.alpha() == 0)
+        return;
+
     int frame_radius = DStyle::pixelMetric(PM_FrameRadius);
     int margins = DStyle::pixelMetric(PM_FrameMargins);
 
@@ -2268,7 +2273,7 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt) const
     p->setRenderHint(QPainter::Antialiasing);
     QPen pen;
     pen.setWidth(2);
-    pen.setColor(getColor(opt, QPalette::Highlight));
+    pen.setColor(focus_color);
     p->setPen(pen);
     p->setBrush(Qt::NoBrush);
     p->drawRoundedRect(border, frame_radius, frame_radius);
