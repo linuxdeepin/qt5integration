@@ -1096,7 +1096,7 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
     if (hasText && !hasIcon) {
         textRect = contentsRect;
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, cb, widget);
-        textRect.adjust(frame_radius, frame_radius, -frame_radius, -frame_radius);
+        textRect.adjust(frame_radius, 0, -frame_radius, 0);
         textRect.moveCenter(contentsRect.center());
     }
     else {
