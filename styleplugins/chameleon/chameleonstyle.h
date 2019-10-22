@@ -59,7 +59,6 @@ public:
     QBrush generatedBrush(StateFlags flags, const QBrush &base, DPalette::ColorGroup cg = DPalette::Normal, DPalette::ColorType type = DPalette::ItemBackground, const QStyleOption *option = nullptr) const;
 
 private:
-    bool isDrakStyle() const;
     void drawShadow(QPainter *p, const QRect &rect, const QColor &color) const;
     void drawBorder(QPainter *p, const QStyleOption *opt) const;
     void drawRoundedShadow(QPainter *p, const QRect &rect, const QColor &color,int frame_radius) const;

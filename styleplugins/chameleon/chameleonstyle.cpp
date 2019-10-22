@@ -71,9 +71,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         // checked
         if (opt->state & State_On) {
-            const QColor &color = getColor(opt, QPalette::Highlight);
-            drawShadow(p, opt->rect, adjustColor(color, 0, 0, +30));
-            p->setBrush(color);
+            p->setBrush(getColor(opt, QPalette::Highlight));
         } else {
             drawShadow(p, opt->rect - margins, getColor(opt, QPalette::Shadow));
             // 初始化button的渐变背景色
@@ -1951,6 +1949,9 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             if (bopt->features & QStyleOptionButton::HasMenu)
                 size.rwidth() += frame_margins;   //qt源码会在带有menu的btn样式中,添加一个箭头矩形的width
         }
+
+        int button_min_size = DStyle::pixelMetric(PM_ButtonMinimizedSize, opt, widget);
+        size = size.expandedTo(QSize(button_min_size, button_min_size));
         break;
     }
     case CT_ItemViewItem: {
@@ -2238,13 +2239,6 @@ void ChameleonStyle::unpolish(QApplication *application)
     DStyle::unpolish(application);
 }
 
-bool ChameleonStyle::isDrakStyle() const
-{
-    DNativeSettings theme_settings(0);
-
-    return theme_settings.isValid() && theme_settings.getSetting("Net/ThemeName").toByteArray().contains("dark");
-}
-
 void ChameleonStyle::drawShadow(QPainter *p, const QRect &rect, const QColor &color) const
 {
     int frame_radius = DStyle::pixelMetric(PM_FrameRadius);
@@ -2278,7 +2272,7 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt) const
     pen.setColor(focus_color);
     p->setPen(pen);
     p->setBrush(Qt::NoBrush);
-    p->drawRoundedRect(border, frame_radius, frame_radius);
+    p->drawRoundedRect(border, frame_radius + margins, frame_radius + margins);
 
     pen.setWidth(1);
     pen.setColor(getColor(opt, QPalette::Base));
@@ -2289,6 +2283,7 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt) const
 
 bool ChameleonStyle::isNoticks(const QStyleOptionSlider *slider, QPainter *p, const QWidget *w) const
 {
+    Q_UNUSED(p)
     const DSlider *dslider = qobject_cast<const DSlider *>(w->parent());
     QSlider::TickPosition tickPosition = slider->tickPosition;
 
