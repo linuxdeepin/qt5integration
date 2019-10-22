@@ -9,5 +9,6 @@
         <file>texts/password_show_24px.svg</file>
         <file>texts/sound_right_24px.svg</file>
         <file>texts/sound_left_24px.svg</file>
+        <file>texts/search_indicator_20px.svg</file>
     </qresource>
 </RCC>
