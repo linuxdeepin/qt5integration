@@ -740,6 +740,16 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     pmSize = pm.size() / pm.devicePixelRatio();
                 }
 
+                int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w); //在绘画icon和text之前,先绘画一层表示靠近或按下状态
+                p->setRenderHint(QPainter::Antialiasing);
+                p->setPen(Qt::NoPen);
+                p->setBrush(Qt::NoBrush);
+
+                if (toolbutton->state & (State_MouseOver | State_Sunken))   //hover状态 、press状态
+                    p->setBrush(getColor(toolbutton, DPalette::Button));
+
+                p->drawRoundedRect(rect, radius, radius);
+
                 if (toolbutton->toolButtonStyle != Qt::ToolButtonIconOnly) { //只显示icon 的补集情况
                     p->setFont(toolbutton->font);
                     QRect pr = rect;
@@ -1646,11 +1656,66 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
         break;
     }
     case CC_ToolButton: {
-        if (Q_UNLIKELY(qobject_cast<const QTabBar *>(w->parent()))) { //是否是TabBar的导航左右按钮
-            if (drawTabBarScrollButton(p, opt, w))
-                return;
+        if (const QStyleOptionToolButton *toolbutton
+            = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
+            QRect button, menuarea;
+            button = proxy()->subControlRect(cc, toolbutton, SC_ToolButton, w);
+            menuarea = proxy()->subControlRect(cc, toolbutton, SC_ToolButtonMenu, w);
+
+            State bflags = toolbutton->state & ~State_Sunken;
+
+            if (bflags & State_AutoRaise) {
+                if (!(bflags & State_MouseOver) || !(bflags & State_Enabled)) {
+                    bflags &= ~State_Raised;
+                }
+            }
+            State mflags = bflags;
+            if (toolbutton->state & State_Sunken) {
+                if (toolbutton->activeSubControls & SC_ToolButton)
+                    bflags |= State_Sunken;
+                mflags |= State_Sunken;
+            }
+
+            QStyleOption tool = *toolbutton;
+            if (toolbutton->subControls & SC_ToolButton) {
+                if (bflags & (State_Sunken | State_On | State_Raised)) {
+                    tool.rect = button;
+                    tool.state = bflags;
+                    //proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, w);
+                }
+            }
+
+            if (toolbutton->state & State_HasFocus) {
+                QStyleOptionFocusRect fr;
+                fr.QStyleOption::operator=(*toolbutton);
+                fr.rect.adjust(3, 3, -3, -3);
+                if (toolbutton->features & QStyleOptionToolButton::MenuButtonPopup)
+                    fr.rect.adjust(0, 0, -proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator,
+                                                      toolbutton, w), 0);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fr, p, w);
+            }
+            QStyleOptionToolButton label = *toolbutton;
+            label.state = bflags;
+            int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, w);
+            label.rect = button.adjusted(fw, fw, -fw, -fw);
+            proxy()->drawControl(CE_ToolButtonLabel, &label, p, w);
+
+            if (toolbutton->subControls & SC_ToolButtonMenu) {
+                tool.rect = menuarea;
+                tool.state = mflags;
+                if (mflags & (State_Sunken | State_On | State_Raised))
+                    proxy()->drawPrimitive(PE_IndicatorButtonDropDown, &tool, p, w);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &tool, p, w);
+            } else if (toolbutton->features & QStyleOptionToolButton::HasMenu) {
+                int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, w);
+                QRect ir = toolbutton->rect;
+                QStyleOptionToolButton newBtn = *toolbutton;
+                newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() - mbi + 4, mbi - 6, mbi - 6);
+                newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, w);
+            }
         }
-        break;
+        return;
     }
     case CC_Slider : {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
@@ -2215,6 +2280,12 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             sz.setHeight(qMax(sz.height(), contentsSize.height()));
 
             return sz;
+        }
+    }
+    case CT_ToolButton: {
+        if (const QStyleOptionToolButton *btn = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
+            qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
+            return QSize(size.width() + radius, size.height() + radius);
         }
     }
     default:
