@@ -1676,14 +1676,13 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
             QRectF plusRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
             QRectF cent_rect(0, 0, plusRect.width() / 2, plusRect.height() / 2);
             cent_rect.moveCenter(plusRect.center());
-            qreal lineWidth = qMax(2.0, static_cast<qreal>(Metrics::SpinBox_ButtonIconWidth));
-            DDrawUtils::drawPlus(painter, cent_rect, getColor(opt, QPalette::ButtonText), lineWidth);
+            DDrawUtils::drawPlus(painter, cent_rect, getColor(opt, QPalette::ButtonText), 1);
         } else {
             QRect arrowRect = subRect;
             arrowRect.setWidth(arrowRect.width() / 3);
-            arrowRect.setHeight(arrowRect.height() / 3);
+            arrowRect.setHeight(arrowRect.width() / 2);
             arrowRect.moveCenter(subRect.center());
-            DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::UpArrow);
+            DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::UpArrow, 1);
         }
     }
 
@@ -1702,14 +1701,13 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
             QRectF subtractRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
             QRectF cent_rect(0, 0, subtractRect.width() / 2, subtractRect.height() / 2);
             cent_rect.moveCenter(subtractRect.center());
-            qreal lineWidth = qMax(2.0, static_cast<qreal>(Metrics::SpinBox_ButtonIconWidth));
-            DDrawUtils::drawSubtract(painter, cent_rect, getColor(opt, QPalette::ButtonText), lineWidth);
+            DDrawUtils::drawSubtract(painter, cent_rect, getColor(opt, QPalette::ButtonText), 1);
         } else {
             QRect arrowRect = subRect;
             arrowRect.setWidth(arrowRect.width() / 3);
-            arrowRect.setHeight(arrowRect.height() / 3);
+            arrowRect.setHeight(arrowRect.width() / 2);
             arrowRect.moveCenter(subRect.center());
-            DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::DownArrow);
+            DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::DownArrow, 1);
         }
     }
 
