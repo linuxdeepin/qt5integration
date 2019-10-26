@@ -400,6 +400,22 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         break;
     }
+    case CE_Header:
+        if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
+            QRegion clipRegion = p->clipRegion();
+            p->setClipRect(opt->rect);
+            proxy()->drawControl(CE_HeaderSection, header, p, w);
+            QStyleOptionHeader subopt = *header;
+            subopt.rect = subElementRect(SE_HeaderLabel, header, w);
+            if (subopt.rect.isValid())
+                proxy()->drawControl(CE_HeaderLabel, &subopt, p, w);
+            if (header->sortIndicator != QStyleOptionHeader::None) {
+                subopt.rect = subElementRect(SE_HeaderArrow, opt, w);
+                proxy()->drawPrimitive(PE_IndicatorHeaderArrow, &subopt, p, w);
+            }
+            p->setClipRegion(clipRegion);
+        }
+        return;
     case CE_ShapedFrame: {
         if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
             int frameShape  = f->frameShape;
@@ -1446,6 +1462,29 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
                                      const QWidget *widget) const
 {
     switch (r) {
+    case SE_HeaderArrow:{
+        QRect rect;
+        int h = opt->rect.height();
+        int w = opt->rect.width();
+        int x = opt->rect.x();
+        int y = opt->rect.y();
+        int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
+
+        if (opt->state & State_Horizontal) {
+            // designer: whatever how big the QHeaderView it is, the arrow size is fixed.
+            int horiz_size = 8;
+            int vert_size = 5;
+            rect.setRect(x + w - margin * 2 - horiz_size, y + (h - vert_size) / 2,
+                      horiz_size, vert_size);
+        } else {
+            int horiz_size = 5;
+            int vert_size = 8;
+            rect.setRect(x + (w - horiz_size) / 2, y + h - margin * 2 - vert_size,
+                      horiz_size, vert_size);
+        }
+        rect = visualRect(opt->direction, opt->rect, rect);
+        return rect;
+    }
     case SE_PushButtonFocusRect:
     case SE_ItemViewItemFocusRect:
         return opt->rect;
