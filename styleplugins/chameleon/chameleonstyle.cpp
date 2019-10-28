@@ -1401,7 +1401,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         if (selected)
             painter->setPen(getColor(option, QPalette::HighlightedText));
         else
-            painter->setPen(getColor(option, QPalette::WindowText));
+            painter->setPen(getColor(option, QPalette::BrightText));
 
         // 绘制图标
         if (!menuItem->icon.isNull()) {
@@ -2212,6 +2212,10 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         const QStyleOptionComboBox *comboBoxOption(qstyleoption_cast< const QStyleOptionComboBox *>(opt));
         return comboBoxOption && comboBoxOption->editable ? Metrics::ComboBox_FrameWidth : Metrics::LineEdit_FrameWidth ;
     }
+    case PM_MenuVMargin:
+        return 8;
+    case PM_MenuHMargin:
+        return 0;
     default:
         break;
     }
@@ -2291,6 +2295,7 @@ void ChameleonStyle::polish(QWidget *w)
 
             if (DPlatformWindowHandle::isEnabledDXcb(w)) {
                 handle.setEnableBlurWindow(true);
+                handle.setWindowRadius(8);
                 w->setAttribute(Qt::WA_TranslucentBackground);
             }
         } else if (is_tip) {
