@@ -760,6 +760,38 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         return;
     }
+    case CE_HeaderSection: {
+        const auto headerOption( qstyleoption_cast<const QStyleOptionHeader*>( opt ) );
+        if (!headerOption) return;
+        const bool horizontal( headerOption->orientation == Qt::Horizontal );
+        const bool isLast( headerOption->position == QStyleOptionHeader::End );
+
+        // fill background
+        QColor color(opt->palette.color(QPalette::Base));
+        color = DGuiApplicationHelper::adjustColor(color, 0, 0, -5, 0, 0, 0, 0);
+        p->fillRect(opt->rect, QBrush(color));
+
+        QColor lineColor(opt->palette.color(QPalette::Base));
+        if (DGuiApplicationHelper::toColorType(lineColor) == DGuiApplicationHelper::LightType) {
+            lineColor = DGuiApplicationHelper::adjustColor(color, 0, 0, -10, 0, 0, 0, 0);
+        } else {
+            lineColor = DGuiApplicationHelper::adjustColor(color, 0, 0, +10, 0, 0, 0, 0);
+        }
+        p->setPen(lineColor);
+        if (horizontal) {
+            if (!isLast) {
+                QPoint unit(0, opt->rect.height() / 5);
+                p->drawLine(opt->rect.topRight() + unit, opt->rect.bottomRight() - unit);
+            }
+            p->drawLine(opt->rect.bottomLeft(), opt->rect.bottomRight());
+        } else {
+            if (!isLast) {
+                p->drawLine(opt->rect.bottomLeft(), opt->rect.bottomRight());
+            }
+            p->drawLine(opt->rect.topRight(), opt->rect.bottomRight());
+        }
+        return;
+    }
     default:
         break;
     }
