@@ -1050,9 +1050,8 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
         proxy()->drawPrimitive(PE_FrameFocusRect, comboBox, painter, widget);
     }
 
-    QRect rect(0, 0, comboBox->rect.width(), comboBox->rect.height());
+    QRect rect(comboBox->rect);
     QStyleOptionComboBox comboBoxCopy = *comboBox;
-    comboBoxCopy.rect = rect ;
     QRect downArrowRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy, SC_ComboBoxArrow, widget);
 
     if (comboBox->frame && comboBox->subControls & SC_ComboBoxFrame) {
