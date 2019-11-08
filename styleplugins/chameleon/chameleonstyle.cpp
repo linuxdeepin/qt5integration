@@ -575,30 +575,11 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             QStyleOptionProgressBar progGroove = *progBar;
             proxy()->drawControl(CE_ProgressBarGroove, &progGroove, p, w);
 
-            QStyleOptionProgressBar progContent = *progBar;
-            proxy()->drawControl(CE_ProgressBarContents, &progContent, p, w);
-
-            if (progBar->textVisible && progBar->orientation == Qt::Horizontal) {
-                QStyleOptionProgressBar progLabel = *progBar;
-                proxy()->drawControl(CE_ProgressBarLabel, &progLabel, p, w);
-            }
-        }
-        return;
-    }
-    case CE_ProgressBarGroove: {  //滑槽显示
-        int  frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt,w);
-        p->setBrush(getColor(opt, DPalette::Button));
-        p->drawRoundedRect(opt->rect, frameRadius, frameRadius);
-        return;
-    }
-    case CE_ProgressBarContents: { //进度滑块显示
-        if (const QStyleOptionProgressBar *progBar =  qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             QRect rect = progBar->rect;   //滑块区域矩形
             int min = progBar->minimum;
             int max = progBar->maximum;
             int val = progBar->progress;
             int drawWidth = 0;
-            int  frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
 
             if (progBar->orientation == Qt::Horizontal) {
                 drawWidth = (val * 1.0 / (max - min)) * rect.width();
@@ -615,7 +596,50 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             linear.setColorAt(0, getColor(opt, DPalette::DarkLively, w));
             linear.setColorAt(1, getColor(opt, DPalette::LightLively, w));
             linear.setSpread(QGradient::PadSpread);
-            p->setBrush(linear);
+
+            QStyleOptionProgressBar progContent = *progBar;
+            progContent.palette.setBrush(QPalette::ColorRole::Highlight, QBrush(linear));
+            proxy()->drawControl(CE_ProgressBarContents, &progContent, p, w);
+
+            if (progBar->textVisible && progBar->orientation == Qt::Horizontal) {
+                QStyleOptionProgressBar progLabel = *progBar;
+                proxy()->drawControl(CE_ProgressBarLabel, &progLabel, p, w);
+            }
+        }
+        return;
+    }
+    case CE_ProgressBarGroove: {  //滑槽显示
+        int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+        int height = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)->orientation == Qt::Horizontal ? opt->rect.height() : opt->rect.width();
+        if (frameRadius >= height) {
+            frameRadius = height / 2;
+        }
+        p->setBrush(getColor(opt, DPalette::Button));
+        p->drawRoundedRect(opt->rect, frameRadius, frameRadius);
+        return;
+    }
+    case CE_ProgressBarContents: { //进度滑块显示
+        if (const QStyleOptionProgressBar *progBar =  qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
+            QRect rect = progBar->rect;   //滑块区域矩形
+            int min = progBar->minimum;
+            int max = progBar->maximum;
+            int val = progBar->progress;
+            int drawWidth = 0;
+            int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+            int height = progBar->orientation == Qt::Horizontal ? rect.height() : rect.width();
+            if (frameRadius >= height) {
+                frameRadius = height / 2;
+            }
+
+            if (progBar->orientation == Qt::Horizontal) {
+                drawWidth = (val * 1.0 / (max - min)) * rect.width();
+                rect = QRect(rect.left(), rect.top(), drawWidth, rect.height());
+            } else {
+                drawWidth = (val * 1.0 / (max - min)) * rect.height();
+                rect = QRect(rect.left(), rect.bottom() - drawWidth, rect.width(), drawWidth);
+            }
+
+            p->setBrush(opt->palette.brush(QPalette::ColorRole::Highlight));
 
             if (progBar->textVisible) {
                 QPainterPath pathRect;
@@ -625,7 +649,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 QPainterPath inter = pathRoundRect.intersected(pathRect);
                 p->drawPath(inter);
             } else {
-                int  frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt,w);
                 p->drawRoundedRect(rect, frameRadius, frameRadius);
             }
         }
