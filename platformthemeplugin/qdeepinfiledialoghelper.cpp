@@ -452,6 +452,11 @@ void QDeepinFileDialogHelper::applyOptions()
                 nativeDialog->addCustomWidget(ComboBoxType, i);
 
             nativeDialog->endAddCustomWidget();
+
+            const QVariant & mixedSelection = sourceDialog->property("_dtk_widget_filedialog_mixed_selection");
+            if (mixedSelection.isValid()) {
+                nativeDialog->setAllowMixedSelection(mixedSelection.toBool());
+            }
         }
     }
 }
