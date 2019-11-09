@@ -21,7 +21,6 @@
 #include "filedialogmanager_interface.h"
 #include "dthemesettings.h"
 #include "diconengine.h"
-#include "dbuiltiniconengine.h"
 
 #include <DGuiApplicationHelper>
 #include <DPlatformTheme>
@@ -31,6 +30,7 @@
 #include <QGuiApplication>
 #include <QPainter>
 #include <QPalette>
+#include <QIconEnginePlugin>
 
 #include <XdgIcon>
 #if XDG_ICON_VERSION_MAR >= 3
@@ -662,6 +662,25 @@ QPlatformDialogHelper *QDeepinTheme::createPlatformDialogHelper(DialogType type)
     return QGenericUnixTheme::createPlatformDialogHelper(type);
 }
 
+static QIconEnginePlugin *getBuiltinIconEngineFactory()
+{
+    static QFactoryLoader loader(QIconEngineFactoryInterface_iid, QLatin1String("/iconengines"), Qt::CaseSensitive);
+    int index = loader.indexOf("DBuiltinIconEngine");
+
+    if (index != -1) {
+        return qobject_cast<QIconEnginePlugin *>(loader.instance(index));
+    }
+
+    return nullptr;
+}
+
+static QIconEngine *createBuiltinIconEngine(const QString &iconName)
+{
+    static QIconEnginePlugin *plugin = getBuiltinIconEngineFactory();
+
+    return plugin ? plugin->create(iconName) : nullptr;
+}
+
 QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 {
 #ifdef DTHEMED_ICON_LOOKUP
@@ -676,7 +695,11 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
     static QSet<QString> builtin_icon_cache;
 
     if (builtin_icon_cache.contains(iconName)) {
-        return new DBuiltinIconEngine(iconName);
+        auto engine = createBuiltinIconEngine(iconName);
+
+        if (engine) {
+            return engine;
+        }
     }
 
     XdgIconLoaderEngine *engine = new XdgIconLoaderEngine(iconName);
@@ -685,8 +708,10 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
         // 记录下来此种类型的icon为内置图标
         // 一般情况下，内置类型的图标极少会被外部图标主题覆盖
         // 因此，此处添加的缓存不考虑更新
-        builtin_icon_cache.insert(iconName);
-        return new DBuiltinIconEngine(iconName);
+        if (QIconEngine *engine = createBuiltinIconEngine(iconName)) {
+            builtin_icon_cache.insert(iconName);
+            return engine;
+        }
     }
 
     return new XdgIconProxyEngine(engine);
