@@ -298,6 +298,25 @@ static void onIconThemeSetCallback()
     }
 }
 
+static void onFontChanged()
+{
+    // 先清理旧的font对象
+    if (QGuiApplicationPrivate::app_font)
+        delete QGuiApplicationPrivate::app_font;
+    QGuiApplicationPrivate::app_font = nullptr;
+
+    QEvent event(QEvent::ApplicationFontChange);
+    qApp->sendEvent(qApp, &event);
+
+    // 通知所有窗口字体改变了
+    for (QWindow *window : qGuiApp->allWindows()) {
+        if (window->type() == Qt::Desktop)
+            continue;
+
+        qApp->sendEvent(window, &event);
+    }
+}
+
 static void updateWindowGeometry(QWindow *w)
 {
     if (w->type() == Qt::ForeignWindow || w->type() == Qt::Desktop) {
@@ -739,18 +758,29 @@ QPixmap QDeepinTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &si
 }
 #endif
 
-class PlatformTheme
+static DPlatformTheme *appTheme()
 {
-public:
-    PlatformTheme() {
+    static QPointer<DPlatformTheme> theme;
+
+    if (!theme) {
         theme = DGuiApplicationHelper::instance()->applicationTheme();
         QObject::connect(theme, &DPlatformTheme::iconThemeNameChanged, &onIconThemeSetCallback);
+        QObject::connect(theme, &DPlatformTheme::fontNameChanged, &onFontChanged);
+        QObject::connect(theme, &DPlatformTheme::fontPointSizeChanged, [] {
+            if (theme->fontName().isEmpty())
+                return;
+
+            onFontChanged();
+        });
+        QObject::connect(theme, &DPlatformTheme::gtkFontNameChanged, [] {
+            if (theme->fontName().isEmpty()) {
+                onFontChanged();
+            }
+        });
     }
 
-    DPlatformTheme *theme;
-};
-
-Q_GLOBAL_STATIC(PlatformTheme, _pTheme)
+    return theme;
+}
 
 QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
@@ -762,7 +792,7 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         break;
     }
     case QPlatformTheme::SystemIconThemeName:
-        return _pTheme->theme->iconThemeName();
+        return appTheme()->iconThemeName();
     case QPlatformTheme::IconThemeSearchPaths:
         return QVariant(QGenericUnixTheme::xdgIconThemePaths() << QDir::homePath() + "/.local/share/icons");
     case UseFullScreenForPopupMenu:
@@ -793,29 +823,60 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
 
     switch (type) {
     case SystemFont:
-        if (settings()->isSetSystemFont()) {
-            static QFont *system_font = new QFont("");
+        if (DPlatformTheme *theme = appTheme()) {
+            QByteArray font_name = theme->fontName();
+            qint8 font_size = 0;
 
-            if (!settings()->systemFont().isEmpty()) {
-                system_font->setFamily(settings()->systemFont());
-                system_font->setPointSizeF(settings()->systemFontPointSize());
+            if (font_name.isEmpty()) {
+                font_name = theme->gtkFontName();
+                int font_size_index = font_name.lastIndexOf(' ');
+
+                if (font_size_index <= 0)
+                    break;
+
+                font_size = font_name.mid(font_size_index + 1).toInt();
+                font_name = font_name.left(font_size_index);
+            } else {
+                font_size = theme->fontPointSize();
             }
 
-            return system_font;
-        }
-        break;
-    case FixedFont:
-        if (settings()->isSetSystemFixedFont()) {
-            static QFont *fixed_font = new QFont("");
-
-            if (!settings()->systemFixedFont().isEmpty()) {
-                fixed_font->setFamily(settings()->systemFixedFont());
-                fixed_font->setPointSizeF(settings()->systemFontPointSize());
+            if (font_size <= 0) {
+                font_size = 11;
             }
 
-            return fixed_font;
+            static QFont font = QFont(QString());
+
+            font.setFamily(font_name);
+            font.setPointSize(font_size);
+
+            return &font;
         }
+
         break;
+    case FixedFont: {
+        if (DPlatformTheme *theme = appTheme()) {
+            QByteArray font_name = theme->monoFontName();
+
+            if (font_name.isEmpty()) {
+                break;
+            }
+
+            qint8 font_size = theme->fontPointSize();
+
+            if (font_size <= 0) {
+                font_size = 11;
+            }
+
+            static QFont font = QFont(QString());
+
+            font.setFamily(font_name);
+            font.setPointSize(font_size);
+
+            return &font;
+        }
+
+        break;
+    }
     default:
         break;
     }
@@ -854,18 +915,6 @@ DThemeSettings *QDeepinTheme::settings() const
         m_settings = new DThemeSettings();
 
         qApp->setProperty("_d_theme_settings_object", (quintptr)m_settings);
-
-        if (qApp->inherits("Dtk::Widget::DApplication")) {
-            QObject::connect(m_settings, SIGNAL(iconThemeNameChanged(QString)),
-                             qApp, SLOT(iconThemeChanged()), Qt::UniqueConnection);
-        }
-
-        auto updateSystemFont = [this] {
-            qApp->setFont(*font(QPlatformTheme::SystemFont));
-        };
-
-        QObject::connect(m_settings, &DThemeSettings::systemFontChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
-        QObject::connect(m_settings, &DThemeSettings::systemFontPointSizeChanged, m_settings, updateSystemFont, Qt::UniqueConnection);
 
         if (enabledRTScreenScale()) {
 #ifdef QT_NO_DEBUG
