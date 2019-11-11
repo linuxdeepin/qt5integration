@@ -28,6 +28,7 @@
 #include <DApplicationHelper>
 #include <DWindowManagerHelper>
 #include <DSlider>
+#include <QLabel>
 
 #include <QVariant>
 #include <QDebug>
@@ -46,6 +47,7 @@
 #include <QAbstractItemView>
 #include <QBitmap>
 #include <QSpinBox>
+#include <private/qcombobox_p.h>
 
 #include <qdrawutil.h>
 #include <qpa/qplatformwindow.h>
@@ -2294,6 +2296,13 @@ void ChameleonStyle::polish(QWidget *w)
 
     if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, false);
+    }
+
+    if (auto container = qobject_cast<QComboBoxPrivateContainer *>(w)) {
+        DPlatformWindowHandle handle(container);
+        handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
+
+        container->setFrameStyle(QFrame::NoFrame);
     }
 
     if (DApplication::isDXcbPlatform()) {
