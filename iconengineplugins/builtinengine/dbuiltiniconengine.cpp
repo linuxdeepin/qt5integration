@@ -76,6 +76,59 @@ public:
     QImageReader reader;
 };
 
+class DirImageEntry : public ImageEntry
+{
+public:
+    using ImageEntry::ImageEntry;
+
+    static QString getIconFile(const QString &key, const QDir &dir, const QString &suffix)
+    {
+        if (dir.exists(key + "." + suffix)) {
+            return dir.filePath(key + "." + suffix);
+        }
+
+        int _index = key.indexOf('_');
+
+        if (_index > 0) {
+            const QString &mode = key.left(_index);
+
+            if (dir.exists(mode + "." + suffix)) {
+                return dir.filePath(mode + "." + suffix);
+            }
+
+            const QString &state = key.mid(_index);
+
+            if (dir.exists("normal" + state + "." + suffix)) {
+                return dir.filePath("normal" + state + "." + suffix);
+            }
+        }
+
+        return dir.filePath("normal." + suffix);
+    }
+
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override {
+        if (iconFileMap.isEmpty()) {
+            const QString &suffix = QFileInfo(filename).suffix();
+            QDir dir(filename);
+
+            iconFileMap[QIcon::Disabled << 8 | QIcon::On] = getIconFile("disabled_on", dir, suffix);
+            iconFileMap[QIcon::Disabled << 8 | QIcon::Off] = getIconFile("disabled_off", dir, suffix);
+            iconFileMap[QIcon::Active << 8 | QIcon::On] = getIconFile("active_on", dir, suffix);
+            iconFileMap[QIcon::Active << 8 | QIcon::Off] = getIconFile("active_off", dir, suffix);
+            iconFileMap[QIcon::Selected << 8 | QIcon::On] = getIconFile("selected_on", dir, suffix);
+            iconFileMap[QIcon::Selected << 8 | QIcon::Off] = getIconFile("selected_off", dir, suffix);
+            iconFileMap[QIcon::Normal << 8 | QIcon::On] = getIconFile("normal_on", dir, suffix);
+            iconFileMap[QIcon::Normal << 8 | QIcon::Off] = getIconFile("normal_off", dir, suffix);
+        }
+
+        reader.setFileName(iconFileMap.value(mode << 8 | state));
+
+        return ImageEntry::pixmap(size, mode, state);
+    }
+
+    QMap<qint16, QString> iconFileMap;
+};
+
 DBuiltinIconEngine::DBuiltinIconEngine(const QString &iconName)
     : m_iconName(iconName)
 {
@@ -202,7 +255,7 @@ QThemeIconInfo DBuiltinIconEngine::loadIcon(const QString &iconName, uint key)
     };
 
     QDir dir;
-    dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+    dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
 
     for (int i = 0; i < iconDirList.count(); ++i) {
         dir.setPath(iconDirList.at(i));
@@ -233,7 +286,7 @@ QThemeIconInfo DBuiltinIconEngine::loadIcon(const QString &iconName, uint key)
                 continue;
             }
 
-            ImageEntry *entry = new ImageEntry(type);
+            ImageEntry *entry = icon_file_info.isDir() ? new DirImageEntry(type) : new ImageEntry(type);
             entry->filename = icon_file_info.absoluteFilePath();
             entry->dir.path = icon_file_info.absolutePath();
             entry->dir.size = size;
