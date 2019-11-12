@@ -25,7 +25,7 @@
         <file>texts/media-playback-start_24px.svg</file>
         <file>texts/media-skip-backward_24px.svg</file>
         <file>texts/media-skip-forward_24px.svg</file>
-        <file>texts/fork_indicator_12px.svg</file>
+        <file>texts/mark_indicator_12px.svg</file>
     </qresource>
     <qresource prefix="/icons/deepin/builtin/light">
         <file alias="icons/button_edit-clear_30px.svg/normal.svg">icons/light/edit-clear_30px.svg</file>
