@@ -239,6 +239,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         }
         break;
     }
+    case PE_PanelTipLabel: {
+        return;
+    }
     default:
         break;
     }
@@ -2330,7 +2333,8 @@ void ChameleonStyle::polish(QWidget *w)
                 w->setAttribute(Qt::WA_TranslucentBackground);
             }
         } else if (is_tip) {
-            DPlatformWindowHandle::enableDXcbForWindow(w);
+            DPlatformWindowHandle handle(w);
+            handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
         }
     }
 }
