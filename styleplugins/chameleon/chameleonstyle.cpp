@@ -2033,6 +2033,19 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
             case SC_ComboBoxFrame: {
                 return opt->rect;
             }
+            case SC_ComboBoxListBoxPopup: {
+                QSize size = proxy()->sizeFromContents(CT_Menu, opt, opt->rect.size(), w);
+                QRect rect = opt->rect;
+
+                if (auto styopt = static_cast<const QStyleOption *>(opt)) {
+                    if (auto menuItem = static_cast<const QStyleOptionMenuItem *>(styopt)) {
+                        if (menuItem->icon.isNull()) {
+                            rect.setWidth(size.width() + Menu_CheckMarkWidth);
+                        }
+                    }
+                }
+                return rect;
+            }
             default:
                 break;
             }
