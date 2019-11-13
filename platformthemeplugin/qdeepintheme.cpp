@@ -828,7 +828,7 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
     case SystemFont:
         if (DPlatformTheme *theme = appTheme()) {
             QByteArray font_name = theme->fontName();
-            qint8 font_size = 0;
+            qreal font_size = 0;
 
             if (font_name.isEmpty()) {
                 font_name = theme->gtkFontName();
@@ -837,20 +837,20 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
                 if (font_size_index <= 0)
                     break;
 
-                font_size = font_name.mid(font_size_index + 1).toInt();
+                font_size = font_name.mid(font_size_index + 1).toDouble();
                 font_name = font_name.left(font_size_index);
             } else {
                 font_size = theme->fontPointSize();
             }
 
             if (font_size <= 0) {
-                font_size = 11;
+                font_size = 10.5;
             }
 
             static QFont font = QFont(QString());
 
             font.setFamily(font_name);
-            font.setPointSize(font_size);
+            font.setPointSizeF(font_size);
 
             return &font;
         }
@@ -864,16 +864,16 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
                 break;
             }
 
-            qint8 font_size = theme->fontPointSize();
+            qreal font_size = theme->fontPointSize();
 
             if (font_size <= 0) {
-                font_size = 11;
+                font_size = 10.5;
             }
 
             static QFont font = QFont(QString());
 
             font.setFamily(font_name);
-            font.setPointSize(font_size);
+            font.setPointSizeF(font_size);
 
             return &font;
         }
