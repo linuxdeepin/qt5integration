@@ -315,6 +315,9 @@ static void onFontChanged()
 
         qApp->sendEvent(window, &event);
     }
+
+    qApp->sendEvent(DGuiApplicationHelper::instance(), &event);
+    Q_EMIT qGuiApp->fontChanged(qGuiApp->font());
 }
 
 static void updateWindowGeometry(QWindow *w)
