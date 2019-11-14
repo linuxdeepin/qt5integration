@@ -124,6 +124,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     case PE_PanelLineEdit: {
         p->setBrush(opt->palette.button());
         p->setPen(Qt::NoPen);
+        p->setRenderHints(QPainter::Antialiasing);
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
         p->drawRoundedRect(opt->rect - frameExtentMargins(), frame_radius, frame_radius);
 
