@@ -296,6 +296,15 @@ static void onIconThemeSetCallback()
         // emit the signal: DApplication::iconThemeChanged
         qApp->metaObject()->invokeMethod(qApp, QT_STRINGIFY(iconThemeChanged));
     }
+
+    // 通知所有窗口重绘制
+    QEvent update(QEvent::UpdateRequest);
+    for (QWindow *window : qGuiApp->allWindows()) {
+        if (window->type() == Qt::Desktop)
+            continue;
+
+        qApp->sendEvent(window, &update);
+    }
 }
 
 static void onFontChanged()
