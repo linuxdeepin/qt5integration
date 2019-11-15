@@ -611,13 +611,14 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             linear.setColorAt(1, getColor(opt, DPalette::LightLively, w));
             linear.setSpread(QGradient::PadSpread);
 
-            QStyleOptionProgressBar progContent = *progBar;
-            progContent.palette.setBrush(QPalette::ColorRole::Highlight, QBrush(linear));
-            proxy()->drawControl(CE_ProgressBarContents, &progContent, p, w);
+            QStyleOptionProgressBar subopt = *progBar;
+            subopt.rect = proxy()->subElementRect(SE_ProgressBarContents, progBar, w);
+            subopt.palette.setBrush(QPalette::ColorRole::Highlight, QBrush(linear));
+            proxy()->drawControl(CE_ProgressBarContents, &subopt, p, w);
 
             if (progBar->textVisible && progBar->orientation == Qt::Horizontal) {
-                QStyleOptionProgressBar progLabel = *progBar;
-                proxy()->drawControl(CE_ProgressBarLabel, &progLabel, p, w);
+                subopt.rect = proxy()->subElementRect(SE_ProgressBarLabel, progBar, w);
+                proxy()->drawControl(CE_ProgressBarLabel, &subopt, p, w);
             }
         }
         return;
@@ -1637,6 +1638,10 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
 
         return buttonRect;
     }
+    case SE_ProgressBarLabel: {
+        int radius = DStyle::pixelMetric(PM_FrameRadius);
+        return opt->rect.marginsRemoved(QMargins(radius, radius, radius, radius));
+    }
     default:
         break;
     }
@@ -2263,10 +2268,23 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         break;
     }
     case CT_ToolButton: {
-        if (const QStyleOptionToolButton *btn = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
-            qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
-            return QSize(size.width() + radius, size.height() + radius);
+        qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
+        return QSize(size.width() + radius, size.height() + radius);
+    }
+    case CT_ProgressBar: {
+        if (const QStyleOptionProgressBar *pbo = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
+            int radius = DStyle::pixelMetric(PM_FrameRadius);
+
+            if (!pbo->textVisible || pbo->text.isEmpty()) {
+                size.setWidth(qMax(size.width(), 2 * radius));
+                size.setHeight(qMax(size.height(), 2 * radius));
+            } else {
+                QSize text_size = opt->fontMetrics.size(0, pbo->text);
+                size.setWidth(qMax(size.width(), 2 * radius + text_size.width()));
+                size.setHeight(qMax(size.height(), 2 * radius + text_size.height()));
+            }
         }
+        break;
     }
     default:
         break;
