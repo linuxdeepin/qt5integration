@@ -723,29 +723,23 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 #elif XDG_ICON_VERSION_MAR < 3
     return XdgIconEngineCreator::create(iconName);
 #else
-    static QSet<QString> builtin_icon_cache;
+    static QSet<QString> non_builtin_icon_cache;
 
-    if (builtin_icon_cache.contains(iconName)) {
-        auto engine = createBuiltinIconEngine(iconName);
-
-        if (engine) {
-            return engine;
-        }
-    }
-
-    XdgIconLoaderEngine *engine = new XdgIconLoaderEngine(iconName);
-
-    if (engine->isNull()) {
+    if (!non_builtin_icon_cache.contains(iconName)) {
         // 记录下来此种类型的icon为内置图标
-        // 一般情况下，内置类型的图标极少会被外部图标主题覆盖
         // 因此，此处添加的缓存不考虑更新
+        // 优先使用内置图标
         if (QIconEngine *engine = createBuiltinIconEngine(iconName)) {
-            builtin_icon_cache.insert(iconName);
-            return engine;
+            if (engine->isNull()) {
+                non_builtin_icon_cache.insert(iconName);
+                delete engine;
+            } else {
+                return engine;
+            }
         }
     }
 
-    return new XdgIconProxyEngine(engine);
+    return new XdgIconProxyEngine(new XdgIconLoaderEngine(iconName));
 #endif
 }
 
@@ -798,10 +792,7 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
 {
     switch (hint) {
     case QPlatformTheme::StyleNames: {
-        if (settings()->isSetStyleNames() && !settings()->styleNames().isEmpty())
-            return settings()->styleNames();
-
-        break;
+        return QStringList({"chameleon", "fusion"});
     }
     case QPlatformTheme::SystemIconThemeName:
         return appTheme()->iconThemeName();
