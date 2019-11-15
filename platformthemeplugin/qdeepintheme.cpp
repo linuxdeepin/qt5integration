@@ -736,6 +736,8 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
             } else {
                 return engine;
             }
+        } else {
+            non_builtin_icon_cache.insert(iconName);
         }
     }
 

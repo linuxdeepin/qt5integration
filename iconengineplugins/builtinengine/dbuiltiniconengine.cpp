@@ -131,6 +131,7 @@ public:
 
 DBuiltinIconEngine::DBuiltinIconEngine(const QString &iconName)
     : m_iconName(iconName)
+    , m_key(UINT_MAX)
 {
 
 }
@@ -138,7 +139,7 @@ DBuiltinIconEngine::DBuiltinIconEngine(const QString &iconName)
 DBuiltinIconEngine::DBuiltinIconEngine(const DBuiltinIconEngine &other)
     : QIconEngine(other)
     , m_iconName(other.m_iconName)
-    , m_key(0)
+    , m_key(other.m_key)
 {
 
 }
