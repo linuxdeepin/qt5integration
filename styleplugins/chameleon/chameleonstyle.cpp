@@ -243,6 +243,14 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     case PE_PanelTipLabel: {
         return;
     }
+    case PE_FrameGroupBox: {
+        DStyleOptionBackgroundGroup option;
+        option.init(w);
+        option.position = DStyleOptionBackgroundGroup::OnlyOne;
+        static_cast<QStyleOption*>(&option)->operator =(*opt);
+        DStyle::drawPrimitive(PE_ItemBackground, &option, p, w);
+        return;
+    }
     default:
         break;
     }
