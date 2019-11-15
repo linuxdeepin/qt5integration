@@ -1157,10 +1157,10 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
 {
     const bool hasText(!cb->currentText.isEmpty());
     const bool hasIcon(!cb->currentIcon.isNull());
-    const bool enabled(cb->state & QStyle::State_Enabled);
+//    const bool enabled(cb->state & QStyle::State_Enabled);
     const bool sunken(cb->state & (QStyle::State_On | QStyle::State_Sunken));
-    const bool mouseOver(cb->state & QStyle::State_MouseOver);
-    const bool hasFocus(cb->state & QStyle::State_HasFocus);
+//    const bool mouseOver(cb->state & QStyle::State_MouseOver);
+//    const bool hasFocus(cb->state & QStyle::State_HasFocus);
     const bool flat(!cb->frame);
     const bool editable(cb->editable);
 
@@ -1210,13 +1210,6 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
     // render icon
     if (hasIcon && iconRect.isValid()) {
         // icon state and mode
-        const QIcon::State iconState(sunken ? QIcon::On : QIcon::Off);
-        QIcon::Mode iconMode;
-        if (!enabled) iconMode = QIcon::Disabled;
-        else if (!flat && hasFocus) iconMode = QIcon::Selected;
-        else if (mouseOver && flat) iconMode = QIcon::Active;
-        else iconMode = QIcon::Normal;
-
         cb->currentIcon.paint(painter, iconRect, Qt::AlignLeft);
     }
 
@@ -1433,7 +1426,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         QSize iconSize;
         // 绘制图标
         if (!menuItem->icon.isNull()) {
-            QRect vCheckRect = QRect(menuItem->rect.x() + checkColHOffset, menuItem->rect.y(), checkColWidth, menuItem->rect.height());
+//            QRect vCheckRect = QRect(menuItem->rect.x() + checkColHOffset, menuItem->rect.y(), checkColWidth, menuItem->rect.height());
             /*= visualRect(opt->direction, menuItem->rect,QRect(menuItem->rect.x() + checkColHOffset, menuItem->rect.y(),checkcol, menuitem->rect.height()));*/
 
             int smallIconSize = qMax(option->fontMetrics.height(), proxy()->pixelMetric(PM_SmallIconSize, option, widget));
@@ -2198,16 +2191,20 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             int w = proxy()->pixelMetric(isRadio ? PM_ExclusiveIndicatorWidth : PM_IndicatorWidth, btn, widget);
             int h = proxy()->pixelMetric(isRadio ? PM_ExclusiveIndicatorHeight : PM_IndicatorHeight, btn, widget);
 
-            int margins = 0;
+            int spacing = proxy()->pixelMetric(isRadio ? PM_RadioButtonLabelSpacing : PM_CheckBoxLabelSpacing, opt, widget);
+            int spacings = 0;
             // we add 4 pixels for label margins
-            if (!btn->icon.isNull() || !btn->text.isEmpty())
-                margins = 4 + proxy()->pixelMetric(isRadio ? PM_RadioButtonLabelSpacing : PM_CheckBoxLabelSpacing, opt, widget);
+            if (!btn->icon.isNull())
+                spacings += spacing;
 
-            int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
+            if (!btn->text.isEmpty())
+                spacings += spacing;
+
+            int margin = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
 
             QSize sz(contentsSize);
-            sz += QSize(w + margins + margin, 4);  //margin为绘后面重绘时，进行了translate右偏移的数值，故需加进来
-            sz.setHeight(qMax(sz.height(), h));
+            sz += QSize(w + margin * 2 + spacings, h + margin * 2);  //margin为绘后面重绘时，进行了translate右偏移的数值，故需加进来
+            sz.setHeight(qMax(sz.height(), contentsSize.height()));
 
             return sz;
         }
