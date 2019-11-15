@@ -172,7 +172,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         } else if (opt->state & State_On) {  //Qt::Checked
             p->setPen(Qt::NoPen);
             p->setBrush(getColor(opt, DPalette::Highlight));
-            p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 1, 2);
+            p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 2, 2);
 
             DDrawUtils::drawMark(p, standard.adjusted(2, 0, 0, -2), getColor(opt, DPalette::Window), getColor(opt, DPalette::Highlight), 2);
         }
@@ -2257,30 +2257,10 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             size.setWidth(size.width() / 2.0);
         return size;
     }
+    case CT_RadioButton:
     case CT_CheckBox: {
-        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
-            bool isRadio = (ct == CT_RadioButton);             //参考qcommstyle.cpp的CT_CheckBox
-
-            int w = proxy()->pixelMetric(isRadio ? PM_ExclusiveIndicatorWidth : PM_IndicatorWidth, btn, widget);
-            int h = proxy()->pixelMetric(isRadio ? PM_ExclusiveIndicatorHeight : PM_IndicatorHeight, btn, widget);
-
-            int spacing = proxy()->pixelMetric(isRadio ? PM_RadioButtonLabelSpacing : PM_CheckBoxLabelSpacing, opt, widget);
-            int spacings = 0;
-            // we add 4 pixels for label margins
-            if (!btn->icon.isNull())
-                spacings += spacing;
-
-            if (!btn->text.isEmpty())
-                spacings += spacing;
-
-            int margin = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
-
-            QSize sz(contentsSize);
-            sz += QSize(w + margin * 2 + spacings, h + margin * 2);  //margin为绘后面重绘时，进行了translate右偏移的数值，故需加进来
-            sz.setHeight(qMax(sz.height(), contentsSize.height()));
-
-            return sz;
-        }
+        size.rwidth() += 2 * (DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing));
+        break;
     }
     case CT_ToolButton: {
         if (const QStyleOptionToolButton *btn = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
