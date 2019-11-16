@@ -2275,11 +2275,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         if (const QStyleOptionProgressBar *pbo = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
             int radius = DStyle::pixelMetric(PM_FrameRadius);
 
-            if (!pbo->textVisible || pbo->text.isEmpty()) {
+            if (!pbo->textVisible) {
                 size.setWidth(qMax(size.width(), 2 * radius));
                 size.setHeight(qMax(size.height(), 2 * radius));
             } else {
-                QSize text_size = opt->fontMetrics.size(0, pbo->text);
+                QSize text_size = opt->fontMetrics.size(0, pbo->text.isEmpty() ? "%" : pbo->text);
                 size.setWidth(qMax(size.width(), 2 * radius + text_size.width()));
                 size.setHeight(qMax(size.height(), 2 * radius + text_size.height()));
             }
