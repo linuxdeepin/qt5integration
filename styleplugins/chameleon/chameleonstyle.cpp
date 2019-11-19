@@ -1398,13 +1398,14 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         //绘制选择框
         bool ignoreCheckMark = false;
         const int checkColHOffset = MenuItem_MarginWidth ;
+        const int framRadius = DStyle::pixelMetric(PM_FrameRadius);
         int minCheckColWidth = menuItem->menuHasCheckableItems ? menuRect.height() : Menu_PanelRightPadding;
         int checkColWidth = qMax<int>(minCheckColWidth, menuItem->maxIconWidth);
 
         if (!ignoreCheckMark) {
             const qreal boxMargin = MenuButton_IndicatorMargin;
             const qreal boxWidth = checkColWidth - 2 * boxMargin;
-            QRectF checkRectF(option->rect.left() + boxMargin + checkColHOffset, option->rect.center().y() - boxWidth / 2 + 1, boxWidth, boxWidth);
+            QRectF checkRectF(option->rect.left() + boxMargin + framRadius, option->rect.center().y() - boxWidth / 2 + 1, boxWidth, boxWidth);
             QRect checkRect = checkRectF.toRect();
             checkRect.setWidth(checkRect.height());
             /*checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);*/
@@ -1423,10 +1424,14 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
                         DDrawUtils::drawMark(painter, checkRect - frameExtentMargins(), markColor, markColor, 2);
                     }
                 } else if (checked) { //复选框
-                    QPalette::ColorRole textRole = !enabled ? QPalette::Text :
-                                                       selected ? QPalette::HighlightedText : QPalette::ButtonText;
-                    QColor checkColor = getColor(option, textRole);
-                    DDrawUtils::drawMark(painter, checkRect - frameExtentMargins(), checkColor, checkColor, 2);
+                    int smallIconSize = qMax(option->fontMetrics.height(), proxy()->pixelMetric(PM_SmallIconSize, option, widget));
+                    QIcon markIcon = DStyle::standardIcon(SP_MarkElement, option, widget);
+
+                    checkRect.setLeft(menuRect.x() + framRadius);
+                    checkRect.setTop(menuRect.y() + checkColHOffset);
+                    checkRect.setWidth(smallIconSize);
+                    checkRect.setHeight(smallIconSize);
+                    markIcon.paint(painter, checkRect);
                 } else {
                 }
             }
@@ -1442,7 +1447,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         else
             painter->setPen(getColor(option, QPalette::BrightText));
 
-        QSize iconSize;
+        QSize iconSize(0, 0);
         // 绘制图标
         if (!menuItem->icon.isNull()) {
 //            QRect vCheckRect = QRect(menuItem->rect.x() + checkColHOffset, menuItem->rect.y(), checkColWidth, menuItem->rect.height());
@@ -1457,7 +1462,13 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
                 iconSize = combo->iconSize();
 #endif
 
-            QRect pmr(menuRect.x() + 2 * checkColHOffset + checkColWidth, menuRect.y() + checkColHOffset, iconSize.width(), iconSize.height());
+            QRect pmr(menuRect.x() + framRadius, menuRect.y() + checkColHOffset, iconSize.width(), iconSize.height());
+
+            if (checkable) {
+                int widget = iconSize.width();
+                pmr.setLeft(menuRect.x() + framRadius + checkColWidth);
+                pmr.setRight(menuRect.x() + framRadius + checkColWidth + widget);
+            }
 
                 QIcon::Mode mode = !enabled ? QIcon::Disabled : (selected ? QIcon::Selected : QIcon::Normal);
                 option->icon.paint(painter, pmr, Qt::AlignCenter, mode, checked ? QIcon::On : QIcon::Off);
@@ -1468,10 +1479,17 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         menuRect.getRect(&x, &y, &w, &h);
         int tab = menuItem->tabWidth;
 
-        int xmargin = checkColHOffset + checkColWidth ;
         int iconTextSpace = DStyle::pixelMetric(PM_ContentsSpacing, option, widget);
-        int xpos = menuRect.x() + xmargin + iconTextSpace + iconSize.width();
-        QRect textRect(xpos, y + Menu_ItemHTextMargin, w - xmargin - tab, h - 2 * Menu_ItemVTextMargin);
+        int xpos = menuRect.x() + framRadius;
+
+        xpos += iconSize.width();
+        if (iconSize.width() > 0)
+            xpos += iconTextSpace;
+
+        if (checkable)
+            xpos += checkColWidth;
+
+        QRect textRect(xpos, y + Menu_ItemHTextMargin, w - xpos - tab, h - 2 * Menu_ItemVTextMargin);
         QRect vTextRect = textRect /*visualRect(option->direction, menuRect, textRect)*/; // 区分左右方向
         QStringRef textRef(&menuItem->text);
 
@@ -1487,7 +1505,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
             text_flags |= Qt::AlignLeft;
 
             if (tabIndex >= 0) {
-                QPoint vShortcutStartPoint = textRect.topRight();
+                QPoint vShortcutStartPoint = textRect.topRight();  //快捷键设置显示
                 vShortcutStartPoint.setX(vShortcutStartPoint.x() - Menu_PanelRightPadding);
                 QRect vShortcutRect = QRect(vShortcutStartPoint, QPoint(menuRect.right(), textRect.bottom()));
                 /* = visualRect(option->direction,menuRect,QRect(vShortcutStartPoint, QPoint(menuRect.right(), textRect.bottom())))*/;
