@@ -38,11 +38,15 @@
         <file alias="icons/button_edit-clear_30px.svg/selected.svg">icons/light/edit-clear_press_30px.svg</file>
         <file alias="icons/button_voice_30px.svg/normal.svg">icons/light/button_voice_30px.svg</file>
         <file alias="icons/button_voice_30px.svg/selected.svg">icons/light/button_voice_press_30px.svg</file>
+        <file alias="icons/list_delete_30px.svg">icons/light/list_delete_30px.svg</file>
+        <file alias="icons/list_add_30px.svg">icons/light/list_add_30px.svg</file>
     </qresource>
     <qresource prefix="/icons/deepin/builtin/dark">
         <file alias="icons/button_edit-clear_30px.svg/normal.svg">icons/dark/edit-clear_30px.svg</file>
         <file alias="icons/button_edit-clear_30px.svg/selected.svg">icons/dark/edit-clear_press_30px.svg</file>
         <file alias="icons/button_voice_30px.svg/normal.svg">icons/dark/button_voice_30px.svg</file>
         <file alias="icons/button_voice_30px.svg/selected.svg">icons/dark/button_voice_press_30px.svg</file>
+        <file alias="icons/list_delete_30px.svg">icons/dark/list_delete_30px.svg</file>
+        <file alias="icons/list_add_30px.svg">icons/dark/list_add_30px.svg</file>
     </qresource>
 </RCC>
