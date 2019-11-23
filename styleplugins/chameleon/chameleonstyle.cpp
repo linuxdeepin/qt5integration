@@ -2439,6 +2439,8 @@ void ChameleonStyle::polish(QWidget *w)
         } else if (is_tip) {
             DPlatformWindowHandle handle(w);
             handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
+            QLabel *label = qobject_cast<QLabel *>(w);
+            label->setTextFormat(DStyle::tooltipTextFormat());
         }
     }
 }
