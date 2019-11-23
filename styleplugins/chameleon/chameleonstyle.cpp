@@ -593,8 +593,18 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     textRect.setLeft(rectArrowAndLine.right() + frameRadius);
                 }
             }
-            proxy()->drawItemText(p, textRect, tf, button->palette, (button->state & State_Enabled),
-                                  button->text, text_color_role);
+            QPalette pa = button->palette;
+
+            if (button->features & DStyleOptionButton::WarningButton) {
+                pa.setBrush(QPalette::ButtonText, getColor(opt, DPalette::TextWarning, w));
+            } else if (button->features & DStyleOptionButton::SuggestButton) {
+                pa.setBrush(QPalette::ButtonText, getColor(opt, QPalette::HighlightedText));
+            } else {
+                pa.setBrush(QPalette::ButtonText, getColor(opt, text_color_role));
+            }
+
+            proxy()->drawItemText(p, textRect, tf, pa, (button->state & State_Enabled),
+                                  button->text, QPalette::ButtonText);
             return;
         }
         break;
