@@ -2332,6 +2332,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         }
         break;
     }
+    case CT_TabBarTab: {
+        int tabCloseWidth = DStyle::pixelMetric(PM_TabCloseIndicatorWidth, opt, widget);
+        size += QSize(tabCloseWidth, 0);
+        break;
+    }
     default:
         break;
     }
