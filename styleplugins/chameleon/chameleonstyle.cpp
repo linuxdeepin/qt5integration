@@ -180,9 +180,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_IndicatorTabClose: {
-        if (drawTabBarCloseButton(p, opt, w))
-            return;
-        break;
+        QIcon icon = DStyle::standardIcon(SP_CloseButton, opt, w);
+        icon.paint(p, opt->rect);
+        return;
     }
     case PE_FrameTabWidget: {
         p->setPen(QPen(getColor(opt, QPalette::Dark), proxy()->pixelMetric(PM_DefaultFrameWidth, opt, w)));
@@ -402,6 +402,24 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
     }
     break;
+    case CE_TabBarTab: {
+        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
+            QStyleOptionButton btn;
+            int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
+            btn.rect = tab->rect.adjusted(margin, margin, -margin, -margin);
+            btn.state = tab->state;
+
+            if (tab->state & QStyle::State_Selected) {
+                btn.state |= QStyle::State_On;
+            }
+
+            p->setRenderHint(QPainter::Antialiasing);
+            DStyle::drawControl(CE_PushButtonBevel, &btn, p, w);
+            proxy()->drawControl(CE_TabBarTabLabel, opt, p, w);
+            return;
+        }
+        break;
+    }
     case CE_RubberBand: {
         if (qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {
             QColor color = opt->palette.highlight().color();
