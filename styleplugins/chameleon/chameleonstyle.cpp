@@ -1446,6 +1446,12 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
                 checkRect.setHeight(smallIconSize);
                 checkRect.moveCenter(QPoint(checkRect.left() + smallIconSize / 2, menuItem->rect.center().y()));
                 painter->setRenderHint(QPainter::Antialiasing);
+
+                if (selected)
+                    painter->setPen(getColor(option, QPalette::HighlightedText));
+                else
+                    painter->setPen(getColor(option, QPalette::BrightText));
+
                 if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) { //单选框
                     if (checked || sunken) {
                         QIcon markIcon = DStyle::standardIcon(SP_MarkElement, option, widget);
