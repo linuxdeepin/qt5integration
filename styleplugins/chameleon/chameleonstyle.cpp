@@ -1423,35 +1423,27 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         int minCheckColWidth = menuItem->menuHasCheckableItems ? menuRect.height() : Menu_PanelRightPadding;
         int checkColWidth = qMax<int>(minCheckColWidth, menuItem->maxIconWidth);
 
+        int frameRadius = DStyle::pixelMetric(PM_FrameRadius);  //打钩矩形的左侧距离item的左边缘； 也是 打钩矩形的右侧距离 图文内容的左边缘
+        int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, option, widget);//打钩的宽度
+        int realMargins = smallIconSize + 2 * frameRadius;  //左侧固定预留的margin，无论是否能够打钩都要预留
+
         if (!ignoreCheckMark) {
-            const qreal boxMargin = MenuButton_IndicatorMargin;
-            const qreal boxWidth = checkColWidth - 2 * boxMargin;
-            QRectF checkRectF(option->rect.left() + boxMargin + framRadius, option->rect.center().y() - boxWidth / 2 + 1, boxWidth, boxWidth);
-            QRect checkRect = checkRectF.toRect();
-            checkRect.setWidth(checkRect.height());
             /*checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);*/
+            QRect checkRect(menuItem->rect);
 
             if (checkable) {
+                checkRect.setLeft(frameRadius);
+                checkRect.setWidth(smallIconSize);
+                checkRect.setHeight(smallIconSize);
+                checkRect.moveCenter(QPoint(checkRect.left() + smallIconSize / 2, menuItem->rect.center().y()));
+                painter->setRenderHint(QPainter::Antialiasing);
                 if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) { //单选框
                     if (checked || sunken) {
-                        painter->setRenderHint(QPainter::Antialiasing);
-                        painter->setPen(Qt::NoPen);
-
-                        QPalette::ColorRole textRole = !enabled ? QPalette::Text :
-                                                       selected ? QPalette::HighlightedText : QPalette::ButtonText;
-                        painter->setBrush(getColor(option, textRole));
-
-                        QColor markColor = getColor(option, textRole) ;
-                        DDrawUtils::drawMark(painter, checkRect - frameExtentMargins(), markColor, markColor, 2);
+                        QIcon markIcon = DStyle::standardIcon(SP_MarkElement, option, widget);
+                        markIcon.paint(painter, checkRect);
                     }
                 } else if (checked) { //复选框
-                    int smallIconSize = qMax(option->fontMetrics.height(), proxy()->pixelMetric(PM_SmallIconSize, option, widget));
                     QIcon markIcon = DStyle::standardIcon(SP_MarkElement, option, widget);
-
-                    checkRect.setLeft(menuRect.x() + framRadius);
-                    checkRect.setTop(menuRect.y() + checkColHOffset);
-                    checkRect.setWidth(smallIconSize);
-                    checkRect.setHeight(smallIconSize);
                     markIcon.paint(painter, checkRect);
                 } else {
                 }
@@ -1471,10 +1463,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         QSize iconSize(0, 0);
         // 绘制图标
         if (!menuItem->icon.isNull()) {
-//            QRect vCheckRect = QRect(menuItem->rect.x() + checkColHOffset, menuItem->rect.y(), checkColWidth, menuItem->rect.height());
             /*= visualRect(opt->direction, menuItem->rect,QRect(menuItem->rect.x() + checkColHOffset, menuItem->rect.y(),checkcol, menuitem->rect.height()));*/
-
-            int smallIconSize = qMax(option->fontMetrics.height(), proxy()->pixelMetric(PM_SmallIconSize, option, widget));
             iconSize.setWidth(smallIconSize);
             iconSize.setHeight(smallIconSize);
 
@@ -1483,32 +1472,23 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
                 iconSize = combo->iconSize();
 #endif
 
-            QRect pmr(menuRect.x() + framRadius, menuRect.y() + checkColHOffset, iconSize.width(), iconSize.height());
+            QRect pmr(menuRect.x() + realMargins, menuRect.center().y() - smallIconSize / 2, iconSize.width(), iconSize.height());
 
-            if (checkable) {
-                int widget = iconSize.width();
-                pmr.setLeft(menuRect.x() + framRadius + checkColWidth);
-                pmr.setRight(menuRect.x() + framRadius + checkColWidth + widget);
-            }
-
-                QIcon::Mode mode = !enabled ? QIcon::Disabled : (selected ? QIcon::Selected : QIcon::Normal);
-                option->icon.paint(painter, pmr, Qt::AlignCenter, mode, checked ? QIcon::On : QIcon::Off);
+            QIcon::Mode mode = !enabled ? QIcon::Disabled : (selected ? QIcon::Selected : QIcon::Normal);
+            option->icon.paint(painter, pmr, Qt::AlignCenter, mode, checked ? QIcon::On : QIcon::Off);
         }
 
         // 绘制文本
         int x, y, w, h;
         menuRect.getRect(&x, &y, &w, &h);
         int tab = menuItem->tabWidth;
+        int xpos = menuRect.x(); //1.只有文本  2.只有图片加文本  ，xpos为文本的起始坐标
 
-        int iconTextSpace = DStyle::pixelMetric(PM_ContentsSpacing, option, widget);
-        int xpos = menuRect.x() + framRadius;
-
-        xpos += iconSize.width();
-        if (iconSize.width() > 0)
-            xpos += iconTextSpace;
-
-        if (checkable)
-            xpos += checkColWidth;
+        if (iconSize.width() > 0) {
+            xpos += realMargins + smallIconSize + frameRadius;
+        } else {
+            xpos += realMargins;
+        }
 
         QRect textRect(xpos, y + Menu_ItemHTextMargin, w - xpos - tab, h - 2 * Menu_ItemVTextMargin);
         QRect vTextRect = textRect /*visualRect(option->direction, menuRect, textRect)*/; // 区分左右方向
@@ -1527,7 +1507,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
             if (tabIndex >= 0) {
                 QPoint vShortcutStartPoint = textRect.topRight();  //快捷键设置显示
-                vShortcutStartPoint.setX(vShortcutStartPoint.x() - Menu_PanelRightPadding);
+                vShortcutStartPoint.setX(vShortcutStartPoint.x() - Menu_PanelRightPadding - realMargins);
                 QRect vShortcutRect = QRect(vShortcutStartPoint, QPoint(menuRect.right(), textRect.bottom()));
                 /* = visualRect(option->direction,menuRect,QRect(vShortcutStartPoint, QPoint(menuRect.right(), textRect.bottom())))*/;
                 const QString textToDraw = textRef.mid(tabIndex + 1).toString();
@@ -1551,16 +1531,20 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
             QStyle::PrimitiveElement arrow;
             arrow = option->direction == Qt::RightToLeft ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
             int xpos = menuRect.left() + menuRect.width() - 3 - dim;
-            QRect  vSubMenuRect = visualRect(option->direction, menuRect,
-                                             QRect(xpos, menuRect.top() + menuRect.height() / 2 - dim / 2, dim, dim));
             QStyleOptionMenuItem newMI = *menuItem;
-            newMI.rect = vSubMenuRect;
+            xpos += realMargins + iconSize.width() + frameRadius;
+            QPoint topLeft(menuItem->rect.right() - frameRadius - smallIconSize / 2, menuItem->rect.center().y() - smallIconSize / 3);  //箭头rect: Size(smallIconSize, smallIconSize*2/3)
+            QPoint RightButtom(topLeft.x() + smallIconSize / 2, menuItem->rect.center().y() + smallIconSize / 3 );
+            QRect rectArrow(topLeft, RightButtom);
+            newMI.rect = rectArrow;
+
             newMI.state = !enabled ? State_None : State_Enabled;
             if (selected)
                 newMI.palette.setColor(QPalette::Foreground,
                                        newMI.palette.highlightedText().color());
 
-            proxy()->drawPrimitive(arrow, &newMI, painter, widget);
+            QIcon markIcon = DStyle::standardIcon(SP_ArrowEnter, &newMI, widget);
+            markIcon.paint(painter, newMI.rect);
         }
     }
 
@@ -2255,28 +2239,32 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                 }
             }
 
-            int maxpmw = menuItem->maxIconWidth;
             int tabSpacing = MenuItem_TabSpacing;
-            if (menuItem->text.contains(QLatin1Char('\t'))) {
+            if (menuItem->text.contains(QLatin1Char('\t'))) {  //若是项有快捷键，文本内容会以'\t'连接快捷键文本
                 if (!hideShortcutText)
                     m_width += tabSpacing;
             } else {
                 if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {
                     m_width += 2 * Menu_ArrowHMargin;
-                } else if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
-                    QFontMetrics fm(menuItem->font);
-                    QFont fontBold = menuItem->font;
-                    fontBold.setBold(true);
-                    QFontMetrics fmBold(fontBold);
-                    m_width += fmBold.width(menuItem->text) - fm.width(menuItem->text);
                 }
             }
 
-            int checkcol = qMax<int>(maxpmw, Menu_CheckMarkWidth);
-            m_width += checkcol;
-            m_width += Menu_RightBorder;
-            m_width += Menu_PanelRightPadding;
+            int frameRadius = DStyle::pixelMetric(PM_FrameRadius);  //打钩矩形的左侧距离item的左边缘； 也是 打钩矩形的右侧距离 图文内容的左边缘
+            int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);//打钩的宽度
+            int realMargins = smallIconSize + 2 * frameRadius;  //左侧固定预留的margin，无论是否能够打钩都要预留
+
+            m_width = realMargins;
+            int textWidth = opt->fontMetrics.size(Qt::TextSingleLine, menuItem->text).width();
+
+            if (!menuItem->text.isEmpty())
+                m_width += (textWidth + frameRadius);
+
+            if (!menuItem->icon.isNull())
+                m_width += (smallIconSize + + frameRadius);
+
+            m_width += (smallIconSize + frameRadius);
             size.setWidth(m_width);
+
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 if (!menuItem->text.isEmpty()) {
                     size.setHeight(menuItem->fontMetrics.height());
@@ -2290,7 +2278,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             }
         }
 
-        size.setWidth(qMax(162, size.width() + Menu_ItemHMargin * 2));
+        size.setWidth(qMax(162, size.width()));
         size.setHeight(size.height() + qMax(Menu_ItemVMargin * 2, 0));
         break;
     }
