@@ -95,6 +95,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_FrameFocusRect: {
+        if (w && w->property("_d_dtk_noFocusRect"))
+            return;
+
         drawBorder(p, opt);
         return;
     }
@@ -122,6 +125,16 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         break;
     }
     case PE_PanelLineEdit: {
+        if (auto fopt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
+            if (fopt->features == QStyleOptionFrame::Flat || fopt->lineWidth == 0) {
+                if (opt->state.testFlag(QStyle::State_HasFocus)) {
+                    proxy()->drawPrimitive(PE_FrameFocusRect, opt, p, w);
+                }
+
+                return;
+            }
+        }
+
         p->setBrush(opt->palette.button());
         p->setPen(Qt::NoPen);
         p->setRenderHints(QPainter::Antialiasing);

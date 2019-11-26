@@ -294,6 +294,7 @@ void WidgetGallery::createBottomRightGroupBox()
     lineEdit = new QLineEdit("s3cRe7");
     lineEdit->setEchoMode(QLineEdit::Password);
     lineEdit->setClearButtonEnabled(true);
+    lineEdit->setFrame(false);
 
     spinBox = new QSpinBox(bottomRightGroupBox);
     spinBox->setValue(50);
