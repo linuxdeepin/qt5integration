@@ -95,7 +95,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_FrameFocusRect: {
-        if (w && w->property("_d_dtk_noFocusRect"))
+        if (w && w->property("_d_dtk_noFocusRect").toBool())
             return;
 
         drawBorder(p, opt);
@@ -1431,10 +1431,6 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
         //绘制选择框
         bool ignoreCheckMark = false;
-        const int checkColHOffset = MenuItem_MarginWidth ;
-        const int framRadius = DStyle::pixelMetric(PM_FrameRadius);
-        int minCheckColWidth = menuItem->menuHasCheckableItems ? menuRect.height() : Menu_PanelRightPadding;
-        int checkColWidth = qMax<int>(minCheckColWidth, menuItem->maxIconWidth);
 
         int frameRadius = DStyle::pixelMetric(PM_FrameRadius);  //打钩矩形的左侧距离item的左边缘； 也是 打钩矩形的右侧距离 图文内容的左边缘
         int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, option, widget);//打钩的宽度
@@ -1462,10 +1458,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
                 }
             }
         } else { //ignore checkmark //用于combobox
-            if (menuItem->icon.isNull())
-                checkColWidth = Menu_PanelRightPadding;
-            else
-                checkColWidth = menuItem->maxIconWidth;
+
         }
 
         if (selected)
@@ -1541,8 +1534,6 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         // 绘制箭头
         if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
             int dim = (menuRect.height() - 4) / 2;
-            QStyle::PrimitiveElement arrow;
-            arrow = option->direction == Qt::RightToLeft ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
             int xpos = menuRect.left() + menuRect.width() - 3 - dim;
             QStyleOptionMenuItem newMI = *menuItem;
             xpos += realMargins + iconSize.width() + frameRadius;
