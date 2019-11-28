@@ -734,13 +734,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     case CE_ToolButtonLabel: {
         if (const QStyleOptionToolButton *toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QRect rect = toolbutton->rect;
-            int shiftX = 0;
-            int shiftY = 0;
+            int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w); //在绘画icon和text之前,先绘画一层表示靠近或按下状态
+            p->setRenderHint(QPainter::Antialiasing);
+            p->setPen(Qt::NoPen);
+            p->setBrush(Qt::NoBrush);
 
-            if (toolbutton->state & (State_Sunken | State_On)) {
-                shiftX = proxy()->pixelMetric(PM_ButtonShiftHorizontal, toolbutton, w);
-                shiftY = proxy()->pixelMetric(PM_ButtonShiftVertical, toolbutton, w);
-            }
+            if (toolbutton->state & (State_MouseOver | State_Sunken))   //hover状态 、press状态
+                p->setBrush(getColor(toolbutton, DPalette::Button));
 
             // Arrow type always overrules and is always shown
             bool hasArrow = toolbutton->features & QStyleOptionToolButton::Arrow;
@@ -749,30 +749,37 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 int alignment = Qt::AlignCenter | Qt::TextShowMnemonic;
                 if (!proxy()->styleHint(SH_UnderlineShortcut, opt, w))
                     alignment |= Qt::TextHideMnemonic;
-                rect.translate(shiftX, shiftY);
                 p->setFont(toolbutton->font);
-                proxy()->drawItemText(p, rect, alignment, toolbutton->palette,
-                             opt->state & State_Enabled, toolbutton->text,
-                             QPalette::ButtonText);
+                p->drawRoundedRect(rect, radius, radius);
+
+                if (toolbutton->state & State_On) {
+                    p->setPen(getColor(toolbutton, DPalette::Highlight));
+                } else {
+                    p->setPen(getColor(toolbutton, DPalette::ButtonText));
+                }
+
+                p->drawText(rect, alignment, toolbutton->text);
             } else { //只显示文字的情景 的 补集
-                QPixmap pm;
-                QSize pmSize = toolbutton->iconSize;
-                if (!toolbutton->icon.isNull()) {
-                    QIcon::State state = toolbutton->state & State_On ? QIcon::On : QIcon::Off;
-                    QIcon::Mode mode;
-                    if (!(toolbutton->state & State_Enabled))
-                        mode = QIcon::Disabled;
-                    else if ((opt->state & State_MouseOver) && (opt->state & State_AutoRaise))
-                        mode = QIcon::Active;
-                    else
-                        mode = QIcon::Normal;
+                QIcon icon(toolbutton->icon.pixmap(QSize()));
+                int width = proxy()->pixelMetric(PM_SmallIconSize, toolbutton, w);
+                QSize pmSize(width, width);
 
-                    if (w->isVisible())
-                        pm = toolbutton->icon.pixmap(w->window()->windowHandle(), toolbutton->rect.size().boundedTo(toolbutton->iconSize), mode, state);
-                    else
-                        pm = toolbutton->icon.pixmap(0, toolbutton->rect.size().boundedTo(toolbutton->iconSize), mode, state);
-
-                    pmSize = pm.size() / pm.devicePixelRatio();
+                switch (toolbutton->arrowType) {
+                case Qt::UpArrow:
+                    icon = DStyle::standardIcon(SP_ArrowUp);
+                    break;
+                case Qt::DownArrow:
+                    icon = DStyle::standardIcon(SP_ArrowDown);
+                    break;
+                case Qt::LeftArrow:
+                    icon = DStyle::standardIcon(SP_ArrowLeft);
+                    break;
+                case Qt::RightArrow:
+                    icon = DStyle::standardIcon(SP_ArrowRight);
+                    break;
+                default:
+                    icon = toolbutton->icon;
+                    break;
                 }
 
                 int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w); //在绘画icon和text之前,先绘画一层表示靠近或按下状态
@@ -785,58 +792,44 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
                 p->drawRoundedRect(rect, radius, radius);
 
+                QRect pr = rect;
+                QRect tr = rect;
+                pr.setHeight(pmSize.height());
+                pr.setWidth(pmSize.width());
+
+                if (toolbutton->state & State_On)      //active状态
+                    p->setPen(getColor(toolbutton, DPalette::Highlight));
+                else
+                    p->setPen(getColor(toolbutton, DPalette::ButtonText));
+
                 if (toolbutton->toolButtonStyle != Qt::ToolButtonIconOnly) { //只显示icon 的补集情况
                     p->setFont(toolbutton->font);
-                    QRect pr = rect;
-                    QRect tr = rect;
 
                     int alignment = Qt::TextShowMnemonic;
                     if (!proxy()->styleHint(SH_UnderlineShortcut, opt, w))
                         alignment |= Qt::TextHideMnemonic;
 
                     if (toolbutton->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {  //文字在图标下面
-                        pr.setHeight(pmSize.height() + 6);
-                        tr.adjust(0, pr.height() - 1, 0, -1);
-                        pr.translate(shiftX, shiftY);
-                        if (!hasArrow) {
-                            proxy()->drawItemPixmap(p, pr, Qt::AlignCenter, pm);
-                        } else {
-                            int min = qMin(pr.width(), pr.height())  / 2;
-                            QRect ptChange(0, 0, min, min);
-                            ptChange.moveCenter(pr.center());
-                            DDrawUtils::drawArrow(p, ptChange, getColor(toolbutton, DPalette::ButtonText), toolbutton->arrowType, 1);
-                        }
+                        pr.moveCenter(QPoint(rect.center().x(), rect.center().y() / 2));
+                        tr.adjust(0, pr.height(), 0, 0);
+
+                        icon.paint(p, pr);
                         alignment |= Qt::AlignCenter;
+
                     } else {    //其他几种（文字和icon布局）方式
-                        pr.setWidth(pmSize.width() + 8);
-                        tr.adjust(pr.width(), 0, 0, 0);
-                        pr.translate(shiftX, shiftY);
-                        if (!hasArrow) {
-                            proxy()->drawItemPixmap(p, QStyle::visualRect(opt->direction, rect, pr), Qt::AlignCenter, pm);
-                        } else {
-                            int min = qMin(pr.width(), pr.height())  / 2;
-                            QRect ptChange(0, 0, min, min);
-                            ptChange.moveCenter(pr.center());
-                            DDrawUtils::drawArrow(p, ptChange, getColor(toolbutton, DPalette::ButtonText), toolbutton->arrowType, 1);
-                        }
+                        int radius = DStyle::pixelMetric(PM_FrameRadius);
+                        pr.moveCenter(QPoint(rect.left(), rect.center().y()));
+                        pr.moveLeft(radius);
+                        tr.adjust(pr.width() + radius, 0, 0, 0);
+
+                        icon.paint(p, pr);
                         alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                     }
-                    tr.translate(shiftX, shiftY);
-                    proxy()->drawItemText(p, QStyle::visualRect(opt->direction, rect, tr), alignment, toolbutton->palette,
-                                 toolbutton->state & State_Enabled, toolbutton->text,
-                                 QPalette::ButtonText);
-                } else {   //只显示icon情况
-                    rect.translate(shiftX, shiftY);
-                    if (hasArrow) {
-                        int width = DStyle::pixelMetric(PM_SmallIconSize, toolbutton, w);
-                        int minWidth = qMin(width, qMin(rect.width(), rect.height())  / 2);
-                        QRect rectChange(0, 0, minWidth, minWidth / 2);
-                        rectChange.moveCenter(rect.center());
 
-                        DDrawUtils::drawArrow(p, rectChange, getColor(toolbutton, DPalette::ButtonText), toolbutton->arrowType, 1);
-                    } else {
-                        proxy()->drawItemPixmap(p, rect, Qt::AlignCenter, pm);
-                    }
+                    p->drawText(tr, alignment, toolbutton->text);
+                } else {   //只显示icon情况
+                    pr.moveCenter(rect.center());
+                    icon.paint(p, pr);
                 }
             }
         }
