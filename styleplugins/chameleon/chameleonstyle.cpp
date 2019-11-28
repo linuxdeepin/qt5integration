@@ -1981,6 +1981,10 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
 
                 int rectHeight = option->rect.height();
                 rectHeight -= (option->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, opt, w) * 2 : 0);
+
+                if (opt->rect.width() < rectHeight * 3)
+                    break;
+
                 QRect buttonRect(option->rect.topLeft(), QSize(rectHeight, rectHeight)); //按高度计算
                 buttonRect.moveRight(option->rect.right());
                 return buttonRect.marginsRemoved(frameExtentMargins());
@@ -1991,6 +1995,10 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
 
                 int rectHeight = option->rect.height();
                 rectHeight -= (option->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, opt, w) * 2 : 0);
+
+                if (opt->rect.width() < rectHeight * 3)
+                    break;
+
                 QRect uButtonRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w);
                 QRect buttonRect = option->rect;
                 buttonRect.setLeft(uButtonRect.left() - rectHeight);
@@ -2326,6 +2334,12 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         size += QSize(tabCloseWidth, 0);
         break;
     }
+    case CT_SpinBox:
+        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            size += QSize(size.height() * 2, 0);
+            return size;
+        }
+    break;
     default:
         break;
     }
