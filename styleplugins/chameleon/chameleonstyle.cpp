@@ -1198,6 +1198,8 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
             QPoint center = arrowOpt.rect.center();
             arrowOpt.rect.setSize(QSize(qRound(arrowOpt.rect.height() / 2.4), qRound(arrowOpt.rect.height() / 2.4)));
             arrowOpt.rect.moveCenter(center);
+            int radius = DStyle::pixelMetric(PM_FrameRadius);
+            arrowOpt.rect = arrowOpt.rect.adjusted(-radius, 0, -radius, 0);
         }
 
         proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
@@ -1219,8 +1221,7 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
 
     QRect contentsRect(cb->rect);
     if (sunken && !flat) contentsRect.translate(1, 1);
-    contentsRect.adjust(Metrics::Layout_ChildMarginWidth, 0, -Metrics::Layout_ChildMarginWidth, 0);
-
+    contentsRect.adjust(Metrics::Layout_ChildMarginWidth, 0, -Metrics::Layout_ChildMarginWidth - DStyle::pixelMetric(PM_FrameRadius), 0);
     QSize iconSize;
     if (hasIcon) {
         iconSize = cb->iconSize;
@@ -1240,12 +1241,13 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
 
     QRect iconRect;
     QRect textRect;
+    QRect downArrowRect = proxy()->subControlRect(CC_ComboBox, cb, SC_ComboBoxArrow, widget);
 
     if (hasText && !hasIcon) {
         textRect = contentsRect;
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, cb, widget);
-        textRect.adjust(frame_radius, 0, -frame_radius, 0);
-        textRect.moveCenter(contentsRect.center());
+        textRect.adjust(frame_radius, 0, 0, 0);
+        textRect.setWidth(textRect.width() - downArrowRect.width());
     }
     else {
         const int contentsWidth(iconSize.width() + textSize.width() + Metrics::Button_ItemSpacing);
@@ -1269,7 +1271,8 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
     // render text
     if (hasText && textRect.isValid() && !editable) {
         painter->setPen(getColor(cb, QPalette::ButtonText));
-        painter->drawText(textRect, textFlags, cb->currentText);
+        QString text = painter->fontMetrics().elidedText(cb->currentText, Qt::ElideRight, textRect.width());
+        painter->drawText(textRect, textFlags, text);
     }
 
     return true;
@@ -2108,6 +2111,8 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 QRect rect(0, 0, opt->rect.height(), opt->rect.height()) ;
                 int boxHeight = qAbs(rect.height());
 
+                if (w && !static_cast<const QComboBox *>(w)->isEditable())
+                    break;
                 if (opt->direction == Qt::LeftToRight)
                     rect.moveRight(opt->rect.right());
                 else
