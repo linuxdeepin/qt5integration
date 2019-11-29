@@ -184,18 +184,20 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_IndicatorCheckBox: {
         QRectF standard = opt->rect;
-        DDrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
 
         if (opt->state & State_NoChange) {  //Qt::PartiallyChecked
+            DDrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
             QRectF lineRect(0, 0, standard.width() / 2.0, 2);
             lineRect.moveCenter(standard.center());
             p->fillRect(lineRect, getColor(opt, DPalette::TextTitle, w));
         } else if (opt->state & State_On) {  //Qt::Checked
-            p->setPen(Qt::NoPen);
-            p->setBrush(getColor(opt, DPalette::Highlight));
-            p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 2, 2);
+            p->setPen(getColor(opt, DPalette::Highlight));
+            p->setBrush(Qt::NoBrush);
 
-            DDrawUtils::drawMark(p, standard.adjusted(2, 0, 0, -2), getColor(opt, DPalette::Window), getColor(opt, DPalette::Highlight), 2);
+            QIcon icon = QIcon::fromTheme("checked");
+            icon.paint(p, standard.toRect());
+        } else {
+            DDrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
         }
 
         return;
