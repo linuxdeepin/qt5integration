@@ -267,6 +267,26 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         DStyle::drawPrimitive(PE_ItemBackground, &option, p, w);
         return;
     }
+    case PE_IndicatorArrowUp: {
+        QIcon icon = DStyle::standardIcon(SP_ArrowUp, opt, w);
+        icon.paint(p, opt->rect);
+        return;
+    }
+    case PE_IndicatorArrowDown: {
+        QIcon icon = DStyle::standardIcon(SP_ArrowDown, opt, w);
+        icon.paint(p, opt->rect);
+        return;
+    }
+    case PE_IndicatorArrowRight: {
+        QIcon icon = DStyle::standardIcon(SP_ArrowRight, opt, w);
+        icon.paint(p, opt->rect);
+        return;
+    }
+    case PE_IndicatorArrowLeft: {
+        QIcon icon = DStyle::standardIcon(SP_ArrowLeft, opt, w);
+        icon.paint(p, opt->rect);
+        return;
+    }
     default:
         break;
     }
@@ -1204,6 +1224,7 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
             arrowOpt.rect = arrowOpt.rect.adjusted(-radius, 0, -radius, 0);
         }
 
+        painter->setPen(getColor(comboBox, DPalette::ButtonText));
         proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
     }
 
