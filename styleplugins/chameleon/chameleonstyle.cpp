@@ -126,12 +126,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_PanelLineEdit: {
         if (auto fopt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
-            if (fopt->features == QStyleOptionFrame::Flat || fopt->lineWidth == 0) {
-                if (opt->state.testFlag(QStyle::State_HasFocus)) {
-                    proxy()->drawPrimitive(PE_FrameFocusRect, opt, p, w);
-                }
-
-                return;
+            if (fopt->features != QStyleOptionFrame::Flat && fopt->lineWidth > 0) {
+                proxy()->drawPrimitive(PE_FrameLineEdit, fopt, p, w);
             }
         }
 
@@ -152,6 +148,10 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             proxy()->drawPrimitive(PE_FrameFocusRect, opt, p, w);
         }
 
+        return;
+    }
+    case PE_FrameLineEdit: {
+        // lineedit no frame
         return;
     }
     case PE_IndicatorRadioButton: {
