@@ -761,8 +761,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 p->drawText(rect, alignment, toolbutton->text);
             } else { //只显示文字的情景 的 补集
                 QIcon icon(toolbutton->icon.pixmap(QSize()));
-                int width = proxy()->pixelMetric(PM_SmallIconSize, toolbutton, w);
-                QSize pmSize(width, width);
+                QSize pmSize = toolbutton->iconSize;
 
                 switch (toolbutton->arrowType) {
                 case Qt::UpArrow:
@@ -2335,7 +2334,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         break;
     }
     case CT_SpinBox:
-        if (const QStyleOptionSpinBox *vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+        if (qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             size += QSize(size.height() * 2, 0);
             return size;
         }
