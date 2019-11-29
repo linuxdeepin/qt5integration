@@ -126,7 +126,15 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_PanelLineEdit: {
         if (auto fopt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
-            if (fopt->features != QStyleOptionFrame::Flat && fopt->lineWidth > 0) {
+            // Flat时不绘制输入框的背景
+            if (fopt->features == QStyleOptionFrame::Flat) {
+                if (opt->state.testFlag(QStyle::State_HasFocus)) {
+                    proxy()->drawPrimitive(PE_FrameFocusRect, opt, p, w);
+                }
+                return;
+            }
+
+            if (fopt->lineWidth > 0) {
                 proxy()->drawPrimitive(PE_FrameLineEdit, fopt, p, w);
             }
         }
