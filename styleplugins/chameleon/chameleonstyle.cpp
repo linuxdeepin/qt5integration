@@ -842,7 +842,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                         pr.moveCenter(QPoint(rect.center().x(), rect.center().y() / 2));
                         tr.adjust(0, pr.height(), 0, 0);
 
-                        icon.paint(p, pr);
+                        drawIcon(toolbutton, p, pr, icon);
                         alignment |= Qt::AlignCenter;
 
                     } else {    //其他几种（文字和icon布局）方式
@@ -851,14 +851,14 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                         pr.moveLeft(radius);
                         tr.adjust(pr.width() + radius, 0, 0, 0);
 
-                        icon.paint(p, pr);
+                        drawIcon(toolbutton, p, pr, icon);
                         alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                     }
 
                     p->drawText(tr, alignment, toolbutton->text);
                 } else {   //只显示icon情况
                     pr.moveCenter(rect.center());
-                    icon.paint(p, pr);
+                    drawIcon(toolbutton, p, pr, icon);
                 }
             }
         }
@@ -1358,6 +1358,15 @@ void ChameleonStyle::drawSliderHandle(const QStyleOptionComplex *opt, QRectF& re
     }
 }
 
+void ChameleonStyle::drawIcon(const QStyleOption *opt, QPainter *p, QRect& rect, const QIcon& icon, bool checked) const
+{
+    bool enabled = opt->state & State_Enabled;
+    bool selected = opt->state & State_Selected && enabled;
+    QIcon::Mode mode = !enabled ? QIcon::Disabled : (selected ? QIcon::Selected : QIcon::Normal);
+
+    icon.paint(p, rect, Qt::AlignCenter, mode, checked ? QIcon::On : QIcon::Off);
+}
+
 bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &rect, QPainter *painter, const QWidget *widget) const
 {
     bool enabled(option->state & QStyle::State_Enabled);
@@ -1511,9 +1520,8 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 #endif
 
             QRect pmr(menuRect.x() + realMargins, menuRect.center().y() - smallIconSize / 2, iconSize.width(), iconSize.height());
+            drawIcon(option, painter, pmr, option->icon, checked);
 
-            QIcon::Mode mode = !enabled ? QIcon::Disabled : (selected ? QIcon::Selected : QIcon::Normal);
-            option->icon.paint(painter, pmr, Qt::AlignCenter, mode, checked ? QIcon::On : QIcon::Off);
         }
 
         // 绘制文本
