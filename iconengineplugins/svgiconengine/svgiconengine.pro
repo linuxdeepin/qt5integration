@@ -7,10 +7,9 @@ SOURCES += main.cpp \
            qsvgiconengine.cpp
 OTHER_FILES += qsvgiconengine.json
 
-CONFIG += c++11 link_pkgconfig
-PKGCONFIG += dtkwidget
+CONFIG += c++11
 
-QT += gui-private
+QT += gui-private dtkgui
 DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/iconengines/
 
 unix {
