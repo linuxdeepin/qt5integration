@@ -60,7 +60,7 @@ public:
 
 private:
     void drawShadow(QPainter *p, const QRect &rect, const QColor &color) const;
-    void drawBorder(QPainter *p, const QStyleOption *opt) const;
+    void drawBorder(QPainter *p, const QStyleOption *opt, const QWidget *w) const;
     void drawRoundedShadow(QPainter *p, const QRect &rect, const QColor &color,int frame_radius) const;
     bool isNoticks(const QStyleOptionSlider *slider, QPainter *p, const QWidget *w) const;
 

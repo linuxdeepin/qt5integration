@@ -30,6 +30,8 @@
 #include <DSlider>
 #include <QLabel>
 
+#include <QCalendarWidget>
+#include <QLayout>
 #include <QVariant>
 #include <QDebug>
 #include <QApplication>
@@ -47,6 +49,7 @@
 #include <QAbstractItemView>
 #include <QBitmap>
 #include <QSpinBox>
+#include <QTableView>
 #include <private/qcombobox_p.h>
 
 #include <qdrawutil.h>
@@ -98,7 +101,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         if (w && w->property("_d_dtk_noFocusRect").toBool())
             return;
 
-        drawBorder(p, opt);
+        drawBorder(p, opt, w);
         return;
     }
     case PE_PanelItemViewItem: {
@@ -1776,6 +1779,11 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             label.state = bflags;
             int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, w);
             label.rect = button.adjusted(fw, fw, -fw, -fw);
+
+            if (w->property("_d_calendarToolBtn").toBool()) {
+                label.palette.setColor(QPalette::ButtonText, QPalette::Highlight);
+            }
+
             proxy()->drawControl(CE_ToolButtonLabel, &label, p, w);
 
             if (toolbutton->subControls & SC_ToolButtonMenu) {
@@ -2499,6 +2507,25 @@ void ChameleonStyle::polish(QWidget *w)
         container->setFrameStyle(QFrame::NoFrame);
     }
 
+    if (auto calendar = qobject_cast<QCalendarWidget* >(w)) {
+        int radius = DStyle::pixelMetric(PM_TopLevelWindowRadius);
+        DPlatformWindowHandle handle(calendar);
+
+        handle.setWindowRadius(radius);
+        calendar->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
+
+        auto topWidget = calendar->findChild<QWidget *>("qt_calendar_navigationbar");
+        topWidget->setBackgroundRole(DPalette::Window);
+
+        auto layout = qobject_cast<QLayout*>(topWidget->layout());
+        layout->setMargin(radius / 2);
+    }
+
+    if (w->objectName() == "qt_calendar_yearbutton"
+                        || w->objectName() == "qt_calendar_monthbutton") {
+        w->setProperty("_d_calendarToolBtn", true);
+    }
+
     if (DApplication::isDXcbPlatform()) {
         bool is_menu = qobject_cast<QMenu *>(w);
         bool is_tip = w->inherits("QTipLabel");
@@ -2576,7 +2603,7 @@ void ChameleonStyle::drawShadow(QPainter *p, const QRect &rect, const QColor &co
     p->drawRoundedRect(shadow, frame_radius, frame_radius);
 }
 
-void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt) const
+void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWidget *w) const
 {
     const QColor &focus_color = getColor(opt, QPalette::Highlight);
 
@@ -2593,13 +2620,30 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt) const
     pen.setColor(focus_color);
     p->setPen(pen);
     p->setBrush(Qt::NoBrush);
-    p->drawRoundedRect(border, frame_radius + margins, frame_radius + margins);
+
+    bool table = qobject_cast<const QTableView *>(w);
+
+    if (table) {
+        p->drawRect(border);
+    } else {
+        p->drawRoundedRect(border, frame_radius + margins, frame_radius + margins);
+    }
 
     pen.setWidth(1);
     pen.setColor(getColor(opt, QPalette::Base));
     p->setPen(pen);
     const int offset = 2;
-    p->drawRoundedRect(border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius);
+
+    if (table) {
+        QRect rect = border.adjusted(offset, offset, -1, -1);
+        p->drawLine(rect.topLeft(), rect.topRight());
+        p->drawLine(rect.bottomLeft(), rect.bottomRight());
+        p->drawLine(rect.topLeft(), rect.bottomLeft());
+        p->drawLine(rect.topRight(), rect.bottomRight());
+    } else {
+        p->drawRoundedRect(border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius);
+    }
+
 }
 
 bool ChameleonStyle::isNoticks(const QStyleOptionSlider *slider, QPainter *p, const QWidget *w) const
