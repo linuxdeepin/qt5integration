@@ -1420,12 +1420,15 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
         if (color.color().isValid()) {
             QColor c = color.color();
 
-            if (DGuiApplicationHelper::toColorType(c) == DGuiApplicationHelper::LightType) {
-                c = Qt::white;
-                c.setAlphaF(0.4);
-            } else {
-                c = DGuiApplicationHelper::adjustColor(c, 0, 0, -10, 0, 0, 0, 0);
-                c.setAlphaF(0.8);
+            // 未开启窗口混成时不应该设置背景色的alpha通道，应当显示纯色背景
+            if (DWindowManagerHelper::instance()->hasComposite()) {
+                if (DGuiApplicationHelper::toColorType(c) == DGuiApplicationHelper::LightType) {
+                    c = Qt::white;
+                    c.setAlphaF(0.4);
+                } else {
+                    c = DGuiApplicationHelper::adjustColor(c, 0, 0, -10, 0, 0, 0, 0);
+                    c.setAlphaF(0.8);
+                }
             }
 
             color = c;
