@@ -574,6 +574,19 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
             const QPalette::ColorRole &text_color_role = opt->state & State_On ? QPalette::HighlightedText : QPalette::ButtonText;
 
+            QPalette pa = button->palette;
+
+            if (button->features & DStyleOptionButton::WarningButton) {
+                pa.setBrush(QPalette::ButtonText, getColor(opt, DPalette::TextWarning, w));
+            } else if (button->features & DStyleOptionButton::SuggestButton) {
+                pa.setBrush(QPalette::ButtonText, getColor(opt, QPalette::HighlightedText));
+            } else {
+                pa.setBrush(QPalette::ButtonText, getColor(opt, text_color_role));
+            }
+
+            // 设置文字和图标的绘制颜色
+            p->setPen(QPen(pa.buttonText(), 1));
+
             if (!button->icon.isNull()) {
                 //Center both icon and text
                 QRect iconRect;
@@ -609,7 +622,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 if (button->state & (State_On | State_Sunken))
                     iconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, w),
                                        proxy()->pixelMetric(PM_ButtonShiftVertical, opt, w));
-                p->setPen(opt->palette.color(text_color_role)); // 图标可能以文本颜色绘制
+
                 button->icon.paint(p, iconRect, Qt::AlignCenter, mode, state);
             } else {
                 tf |= Qt::AlignHCenter;
@@ -628,15 +641,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 } else {
                     textRect.setLeft(rectArrowAndLine.right() + frameRadius);
                 }
-            }
-            QPalette pa = button->palette;
-
-            if (button->features & DStyleOptionButton::WarningButton) {
-                pa.setBrush(QPalette::ButtonText, getColor(opt, DPalette::TextWarning, w));
-            } else if (button->features & DStyleOptionButton::SuggestButton) {
-                pa.setBrush(QPalette::ButtonText, getColor(opt, QPalette::HighlightedText));
-            } else {
-                pa.setBrush(QPalette::ButtonText, getColor(opt, text_color_role));
             }
 
             proxy()->drawItemText(p, textRect, tf, pa, (button->state & State_Enabled),
@@ -1686,8 +1690,7 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         if (const QStyleOptionButton *vopt = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             QRect buttonContentRect = vopt->rect;
             int buttonIconMargin = proxy()->pixelMetric(QStyle::PM_ButtonMargin, opt, widget) ;
-            buttonContentRect.adjust(buttonIconMargin / 2, buttonIconMargin / 2,
-                                     -buttonIconMargin / 2, -buttonIconMargin / 2);
+            buttonContentRect.adjust(buttonIconMargin, 0, -buttonIconMargin, 0);
 
             return buttonContentRect;
         }
@@ -2221,7 +2224,8 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     case CT_ComboBox:
     case CT_PushButton: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
-        size += QSize(frame_margins * 2, frame_margins * 2);
+        int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
+        size += QSize((frame_margins + frame_radius) * 2, frame_margins * 2);
 
         if (const QStyleOptionButton *bopt = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
             if (bopt->features & QStyleOptionButton::HasMenu)
@@ -2641,15 +2645,15 @@ QRect ChameleonStyle::drawButtonDownArrow(const QStyleOption *opt, QPainter *p, 
         return QRect(-1, -1, -1, -1);
 
     QRect rectOpt = btn->rect;                      //实际绘画箭头所占的小矩形
-    int arrowWidget = DStyle::pixelMetric(PM_MenuButtonIndicator, opt, w);
-    int arrowHeight = arrowWidget * 5 / 8;
-    QRect rectArrow(0, 0 , arrowWidget, arrowHeight);
+    int arrowWidth = DStyle::pixelMetric(PM_MenuButtonIndicator, opt, w);
+    int arrowHeight = arrowWidth;
+    QRect rectArrow(0, 0 , arrowWidth, arrowHeight);
     rectArrow.moveCenter(rectOpt.center());
 
     QStyleOptionButton newBtn = *btn;                 //绘画箭头的大矩形(不要竖线)
     QRect &newRect = newBtn.rect;
     newRect.setHeight(rectOpt.height());
-    newRect.setWidth(arrowWidget);
+    newRect.setWidth(arrowWidth);
     newRect.moveCenter(rectOpt.center());
 
     if (btn->direction == Qt::LeftToRight) {
@@ -2662,9 +2666,6 @@ QRect ChameleonStyle::drawButtonDownArrow(const QStyleOption *opt, QPainter *p, 
 
     if (p == nullptr || w == nullptr)
         return newRect;
-
-    QPen pen;
-    p->setPen(pen);
 
     QStyleOptionButton arrowDrawBtn  = newBtn;
     arrowDrawBtn.rect = rectArrow;
