@@ -34,8 +34,8 @@
         <file>texts/search_indicator_36px.svg</file>
         <file>texts/unchecked_20px.svg</file>
         <file>texts/checked_20px.svg</file>
-        <file>texts/enter_indicator_24px.svg</file>
-        <file>texts/leave_indicator_24px.svg</file>
+        <file>texts/next_indicator_24px.svg</file>
+        <file>texts/prev_indicator_24px.svg</file>
     </qresource>
     <qresource prefix="/icons/deepin/builtin/light">
         <file alias="icons/button_edit-clear_30px.svg/normal.svg">icons/light/edit-clear_30px.svg</file>
