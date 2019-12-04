@@ -2224,10 +2224,16 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     case CT_ComboBox:
     case CT_PushButton: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
-        int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
-        size += QSize((frame_margins + frame_radius) * 2, frame_margins * 2);
+        size += QSize(frame_margins* 2, frame_margins * 2);
 
         if (const QStyleOptionButton *bopt = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
+            int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
+
+            // 为文本添加额外的margin
+            if (!bopt->text.isEmpty()) {
+                size.rwidth() += 2 * frame_radius;
+            }
+
             if (bopt->features & QStyleOptionButton::HasMenu)
                 size.rwidth() += frame_margins;   //qt源码会在带有menu的btn样式中,添加一个箭头矩形的width
         }
