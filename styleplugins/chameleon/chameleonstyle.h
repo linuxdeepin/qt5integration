@@ -25,6 +25,10 @@
 
 DWIDGET_USE_NAMESPACE
 
+namespace dstyle {
+class DStyleAnimation;
+}
+
 namespace chameleon {
 
 class ChameleonStyle : public DStyle
@@ -82,6 +86,16 @@ private:
     bool drawComboBoxLabel(QPainter *painter, const QStyleOptionComboBox *comboBox, const QWidget *widget) const;
     void drawSliderHandle(const QStyleOptionComplex *opt, QRectF& rectHandle, QPainter *p, const QWidget *w) const;
     void drawIcon(const QStyleOption *opt, QPainter *p, QRect &rect, const QIcon &icon, bool checked = false) const;
+
+public:
+#ifndef QT_NO_ANIMATION
+    dstyle::DStyleAnimation *animation(const QObject *target) const;
+    void startAnimation(dstyle::DStyleAnimation *animation) const;
+    void _q_removeAnimation();
+#endif
+
+private:
+    mutable QHash<const QObject*, dstyle::DStyleAnimation*> animations;
 };
 
 } // namespace chameleon

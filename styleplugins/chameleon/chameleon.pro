@@ -6,7 +6,8 @@ CONFIG += plugin
 
 SOURCES += \
     $$PWD/main.cpp \
-    $$PWD/chameleonstyle.cpp
+    $$PWD/chameleonstyle.cpp \
+    $$PWD/../dstyleplugin/dstyleanimation.cpp
 
 DISTFILES += $${TARGET}.json
 
@@ -19,4 +20,5 @@ unix {
 
 HEADERS += \
     $$PWD/common.h \
-    $$PWD/chameleonstyle.h
+    $$PWD/chameleonstyle.h \
+    $$PWD/../dstyleplugin/dstyleanimation.h
