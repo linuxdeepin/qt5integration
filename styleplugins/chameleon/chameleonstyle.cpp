@@ -1980,7 +1980,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         if (isPlusMinus) {
             buttonOpt.rect -= frameExtentMargins();
             QRectF plusRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
-            QRectF cent_rect(0, 0, plusRect.width() / 2, plusRect.height() / 2);
+            QRectF cent_rect(0, 0, plusRect.width() / 2, plusRect.width() / 2);
             cent_rect.moveCenter(plusRect.center());
             DDrawUtils::drawPlus(painter, cent_rect, getColor(opt, QPalette::ButtonText), 1);
         } else {
