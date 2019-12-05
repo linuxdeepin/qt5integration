@@ -28,8 +28,9 @@
 #include <DApplicationHelper>
 #include <DWindowManagerHelper>
 #include <DSlider>
-#include <QLabel>
+#include <DTabBar>
 
+#include <QLabel>
 #include <QCalendarWidget>
 #include <QLayout>
 #include <QVariant>
@@ -1041,13 +1042,50 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         break;
     }
 
-    if (!isTriangularMode && selected) {
+    bool visible_close_button = selected;
+
+    if (visible_close_button) {
+        if (const DTabBar *tb = qobject_cast<const DTabBar*>(widget)) {
+            visible_close_button = tb->tabsClosable();
+        } else {
+            visible_close_button = false;
+        }
+    }
+
+    if (selected) {
         QStyleOptionTab newTab = *tab;
-        newTab.palette.setBrush(QPalette::WindowText, getColor(tab, QPalette::HighlightedText));
-        QCommonStyle::drawControl(CE_TabBarTabLabel, &newTab, painter, widget);
-    } else if (isTriangularMode && selected) {
-        QStyleOptionTab newTab = *tab;
-        newTab.palette.setBrush(QPalette::WindowText, getColor(tab, QPalette::BrightText));
+        newTab.palette.setBrush(QPalette::WindowText, getColor(tab, isTriangularMode ? QPalette::BrightText : QPalette::HighlightedText));
+
+        if (visible_close_button) {
+            QRect tr = proxy()->subElementRect(SE_TabBarTabText, tab, widget);
+            QRect text_rect = tab->fontMetrics.boundingRect(tr, Qt::AlignCenter | Qt::TextShowMnemonic, tab->text);
+
+            int close_button_width = proxy()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth, tab, widget);
+            qreal stop = qreal(tr.right() - close_button_width - text_rect.x() - 5) / text_rect.width();
+
+            if (stop < 1.0 && tr.right() - close_button_width < text_rect.right()) {
+                const QBrush &brush = newTab.palette.windowText();
+                QLinearGradient lg(0, 0, 1, 0);
+                QGradientStops stops;
+                qreal offset = 5.0 / text_rect.width();
+
+                // 接近关闭按钮部分的颜色渐变到透明
+                stops << QGradientStop{0, brush.color()};
+                stops << QGradientStop{stop - offset, brush.color()};
+                stops << QGradientStop{stop, QColor(brush.color().red(), brush.color().green(), brush.color().blue(), 100)};
+
+                // 保证文字超出最大可显示区域的部分为透明
+                if (text_rect.right() > tr.right())
+                    stops << QGradientStop{1 - (text_rect.right() - tr.right()) / qreal(text_rect.width()), Qt::transparent};
+
+                stops << QGradientStop{1, Qt::transparent};
+
+                lg.setCoordinateMode(QLinearGradient::ObjectBoundingMode);
+                lg.setStops(stops);
+                newTab.palette.setBrush(QPalette::WindowText, lg);
+            }
+        }
+
         QCommonStyle::drawControl(CE_TabBarTabLabel, &newTab, painter, widget);
     } else {
         QCommonStyle::drawControl(CE_TabBarTabLabel, tab, painter, widget);
