@@ -2267,7 +2267,17 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         size += QSize(button_margin, button_margin);
         Q_FALLTHROUGH();
     }
-    case CT_ComboBox:
+    case CT_ComboBox: {
+        if (auto com = qobject_cast<const QComboBox *>(widget)) {
+            if (com->isEditable()) {
+                //这是从lineedit设置margin处拿来
+                int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
+                int left_margins = DStyle::pixelMetric(PM_ContentsMargins, opt, widget);
+                size.setWidth(size.width() + frame_margins + left_margins);
+            }
+        }
+        Q_FALLTHROUGH();
+    }
     case CT_PushButton: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         size += QSize(frame_margins* 2, frame_margins * 2);
