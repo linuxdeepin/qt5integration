@@ -293,6 +293,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         icon.paint(p, opt->rect);
         return;
     }
+    case PE_FrameTabBarBase: return;
     default:
         break;
     }
@@ -505,15 +506,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     case CE_TabBarTab: {
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
             QStyleOptionButton btn;
-            int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
-            btn.rect = tab->rect.adjusted(margin, margin, -margin, -margin);
+            btn.rect = tab->rect;
             btn.state = tab->state;
 
             if (tab->state & QStyle::State_Selected) {
                 btn.state |= QStyle::State_On;
             }
 
-            p->setRenderHint(QPainter::Antialiasing);
             DStyle::drawControl(CE_PushButtonBevel, &btn, p, w);
             proxy()->drawControl(CE_TabBarTabLabel, opt, p, w);
             return;
@@ -1131,7 +1130,7 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
 
                 // 接近关闭按钮部分的颜色渐变到透明
                 stops << QGradientStop{0, brush.color()};
-                stops << QGradientStop{stop - offset, brush.color()};
+                stops << QGradientStop{qMax(0.0, stop - offset), brush.color()};
                 stops << QGradientStop{stop, QColor(brush.color().red(), brush.color().green(), brush.color().blue(), 100)};
 
                 // 保证文字超出最大可显示区域的部分为透明
@@ -1146,7 +1145,15 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
             }
         }
 
+        // 禁止QCommonStyle中绘制默认的焦点颜色
+        newTab.state &= ~QStyle::State_HasFocus;
         QCommonStyle::drawControl(CE_TabBarTabLabel, &newTab, painter, widget);
+
+        if (tab->state & QStyle::State_HasFocus) {
+            QStyleOptionFocusRect fropt;
+            fropt.QStyleOption::operator=(*tab);
+            proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+        }
     } else {
         QCommonStyle::drawControl(CE_TabBarTabLabel, tab, painter, widget);
     }
@@ -1632,10 +1639,17 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
         }
 
-        if (selected)
+        if (selected) {
             painter->setPen(getColor(option, QPalette::HighlightedText));
-        else
-            painter->setPen(getColor(option, QPalette::BrightText));
+        } else {
+            if ((option->state & QStyle::State_Enabled)) {
+                painter->setPen(getColor(option, QPalette::BrightText));
+            } else {
+                QColor color = option->palette.color(QPalette::Active, QPalette::BrightText);
+                color = DStyle::adjustColor(color, 0, 0, 0, 0, 0, 0, -60);
+                painter->setPen(color);
+            }
+        }
 
         QSize iconSize(0, 0);
         // 绘制图标
@@ -1838,6 +1852,12 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         int radius = DStyle::pixelMetric(PM_FrameRadius);
         return opt->rect.marginsRemoved(QMargins(radius, radius, radius, radius));
     }
+    case SE_TabBarTearIndicatorLeft:
+    case SE_TabBarTearIndicatorRight:
+        // DTabBar有自己的scroll按钮
+        if (widget && qobject_cast<DTabBar*>(widget->parent()))
+            return QRect(0, 0, 0, 0);
+        break;
     default:
         break;
     }
@@ -2350,8 +2370,8 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         Q_FALLTHROUGH();
     }
     case CT_ComboBox: {
-        if (auto com = qobject_cast<const QComboBox *>(widget)) {
-            if (com->isEditable()) {
+        if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
+            if (cmb->editable) {
                 //这是从lineedit设置margin处拿来
                 int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
                 int left_margins = DStyle::pixelMetric(PM_ContentsMargins, opt, widget);
@@ -2360,9 +2380,20 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         }
         Q_FALLTHROUGH();
     }
+    case CT_TabBarTab: {
+        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
+            QStyleOptionButton button;
+            button.QStyleOption::operator =(*opt);
+            button.text = tab->text;
+            size = DStyle::sizeFromContents(QStyle::CT_PushButton, &button, tab->fontMetrics.size(0, tab->text), widget);
+            int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
+            size.rwidth() += 2 * frame_radius + proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget);
+        }
+        Q_FALLTHROUGH();
+    }
     case CT_PushButton: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
-        size += QSize(frame_margins* 2, frame_margins * 2);
+        size += QSize(frame_margins * 2, frame_margins * 2);
 
         if (const QStyleOptionButton *bopt = qstyleoption_cast<const QStyleOptionButton*>(opt)) {
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
@@ -2518,11 +2549,6 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         }
         break;
     }
-    case CT_TabBarTab: {
-        int tabCloseWidth = DStyle::pixelMetric(PM_TabCloseIndicatorWidth, opt, widget);
-        size += QSize(tabCloseWidth, 0);
-        break;
-    }
     case CT_SpinBox:
         if (qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             size += QSize(size.height() * 2, 0);
@@ -2548,9 +2574,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_TabCloseIndicatorHeight:
         return 20;
     case PM_TabBarTabVSpace:
-        return TabBar_TabMarginHeight * 2;
     case PM_TabBarTabHSpace :
-        return TabBar_TabMarginWidth * 2;
+        return DStyle::pixelMetric(PM_FrameRadius, opt, widget) * 2;
     case PM_TabBarTabOverlap:
         return TabBar_TabOverlap;
     case PM_TabBarBaseOverlap:
@@ -2559,7 +2584,11 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_TabBarTabShiftVertical:
         return 0;
     case PM_TabBarScrollButtonWidth:
-        return 40;
+        // DTabBar有自己的scroll按钮，需要隐藏QTabBar的按钮
+        if (widget && qobject_cast<DTabBar*>(widget->parent()))
+            return 0;
+
+        return DStyle::pixelMetric(PM_ButtonMinimizedSize, opt, widget);
     case PM_MenuScrollerHeight:
         return 10 + Metrics::Frame_FrameWidth ;
     case PM_MenuPanelWidth:
