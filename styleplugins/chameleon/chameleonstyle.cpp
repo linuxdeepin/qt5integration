@@ -1973,11 +1973,14 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
 
                 //pen.color 默认进来就是高亮色Highlight
                 if (!isNoticks(slider, p, w)) {
-                    pen.setColor(getColor(opt, QPalette::Foreground));
+                    QColor color = getColor(opt, QPalette::Foreground);
+                    color.setAlphaF(0.5);
+                    pen.setColor(color);
                     p->setPen(pen);
                 }
 
                 QColor color = getColor(opt, QPalette::Foreground);  //绘画的右侧/上侧的滑槽颜色一定是灰
+                color.setAlphaF(0.5);
 
                 if (slider->orientation == Qt::Horizontal) {
                     p->drawLine(QPointF(rectGroove.left(), rectHandle.center().y()), QPointF(rectHandle.left(), rectHandle.center().y()));
