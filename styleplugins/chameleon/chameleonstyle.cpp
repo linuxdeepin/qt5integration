@@ -2711,6 +2711,8 @@ void ChameleonStyle::polish(QWidget *w)
                 handle.setEnableBlurWindow(true);
                 handle.setWindowRadius(8);
                 w->setAttribute(Qt::WA_TranslucentBackground);
+
+                connect(DWindowManagerHelper::instance(), SIGNAL(hasCompositeChanged()), w, SLOT(update()));
             }
         } else if (is_tip) {
             DPlatformWindowHandle handle(w);
