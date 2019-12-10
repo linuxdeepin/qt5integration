@@ -1753,13 +1753,14 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
 
         if (opt->state & State_Horizontal) {
             // designer: whatever how big the QHeaderView it is, the arrow size is fixed.
-            int horiz_size = 8;
-            int vert_size = 5;
+            // size the same as the arrow in combobox. PM_MenuButtonIndicator
+            int horiz_size = 12;
+            int vert_size = 12;
             rect.setRect(x + w - margin * 2 - horiz_size, y + (h - vert_size) / 2,
                       horiz_size, vert_size);
         } else {
-            int horiz_size = 5;
-            int vert_size = 8;
+            int horiz_size = 12;
+            int vert_size = 12;
             rect.setRect(x + (w - horiz_size) / 2, y + h - margin * 2 - vert_size,
                       horiz_size, vert_size);
         }
