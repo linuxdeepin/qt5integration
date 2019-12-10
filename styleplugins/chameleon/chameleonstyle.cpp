@@ -939,7 +939,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
         // fill background
         QColor color(opt->palette.color(QPalette::Base));
-        color = DGuiApplicationHelper::adjustColor(color, 0, 0, -5, 0, 0, 0, 0);
+//        color = DGuiApplicationHelper::adjustColor(color, 0, 0, -5, 0, 0, 0, 0);
         p->fillRect(opt->rect, QBrush(color));
 
         QColor lineColor(opt->palette.color(QPalette::Base));
