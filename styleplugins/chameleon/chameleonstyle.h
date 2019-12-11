@@ -90,7 +90,7 @@ private:
 public:
 #ifndef QT_NO_ANIMATION
     dstyle::DStyleAnimation *animation(const QObject *target) const;
-    void startAnimation(dstyle::DStyleAnimation *animation) const;
+    void startAnimation(dstyle::DStyleAnimation *animation, int delay = 0) const;
     void _q_removeAnimation();
 #endif
 

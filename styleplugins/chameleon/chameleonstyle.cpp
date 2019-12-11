@@ -332,6 +332,67 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         return;
     case CE_ScrollBarSlider: {
         if (const QStyleOptionSlider* scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            if (opt->styleObject) {
+                bool ok = false;
+                int prevValue = opt->styleObject->property("_d_slider_value").toInt(&ok);
+                auto *animation = qobject_cast<dstyle::DScrollbarStyleAnimation*>(this->animation(opt->styleObject));
+                // 上一次的状态是显示还是隐藏
+                bool prevVisible = opt->styleObject->property("_d_slider_visible").toBool();
+
+                // 判断是否应当进入动画流程
+                if ((!ok || prevValue == scrollBar->sliderValue) && !(opt->state & QStyle::State_MouseOver)) {
+                    bool disable_animation = opt->styleObject->property("_d_disable_animation").toBool();
+
+                    if (!disable_animation) {
+                        if (!animation) {
+                            // 更新值的记录
+                            opt->styleObject->setProperty("_d_slider_value", scrollBar->sliderValue);
+                            // 如果之前是未显示，应当继续保持隐藏状态
+                            if (!prevVisible)
+                                return;
+
+                            animation = new dstyle::DScrollbarStyleAnimation(dstyle::DScrollbarStyleAnimation::Deactivating, opt->styleObject);
+                            // 将滚动条标记为进入隐藏状态
+                            opt->styleObject->setProperty("_d_slider_visible", false);
+                            // 开始动画
+                            startAnimation(animation);
+                        } else {
+                            p->setOpacity(animation->currentValue());
+                        }
+                    }
+                } else {
+                    if (!prevVisible) {
+                        // 标记为显示状态
+                        opt->styleObject->setProperty("_d_slider_visible", true);
+                    }
+
+                    // 启动进入动画的定时器
+                    QTimer *animation_timer = opt->styleObject->findChild<QTimer*>("_d_animation_timer");
+
+                    if (!animation_timer) {
+                        animation_timer = new QTimer(opt->styleObject);
+                        animation_timer->setObjectName("_d_animation_timer");
+                        // 超时后自动销毁
+                        connect(animation_timer, &QTimer::timeout, opt->styleObject, [animation_timer] {
+                            animation_timer->parent()->setProperty("_d_disable_animation", false);
+                            // 更新控件
+                            if (QWidget *w = qobject_cast<QWidget*>(animation_timer->parent())) {
+                                w->update();
+                            }
+                        });
+                    }
+
+                    // 更新值的记录
+                    opt->styleObject->setProperty("_d_slider_value", scrollBar->sliderValue);
+                    opt->styleObject->setProperty("_d_disable_animation", true);
+                    // 1秒后尝试进入到动画状态
+                    animation_timer->start(1000);
+
+                    if (animation)
+                        animation->deleteLater();
+                }
+            }
+
             p->setBrush(getColor(opt, QPalette::Highlight));
             p->setPen(Qt::NoPen);
             p->setRenderHint(QPainter::Antialiasing);
@@ -340,65 +401,18 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int realRadius = 0;
 
             if (opt->state & QStyle::State_Horizontal) {
-                rectHand.setHeight(0);
                 if (opt->state & QStyle::State_MouseOver)
                     rectHand.setHeight(rect.height());
-
-                static bool bLeaveHor = false;  //动画效果
-                if (w) {
-                    bool ok = false;
-                    int prevValue = w->property("_d_dtk_slider_value").toInt(&ok);
-                    const_cast<QWidget*>(w)->setProperty("_d_dtk_slider_value", scrollBar->sliderValue);
-                    bool transient = !scrollBar->activeSubControls && !(scrollBar->state & State_On);
-
-                    if (ok && prevValue != scrollBar->sliderValue)
-                        rectHand.setHeight(rect.height() / 2);
-
-                    if (!transient) {
-                        bLeaveHor = true;
-                        rectHand.setHeight(rect.height());
-                    }
-
-                    if (transient && bLeaveHor) {
-                        bLeaveHor = false;
-                        dstyle::DScrollbarStyleAnimation* anim = new dstyle::DScrollbarStyleAnimation(dstyle::DScrollbarStyleAnimation::Deactivating, scrollBar->styleObject);
-                        if (anim) {
-                            startAnimation(anim);
-                            rectHand.setHeight(rect.height() / 2);
-                        }
-                    }
-                }
+                else
+                    rectHand.setHeight(rect.height() / 2);
 
                 realRadius = rectHand.height() / 2.0;
             } else {
                 rectHand.setWidth(0);
                 if (opt->state & QStyle::State_MouseOver)
                     rectHand.setWidth(rect.width());
-
-                static bool bLeaveVer = false;  //------动画效果开始制作------//是否 箭头从scrollBar上面离开
-                if (w) {
-                    bool ok = false;
-                    int prevValue = w->property("_d_dtk_slider_value").toInt(&ok);
-                    const_cast<QWidget*>(w)->setProperty("_d_dtk_slider_value", scrollBar->sliderValue);
-                    bool transient = !scrollBar->activeSubControls && !(scrollBar->state & State_On);  //没有被激活
-
-                    if (ok && prevValue != scrollBar->sliderValue) //中键在滚动，但是没有在scrollBar上面
-                        rectHand.setWidth(rect.width() / 2);
-
-                    if (!transient) { //处于激活态
-                        bLeaveVer = true;
-                        rectHand.setWidth(rect.width());
-                    }
-
-                    if (transient && bLeaveVer) { //处于离开状态
-                        bLeaveVer = false;
-                        dstyle::DScrollbarStyleAnimation* anim = new dstyle::DScrollbarStyleAnimation(dstyle::DScrollbarStyleAnimation::Deactivating, scrollBar->styleObject);
-                        if (anim) {
-                            startAnimation(anim);
-                            rectHand.setWidth(rect.width() / 2);
-                        }
-                    }
-                }
+                else
+                    rectHand.setWidth(rect.width() / 2);
 
                 realRadius = rectHand.width() / 2.0;
             }
@@ -1485,12 +1499,18 @@ dstyle::DStyleAnimation *ChameleonStyle::animation(const QObject *target) const
     return animations.value(target);
 }
 
-void ChameleonStyle::startAnimation(dstyle::DStyleAnimation *animation) const
+void ChameleonStyle::startAnimation(dstyle::DStyleAnimation *animation, int delay) const
 {
-    connect(animation, SIGNAL(destroyed(QObject*)), SLOT(_q_removeAnimation()), Qt::UniqueConnection);
+    connect(animation, &dstyle::DStyleAnimation::destroyed,
+            this, &ChameleonStyle::_q_removeAnimation, Qt::UniqueConnection);
 
     animations.insert(animation->target(), animation);
-    animation->start();
+
+    if (delay > 0) {
+        QTimer::singleShot(delay, animation, SLOT(start()));
+    } else {
+        animation->start();
+    }
 }
 
 void ChameleonStyle::_q_removeAnimation()
