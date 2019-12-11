@@ -1625,7 +1625,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         bool ignoreCheckMark = false;
 
         int frameRadius = DStyle::pixelMetric(PM_FrameRadius);  //打钩矩形的左侧距离item的左边缘； 也是 打钩矩形的右侧距离 图文内容的左边缘
-        int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, option, widget);//打钩的宽度
+        int smallIconSize = proxy()->pixelMetric(PM_ButtonIconSize, option, widget);//打钩的宽度
         int realMargins = smallIconSize + 2 * frameRadius;  //左侧固定预留的margin，无论是否能够打钩都要预留
 
         if (!ignoreCheckMark) {
