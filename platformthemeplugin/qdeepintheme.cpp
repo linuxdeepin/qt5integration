@@ -265,7 +265,11 @@ public:
             // QIcon::pixmap() multiplies size by the device pixel ratio.
             const int integerScale = qCeil(arg.scale);
             QIconLoaderEngineEntry *entry = engine->entryForSize(arg.size / integerScale, integerScale);
+            // 先禁用缩放，因为此size是已经缩放过的
+            bool useHighDpiPixmap = qGuiApp->testAttribute(Qt::AA_UseHighDpiPixmaps);
+            qGuiApp->setAttribute(Qt::AA_UseHighDpiPixmaps, false);
             arg.pixmap = entry ? pixmapByEntry(entry, arg.size, arg.mode, arg.state) : QPixmap();
+            qGuiApp->setAttribute(Qt::AA_UseHighDpiPixmaps, useHighDpiPixmap);
             DEEPIN_QT_THEME::colorScheme.setLocalData(QString());
 
             return;

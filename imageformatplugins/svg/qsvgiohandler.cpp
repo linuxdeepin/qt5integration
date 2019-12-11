@@ -179,6 +179,7 @@ bool QSvgIOHandler::read(QImage *image)
                 *image = QImage(finalSize, QImage::Format_ARGB32_Premultiplied);
                 image->fill(d->backColor.rgba());
                 QPainter p(image);
+                p.setRenderHints(QPainter::SmoothPixmapTransform);
                 d->r.render(&p, bounds);
                 p.end();
             }
