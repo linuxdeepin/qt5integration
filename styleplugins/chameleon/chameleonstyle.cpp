@@ -1587,7 +1587,9 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
                     c = Qt::white;
                     c.setAlphaF(0.4);
                 } else {
-                    c = DGuiApplicationHelper::adjustColor(c, 0, 0, -10, 0, 0, 0, 0);
+                    //在深色背景下,为了处理QComboBox的ListView的背景色和menuItem的背景色不一致的问题,加一个判断
+                    if (qobject_cast<QMenu*>(option->styleObject))
+                        c = DGuiApplicationHelper::adjustColor(c, 0, 0, -10, 0, 0, 0, 0);
                     c.setAlphaF(0.8);
                 }
             }
