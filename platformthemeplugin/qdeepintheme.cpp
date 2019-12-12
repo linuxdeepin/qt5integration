@@ -612,10 +612,18 @@ static bool updateScreenScaleFactors(DThemeSettings *s, const QByteArray &value,
     }
 
     QHighDpiScaling::updateHighDpiScaling();
+#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
     qDebug() << QHighDpiScaling::logicalDpi();
+#else
+    qDebug() << QHighDpiScaling::logicalDpi(QGuiApplication::primaryScreen());
+#endif
     updateScaleLogcailDpi(s->scaleLogicalDpi());
 
+#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
     qDebug() << QHighDpiScaling::logicalDpi();
+#else
+    qDebug() << QHighDpiScaling::logicalDpi(QGuiApplication::primaryScreen());
+#endif
 
     return true;
 }
