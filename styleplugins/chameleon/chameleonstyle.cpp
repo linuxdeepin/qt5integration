@@ -673,6 +673,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 QIcon::Mode mode = button->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
                 if (mode == QIcon::Normal && button->state & State_HasFocus)
                     mode = QIcon::Active;
+                if (mode == QIcon::Normal && button->state & State_On)
+                    mode = QIcon::Selected;
                 QIcon::State state = QIcon::Off;
                 if (button->state & State_On)
                     state = QIcon::On;
@@ -1493,6 +1495,8 @@ void ChameleonStyle::drawIcon(const QStyleOption *opt, QPainter *p, QRect& rect,
     bool selected = opt->state & State_Selected && enabled;
     QIcon::Mode mode = !enabled ? QIcon::Disabled : (selected ? QIcon::Selected : QIcon::Normal);
 
+    if (mode == QIcon::Normal && opt->state & State_On)
+        mode = QIcon::Selected;
     icon.paint(p, rect, Qt::AlignCenter, mode, checked ? QIcon::On : QIcon::Off);
 }
 
