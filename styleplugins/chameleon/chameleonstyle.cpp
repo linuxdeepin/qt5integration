@@ -521,6 +521,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
             QStyleOptionButton btn;
             btn.rect = tab->rect;
+            btn.rect.adjust(TabBar_TabMargin / 2, 0, -(TabBar_TabMargin / 2), 0);
             btn.state = tab->state;
 
             if (tab->state & QStyle::State_Selected) {
@@ -528,7 +529,9 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             }
 
             DStyle::drawControl(CE_PushButtonBevel, &btn, p, w);
-            proxy()->drawControl(CE_TabBarTabLabel, opt, p, w);
+            QStyleOptionTab* newTab = const_cast<QStyleOptionTab *>(tab);
+            newTab->rect.adjust(TabBar_TabMargin / 2, 0, -(TabBar_TabMargin / 2), 0);
+            proxy()->drawControl(CE_TabBarTabLabel, newTab, p, w);
             return;
         }
         break;
@@ -2411,7 +2414,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             button.text = tab->text;
             size = DStyle::sizeFromContents(QStyle::CT_PushButton, &button, tab->fontMetrics.size(0, tab->text), widget);
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
-            size.rwidth() += 2 * frame_radius + proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget);
+            size.rwidth() += 2 * frame_radius + proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget) + TabBar_TabMargin;
         }
         Q_FALLTHROUGH();
     }

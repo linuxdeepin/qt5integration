@@ -142,6 +142,7 @@ enum Metrics
     TabBar_TabItemSpacing = 8,
     TabBar_TabOverlap = 0,
     TabBar_BaseOverlap = 0,
+    TabBar_TabMargin = 10,
 
     // tab widget
     TabWidget_MarginWidth = 4,
