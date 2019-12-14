@@ -418,6 +418,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             }
 
             rectHand.moveCenter(QRectF(rect).center());
+            p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
             p->setBrush(getColor(opt, QPalette::Button));
             p->drawRoundedRect(rectHand, realRadius, realRadius);
         }
