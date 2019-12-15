@@ -2656,7 +2656,7 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
     case SH_TabBar_PreferNoArrows:
         return false;
     case SH_ComboBox_Popup:
-        return true;
+        return false;
     case SH_ComboBox_PopupFrameStyle:
         return true;
     case SH_Slider_AbsoluteSetButtons:
