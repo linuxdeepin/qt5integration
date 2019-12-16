@@ -758,8 +758,11 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             QPointF pointStart(rect.left(), rect.center().y());
             QPointF pointEnd(rect.right(), rect.center().y());
             QLinearGradient linear(pointStart, pointEnd);
-            linear.setColorAt(0, getColor(opt, DPalette::DarkLively, w));
-            linear.setColorAt(1, getColor(opt, DPalette::LightLively, w));
+
+            QColor startColor = getColor(opt, DPalette::Highlight);
+            QColor endColor = DGuiApplicationHelper::adjustColor(startColor, 0, 0, +30, 0, 0, 0, 0);
+            linear.setColorAt(0, startColor);
+            linear.setColorAt(1, endColor);
             linear.setSpread(QGradient::PadSpread);
 
             QStyleOptionProgressBar subopt = *progBar;
@@ -777,8 +780,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     case CE_ProgressBarGroove: {  //滑槽显示
         int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
         int height = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)->orientation == Qt::Horizontal ? opt->rect.height() : opt->rect.width();
-        if (frameRadius >= height) {
-            frameRadius = height / 2;
+        if (frameRadius * 2 >= height) {
+            frameRadius = qMin(height / 2, 4);
         }
         p->setBrush(getColor(opt, DPalette::Button));
         p->drawRoundedRect(opt->rect, frameRadius, frameRadius);
@@ -793,8 +796,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int drawWidth = 0;
             int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
             int height = progBar->orientation == Qt::Horizontal ? rect.height() : rect.width();
-            if (frameRadius >= height) {
-                frameRadius = height / 2;
+            if (frameRadius * 2 >= height) {
+                frameRadius = qMin(height / 2, 4);
             }
 
             if (progBar->orientation == Qt::Horizontal) {
