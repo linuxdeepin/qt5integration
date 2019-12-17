@@ -22,3 +22,6 @@ HEADERS += \
     $$PWD/common.h \
     $$PWD/chameleonstyle.h \
     $$PWD/../dstyleplugin/dstyleanimation.h
+
+RESOURCES += \
+    resources.qrc

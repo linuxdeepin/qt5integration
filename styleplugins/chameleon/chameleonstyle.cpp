@@ -453,7 +453,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         break;
     }
     case CE_MenuEmptyArea: {
-        drawMenuItemBackground(opt, p);
+        drawMenuItemBackground(opt, p, QStyleOptionMenuItem::EmptyArea);
         return;
     }
     case CE_MenuScroller: {
@@ -1570,12 +1570,29 @@ bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &
     return true;
 }
 
-void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter *painter) const
+void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter *painter, QStyleOptionMenuItem::MenuItemType type) const
 {
     QBrush color;
 
     if ((option->state & QStyle::State_Enabled) && option->state & QStyle::State_Selected) {
         color = option->palette.highlight();
+
+        // draw shadow
+        if (type == QStyleOptionMenuItem::Normal) {
+            if (option->styleObject) {
+                QRect shadow(0, 0, option->rect.width(), 7);
+                shadow.moveTop(option->rect.bottom() + 1);
+                option->styleObject->setProperty("_d_menu_shadow_rect", shadow);
+                option->styleObject->setProperty("_d_menu_shadow_base_rect", option->rect);
+
+                // 确保阴影区域能重绘
+                if (QWidget *w = qobject_cast<QWidget*>(option->styleObject)) {
+                    w->update(shadow);
+                }
+            }
+        }
+
+        painter->fillRect(option->rect, color);
     } else {
         color = option->palette.background().color();
 
@@ -1597,9 +1614,51 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
 
             color = c;
         }
-    }
 
-    painter->fillRect(option->rect, color);
+        painter->fillRect(option->rect, color);
+
+        // 绘制上一个item的阴影
+        if (!option->styleObject) {
+            return;
+        }
+
+        const QRect shadow = option->styleObject->property("_d_menu_shadow_rect").toRect();
+
+        if (shadow.isEmpty())
+            return;
+
+        // 如果当前要绘制的item是触发阴影绘制的那一项，那么，此时应当清空阴影区域
+        if (option->styleObject->property("_d_menu_shadow_base_rect").toRect() == option->rect) {
+            // 清空阴影区域
+            option->styleObject->setProperty("_d_menu_shadow_rect", QVariant());
+            option->styleObject->setProperty("_d_menu_shadow_base_rect", QVariant());
+
+            // 确保阴影区域能重绘
+            if (QWidget *w = qobject_cast<QWidget*>(option->styleObject)) {
+                w->update(shadow);
+            }
+        }
+
+        // 判断阴影rect是否在自己的区域
+        if (!option->rect.contains(shadow.center()))
+            return;
+
+        static QColor shadow_color;
+        static QPixmap shadow_pixmap;
+
+        if (shadow_color != option->palette.color(QPalette::Active, QPalette::Highlight)) {
+            shadow_color = option->palette.color(QPalette::Active, QPalette::Highlight);
+            QImage image(":/chameleon/menu_shadow.svg");
+            QPainter pa(&image);
+            pa.setCompositionMode(QPainter::CompositionMode_SourceIn);
+            pa.fillRect(image.rect(), shadow_color);
+            shadow_pixmap = QPixmap::fromImage(image);
+        }
+
+        if (!shadow_pixmap.isNull()) {
+            painter->drawPixmap(shadow, shadow_pixmap);
+        }
+    }
 }
 
 bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *painter, const QWidget *widget) const
@@ -1629,7 +1688,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         }
 
         //绘制背景
-        drawMenuItemBackground(option, painter);
+        drawMenuItemBackground(option, painter, menuItem->menuItemType);
 
         //绘制选择框
         bool ignoreCheckMark = false;
