@@ -201,7 +201,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             p->setBrush(Qt::NoBrush);
 
             QIcon icon = QIcon::fromTheme("checked");
-            icon.paint(p, standard.toRect());
+            icon.paint(p, opt->rect.adjusted(-1, -1, 1, 1));
         } else {
             DDrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
         }
@@ -1903,11 +1903,18 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         re.adjust(-margin, -margin, margin, margin);
         return re;
     }
+    case SE_RadioButtonClickRect:
+    case SE_CheckBoxClickRect: {
+        QRect re = DStyle::subElementRect(SE_CheckBoxIndicator, opt, widget);
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            int spacing = proxy()->pixelMetric(PM_CheckBoxLabelSpacing, opt, widget);
+            re.setWidth(re.width() + widget->fontMetrics().width(btn->text) + spacing * 2);
+        }
+        return re;
+    }
     case SE_RadioButtonIndicator:
     case SE_RadioButtonContents:
-    case SE_RadioButtonClickRect:
     case SE_CheckBoxContents:
-    case SE_CheckBoxClickRect:
     case SE_CheckBoxIndicator:
         if (const QStyleOptionButton *vopt = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             QStyleOptionButton option(*vopt);
