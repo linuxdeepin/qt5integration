@@ -2758,6 +2758,13 @@ void ChameleonStyle::polish(QWidget *w)
         view->viewport()->setAttribute(Qt::WA_Hover, true);
     }
 
+    if (auto listview = qobject_cast<QListView *>(w)) {
+        if (listview->parentWidget() == nullptr) {
+            DPlatformWindowHandle handle(listview);
+            handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
+        }
+    }
+
     if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, false);
     }
