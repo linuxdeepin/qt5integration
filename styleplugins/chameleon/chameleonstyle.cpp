@@ -266,6 +266,10 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_FrameGroupBox: {
+        if (auto group_opt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
+            if (group_opt->features & QStyleOptionFrame::Flat)
+                return;
+        }
         DStyleOptionBackgroundGroup option;
         option.init(w);
         option.position = DStyleOptionBackgroundGroup::OnlyOne;
