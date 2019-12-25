@@ -675,14 +675,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             if (!button->icon.isNull()) {
                 //Center both icon and text
                 QRect iconRect;
-                QIcon::Mode mode = button->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
-                if (mode == QIcon::Normal && button->state & State_HasFocus)
-                    mode = QIcon::Active;
-                if (mode == QIcon::Normal && button->state & State_On)
-                    mode = QIcon::Selected;
-                QIcon::State state = QIcon::Off;
-                if (button->state & State_On)
-                    state = QIcon::On;
 
                 int pixmapWidth = button->iconSize.width();
                 int pixmapHeight = button->iconSize.height();
@@ -710,7 +702,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     iconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, w),
                                        proxy()->pixelMetric(PM_ButtonShiftVertical, opt, w));
 
-                button->icon.paint(p, iconRect, Qt::AlignCenter, mode, state);
+                auto icon_mode_state = toIconModeState(opt);
+                button->icon.paint(p, iconRect, Qt::AlignCenter, icon_mode_state.first, icon_mode_state.second);
             } else {
                 tf |= Qt::AlignHCenter;
             }
