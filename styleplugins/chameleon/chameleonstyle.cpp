@@ -91,12 +91,16 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             p->setBrush(lg);
         }
 
-        p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
+        p->setPen(Qt::NoPen);
         p->setRenderHint(QPainter::Antialiasing);
-
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-
         p->drawRoundedRect(opt->rect - margins, frame_radius, frame_radius);
+
+        // draw border，border应该是完全叠加到按钮的背景上
+        p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
+        p->setBrush(Qt::NoBrush);
+        const QMarginsF border_margins(Metrics::Painter_PenWidth, Metrics::Painter_PenWidth, Metrics::Painter_PenWidth, Metrics::Painter_PenWidth);
+        p->drawRoundedRect(QRectF(opt->rect) - margins - border_margins / 2.0, frame_radius, frame_radius);
 
         return;
     }
