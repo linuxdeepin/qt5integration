@@ -2084,17 +2084,19 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 color.setAlphaF(0.5);
 
                 if (slider->orientation == Qt::Horizontal) {
-                    p->drawLine(QPointF(rectGroove.left(), rectHandle.center().y()), QPointF(rectHandle.left(), rectHandle.center().y()));
+                    qreal rectWidth = rectHandle.width() / 2.0;
+                    p->drawLine(QPointF(rectGroove.left() + rectWidth, rectHandle.center().y()), QPointF(rectHandle.left(), rectHandle.center().y()));
 
                     pen.setColor(color);
                     p->setPen(pen);
-                    p->drawLine(QPointF(rectGroove.right(), rectHandle.center().y()), QPointF(rectHandle.right(), rectHandle.center().y()));
+                    p->drawLine(QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()), QPointF(rectHandle.right(), rectHandle.center().y()));
                 } else {
-                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom()), QPointF(rectGroove.center().x(),  rectHandle.bottom()));
+                    qreal rectWidth = rectHandle.height() / 2.0;
+                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - rectWidth), QPointF(rectGroove.center().x(),  rectHandle.bottom()));
 
                     pen.setColor(color);
                     p->setPen(pen);
-                    p->drawLine(QPointF(rectGroove.center().x(),  rectGroove.top()), QPointF(rectGroove.center().x(),  rectHandle.top()));
+                    p->drawLine(QPointF(rectGroove.center().x(),  rectGroove.top()  + rectWidth), QPointF(rectGroove.center().x(),  rectHandle.top()));
                 }
             }
 
