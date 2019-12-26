@@ -27,15 +27,15 @@
         <file>texts/mark_indicator_12px.svg</file>
         <file>texts/fork_indicator_24px.svg</file>
         <file>texts/lock_indicator_24px.svg</file>
-        <file>texts/selected_indicator_16px.svg</file>
         <file>texts/unlock_indicator_24px.svg</file>
-        <file>texts/unselected_indicator_16px.svg</file>
         <file>texts/window-close_round_30px.svg</file>
         <file>texts/search_indicator_36px.svg</file>
         <file>texts/unchecked_20px.svg</file>
         <file>texts/checked_20px.svg</file>
         <file>texts/next_indicator_24px.svg</file>
         <file>texts/prev_indicator_24px.svg</file>
+        <file>texts/selected_indicator_30px.svg</file>
+        <file>texts/unselected_indicator_30px.svg</file>
     </qresource>
     <qresource prefix="/icons/deepin/builtin/light">
         <file alias="icons/button_edit-clear_30px.svg/normal.svg">icons/light/edit-clear_30px.svg</file>
