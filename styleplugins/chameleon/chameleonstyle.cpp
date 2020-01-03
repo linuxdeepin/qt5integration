@@ -1577,8 +1577,29 @@ bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &
 void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter *painter, QStyleOptionMenuItem::MenuItemType type) const
 {
     QBrush color;
+    bool selected = (option->state & QStyle::State_Enabled) && option->state & QStyle::State_Selected;
 
-    if ((option->state & QStyle::State_Enabled) && option->state & QStyle::State_Selected) {
+    // 清理旧的阴影
+    if (option->styleObject) {
+        const QRect shadow = option->styleObject->property("_d_menu_shadow_rect").toRect();
+        const QRect shadow_base = option->styleObject->property("_d_menu_shadow_base_rect").toRect();
+
+        // 如果当前菜单项时已选中的，并且shadow_base不等于当前区域，此时应当清理阴影区域
+        // 如果当前要绘制的item是触发阴影绘制的那一项，那么，此时应当清空阴影区域
+        if ((selected && shadow_base != option->rect)
+                || (!selected && shadow_base == option->rect)) {
+            // 清空阴影区域
+            option->styleObject->setProperty("_d_menu_shadow_rect", QVariant());
+            option->styleObject->setProperty("_d_menu_shadow_base_rect", QVariant());
+
+            // 确保阴影区域能重绘
+            if (QWidget *w = qobject_cast<QWidget*>(option->styleObject)) {
+                w->update(shadow);
+            }
+        }
+    }
+
+    if (selected) {
         color = option->palette.highlight();
 
         // draw shadow
@@ -1621,27 +1642,11 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
 
         painter->fillRect(option->rect, color);
 
-        // 绘制上一个item的阴影
-        if (!option->styleObject) {
+        if (!option->styleObject)
             return;
-        }
 
+        // 为上一个item绘制阴影
         const QRect shadow = option->styleObject->property("_d_menu_shadow_rect").toRect();
-
-        if (shadow.isEmpty())
-            return;
-
-        // 如果当前要绘制的item是触发阴影绘制的那一项，那么，此时应当清空阴影区域
-        if (option->styleObject->property("_d_menu_shadow_base_rect").toRect() == option->rect) {
-            // 清空阴影区域
-            option->styleObject->setProperty("_d_menu_shadow_rect", QVariant());
-            option->styleObject->setProperty("_d_menu_shadow_base_rect", QVariant());
-
-            // 确保阴影区域能重绘
-            if (QWidget *w = qobject_cast<QWidget*>(option->styleObject)) {
-                w->update(shadow);
-            }
-        }
 
         // 判断阴影rect是否在自己的区域
         if (!option->rect.contains(shadow.center()))
