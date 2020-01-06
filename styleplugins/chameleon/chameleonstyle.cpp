@@ -784,7 +784,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         if (frameRadius * 2 >= height) {
             frameRadius = qMin(height / 2, 4);
         }
-        p->setBrush(getColor(opt, DPalette::Button));
+        p->setBrush(getColor(opt, DPalette::ObviousBackground, w));
         p->drawRoundedRect(opt->rect, frameRadius, frameRadius);
         return;
     }
