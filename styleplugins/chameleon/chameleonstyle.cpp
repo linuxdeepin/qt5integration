@@ -2079,8 +2079,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
 
                 //pen.color 默认进来就是高亮色Highlight
                 if (!isNoticks(slider, p, w)) {
-                    QColor color = getColor(opt, QPalette::Foreground);
-                    color.setAlphaF(0.5);
+                    QColor color = getColor(opt, DPalette::ObviousBackground, w);
                     pen.setColor(color);
                     p->setPen(pen);
                 }
