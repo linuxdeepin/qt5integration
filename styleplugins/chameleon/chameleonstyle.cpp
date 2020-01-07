@@ -2085,8 +2085,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                     p->setPen(pen);
                 }
 
-                QColor color = getColor(opt, QPalette::Foreground);  //绘画的右侧/上侧的滑槽颜色一定是灰
-                color.setAlphaF(0.5);
+                QColor color = getColor(opt, DPalette::ObviousBackground, w);  //绘画的右侧/上侧的滑槽颜色一定是灰
 
                 if (slider->orientation == Qt::Horizontal) {
                     qreal rectWidth = rectHandle.width() / 2.0;
