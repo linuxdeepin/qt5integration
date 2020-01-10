@@ -51,6 +51,7 @@
 #include <QBitmap>
 #include <QSpinBox>
 #include <QTableView>
+#include <DTreeView>
 #include <private/qcombobox_p.h>
 
 #include <qdrawutil.h>
@@ -302,6 +303,27 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_FrameTabBarBase: return;
+    case PE_IndicatorBranch: {
+        // tree
+        QRect rect = DStyle::subElementRect(SE_HeaderArrow, opt, w);
+        int rect_width = rect.width();
+        int rect_height = rect.height();
+        rect.setWidth(rect_width > rect_height ? rect_width : rect_height);
+        rect.setHeight(rect_width > rect_height ? rect_width: rect_height);
+        rect.moveCenter(opt->rect.center());
+
+        if (opt->state & State_Children) {
+            if (!(opt->state & State_Open)) {
+                DStyle::standardIcon(SP_ArrowRight, opt, w).paint(p, rect);
+                return;
+            }
+            DStyle::standardIcon(SP_ArrowDown, opt, w).paint(p, rect);
+        }
+        return;
+    }
+    case PE_PanelItemViewRow: {
+        return;
+    }
     default:
         break;
     }
@@ -2522,6 +2544,10 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     }
     case CT_ItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+            if (auto tree = qobject_cast<const DTreeView *>(widget)) {
+                return QSize(opt->rect.width(), DStyle::pixelMetric(DStyle::PM_ButtonMinimizedSize));
+            }
+
             const QMargins &item_margins = qvariant_cast<QMargins>(vopt->index.data(Dtk::MarginsRole));
 
             if (!item_margins.isNull()) {
