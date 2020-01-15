@@ -105,7 +105,7 @@ enum Metrics
 
     // scrollbars
     ScrollBar_Extend = 12,
-    ScrollBar_SliderWidth = 15,
+    ScrollBar_SliderWidth = 16,
     ScrollBar_MinSliderHeight = 40,
     ScrollBar_NoButtonHeight = (ScrollBar_Extend-ScrollBar_SliderWidth)/2,
     ScrollBar_SingleButtonHeight = ScrollBar_Extend,

@@ -431,23 +431,25 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int realRadius = 0;
 
             if (opt->state & QStyle::State_Horizontal) {
-                if (opt->state & QStyle::State_MouseOver)
-                    rectHand.setHeight(rect.height());
-                else
-                    rectHand.setHeight(rect.height() / 2);
+                rect.setHeight(rect.height() / 2);
+                rectHand.setHeight(rect.height());
+
+                if (!(opt->state & QStyle::State_MouseOver))
+                    rectHand.setHeight(rectHand.height() - 2);
 
                 realRadius = rectHand.height() / 2.0;
             } else {
-                rectHand.setWidth(0);
-                if (opt->state & QStyle::State_MouseOver)
-                    rectHand.setWidth(rect.width());
-                else
-                    rectHand.setWidth(rect.width() / 2);
+                rect.setWidth(rect.width() / 2);
+                rectHand.setWidth(rect.width());
+
+                if (!(opt->state & QStyle::State_MouseOver))
+                    rectHand.setWidth(rectHand.width() - 2);
 
                 realRadius = rectHand.width() / 2.0;
             }
 
-            rectHand.moveCenter(QRectF(rect).center());
+            rect.moveCenter(scrollBar->rect.center());
+            rectHand.moveCenter(scrollBar->rect.center());
             p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
             p->setBrush(getColor(opt, QPalette::Button));
             p->drawRoundedRect(rectHand, realRadius, realRadius);
@@ -2655,9 +2657,9 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     }
     case CT_ScrollBar: {
         if (size.width() > size.height())
-            size.setHeight(size.height() / 2.0);
+            size.setHeight(ScrollBar_SliderWidth);
         if (size.width() < size.height())
-            size.setWidth(size.width() / 2.0);
+            size.setWidth(ScrollBar_SliderWidth);
         return size;
     }
     case CT_RadioButton:
