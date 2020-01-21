@@ -800,19 +800,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             }
 
             p->setPen(Qt::NoPen);
-            QPointF pointStart(rect.left(), rect.center().y());
-            QPointF pointEnd(rect.right(), rect.center().y());
-            QLinearGradient linear(pointStart, pointEnd);
-
-            QColor startColor = getColor(opt, DPalette::Highlight);
-            QColor endColor = DGuiApplicationHelper::adjustColor(startColor, 0, 0, +30, 0, 0, 0, 0);
-            linear.setColorAt(0, startColor);
-            linear.setColorAt(1, endColor);
-            linear.setSpread(QGradient::PadSpread);
-
             QStyleOptionProgressBar subopt = *progBar;
             subopt.rect = proxy()->subElementRect(SE_ProgressBarContents, progBar, w);
-            subopt.palette.setBrush(QPalette::ColorRole::Highlight, QBrush(linear));
             proxy()->drawControl(CE_ProgressBarContents, &subopt, p, w);
 
             if (progBar->textVisible && progBar->orientation == Qt::Horizontal) {
@@ -834,6 +823,9 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     }
     case CE_ProgressBarContents: { //进度滑块显示
         if (const QStyleOptionProgressBar *progBar =  qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
+            QStyleOptionProgressBar* progBarTemp = const_cast<QStyleOptionProgressBar *>(progBar);
+            progBarTemp->state &= (~State_MouseOver);
+            progBarTemp = nullptr;
             QRect rect = progBar->rect;   //滑块区域矩形
             int min = progBar->minimum;
             int max = progBar->maximum;
@@ -853,7 +845,15 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 rect = QRect(rect.left(), rect.bottom() - drawWidth, rect.width(), drawWidth);
             }
 
-            p->setBrush(opt->palette.brush(QPalette::ColorRole::Highlight));
+            QPointF pointStart(rect.left(), rect.center().y());
+            QPointF pointEnd(rect.right(), rect.center().y());
+            QLinearGradient linear(pointStart, pointEnd);
+            QColor startColor = getColor(opt, DPalette::Highlight);
+            QColor endColor = DGuiApplicationHelper::adjustColor(startColor, 0, 0, +30, 0, 0, 0, 0);
+            linear.setColorAt(0, startColor);
+            linear.setColorAt(1, endColor);
+            linear.setSpread(QGradient::PadSpread);
+            p->setBrush(QBrush(linear));
 
             if (progBar->textVisible) {
                 QPainterPath pathRect;
