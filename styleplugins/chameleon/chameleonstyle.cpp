@@ -129,6 +129,26 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                 p->setBrush(getColor(opt, QPalette::Highlight));
                 p->setRenderHint(QPainter::Antialiasing);
                 p->drawRoundedRect(select_rect, frame_radius, frame_radius);
+
+                if (auto tree = qobject_cast<const QTreeView *>(w)) {
+                    //tree列总数
+                    int column = tree->model()->columnCount();
+                    if (column == 1)
+                        return;
+
+                    QRectF additional = opt->rect;
+                    additional.adjust(0, 1, 0, -1);
+
+                    if (vopt->index.column() == 0) {
+                        additional.setX(additional.width());
+                        p->drawRect(additional);
+                    } else if (vopt->index.column() == column - 1) {
+                        additional.setWidth(opt->rect.width() / 2);
+                        p->drawRect(additional);
+                    } else {
+                        p->drawRect(vopt->rect.adjusted(0, 1, 0, -1));
+                    }
+                }
             }
 
             return;
