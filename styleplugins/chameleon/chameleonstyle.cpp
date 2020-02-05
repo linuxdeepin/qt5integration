@@ -2566,10 +2566,6 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     }
     case CT_ItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
-            if (auto tree = qobject_cast<const DTreeView *>(widget)) {
-                return QSize(opt->rect.width(), DStyle::pixelMetric(DStyle::PM_ButtonMinimizedSize));
-            }
-
             const QMargins &item_margins = qvariant_cast<QMargins>(vopt->index.data(Dtk::MarginsRole));
 
             if (!item_margins.isNull()) {
