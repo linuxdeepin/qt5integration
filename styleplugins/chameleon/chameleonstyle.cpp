@@ -2070,7 +2070,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, w);
             label.rect = button.adjusted(fw, fw, -fw, -fw);
 
-            if (w->property("_d_calendarToolBtn").toBool()) {
+            if (w && w->property("_d_calendarToolBtn").toBool()) {
                 label.palette.setColor(QPalette::ButtonText, QPalette::Highlight);
             }
 
