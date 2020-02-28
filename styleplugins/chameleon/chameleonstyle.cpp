@@ -1484,7 +1484,7 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
 void ChameleonStyle::drawSliderHandle(const QStyleOptionComplex *opt, QRectF& rectHandle, QPainter *p, const QWidget *w) const
 {
     if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-        const DSlider *dslider = qobject_cast<const DSlider *>(w->parent());
+        const DSlider *dslider = qobject_cast<const DSlider *>(w);
         QSlider::TickPosition tickPosition = slider->tickPosition;
 
         if (dslider)
@@ -2971,7 +2971,7 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
 bool ChameleonStyle::isNoticks(const QStyleOptionSlider *slider, QPainter *p, const QWidget *w) const
 {
     Q_UNUSED(p)
-    const DSlider *dslider = qobject_cast<const DSlider *>(w->parent());
+    const DSlider *dslider = qobject_cast<const DSlider *>(w);
     QSlider::TickPosition tickPosition = slider->tickPosition;
 
     if (dslider)
