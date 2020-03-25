@@ -591,12 +591,20 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     }
     case CE_RubberBand: {
         if (qstyleoption_cast<const QStyleOptionRubberBand *>(opt)) {
+            p->save();
             QColor color = opt->palette.highlight().color();
             color.setAlphaF(0.1);
-            p->setBrush(color);
+
+            // draw rectangle
+            p->setRenderHint(QPainter::Antialiasing, false);
+            p->fillRect(opt->rect, color);
+
+            // draw inner border
+            // 保证border绘制在矩形内部，且不超越了矩形范围
             color.setAlphaF(0.2);
-            p->setPen(QPen(color, 1));
-            p->drawRect(opt->rect.adjusted(0, 0, -1, -1));
+            p->setClipRegion(QRegion(opt->rect) - opt->rect.adjusted(1, 1, -1, -1));
+            p->fillRect(opt->rect, color);
+            p->restore();
             return;
         }
         break;
