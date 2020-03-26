@@ -52,6 +52,8 @@
 #include <QSpinBox>
 #include <QTableView>
 #include <DTreeView>
+#include <DIconButton>
+#include <DTabBar>
 #include <private/qcombobox_p.h>
 
 #include <qdrawutil.h>
@@ -574,14 +576,50 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
             QStyleOptionButton btn;
             btn.rect = tab->rect;
-            btn.rect.adjust(TabBar_TabMargin / 2, 0, -(TabBar_TabMargin / 2), 0);
+            bool type_check = w->property("_d_dtk_tabbartab_type").toBool();
+
+            if (!type_check) {
+                btn.rect.adjust(TabBar_TabMargin / 2, 0, -(TabBar_TabMargin / 2), 0);
+            }
             btn.state = tab->state;
 
             if (tab->state & QStyle::State_Selected) {
                 btn.state |= QStyle::State_On;
             }
 
-            DStyle::drawControl(CE_PushButtonBevel, &btn, p, w);
+            if (type_check) {
+                QColor inactive;
+                if (btn.state & State_On) {
+                    inactive = getColor(opt, QPalette::ToolTipBase);
+
+                    if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::DarkType) {
+                        inactive = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::ToolTipBase), 0, 0, 0, -10, -10, -10, 0);
+                    }
+
+                    p->setBrush(inactive);
+                } else {
+                    // 初始化 tabbar 的背景色
+                    if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::LightType) {
+                        inactive = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Light), 0, 0, 0, +20, +20, +20, 0);
+                    } else if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::DarkType) {
+                        inactive = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Light), 0, 0, 0, -57, -57, -57, 0);
+                    }
+
+                    p->setBrush(inactive);
+                }
+
+                p->setPen(Qt::NoPen);
+                p->setRenderHint(QPainter::Antialiasing);
+                p->drawRect(opt->rect);
+
+                // 绘制边框线
+                p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
+                p->setBrush(Qt::NoBrush);
+                p->drawRect(opt->rect);
+            } else {
+                DStyle::drawControl(CE_PushButtonBevel, &btn, p, w);
+            }
+
             QStyleOptionTab* newTab = const_cast<QStyleOptionTab *>(tab);
             newTab->rect.adjust(TabBar_TabMargin / 2, 0, -(TabBar_TabMargin / 2), 0);
             proxy()->drawControl(CE_TabBarTabLabel, newTab, p, w);
@@ -1164,6 +1202,7 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         return false;
 
     bool isTriangularMode = false;
+    bool type_check = widget->property("_d_dtk_tabbartab_type").toBool();
     bool selected = tab->state & State_Selected && tab->state & State_Enabled;
 
     switch (tab->shape) {
@@ -1187,14 +1226,14 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         }
     }
 
+    QStyleOptionTab newTab = *tab;
+
     if (selected) {
-        QStyleOptionTab newTab = *tab;
         newTab.palette.setBrush(QPalette::WindowText, getColor(tab, isTriangularMode ? QPalette::BrightText : QPalette::HighlightedText));
 
         if (visible_close_button) {
             QRect tr = proxy()->subElementRect(SE_TabBarTabText, tab, widget);
             QRect text_rect = tab->fontMetrics.boundingRect(tr, Qt::AlignCenter | Qt::TextShowMnemonic, tab->text);
-
             int close_button_width = proxy()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth, tab, widget);
             qreal stop = qreal(tr.right() - close_button_width - text_rect.x() - 5) / text_rect.width();
 
@@ -1223,6 +1262,10 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
 
         // 禁止QCommonStyle中绘制默认的焦点颜色
         newTab.state &= ~QStyle::State_HasFocus;
+
+        if (type_check) {
+            newTab.palette.setBrush(QPalette::WindowText, getColor(tab, QPalette::Highlight));
+        }
         QCommonStyle::drawControl(CE_TabBarTabLabel, &newTab, painter, widget);
 
         if (tab->state & QStyle::State_HasFocus) {
@@ -1231,7 +1274,21 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
             proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
         }
     } else {
-        QCommonStyle::drawControl(CE_TabBarTabLabel, tab, painter, widget);
+        if (type_check) {
+            newTab.palette.setBrush(QPalette::WindowText, QColor("#798190"));
+        }
+
+        if (auto btn = widget->findChild<DIconButton*>("rightButton")) {
+            if (!(qobject_cast<const DTabBar *>(widget)->expanding())) {
+                int tabX = newTab.rect.x();
+                int tabWidth = tabX + newTab.rect.width();
+                tabWidth += widget->findChild<QTabBar *>()->height();
+                if (btn->isVisible() && (tabX < btn->pos().x() && btn->pos().x() < tabWidth))
+                    return true;
+                }
+        }
+
+        QCommonStyle::drawControl(CE_TabBarTabLabel, &newTab, painter, widget);
     }
 
     return true;
