@@ -1751,6 +1751,12 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
 
         painter->fillRect(option->rect, color);
 
+        if (type == QStyleOptionMenuItem::Separator) {
+            DGuiApplicationHelper *guiAppHelp = DGuiApplicationHelper::instance();
+            QColor colorSeparator =  getColor(option, DPalette::ItemBackground, nullptr);
+            painter->fillRect(option->rect, colorSeparator);
+        }
+
         if (!option->styleObject)
             return;
 
@@ -1790,6 +1796,9 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         bool checked = menuItem->checked;
         bool sunken = menuItem->state & State_Sunken;
 
+        //绘制背景
+        drawMenuItemBackground(option, painter, menuItem->menuItemType);
+
         //绘制分段
         if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
             if (!menuItem->text.isEmpty()) {
@@ -1804,9 +1813,6 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
             return true;
         }
-
-        //绘制背景
-        drawMenuItemBackground(option, painter, menuItem->menuItemType);
 
         //绘制选择框
         bool ignoreCheckMark = false;
