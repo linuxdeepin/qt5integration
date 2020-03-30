@@ -39,6 +39,8 @@
 ****************************************************************************/
 
 #include <QtWidgets>
+#include <QTreeView>
+#include <QFileSystemModel>
 
 #include "norwegianwoodstyle.h"
 #include "widgetgallery.h"
@@ -279,7 +281,20 @@ void WidgetGallery::createBottomLeftTabWidget()
 
     bottomLeftTabWidget->addTab(tab1, tr("&Table"));
     bottomLeftTabWidget->addTab(tab2, tr("Text &Edit"));
-    bottomLeftTabWidget->addTab(new QWidget(), "tab 1");
+
+    QWidget *pTreeViewWidget = new QWidget;
+    QFileSystemModel *model = new QFileSystemModel;
+    model->setRootPath(QDir::currentPath());
+    QHBoxLayout *pTabLayout = new QHBoxLayout;
+    pTabLayout->setMargin(0);
+    pTabLayout->setMargin(0);
+    pTreeViewWidget->setLayout(pTabLayout);
+
+    QTreeView *tree = new QTreeView;
+    tree->setModel(model);
+    pTabLayout->addWidget(tree);
+
+    bottomLeftTabWidget->addTab(pTreeViewWidget, "&TreeView");
     bottomLeftTabWidget->addTab(new QWidget(), "tab 2");
     bottomLeftTabWidget->addTab(new QWidget(), "tab 3");
     bottomLeftTabWidget->addTab(new QWidget(), "tab 4");

@@ -108,6 +108,11 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_FrameFocusRect: {
+        //设计要求QTreeView选中整行，这里不绘制focus rect
+        if (qobject_cast<const QTreeView *>(w)) {
+            return;
+        }
+
         if (w && w->property("_d_dtk_noFocusRect").toBool())
             return;
 
@@ -115,6 +120,11 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_PanelItemViewItem: {
+        //如果是QTreeView则使用DStyle的默认绘制
+        if (qobject_cast<const QTreeView *>(w)) {
+            break;
+        }
+
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
 
@@ -131,26 +141,6 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                 p->setBrush(getColor(opt, QPalette::Highlight));
                 p->setRenderHint(QPainter::Antialiasing);
                 p->drawRoundedRect(select_rect, frame_radius, frame_radius);
-
-                if (auto tree = qobject_cast<const QTreeView *>(w)) {
-                    //tree列总数
-                    int column = tree->model()->columnCount();
-                    if (column == 1)
-                        return;
-
-                    QRectF additional = opt->rect;
-                    additional.adjust(0, 1, 0, -1);
-
-                    if (vopt->index.column() == 0) {
-                        additional.setX(additional.width());
-                        p->drawRect(additional);
-                    } else if (vopt->index.column() == column - 1) {
-                        additional.setWidth(opt->rect.width() / 2);
-                        p->drawRect(additional);
-                    } else {
-                        p->drawRect(vopt->rect.adjusted(0, 1, 0, -1));
-                    }
-                }
             }
 
             return;
@@ -336,14 +326,35 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         if (opt->state & State_Children) {
             if (!(opt->state & State_Open)) {
+                p->save();
+
+                //在选中时进行反白处理
+                if (opt->state & State_Selected) {
+                    p->setPen(QColor(Qt::white));
+                }
+
                 DStyle::standardIcon(SP_ArrowRight, opt, w).paint(p, rect);
+                p->restore();
                 return;
             }
+
+            p->save();
+
+            //在选中时进行反白处理
+            if (opt->state & State_Selected) {
+                p->setPen(QColor(Qt::white));
+            }
+
             DStyle::standardIcon(SP_ArrowDown, opt, w).paint(p, rect);
+            p->restore();
         }
         return;
     }
     case PE_PanelItemViewRow: {
+        //如果是QTreeView则使用DStyle的默认绘制
+        if (qobject_cast<const QTreeView *>(w)) {
+            break;
+        }
         return;
     }
     default:
