@@ -166,7 +166,17 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->setPen(Qt::NoPen);
         p->setRenderHints(QPainter::Antialiasing);
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-        p->drawRoundedRect(opt->rect - frameExtentMargins(), frame_radius, frame_radius);
+
+        if (DSpinBox *box = static_cast<DSpinBox*>(w->parentWidget())) {
+            if (box->property("_d_dtk_spinBox").toBool()) {
+                DDrawUtils::drawRoundedRect(p, opt->rect, frame_radius, frame_radius,
+                                        DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
+            } else {
+                p->drawRoundedRect(opt->rect - frameExtentMargins(), frame_radius, frame_radius);
+            }
+        } else {
+            p->drawRoundedRect(opt->rect - frameExtentMargins(), frame_radius, frame_radius);
+        }
 
         if (w && w->parent() && (
                     qobject_cast<const QComboBox *>(w->parent())
@@ -2312,20 +2322,41 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         buttonOpt.rect = subRect;
         updateSpinBoxButtonState(opt, buttonOpt, upIsActive, upIsEnabled);
         bool isPlusMinus = opt->buttonSymbols & QAbstractSpinBox::PlusMinus;
-        proxy()->drawControl(CE_PushButton, &buttonOpt, painter, widget);
+
+        if (widget->property("_d_dtk_spinBox").toBool()) {
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(buttonOpt.palette.color(QPalette::Button));
+            DDrawUtils::drawRoundedRect(painter, subRect.adjusted(-2, -1, 0, 0), borderRadius, borderRadius,
+                                                DDrawUtils::TopRightCorner);
+
+            painter->setPen(getColor(opt, DPalette::FrameBorder, widget));
+            painter->drawLine(subRect.x() - 2, subRect.y() - 1, subRect.x() - 2, subRect.y() - 1 + subRect.height());
+        } else {
+            proxy()->drawControl(CE_PushButton, &buttonOpt, painter, widget);
+        }
 
         if (isPlusMinus) {
             buttonOpt.rect -= frameExtentMargins();
             QRectF plusRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
             QRectF cent_rect(0, 0, plusRect.width() / 2, plusRect.width() / 2);
             cent_rect.moveCenter(plusRect.center());
-            DDrawUtils::drawPlus(painter, cent_rect, getColor(opt, QPalette::ButtonText), 1);
+
+            if (opt->activeSubControls == SC_SpinBoxUp) {
+                DDrawUtils::drawPlus(painter, cent_rect, getColor(opt, QPalette::ButtonText), 1);
+            } else {
+                DDrawUtils::drawPlus(painter, cent_rect, buttonOpt.palette.color(QPalette::ButtonText), 1);
+            }
         } else {
             QRect arrowRect = subRect;
             arrowRect.setWidth(arrowRect.width() / 3);
             arrowRect.setHeight(arrowRect.width() / 2);
             arrowRect.moveCenter(subRect.center());
-            DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::UpArrow, 1);
+
+            if (opt->activeSubControls == SC_SpinBoxUp) {
+                DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::UpArrow, 1);
+            } else {
+                DDrawUtils::drawArrow(painter, arrowRect, buttonOpt.palette.color(QPalette::ButtonText), Qt::ArrowType::UpArrow, 1);
+            }
         }
     }
 
@@ -2337,20 +2368,41 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         buttonOpt.rect = subRect;
         updateSpinBoxButtonState(opt, buttonOpt, downIsActive, downIsEnabled);
         bool isPlusMinus = opt->buttonSymbols & QAbstractSpinBox::PlusMinus;
-        proxy()->drawControl(CE_PushButton, &buttonOpt, painter, widget);
+
+        if (widget->property("_d_dtk_spinBox").toBool()) {
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(buttonOpt.palette.color(QPalette::Button));
+            DDrawUtils::drawRoundedRect(painter, subRect.adjusted(-2, 0, 0, +1), borderRadius, borderRadius,
+                                                DDrawUtils::BottomRightCorner);
+            painter->setPen(getColor(opt, DPalette::FrameBorder, widget));
+            painter->drawLine(subRect.x() - 2, subRect.y(), subRect.x() + subRect.width(), subRect.y());
+            painter->drawLine(subRect.x() - 2, subRect.y(), subRect.x() - 2, subRect.y() + subRect.height() + 1);
+        } else {
+            proxy()->drawControl(CE_PushButton, &buttonOpt, painter, widget);
+        }
 
         if (isPlusMinus) {
             buttonOpt.rect -= frameExtentMargins();
             QRectF subtractRect = proxy()->subElementRect(SE_PushButtonContents, &buttonOpt, widget);
             QRectF cent_rect(0, 0, subtractRect.width() / 2, subtractRect.height() / 2);
             cent_rect.moveCenter(subtractRect.center());
-            DDrawUtils::drawSubtract(painter, cent_rect, getColor(opt, QPalette::ButtonText), 1);
+
+            if (opt->activeSubControls == SC_SpinBoxDown) {
+                DDrawUtils::drawSubtract(painter, cent_rect, getColor(opt, QPalette::ButtonText), 1);
+            } else {
+                DDrawUtils::drawSubtract(painter, cent_rect,  buttonOpt.palette.color(QPalette::ButtonText), 1);
+            }
         } else {
             QRect arrowRect = subRect;
             arrowRect.setWidth(arrowRect.width() / 3);
             arrowRect.setHeight(arrowRect.width() / 2);
             arrowRect.moveCenter(subRect.center());
-            DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::DownArrow, 1);
+
+            if (opt->activeSubControls == SC_SpinBoxDown) {
+                DDrawUtils::drawArrow(painter, arrowRect, getColor(opt, QPalette::ButtonText), Qt::ArrowType::DownArrow, 1);
+            } else {
+                DDrawUtils::drawArrow(painter, arrowRect, buttonOpt.palette.color(QPalette::ButtonText), Qt::ArrowType::DownArrow, 1);
+            }
         }
     }
 
@@ -2403,6 +2455,10 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 return spinboxRect;
             }
             case SC_SpinBoxUp: {
+                if (w->property("_d_dtk_spinBox").toBool()) {
+                    break;
+                }
+
                 if (option->buttonSymbols == QAbstractSpinBox::NoButtons)
                     return QRect();
 
@@ -2417,6 +2473,10 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 return buttonRect.marginsRemoved(frameExtentMargins());
             }
             case SC_SpinBoxDown: {
+                if (w->property("_d_dtk_spinBox").toBool()) {
+                    break;
+                }
+
                 if (option->buttonSymbols == QAbstractSpinBox::NoButtons)
                     return QRect();
 
