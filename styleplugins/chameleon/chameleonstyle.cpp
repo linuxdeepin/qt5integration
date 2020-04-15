@@ -120,9 +120,46 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_PanelItemViewItem: {
-        //如果是QTreeView则使用DStyle的默认绘制
+        //QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
-            break;
+            if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+                QPalette::ColorGroup cg = (w ? w->isEnabled() : (vopt->state & QStyle::State_Enabled))
+                                          ? QPalette::Normal : QPalette::Disabled;
+                if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
+                    cg = QPalette::Inactive;
+
+                int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+
+                if (vopt->showDecorationSelected && (vopt->state & (QStyle::State_Selected | QStyle::State_MouseOver))) {
+                    p->setRenderHint(QPainter::Antialiasing, true);
+                    p->setPen(Qt::NoPen);
+                    p->setBrush(vopt->palette.brush(cg, (vopt->state & QStyle::State_Selected) ? QPalette::Highlight : QPalette::Midlight));
+
+                    if ((vopt->state & QStyle::State_Selected) && (vopt->state & QStyle::State_MouseOver)) {
+                        p->setBrush(p->brush().color().lighter(120));
+                    }
+
+                    //只对最后一列的item绘制圆角
+                    if (vopt->viewItemPosition == QStyleOptionViewItem::End || vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne) {
+                        p->drawRoundedRect(vopt->rect.adjusted(-frame_radius, 0, 0, 0), frame_radius, frame_radius);
+                    } else if (vopt->viewItemPosition != QStyleOptionViewItem::Invalid) {
+                        p->drawRoundedRect(vopt->rect.adjusted(-frame_radius, 0, frame_radius, 0), frame_radius, frame_radius);
+                    }
+                } else {
+                    if (vopt->backgroundBrush.style() != Qt::NoBrush) {
+                        QPointF oldBO = p->brushOrigin();
+                        p->setBrushOrigin(vopt->rect.topLeft());
+                        p->fillRect(vopt->rect, vopt->backgroundBrush);
+                        p->setBrushOrigin(oldBO);
+                    }
+
+                    if (vopt->state & QStyle::State_Selected) {
+                        QRect textRect = subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
+                        p->fillRect(textRect, vopt->palette.brush(cg, QPalette::Highlight));
+                    }
+                }
+            }
+            return;
         }
 
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
@@ -361,9 +398,35 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_PanelItemViewRow: {
-        //如果是QTreeView则使用DStyle的默认绘制
+        //这里QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
-            break;
+            if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+                QPalette::ColorGroup cg = (w ? w->isEnabled() : (vopt->state & QStyle::State_Enabled))
+                        ? QPalette::Normal : QPalette::Disabled;
+                if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
+                    cg = QPalette::Inactive;
+
+                int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+
+                if ((vopt->state & (QStyle::State_Selected | QStyle::State_MouseOver)) &&  proxy()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, opt, w)) {
+                    p->setRenderHint(QPainter::Antialiasing, true);
+                    p->setPen(Qt::NoPen);
+                    p->setBrush(vopt->palette.brush(cg, (vopt->state & QStyle::State_Selected) ? QPalette::Highlight : QPalette::Midlight));
+
+                    if ((vopt->state & QStyle::State_Selected) && (vopt->state & QStyle::State_MouseOver)) {
+                        p->setBrush(p->brush().color().lighter(120));
+                    }
+
+                    if (vopt->viewItemPosition != QStyleOptionViewItem::End) {
+                        p->drawRoundedRect(vopt->rect.adjusted(0, 0, frame_radius, 0), frame_radius, frame_radius);
+                    } else if(vopt->viewItemPosition != QStyleOptionViewItem::Invalid){
+                        p->drawRoundedRect(vopt->rect, frame_radius, frame_radius);
+                    }
+                } else if (vopt->features & QStyleOptionViewItem::Alternate) {
+                    p->fillRect(vopt->rect, vopt->palette.brush(cg, QPalette::AlternateBase));
+                }
+            }
+            return;
         }
         return;
     }
