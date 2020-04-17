@@ -620,7 +620,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setBrush(inactive);
                 } else {
                     // 初始化 tabbar 的背景色
-                    if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::LightType) {
+                    if (DGuiApplicationHelper::instance()->paletteType() != DGuiApplicationHelper::DarkType) {
                         inactive = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Light), 0, 0, 0, +20, +20, +20, 0);
                     } else if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::DarkType) {
                         inactive = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Light), 0, 0, 0, -57, -57, -57, 0);
