@@ -49,8 +49,8 @@
 #include <QPaintEngine>
 #include <QAbstractItemView>
 #include <QBitmap>
-#include <QSpinBox>
 #include <QTableView>
+#include <DSpinBox>
 #include <DTreeView>
 #include <DIconButton>
 #include <DTabBar>
