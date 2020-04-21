@@ -1842,8 +1842,12 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
         painter->fillRect(option->rect, color);
 
         if (type == QStyleOptionMenuItem::Separator) {
+            QColor colorSeparator;
             DGuiApplicationHelper *guiAppHelp = DGuiApplicationHelper::instance();
-            QColor colorSeparator =  getColor(option, DPalette::ItemBackground, nullptr);
+            if (guiAppHelp->themeType() == DGuiApplicationHelper::ColorType::DarkType)
+                colorSeparator = QColor(255, 255, 255, 255 * 0.05);
+            else
+                colorSeparator = QColor(0, 0, 0, 255 * 0.1);
             painter->fillRect(option->rect, colorSeparator);
         }
 
