@@ -2500,6 +2500,10 @@ void ChameleonStyle::updateSpinBoxButtonState(const QStyleOptionSpinBox *opt, QS
         buttonState &= ~State_On;
     }
 
+    if (buttonState & State_Sunken) {
+        buttonState &= ~State_HasFocus;
+    }
+
     buttonOpt.state = buttonState;
 }
 
