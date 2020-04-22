@@ -50,6 +50,7 @@
 #include <QAbstractItemView>
 #include <QBitmap>
 #include <QTableView>
+#include <QStyledItemDelegate>
 #include <DSpinBox>
 #include <DTreeView>
 #include <DIconButton>
@@ -128,6 +129,11 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     case PE_PanelItemViewItem: {
         //QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
+            //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
+            if (typeid(*qobject_cast<const QTreeView *>(w)->itemDelegate()) != typeid(QStyledItemDelegate)) {
+                break;
+            }
+
             if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
                 QPalette::ColorGroup cg = (w ? w->isEnabled() : (vopt->state & QStyle::State_Enabled))
                                           ? QPalette::Normal : QPalette::Disabled;
@@ -406,6 +412,11 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     case PE_PanelItemViewRow: {
         //这里QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
+            //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
+            if (typeid(*qobject_cast<const QTreeView *>(w)->itemDelegate()) != typeid(QStyledItemDelegate)) {
+                break;
+            }
+
             if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
                 QPalette::ColorGroup cg = (w ? w->isEnabled() : (vopt->state & QStyle::State_Enabled))
                         ? QPalette::Normal : QPalette::Disabled;
