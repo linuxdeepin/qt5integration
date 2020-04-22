@@ -54,6 +54,7 @@
 #include <DTreeView>
 #include <DIconButton>
 #include <DTabBar>
+#include <DDateTimeEdit>
 #include <private/qcombobox_p.h>
 
 #include <qdrawutil.h>
@@ -115,6 +116,11 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         if (w && w->property("_d_dtk_noFocusRect").toBool())
             return;
+
+        //设计要求DDateTimeEdit focus只绘制边缘
+        if (qobject_cast<const QLineEdit*>(w) && qobject_cast<const DDateTimeEdit *>(w->parentWidget())) {
+            return;
+        }
 
         drawBorder(p, opt, w);
         return;
