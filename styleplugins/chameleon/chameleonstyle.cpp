@@ -29,6 +29,7 @@
 #include <DWindowManagerHelper>
 #include <DSlider>
 #include <DTabBar>
+#include <DSearchEdit>
 
 #include <QLabel>
 #include <QCalendarWidget>
@@ -2154,6 +2155,10 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
     case SE_LineEditContents: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         int left_margins = DStyle::pixelMetric(PM_ContentsMargins, opt, widget);
+
+        if (qobject_cast<DSearchEdit *>(widget->parentWidget()))
+             return opt->rect.adjusted(frame_margins / 2, 0, -left_margins / 2, 0);
+
         return opt->rect.adjusted(frame_margins + left_margins, 0, -(frame_margins + left_margins), 0);
     }
     case SE_RadioButtonFocusRect:
@@ -3089,6 +3094,11 @@ void ChameleonStyle::polish(QWidget *w)
         }
     }
 
+    if (qobject_cast<DSearchEdit *>(w->parentWidget())) {
+        w->setProperty("_d_dtk_lineeditActionWidth", -6);
+        w->setProperty("_d_dtk_lineeditActionMargin", 6);
+    }
+
     if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, false);
     }
@@ -3175,6 +3185,11 @@ void ChameleonStyle::unpolish(QWidget *w)
 
     if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, true);
+    }
+
+    if (qobject_cast<DSearchEdit *>(w->parentWidget())) {
+        w->setProperty("_d_dtk_lineeditActionWidth", QVariant());
+        w->setProperty("_d_dtk_lineeditActionMargin", QVariant());
     }
 }
 
