@@ -571,8 +571,12 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 realRadius = rectHand.width() / 2.0;
             }
 
-            rect.moveCenter(scrollBar->rect.center());
-            rectHand.moveCenter(scrollBar->rect.center());
+            //由于 QRect 计算中心点的策略，此处使用 QRect::center() 不合适，自己计算中心点
+            QPoint scrollBarRectCenter((scrollBar->rect.x() + scrollBar->rect.width()) / 2,
+                              (scrollBar->rect.y() + scrollBar->rect.height()) / 2);
+            rect.moveCenter(scrollBarRectCenter);
+            rectHand.moveCenter(scrollBarRectCenter);
+
             p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
             p->setBrush(getColor(opt, QPalette::Button));
             p->drawRoundedRect(rectHand, realRadius, realRadius);
