@@ -22,7 +22,7 @@ int main()
 {
     QWindow *w = new QWindow();
 
-    DPlatformWindowHandle handle(w);
+    Dtk::Widget::DPlatformWindowHandle handle((QWidget *)w);
 
     handle.setEnableBlurWindow(true);
 
