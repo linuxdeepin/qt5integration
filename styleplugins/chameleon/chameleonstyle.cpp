@@ -552,6 +552,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             QRectF rect = opt->rect;
             QRectF rectHand = rect;
             int realRadius = 0;
+            QPoint scrollBarRectCenter;
 
             if (opt->state & QStyle::State_Horizontal) {
                 rect.setHeight(rect.height() / 2);
@@ -561,6 +562,9 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     rectHand.setHeight(rectHand.height() - 2);
 
                 realRadius = rectHand.height() / 2.0;
+
+                scrollBarRectCenter.setX(scrollBar->rect.x() + scrollBar->rect.width() / 2);
+                scrollBarRectCenter.setY((scrollBar->rect.y() + scrollBar->rect.height()) / 2);
             } else {
                 rect.setWidth(rect.width() / 2);
                 rectHand.setWidth(rect.width());
@@ -569,11 +573,12 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     rectHand.setWidth(rectHand.width() - 2);
 
                 realRadius = rectHand.width() / 2.0;
+
+                scrollBarRectCenter.setX((scrollBar->rect.x() + scrollBar->rect.width()) / 2);
+                scrollBarRectCenter.setY(scrollBar->rect.y() + scrollBar->rect.height() / 2);
             }
 
             //由于 QRect 计算中心点的策略，此处使用 QRect::center() 不合适，自己计算中心点
-            QPoint scrollBarRectCenter((scrollBar->rect.x() + scrollBar->rect.width()) / 2,
-                              (scrollBar->rect.y() + scrollBar->rect.height()) / 2);
             rect.moveCenter(scrollBarRectCenter);
             rectHand.moveCenter(scrollBarRectCenter);
 
