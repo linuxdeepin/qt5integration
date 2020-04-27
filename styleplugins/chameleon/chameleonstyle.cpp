@@ -2316,6 +2316,10 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 QColor color = getColor(opt, DPalette::ObviousBackground, w);  //绘画的右侧/上侧的滑槽颜色一定是灰
 
                 if (slider->orientation == Qt::Horizontal) {
+                    if (w->property("_d_dtk_sldier_across").toBool()) {
+                        pen.setColor(color);
+                        p->setPen(pen);
+                    }
                     qreal rectWidth = rectHandle.width() / 2.0;
                     p->drawLine(QPointF(rectGroove.left() + rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
 
@@ -2323,6 +2327,10 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                     p->setPen(pen);
                     p->drawLine(QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
                 } else {
+                    if (w->property("_d_dtk_sldier_across").toBool()) {
+                        pen.setColor(color);
+                        p->setPen(pen);
+                    }
                     qreal rectWidth = rectHandle.height() / 2.0;
                     p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - rectWidth), QPointF(rectGroove.center().x(),  rectHandle.center().y()));
 
