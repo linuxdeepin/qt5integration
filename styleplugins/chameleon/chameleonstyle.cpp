@@ -726,6 +726,11 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
                 p->setBrush(Qt::NoBrush);
                 p->drawRect(opt->rect);
+                //对tabbar尾后加一根明显的线
+                int lineX = opt->rect.x();
+                int rectW = opt->rect.width();
+                int rectH = opt->rect.height();
+                p->drawLine(lineX, lineX + rectW -1, lineX + rectH, lineX + rectH + rectW -1);
             } else {
                 DStyle::drawControl(CE_PushButtonBevel, &btn, p, w);
             }
@@ -2972,7 +2977,7 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return SpinBox_FrameWidth;
     case PM_TabCloseIndicatorWidth:
     case PM_TabCloseIndicatorHeight:
-        return 20;
+        return 22;
     case PM_TabBarTabVSpace:
     case PM_TabBarTabHSpace :
         return DStyle::pixelMetric(PM_FrameRadius, opt, widget) * 2;
@@ -3189,6 +3194,11 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
     pen.setColor(focus_color);
     p->setPen(pen);
     p->setBrush(Qt::NoBrush);
+
+    if (w->property("_d_dtk_tabbartab_type").toBool()) {
+        p->drawRect(opt->rect.adjusted(-1, 1, 1, -1));
+        return;
+    }
 
     bool table = qobject_cast<const QTableView *>(w);
 
