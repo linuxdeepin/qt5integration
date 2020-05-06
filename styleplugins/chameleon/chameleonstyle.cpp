@@ -684,7 +684,9 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab*>(opt)) {
             QStyleOptionButton btn;
             btn.rect = tab->rect;
-            bool type_check = w->property("_d_dtk_tabbartab_type").toBool();
+            bool type_check = false;
+            if (w)
+               type_check = w->property("_d_dtk_tabbartab_type").toBool();
 
             if (!type_check) {
                 btn.rect.adjust(TabBar_TabMargin / 2, 0, -(TabBar_TabMargin / 2), 0);
@@ -1315,8 +1317,11 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         return false;
 
     bool isTriangularMode = false;
-    bool type_check = widget->property("_d_dtk_tabbartab_type").toBool();
+    bool type_check = false;
     bool selected = tab->state & State_Selected && tab->state & State_Enabled;
+
+    if (widget)
+        type_check = widget->property("_d_dtk_tabbartab_type").toBool();
 
     switch (tab->shape) {
     case QTabBar::TriangularNorth:
@@ -2319,7 +2324,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 QColor color = getColor(opt, DPalette::ObviousBackground, w);  //绘画的右侧/上侧的滑槽颜色一定是灰
 
                 if (slider->orientation == Qt::Horizontal) {
-                    if (w->property("_d_dtk_sldier_across").toBool()) {
+                    if (w && w->property("_d_dtk_sldier_across").toBool()) {
                         pen.setColor(color);
                         p->setPen(pen);
                     }
@@ -2330,7 +2335,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                     p->setPen(pen);
                     p->drawLine(QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
                 } else {
-                    if (w->property("_d_dtk_sldier_across").toBool()) {
+                    if (w && w->property("_d_dtk_sldier_across").toBool()) {
                         pen.setColor(color);
                         p->setPen(pen);
                     }
@@ -2427,7 +2432,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         updateSpinBoxButtonState(opt, buttonOpt, upIsActive, upIsEnabled);
         bool isPlusMinus = opt->buttonSymbols & QAbstractSpinBox::PlusMinus;
 
-        if (widget->property("_d_dtk_spinBox").toBool()) {
+        if (widget && widget->property("_d_dtk_spinBox").toBool()) {
             painter->setPen(Qt::NoPen);
             painter->setBrush(buttonOpt.palette.color(QPalette::Button));
             DDrawUtils::drawRoundedRect(painter, subRect.adjusted(-2, -1, 0, 0), borderRadius, borderRadius,
@@ -2473,7 +2478,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         updateSpinBoxButtonState(opt, buttonOpt, downIsActive, downIsEnabled);
         bool isPlusMinus = opt->buttonSymbols & QAbstractSpinBox::PlusMinus;
 
-        if (widget->property("_d_dtk_spinBox").toBool()) {
+        if (widget && widget->property("_d_dtk_spinBox").toBool()) {
             painter->setPen(Qt::NoPen);
             painter->setBrush(buttonOpt.palette.color(QPalette::Button));
             DDrawUtils::drawRoundedRect(painter, subRect.adjusted(-2, 0, 0, +1), borderRadius, borderRadius,
@@ -2563,7 +2568,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 return spinboxRect;
             }
             case SC_SpinBoxUp: {
-                if (w->property("_d_dtk_spinBox").toBool()) {
+                if (w && w->property("_d_dtk_spinBox").toBool()) {
                     break;
                 }
 
@@ -2581,7 +2586,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 return buttonRect.marginsRemoved(frameExtentMargins());
             }
             case SC_SpinBoxDown: {
-                if (w->property("_d_dtk_spinBox").toBool()) {
+                if (w && w->property("_d_dtk_spinBox").toBool()) {
                     break;
                 }
 
@@ -3193,7 +3198,7 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
     p->setPen(pen);
     p->setBrush(Qt::NoBrush);
 
-    if (w->property("_d_dtk_tabbartab_type").toBool()) {
+    if (w && w->property("_d_dtk_tabbartab_type").toBool()) {
         p->drawRect(opt->rect.adjusted(-1, 1, 1, -1));
         return;
     }
