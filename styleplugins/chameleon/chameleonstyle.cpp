@@ -550,41 +550,39 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             p->setPen(Qt::NoPen);
             p->setRenderHint(QPainter::Antialiasing);
             QRectF rect = opt->rect;
-            QRectF rectHand = rect;
             int realRadius = 0;
             QPoint scrollBarRectCenter;
+            int spacing = DStyle::pixelMetric(DStyle::PM_FocusBorderSpacing);
 
             if (opt->state & QStyle::State_Horizontal) {
                 rect.setHeight(rect.height() / 2);
-                rectHand.setHeight(rect.height());
+                rect = rect.adjusted(spacing, 0, -spacing, 0);
 
                 if (!(opt->state & QStyle::State_MouseOver))
-                    rectHand.setHeight(rectHand.height() - 2);
+                    rect.setHeight(rect.height() - 2);
 
-                realRadius = rectHand.height() / 2.0;
+                realRadius = rect.height() / 2.0;
 
                 scrollBarRectCenter.setX(scrollBar->rect.x() + scrollBar->rect.width() / 2);
                 scrollBarRectCenter.setY((scrollBar->rect.y() + scrollBar->rect.height()) / 2);
             } else {
                 rect.setWidth(rect.width() / 2);
-                rectHand.setWidth(rect.width());
+                rect = rect.adjusted(0, spacing, 0, -spacing);
 
                 if (!(opt->state & QStyle::State_MouseOver))
-                    rectHand.setWidth(rectHand.width() - 2);
+                    rect.setWidth(rect.width() - 2);
 
-                realRadius = rectHand.width() / 2.0;
+                realRadius = rect.width() / 2.0;
 
                 scrollBarRectCenter.setX((scrollBar->rect.x() + scrollBar->rect.width()) / 2);
                 scrollBarRectCenter.setY(scrollBar->rect.y() + scrollBar->rect.height() / 2);
             }
 
-            //由于 QRect 计算中心点的策略，此处使用 QRect::center() 不合适，自己计算中心点
             rect.moveCenter(scrollBarRectCenter);
-            rectHand.moveCenter(scrollBarRectCenter);
 
             p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
             p->setBrush(getColor(opt, QPalette::Button));
-            p->drawRoundedRect(rectHand, realRadius, realRadius);
+            p->drawRoundedRect(rect, realRadius, realRadius);
         }
         break;
     }
