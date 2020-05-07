@@ -115,6 +115,11 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             return;
         }
 
+        //QListView不需要绘制focus rect
+        if (qobject_cast<const QListView*>(w)) {
+            return;
+        }
+
         if (w && w->property("_d_dtk_noFocusRect").toBool())
             return;
 
