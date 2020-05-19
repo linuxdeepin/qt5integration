@@ -445,6 +445,12 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             }
             return;
         }
+
+        //QListView采取DStyle的默认绘制
+        if (qobject_cast<const QListView*>(w)) {
+            break;
+        }
+
         return;
     }
     default:
