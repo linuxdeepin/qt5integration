@@ -2003,8 +2003,8 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
             if (const QComboBox *combo = qobject_cast<const QComboBox *>(widget))
                 iconSize = combo->iconSize();
 #endif
-
-            QRect pmr(menuRect.x() + realMargins, menuRect.center().y() - smallIconSize / 2, iconSize.width(), iconSize.height());
+            //计算icon的绘制区域(icon需要居中显示)
+            QRect pmr(menuRect.x() + realMargins, menuRect.center().y() - iconSize.height() / 2, iconSize.width(), iconSize.height());
             drawIcon(option, painter, pmr, option->icon, checked);
 
         }
