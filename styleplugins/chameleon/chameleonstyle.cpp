@@ -973,7 +973,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
             p->setPen(Qt::NoPen);
             QStyleOptionProgressBar subopt = *progBar;
-            subopt.rect = proxy()->subElementRect(SE_ProgressBarContents, progBar, w);
             proxy()->drawControl(CE_ProgressBarContents, &subopt, p, w);
 
             if (progBar->textVisible && progBar->orientation == Qt::Horizontal) {
@@ -1043,7 +1042,9 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     case CE_ProgressBarLabel: {
         if (const QStyleOptionProgressBar *progBar =  qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             double val = progBar->progress * 1.0 / (progBar->maximum - progBar->minimum);
-            int drawWidth = val * opt->rect.width();
+            int radius = DStyle::pixelMetric(PM_FrameRadius);
+            int drawWidth = val * (opt->rect.width() + 2 * radius);
+
             QRect rect = progBar->fontMetrics.boundingRect(progBar->rect, progBar->textAlignment, progBar->text);
 
             if (rect.left() <= drawWidth && drawWidth <= rect.right()) {
