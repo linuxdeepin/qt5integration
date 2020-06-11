@@ -512,7 +512,7 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
         // fallback
     default: {
         // TODO: move this bare number comparison to some more human friendly form.
-        if ((unsigned int)(element) == QStyle::CE_CustomBase + 1024) {
+        if (static_cast<unsigned int>(element) == QStyle::CE_CustomBase + 1024) {
             fcn = &Style::drawSliderTickmarkLabels;
         }
     }

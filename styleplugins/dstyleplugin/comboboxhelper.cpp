@@ -49,6 +49,7 @@ bool Style::drawComboBox(const QStyleOptionComplex *option, QPainter *painter, c
     // rect and palette
     const QRect& rect( option->rect );
     const QPalette& palette( option->palette );
+    Q_UNUSED(palette)
 
     // state
     const bool editable( comboBoxOption->editable );

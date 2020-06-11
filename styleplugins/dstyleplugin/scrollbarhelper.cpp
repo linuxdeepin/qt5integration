@@ -155,7 +155,7 @@ bool Style::drawScrollBarSliderControl(const QStyleOption *option, QPainter *pai
                 oldMin != scrollBar->minimum ||
                 oldMax != scrollBar->maximum ||
                 oldRect != scrollBar->rect ||
-                oldState != scrollBar->state ||
+                oldState != static_cast<int>(scrollBar->state) ||
                 oldActiveControls != scrollBar->activeSubControls) {
 
             // if the scrollbar is transient or its attributes, geometry or
