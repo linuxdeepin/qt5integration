@@ -33,6 +33,7 @@ DWIDGET_USE_NAMESPACE
 #include <QStyleOptionTabBarBase>
 #include <QStyleOptionToolButton>
 #include <QPainter>
+#include <QPainterPath>
 #include <QToolButton>
 #include <QLinearGradient>
 #include <QDebug>
