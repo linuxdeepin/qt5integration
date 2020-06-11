@@ -20,6 +20,7 @@
 #include "painterhelper.h"
 
 #include <QPainter>
+#include <QPainterPath>
 #include <QTabWidget>
 #include <QDebug>
 

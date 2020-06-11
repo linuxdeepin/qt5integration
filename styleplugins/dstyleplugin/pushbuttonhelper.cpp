@@ -30,6 +30,7 @@
 
 #include <QDebug>
 #include <QStyleOptionButton>
+#include <QPainterPath>
 
 DWIDGET_USE_NAMESPACE
 

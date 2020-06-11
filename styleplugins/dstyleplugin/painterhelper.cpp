@@ -18,6 +18,7 @@
 #include "painterhelper.h"
 
 #include <QPainter>
+#include <QPainterPath>
 #include <QDebug>
 
 namespace dstyle {
