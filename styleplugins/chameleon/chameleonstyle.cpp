@@ -2577,7 +2577,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
 
                 int rightBorder = option->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, opt, w) * 2 : 0;
                 QRect spinboxRect = option->rect;
-                QRect dButtonRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, w);
+                QRect dButtonRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w);
                 spinboxRect.setRight(dButtonRect.left() - rightBorder - frameExtentMargins().left());
                 return spinboxRect;
             }
@@ -2595,8 +2595,11 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 if (opt->rect.width() < rectHeight * 3)
                     break;
 
-                QRect buttonRect(option->rect.topLeft(), QSize(rectHeight, rectHeight)); //按高度计算
-                buttonRect.moveRight(option->rect.right());
+                QRect uButtonRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, w);
+                QRect buttonRect = option->rect;
+                buttonRect.setLeft(uButtonRect.left() - rectHeight);
+                buttonRect.setRight(uButtonRect.left());
+                buttonRect.setSize(QSize(rectHeight, rectHeight));
                 return buttonRect.marginsRemoved(frameExtentMargins());
             }
             case SC_SpinBoxDown: {
@@ -2613,11 +2616,8 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 if (opt->rect.width() < rectHeight * 3)
                     break;
 
-                QRect uButtonRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w);
-                QRect buttonRect = option->rect;
-                buttonRect.setLeft(uButtonRect.left() - rectHeight);
-                buttonRect.setRight(uButtonRect.left());
-                buttonRect.setSize(QSize(rectHeight, rectHeight));
+                QRect buttonRect(option->rect.topLeft(), QSize(rectHeight, rectHeight)); //按高度计算
+                buttonRect.moveRight(option->rect.right());
                 return buttonRect.marginsRemoved(frameExtentMargins());
             }
             case SC_SpinBoxFrame: {
