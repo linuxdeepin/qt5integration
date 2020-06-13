@@ -1916,6 +1916,10 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
         }
 
         if (!shadow_pixmap.isNull()) {
+            if (QMenu *menu = qobject_cast<QMenu *>(option->styleObject)) {
+                if (!menu->geometry().contains(QCursor::pos()))
+                    return;
+            }
             painter->drawPixmap(shadow, shadow_pixmap);
         }
     }
