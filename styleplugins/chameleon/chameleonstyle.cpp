@@ -3090,9 +3090,10 @@ void ChameleonStyle::polish(QWidget *w)
     }
 
     if (auto container = qobject_cast<QComboBoxPrivateContainer *>(w)) {
-        DPlatformWindowHandle handle(container);
-        handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
-
+        if (DWindowManagerHelper::instance()->hasComposite()) {
+            DPlatformWindowHandle handle(container);
+            handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
+        }
         container->setFrameStyle(QFrame::NoFrame);
     }
 
