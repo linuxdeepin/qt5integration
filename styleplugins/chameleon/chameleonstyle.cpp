@@ -1375,7 +1375,9 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
     if (selected) {
         newTab.palette.setBrush(QPalette::WindowText, getColor(tab, isTriangularMode ? QPalette::BrightText : QPalette::HighlightedText));
 
-        if (visible_close_button) {
+        // 拖拽的tab不需要绘制渐变到透明，因为没有关闭按钮。拖拽标签时是生成图片 QPaintDevice 是 QPixMap
+        bool is_moving_tab = painter->device()->devType() != QInternal::Widget;
+        if (visible_close_button && !is_moving_tab) {
             QRect tr = proxy()->subElementRect(SE_TabBarTabText, tab, widget);
             QRect text_rect = tab->fontMetrics.boundingRect(tr, Qt::AlignCenter | Qt::TextShowMnemonic, tab->text);
             int close_button_width = proxy()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth, tab, widget);
