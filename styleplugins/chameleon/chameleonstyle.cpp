@@ -416,6 +416,13 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_PanelItemViewRow: {
+        //更改日历Saturday　Sunday　活动色改变时跟随
+        if (QCalendarWidget *calend = qobject_cast<QCalendarWidget *>(w->parentWidget())) {
+            QTextCharFormat fmt;
+            fmt.setForeground(QBrush(getColor(opt, DPalette::Highlight)));
+            calend->setWeekdayTextFormat(Qt::Saturday, fmt);
+            calend->setWeekdayTextFormat(Qt::Sunday, fmt);
+        }
         //这里QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
             //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
@@ -1127,6 +1134,12 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
                 if (toolbutton->state & (State_MouseOver | State_Sunken))   //hover状态 、press状态
                     p->setBrush(getColor(toolbutton, DPalette::Button));
+
+                //强制绘制　日历　左右翻页背景
+                if (w->objectName() == "qt_calendar_prevmonth"
+                        || w->objectName() == "qt_calendar_nextmonth") {
+                    p->setBrush(getColor(toolbutton, DPalette::Button));
+                }
 
                 p->drawRoundedRect(rect, radius, radius);
 
@@ -2304,7 +2317,25 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 QStyleOptionToolButton newBtn = *toolbutton;
                 newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() - mbi + 4, mbi - 6, mbi - 6);
                 newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
+
+                //DelayedPopup 模式，箭头右居中, 加一个日历 月按钮箭头居中
+                if (toolbutton->features & QStyleOptionToolButton::PopupDelay || (w && w->objectName() == "qt_calendar_monthbutton")) {
+                    newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() / 2, mbi - 6, mbi - 6);
+                    newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
+                }
+
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, w);
+            }
+
+            //日历　年按钮 特制
+            if (w && w->objectName() == "qt_calendar_yearbutton") {
+                 QStyleOptionToolButton newBtn = *toolbutton;
+                 int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, w);
+                 QRect ir = toolbutton->rect;
+
+                 newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() / 2, mbi - 6, mbi - 6);
+                 newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
+                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, w);
             }
         }
         return;
@@ -3128,6 +3159,12 @@ void ChameleonStyle::polish(QWidget *w)
     if (w->objectName() == "qt_calendar_yearbutton"
                         || w->objectName() == "qt_calendar_monthbutton") {
         w->setProperty("_d_calendarToolBtn", true);
+    }
+
+    if (w->objectName() == "qt_calendar_prevmonth"
+            || w->objectName() == "qt_calendar_nextmonth") {
+        int btnWidget = DStyle::pixelMetric(DStyle::PM_ButtonMinimizedSize);
+        w->setMinimumSize(btnWidget, btnWidget);
     }
 
     if (DApplication::isDXcbPlatform()) {
