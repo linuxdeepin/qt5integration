@@ -18,7 +18,7 @@
 #include "style.h"
 
 #include <QStyleOption>
-#include <QStyleOptionProgressBarV2>
+#include <QStyleOptionProgressBar>
 #include <QPainter>
 #include <QPainterPath>
 #include <QDebug>
@@ -34,7 +34,7 @@ bool Style::drawProgressBarControl(const QStyleOption *option, QPainter *painter
     if( !progressBarOption ) return false;
 
     // render groove
-    QStyleOptionProgressBarV2 progressBarOption2 = *progressBarOption;
+    QStyleOptionProgressBar progressBarOption2 = *progressBarOption;
     progressBarOption2.rect = subElementRect( SE_ProgressBarGroove, progressBarOption, widget );
     drawControl( CE_ProgressBarGroove, &progressBarOption2, painter, widget );
 
@@ -127,7 +127,7 @@ bool Style::drawProgressBarLabelControl(const QStyleOption *option, QPainter *pa
     if( !progressBarOption ) return true;
 
     // get direction and check
-    const QStyleOptionProgressBarV2* progressBarOption2( qstyleoption_cast<const QStyleOptionProgressBarV2*>( option ) );
+    const QStyleOptionProgressBar *progressBarOption2(qstyleoption_cast<const QStyleOptionProgressBar *>(option));
     const bool horizontal = !progressBarOption2 || progressBarOption2->orientation == Qt::Horizontal;
     if( !horizontal ) return true;
 
@@ -156,7 +156,7 @@ QRect Style::progressBarGrooveRect(const QStyleOption *option, const QWidget *wi
     const bool textVisible( progressBarOption->textVisible );
     const bool busy( progressBarOption->minimum == 0 && progressBarOption->maximum == 0 );
 
-    const QStyleOptionProgressBarV2* progressBarOption2( qstyleoption_cast<const QStyleOptionProgressBarV2*>( option ) );
+    const QStyleOptionProgressBar *progressBarOption2(qstyleoption_cast<const QStyleOptionProgressBar *>(option));
     const bool horizontal( !progressBarOption2 || progressBarOption2->orientation == Qt::Horizontal );
 
     // copy rectangle and adjust
@@ -189,7 +189,7 @@ QRect Style::progressBarContentsRect(const QStyleOption *option, const QWidget *
     if( busy ) return rect;
 
     // get orientation
-    const QStyleOptionProgressBarV2* progressBarOption2( qstyleoption_cast<const QStyleOptionProgressBarV2*>( option ) );
+    const QStyleOptionProgressBar *progressBarOption2(qstyleoption_cast<const QStyleOptionProgressBar *>(option));
     const bool horizontal( !progressBarOption2 || progressBarOption2->orientation == Qt::Horizontal );
 
     // check inverted appearance
@@ -229,7 +229,7 @@ QRect Style::progressBarLabelRect(const QStyleOption *option, const QWidget *) c
     if( !textVisible || busy ) return QRect();
 
     // get direction and check
-    const QStyleOptionProgressBarV2* progressBarOption2( qstyleoption_cast<const QStyleOptionProgressBarV2*>( option ) );
+    const QStyleOptionProgressBar *progressBarOption2(qstyleoption_cast<const QStyleOptionProgressBar *>(option));
     const bool horizontal( !progressBarOption2 || progressBarOption2->orientation == Qt::Horizontal );
     if( !horizontal ) return QRect();
 
