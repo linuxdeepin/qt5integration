@@ -144,7 +144,7 @@ public:
                         }
                     }
                 }
-                // duplicate the contets also for opposite state
+                // duplicate the contents also for opposite state
 //                svg_buffers[(QIcon::Normal<<4)|QIcon::On] = svg_buffers[(QIcon::Normal<<4)|QIcon::Off];
 //                svg_buffers[(QIcon::Selected<<4)|QIcon::On] = svg_buffers[(QIcon::Selected<<4)|QIcon::Off];
             }
