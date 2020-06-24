@@ -425,12 +425,15 @@ int Style::pixelMetric(QStyle::PixelMetric metric, const QStyleOption *option, c
         if (qobject_cast<DTabBar*>(widget->parent())) {
             return 0;
         }
+        break;
     }
 #endif
         // fallback
-    default: return QCommonStyle::pixelMetric( metric, option, widget );
-
+    default:
+        break;
     }
+
+    return QCommonStyle::pixelMetric(metric, option, widget);
 }
 
 QRect Style::subControlRect(QStyle::ComplexControl cc, const QStyleOptionComplex *opt, QStyle::SubControl sc, const QWidget *w) const
@@ -477,7 +480,8 @@ void Style::drawControl(QStyle::ControlElement element, const QStyleOption *opti
 {
     DrawControlFunc fcn(Q_NULLPTR);
 
-    switch( element ) {
+    quint64 type = static_cast<quint64>(element);
+    switch (type) {
     case CE_PushButtonBevel: fcn = &Style::drawPushButtonBevel; break;
     case CE_PushButtonLabel: fcn = &Style::drawPushButtonLabel; break;
         //        case CE_CheckBoxLabel: fcn = &Style::drawCheckBoxLabelControl; break;
