@@ -1424,14 +1424,31 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
             newTab.palette.setBrush(QPalette::WindowText, QColor("#798190"));
         }
 
-        if (auto btn = widget->findChild<DIconButton*>("rightButton")) {
+        //靠近边缘的文字渐变
+        if (qobject_cast<const DTabBar*>(widget)) {
             if (!(qobject_cast<const DTabBar *>(widget)->expanding())) {
-                int tabX = newTab.rect.x();
-                int tabWidth = tabX + newTab.rect.width();
-                tabWidth += widget->findChild<QTabBar *>()->height();
-                if (btn->isVisible() && (tabX < btn->pos().x() && btn->pos().x() < tabWidth))
-                    return true;
+                QRect text_rect = newTab.fontMetrics.boundingRect(newTab.rect, Qt::AlignCenter| Qt::TextShowMnemonic, newTab.text);
+                QRect tabbar_rect = widget->findChild<QTabBar *>()->rect();
+
+                int stopx = tabbar_rect.x() + tabbar_rect.width();
+                int tabX = text_rect.x() + tabbar_rect.x();
+                int tabWidth = tabX + text_rect.width();
+
+                if (tabX < stopx && stopx < tabWidth) {
+                    const QBrush &brush = newTab.palette.windowText();
+                    QLinearGradient lg(0, 0, 1, 0);
+                    QGradientStops stops;
+                    qreal stop = static_cast<qreal>(tabWidth - stopx) / text_rect.width();
+
+                    stops << QGradientStop{0, brush.color()};
+                    stops << QGradientStop{qMax(0.0, 1 - stop - 0.2), brush.color()};
+                    stops << QGradientStop{qMax(0.0, 1 - stop), Qt::transparent};
+
+                    lg.setCoordinateMode(QLinearGradient::ObjectBoundingMode);
+                    lg.setStops(stops);
+                    newTab.palette.setBrush(QPalette::WindowText, lg);
                 }
+            }
         }
 
         QCommonStyle::drawControl(CE_TabBarTabLabel, &newTab, painter, widget);
