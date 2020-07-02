@@ -3213,8 +3213,10 @@ void ChameleonStyle::polish(QWidget *w)
                 connect(DWindowManagerHelper::instance(), SIGNAL(hasCompositeChanged()), w, SLOT(update()));
             }
         } else if (is_tip) {
-            DPlatformWindowHandle handle(w);
-            handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
+            if (DWindowManagerHelper::instance()->hasComposite()) {
+                DPlatformWindowHandle handle(w);
+                handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
+            }
             QLabel *label = qobject_cast<QLabel *>(w);
             label->setTextFormat(DStyle::tooltipTextFormat());
         }
