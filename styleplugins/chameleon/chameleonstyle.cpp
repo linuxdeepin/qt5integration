@@ -584,6 +584,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
                 scrollBarRectCenter.setX(scrollBar->rect.x() + scrollBar->rect.width() / 2);
                 scrollBarRectCenter.setY((scrollBar->rect.y() + scrollBar->rect.height()) / 2);
+                rect.moveCenter(scrollBarRectCenter);
+                rect.moveBottom(scrollBar->rect.bottom() - 2);
             } else {
                 rect.setWidth(rect.width() / 2);
                 rect = rect.adjusted(0, spacing, 0, -spacing);
@@ -595,12 +597,29 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
                 scrollBarRectCenter.setX((scrollBar->rect.x() + scrollBar->rect.width()) / 2);
                 scrollBarRectCenter.setY(scrollBar->rect.y() + scrollBar->rect.height() / 2);
+                rect.moveCenter(scrollBarRectCenter);
+                rect.moveRight(scrollBar->rect.right() - 2);
             }
 
-            rect.moveCenter(scrollBarRectCenter);
-
             p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
-            p->setBrush(getColor(opt, QPalette::Button));
+
+            QColor lineColor(opt->palette.color(QPalette::Base));
+            if (DGuiApplicationHelper::toColorType(lineColor) == DGuiApplicationHelper::LightType) {
+                p->setBrush(QColor(0, 0, 0, 0.3 * 255));
+
+                if (scrollBar->state & QStyle::State_Enabled)
+                    p->setBrush(QColor(0, 0, 0, 0.5 * 255));
+                if (scrollBar->state & QStyle::State_MouseOver)
+                    p->setBrush(QColor(0, 0, 0, 0.6 * 255));
+            } else {
+                p->setBrush(QColor(255, 255, 255, 0.2 * 255));
+
+                if (scrollBar->state & QStyle::State_Enabled)
+                    p->setBrush(QColor(255, 255, 255, 0.1 * 255));
+                if (scrollBar->state & QStyle::State_MouseOver)
+                    p->setBrush(QColor(255, 255, 255, 0.2 * 255));
+            }
+
             p->drawRoundedRect(rect, realRadius, realRadius);
         }
         break;
