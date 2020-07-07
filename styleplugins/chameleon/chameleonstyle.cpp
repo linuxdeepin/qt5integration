@@ -1398,7 +1398,12 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         bool is_moving_tab = painter->device()->devType() != QInternal::Widget;
         if (visible_close_button && !is_moving_tab) {
             QRect tr = proxy()->subElementRect(SE_TabBarTabText, tab, widget);
-            QRect text_rect = tab->fontMetrics.boundingRect(tr, Qt::AlignCenter | Qt::TextShowMnemonic, tab->text);
+            QRect text_rect;
+            if (const DTabBar *tabbar = qobject_cast<const DTabBar*>(widget)) {
+                text_rect = tab->fontMetrics.boundingRect(tr, tabbar->tabLabelAlignment() | Qt::TextShowMnemonic, tab->text);
+            } else {
+                text_rect = tab->fontMetrics.boundingRect(tr, Qt::AlignCenter | Qt::TextShowMnemonic, tab->text);
+            }
             int close_button_width = proxy()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth, tab, widget);
             qreal stop = qreal(tr.right() - close_button_width - text_rect.x() - 5) / text_rect.width();
 
@@ -1431,7 +1436,6 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         if (type_check) {
             newTab.palette.setBrush(QPalette::WindowText, getColor(tab, QPalette::Highlight));
         }
-        QCommonStyle::drawControl(CE_TabBarTabLabel, &newTab, painter, widget);
 
         if (tab->state & QStyle::State_HasFocus) {
             QStyleOptionFocusRect fropt;
@@ -1444,9 +1448,10 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         }
 
         //靠近边缘的文字渐变
-        if (qobject_cast<const DTabBar*>(widget)) {
-            if (!(qobject_cast<const DTabBar *>(widget)->expanding())) {
-                QRect text_rect = newTab.fontMetrics.boundingRect(newTab.rect, Qt::AlignCenter| Qt::TextShowMnemonic, newTab.text);
+        if (const DTabBar *tab = qobject_cast<const DTabBar*>(widget)) {
+            if (!tab->expanding()) {
+                QRect tr = proxy()->subElementRect(SE_TabBarTabText, &newTab, widget);
+                QRect text_rect = newTab.fontMetrics.boundingRect(tr, tab->tabLabelAlignment() | Qt::TextShowMnemonic, newTab.text);
                 QRect tabbar_rect = widget->findChild<QTabBar *>()->rect();
 
                 int stopx = tabbar_rect.x() + tabbar_rect.width();
@@ -1469,11 +1474,118 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
                 }
             }
         }
+    }
 
+    if (const DTabBar *tb = qobject_cast<const DTabBar*>(widget)) {
+        //Qt源码
+        QRect tr = tab->rect;
+        bool verticalTabs = tab->shape == QTabBar::RoundedEast
+                            || tab->shape == QTabBar::RoundedWest
+                            || tab->shape == QTabBar::TriangularEast
+                            || tab->shape == QTabBar::TriangularWest;
+
+        int alignment = tb->tabLabelAlignment() | Qt::TextShowMnemonic;
+        if (!proxy()->styleHint(SH_UnderlineShortcut, &newTab, widget))
+            alignment |= Qt::TextHideMnemonic;
+
+        if (verticalTabs) {
+            painter->save();
+            int newX, newY, newRot;
+            if (tab->shape == QTabBar::RoundedEast || tab->shape == QTabBar::TriangularEast) {
+                newX = tr.width() + tr.x();
+                newY = tr.y();
+                newRot = 90;
+            } else {
+                newX = tr.x();
+                newY = tr.y() + tr.height();
+                newRot = -90;
+            }
+            QTransform m = QTransform::fromTranslate(newX, newY);
+            m.rotate(newRot);
+            painter->setTransform(m, true);
+        }
+        QRect iconRect;
+
+        tabLayout(tab, widget, &tr, &iconRect);
+
+        tr = proxy()->subElementRect(SE_TabBarTabText, &newTab, widget);
+
+        if (!tab->icon.isNull()) {
+            QPixmap tabIcon = tab->icon.pixmap(widget ? widget->window()->windowHandle() : 0, tab->iconSize,
+                                               (tab->state & State_Enabled) ? QIcon::Normal
+                                                                            : QIcon::Disabled,
+                                               (tab->state & State_Selected) ? QIcon::On
+                                                                             : QIcon::Off);
+
+            painter->drawPixmap(iconRect, tabIcon);
+        }
+
+        proxy()->drawItemText(painter, tr.adjusted(1, 0, 0, 0), alignment, newTab.palette, newTab.state & State_Enabled, newTab.text, QPalette::WindowText);
+    } else {
         QCommonStyle::drawControl(CE_TabBarTabLabel, &newTab, painter, widget);
     }
 
     return true;
+}
+
+void ChameleonStyle::tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const
+{
+    QRect tr = opt->rect;
+    bool verticalTabs = opt->shape == QTabBar::RoundedEast
+                        || opt->shape == QTabBar::RoundedWest
+                        || opt->shape == QTabBar::TriangularEast
+                        || opt->shape == QTabBar::TriangularWest;
+    if (verticalTabs)
+        tr.setRect(0, 0, tr.height(), tr.width()); // 0, 0 as we will have a translate transform
+
+    int verticalShift = proxy()->pixelMetric(QStyle::PM_TabBarTabShiftVertical, opt, widget);
+    int horizontalShift = proxy()->pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, opt, widget);
+    int hpadding = proxy()->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
+    int vpadding = proxy()->pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
+    if (opt->shape == QTabBar::RoundedSouth || opt->shape == QTabBar::TriangularSouth)
+        verticalShift = -verticalShift;
+    tr.adjust(hpadding, verticalShift - vpadding, horizontalShift - hpadding, vpadding);
+    bool selected = opt->state & QStyle::State_Selected;
+    if (selected) {
+        tr.setTop(tr.top() - verticalShift);
+        tr.setRight(tr.right() - horizontalShift);
+    }
+
+    // left widget
+    if (!opt->leftButtonSize.isEmpty()) {
+        tr.setLeft(tr.left() + 4 +
+            (verticalTabs ? opt->leftButtonSize.height() : opt->leftButtonSize.width()));
+    }
+    // right widget
+    if (!opt->rightButtonSize.isEmpty()) {
+        tr.setRight(tr.right() - 4 -
+            (verticalTabs ? opt->rightButtonSize.height() : opt->rightButtonSize.width()));
+    }
+
+    // icon
+    if (!opt->icon.isNull()) {
+        QSize iconSize = opt->iconSize;
+        if (!iconSize.isValid()) {
+            int iconExtent = proxy()->pixelMetric(QStyle::PM_SmallIconSize);
+            iconSize = QSize(iconExtent, iconExtent);
+        }
+        QSize tabIconSize = opt->icon.actualSize(iconSize,
+                        (opt->state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled,
+                        (opt->state & QStyle::State_Selected) ? QIcon::On : QIcon::Off);
+        // High-dpi icons do not need adjustment; make sure tabIconSize is not larger than iconSize
+        tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.height()));
+
+        *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
+                    tabIconSize.width(), tabIconSize.height());
+        if (!verticalTabs)
+            *iconRect = proxy()->visualRect(opt->direction, opt->rect, *iconRect);
+        tr.setLeft(tr.left() + tabIconSize.width() + 4);
+    }
+
+    if (!verticalTabs)
+        tr = proxy()->visualRect(opt->direction, opt->rect, tr);
+
+    *textRect = tr;
 }
 
 bool ChameleonStyle::drawTabBarCloseButton(QPainter *painter, const QStyleOption *tab, const QWidget *widget) const
