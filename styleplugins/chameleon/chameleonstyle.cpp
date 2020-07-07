@@ -1400,7 +1400,8 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
             QRect tr = proxy()->subElementRect(SE_TabBarTabText, tab, widget);
             QRect text_rect;
             if (const DTabBar *tabbar = qobject_cast<const DTabBar*>(widget)) {
-                text_rect = tab->fontMetrics.boundingRect(tr, tabbar->tabLabelAlignment() | Qt::TextShowMnemonic, tab->text);
+                int alignment = tabbar->property("_d_dtk_tabbar_alignment").toInt();
+                text_rect = tab->fontMetrics.boundingRect(tr, alignment | Qt::TextShowMnemonic, tab->text);
             } else {
                 text_rect = tab->fontMetrics.boundingRect(tr, Qt::AlignCenter | Qt::TextShowMnemonic, tab->text);
             }
@@ -1451,7 +1452,8 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         if (const DTabBar *tab = qobject_cast<const DTabBar*>(widget)) {
             if (!tab->expanding()) {
                 QRect tr = proxy()->subElementRect(SE_TabBarTabText, &newTab, widget);
-                QRect text_rect = newTab.fontMetrics.boundingRect(tr, tab->tabLabelAlignment() | Qt::TextShowMnemonic, newTab.text);
+                int alignment = tab->property("_d_dtk_tabbar_alignment").toInt();
+                QRect text_rect = newTab.fontMetrics.boundingRect(tr, alignment | Qt::TextShowMnemonic, newTab.text);
                 QRect tabbar_rect = widget->findChild<QTabBar *>()->rect();
 
                 int stopx = tabbar_rect.x() + tabbar_rect.width();
@@ -1484,7 +1486,8 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
                             || tab->shape == QTabBar::TriangularEast
                             || tab->shape == QTabBar::TriangularWest;
 
-        int alignment = tb->tabLabelAlignment() | Qt::TextShowMnemonic;
+
+        int alignment = tb->property("_d_dtk_tabbar_alignment").toInt() | Qt::TextShowMnemonic;
         if (!proxy()->styleHint(SH_UnderlineShortcut, &newTab, widget))
             alignment |= Qt::TextHideMnemonic;
 
