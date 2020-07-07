@@ -1160,7 +1160,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setBrush(getColor(toolbutton, DPalette::Button));
                 }
 
-                p->drawRoundedRect(rect, radius, radius);
+                if (toolbutton->state & State_Enabled)
+                    p->drawRoundedRect(rect, radius, radius);
 
                 QRect pr = rect;
                 QRect tr = rect;
