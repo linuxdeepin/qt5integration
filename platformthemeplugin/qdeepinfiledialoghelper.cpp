@@ -421,13 +421,13 @@ void QDeepinFileDialogHelper::applyOptions()
         }
     }
 
+    DIALOG_CALL(setOptions((QFileDialog::Options)(int)options->options()));
     DIALOG_CALL(setFilter(options->filter()));
     DIALOG_CALL(setWindowTitle(options->windowTitle()));
     DIALOG_CALL(setViewMode((QFileDialog::ViewMode)options->viewMode()));
     DIALOG_CALL(setFileMode((QFileDialog::FileMode)options->fileMode()));
     DIALOG_CALL(setAcceptMode((QFileDialog::AcceptMode)options->acceptMode()));
     DIALOG_CALL(setNameFilters(options->nameFilters()));
-    DIALOG_CALL(setOptions((QFileDialog::Options)(int)options->options()));
 
     setDirectory(options->initialDirectory());
 
