@@ -646,7 +646,8 @@ static bool enabledRTScreenScale()
                             !qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR") &&
                             !qEnvironmentVariableIsSet("QT_SCREEN_SCALE_FACTORS") &&
                             !QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling) &&
-                            !QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling);
+                            !QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling) &&
+                            qGuiApp->platformName().endsWith("xcb");
 
     return enable;
 }
