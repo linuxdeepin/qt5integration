@@ -3210,6 +3210,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_MenuPanelWidth:
         //非特效效果则 menu border 为 1
         return DWindowManagerHelper::instance()->hasComposite() ? 0 : 1;
+    case PM_SubMenuOverlap:
+        return -1;
     case PM_ComboBoxFrameWidth: { //这是ComboBox VMargin
         const QStyleOptionComboBox *comboBoxOption(qstyleoption_cast< const QStyleOptionComboBox *>(opt));
         return comboBoxOption && comboBoxOption->editable ? Metrics::ComboBox_FrameWidth : Metrics::LineEdit_FrameWidth ;
