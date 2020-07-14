@@ -794,7 +794,11 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 p->drawRect(opt->rect);
 
                 // 绘制边框线
-                p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
+                if (DGuiApplicationHelper::instance()->paletteType() != DGuiApplicationHelper::DarkType) {
+                    p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
+                } else {
+                    p->setPen(QPen(QColor(0, 0, 0, static_cast<int>(0.05 * 255)), Metrics::Painter_PenWidth));
+                }
                 p->setBrush(Qt::NoBrush);
                 p->drawRect(opt->rect);
                 //对tabbar尾后加一根明显的线
@@ -1519,7 +1523,6 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
                             || tab->shape == QTabBar::RoundedWest
                             || tab->shape == QTabBar::TriangularEast
                             || tab->shape == QTabBar::TriangularWest;
-
 
         int alignment = tb->property("_d_dtk_tabbar_alignment").toInt() | Qt::TextShowMnemonic;
         if (!proxy()->styleHint(SH_UnderlineShortcut, &newTab, widget))
