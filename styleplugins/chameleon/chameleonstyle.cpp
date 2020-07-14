@@ -2496,6 +2496,10 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
     }
     case CC_Slider : {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            const DSlider *dslider = qobject_cast<const DSlider *>(w);
+            QSlider::TickPosition tickPosition  = slider->tickPosition;
+            if (dslider)
+                tickPosition = dslider->tickPosition();
             //各个使用的矩形大小和位置
             QRectF rect = opt->rect;                                                                            //Slider控件最大的矩形(包含如下三个)
             QRectF rectHandle = proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, w);                    //滑块矩形
@@ -2513,12 +2517,11 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             //绘画 滑槽(线)
             if (opt->subControls & SC_SliderGroove) {
                 pen.setStyle(Qt::CustomDashLine);
-                QVector<qreal> dashes;
-                qreal space = 1.3;
-                dashes << 0.1 << space;
-                pen.setDashPattern(dashes);
-                pen.setWidthF(3);
+                pen.setWidth(4);
                 pen.setBrush((opt->activeSubControls & SC_SliderHandle) ? getColor(opt, QPalette::Highlight) : opt->palette.highlight());
+                pen.setDashOffset(0);
+                pen.setDashPattern(QVector<qreal>()<< 0.5 << 0.25);
+                pen.setCapStyle(Qt::FlatCap);
                 p->setPen(pen);
                 p->setRenderHint(QPainter::Antialiasing);
 
@@ -2536,23 +2539,34 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                         pen.setColor(color);
                         p->setPen(pen);
                     }
-                    qreal rectWidth = rectHandle.width() / 2.0;
-                    p->drawLine(QPointF(rectGroove.left() + rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
 
-                    pen.setColor(color);
-                    p->setPen(pen);
-                    p->drawLine(QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
+                    qreal rectWidth = rectHandle.width() / 2.0;
+                    if (tickPosition == QSlider::NoTicks) {
+                        p->drawLine(QPointF(rectGroove.left() + rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
+
+                        pen.setColor(color);
+                        p->setPen(pen);
+                        p->drawLine(QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
+                    } else {
+                        p->drawLine(QPointF(rectGroove.left() + rectWidth, rectHandle.center().y()), QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()));
+                    }
+
                 } else {
                     if (w && w->property("_d_dtk_sldier_across").toBool()) {
                         pen.setColor(color);
                         p->setPen(pen);
                     }
-                    qreal rectWidth = rectHandle.height() / 2.0;
-                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - rectWidth), QPointF(rectGroove.center().x(),  rectHandle.center().y()));
 
-                    pen.setColor(color);
-                    p->setPen(pen);
-                    p->drawLine(QPointF(rectGroove.center().x(),  rectGroove.top()  + rectWidth), QPointF(rectGroove.center().x(),  rectHandle.center().y()));
+                    qreal rectWidth = rectHandle.height() / 2.0;
+                    if (tickPosition == QSlider::NoTicks) {
+                        p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - rectWidth), QPointF(rectGroove.center().x(),  rectHandle.center().y()));
+
+                        pen.setColor(color);
+                        p->setPen(pen);
+                        p->drawLine(QPointF(rectGroove.center().x(),  rectGroove.top()  + rectWidth), QPointF(rectGroove.center().x(),  rectHandle.center().y()));
+                    } else {
+                        p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - rectWidth), QPointF(rectGroove.center().x(),  rectGroove.top()  + rectWidth));
+                    }
                 }
             }
 
