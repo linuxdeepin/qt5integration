@@ -573,9 +573,36 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             QPoint scrollBarRectCenter;
             int spacing = DStyle::pixelMetric(DStyle::PM_FocusBorderSpacing);
 
+            //用于判断滚动条是否被圆角区域遮住或特殊要求（滚动条上下不到顶、末端），使用方法是 在对应的控件的滚动条， 设置添加间隔，其中左、右和上、下每一个都是分开的，且没有遮挡长度的限制;
+            //若是超出滚动条的总长度，则表现无变化（不作处理）
+            //eg： scrollbar->setProperty("_d_slider_leftOrRight_spacing", 100);
+            bool okLeft = false;
+            bool okRight = false;
+            bool okUp = false;
+            bool okDown = false;
+            int spacLeft = 0;
+            int spacRight = 0;
+            int spacUp = 0;
+            int spacDown = 0;
+
+            if (opt->styleObject->property("_d_slider_spaceLeft").isValid())
+                spacLeft = opt->styleObject->property("_d_slider_spaceLeft").toInt(&okLeft);
+            if (opt->styleObject->property("_d_slider_spaceRight").isValid())
+                spacRight = opt->styleObject->property("_d_slider_spaceRight").toInt(&okRight);
+            if (opt->styleObject->property("_d_slider_spaceUp").isValid())
+                spacUp = opt->styleObject->property("_d_slider_spaceUp").toInt(&okUp);
+            if (opt->styleObject->property("_d_slider_spaceDown").isValid())
+                spacDown = opt->styleObject->property("_d_slider_spaceDown").toInt(&okDown);
+
             if (opt->state & QStyle::State_Horizontal) {
                 rect.setHeight(rect.height() / 2);
-                rect = rect.adjusted(spacing, 0, -spacing, 0);
+                if ((okLeft && spacLeft > 0) || (okRight && spacRight > 0)) {
+                    if ((2 * spacing + spacLeft + spacRight) < rect.width()) {
+                        rect = rect.adjusted(spacing + spacLeft, 0, -spacing - spacRight, 0);
+                    }
+                } else {
+                    rect = rect.adjusted(spacing, 0, -spacing, 0);
+                }
 
                 if (!(opt->state & QStyle::State_MouseOver))
                     rect.setHeight(rect.height() - 2);
@@ -588,7 +615,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 rect.moveBottom(scrollBar->rect.bottom() - 2);
             } else {
                 rect.setWidth(rect.width() / 2);
-                rect = rect.adjusted(0, spacing, 0, -spacing);
+                if ((okUp && spacUp > 0) || (okDown && spacDown > 0)) {
+                    if ((2 * spacing + spacUp + spacDown) < rect.height()) {
+                        rect = rect.adjusted(0, spacing + spacUp, 0, -spacing - spacDown);
+                    }
+                } else {
+                    rect = rect.adjusted(0, spacing, 0, -spacing);
+                }
 
                 if (!(opt->state & QStyle::State_MouseOver))
                     rect.setWidth(rect.width() - 2);
