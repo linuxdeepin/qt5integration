@@ -51,24 +51,46 @@ public:
 
     }
 
+    QString pmcKey(const QSize &size, QIcon::Mode mode, QIcon::State state)
+    {
+        return QLatin1String("$qt_icon_")
+               + filename + QLatin1String("_")
+               + QString::number((((((qint64(size.width()) << 11) | size.height()) << 11) | mode) << 4) | state, 16);
+    }
+
+    void genIconTypeIcon(QPixmap &pm, QIcon::Mode mode)
+    {
+        if (type == IconType && qobject_cast<QGuiApplication *>(QCoreApplication::instance())) {
+            const QPixmap generated = QGuiApplicationPrivate::instance()->applyQIconStyleHelper(mode, pm);
+            if (!generated.isNull())
+                pm = generated;
+        }
+    }
+
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override {
         Q_UNUSED(state)
 
-        if (Q_UNLIKELY(!reader.device())) {
+        QPixmap pm;
+        QString pmckey(pmcKey(size, mode, state));
+        if (QPixmapCache::find(pmckey, pm)) {
+            genIconTypeIcon(pm, mode);
+            return pm;
+        }
+
+        // png 会读取前8个 bit 对比，需要关闭重新打开，否则同一个 icon 不同 state/mode 会再次读取时报错导致 pixmap 为空。
+        // 所以此处只对 DirImageEntry(isdir==true) 进行判断不再重新调用 setFileName
+        if (Q_UNLIKELY(!reader.device()) || !QFileInfo(filename).isDir()) {
             reader.setFileName(filename);
         }
 
         if (dir.type == QIconDirInfo::Scalable)
             reader.setScaledSize(size);
 
-        QPixmap pm = QPixmap::fromImageReader(&reader);
+        pm = QPixmap::fromImageReader(&reader);
+        if (!pm.isNull())
+            QPixmapCache::insert(pmckey, pm);
 
-        if (type == IconType && qobject_cast<QGuiApplication *>(QCoreApplication::instance())) {
-            const QPixmap generated = QGuiApplicationPrivate::instance()->applyQIconStyleHelper(mode, pm);
-            if (!generated.isNull())
-                pm = generated;
-        }
-
+        genIconTypeIcon(pm, mode);
         return pm;
     }
 
