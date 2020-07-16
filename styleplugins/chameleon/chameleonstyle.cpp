@@ -1224,6 +1224,19 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                         drawIcon(toolbutton, p, pr, icon);
                         alignment |= Qt::AlignCenter;
 
+                    } else if (toolbutton->toolButtonStyle == Qt::ToolButtonTextBesideIcon) {
+                        //计算文字宽度
+                        int textWidget = w->fontMetrics().width(toolbutton->text);
+                        // 图标　spacing　文字的矩形,未找到适合的枚举，故用设计提出的spacing　8
+                        QRect textIcon = QRect(0, 0, pr.width() + 8 + textWidget, rect.height());
+                        textIcon.moveCenter(rect.center());
+                        pr.moveCenter(rect.center());
+                        //图标padding,未找到适合的枚举，故用设计提出的padding　4
+                        pr.moveLeft(qMax(textIcon.x(), 4));
+                        //调整text距离
+                        tr.adjust(pr.width() + 8, 0, -4, 0);
+                        drawIcon(toolbutton, p, pr, icon);
+                        alignment |= Qt::AlignCenter;
                     } else {    //其他几种（文字和icon布局）方式
                         int radius = DStyle::pixelMetric(PM_FrameRadius);
                         pr.moveCenter(QPoint(rect.left(), rect.center().y()));
