@@ -1275,6 +1275,71 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         return;
     }
+    case CE_SizeGrip: {
+        p->save();
+        int x, y, w, h;
+        opt->rect.getRect(&x, &y, &w, &h);
+
+        int sw = qMin(h, w);
+        if (h > w)
+            p->translate(0, h - w);
+        else
+            p->translate(w - h, 0);
+
+        Qt::Corner corner;
+        if (const QStyleOptionSizeGrip *sgOpt = qstyleoption_cast<const QStyleOptionSizeGrip *>(opt))
+            corner = sgOpt->corner;
+        else if (opt->direction == Qt::RightToLeft)
+            corner = Qt::BottomLeftCorner;
+        else
+            corner = Qt::BottomRightCorner;
+
+        bool ok = false;
+        int radius = DStyle::pixelMetric(PM_FrameRadius, opt) / 2;
+        int _d_radius = 0;
+
+        if (opt->styleObject->property("_d_radius").isValid())
+            _d_radius = opt->styleObject->property("_d_radius").toInt(&ok);
+
+        if (ok && _d_radius >= 0 && _d_radius != radius)
+            radius = _d_radius;
+
+        p->setRenderHint(QPainter::Antialiasing, true);
+        DGuiApplicationHelper *guiAppHelp = DGuiApplicationHelper::instance();
+        if (guiAppHelp->themeType() == DGuiApplicationHelper::ColorType::DarkType) {  //暗色主题
+            p->setPen(QPen(QColor(255, 255, 255, 0.2 * 255), 1));
+        } else {
+            p->setPen(QPen(QColor(0, 0, 0, 0.2 * 255), 1));
+        }
+
+        int s = sw / 3;
+        QRectF rectInner(0, 0, 1.4 * s, 1.4 * s);  // 内侧弧线的外切正方形
+        QRectF rectExternal(0, 0, 2 * s, 2 * s); // 外侧弧线的外切正方形
+
+        if (corner == Qt::BottomLeftCorner) {
+            rectExternal.moveBottomLeft(QPointF(opt->rect.bottomLeft().x() + radius, opt->rect.bottomLeft().y() - radius));
+            rectInner.moveCenter(rectExternal.center());
+            p->drawArc(rectInner, 205 * 16, 40 * 16);
+            p->drawArc(rectExternal, 200 * 16, 50 * 16);
+        } else if (corner == Qt::BottomRightCorner) {
+            rectExternal.moveBottomRight(QPointF(opt->rect.bottomRight().x() - radius, opt->rect.bottomRight().y() - radius));
+            rectInner.moveCenter(rectExternal.center());
+            p->drawArc(rectInner, 295 * 16, 40 * 16);
+            p->drawArc(rectExternal, 290 * 16, 50 * 16);
+        } else if (corner == Qt::TopRightCorner) {
+            rectExternal.moveTopRight(QPointF(opt->rect.topRight().x() - radius, opt->rect.topRight().y() + radius));
+            rectInner.moveCenter(rectExternal.center());
+            p->drawArc(rectInner, 25 * 16, 40 * 16);
+            p->drawArc(rectExternal, 25 * 16, 50 * 16);
+        } else if (corner == Qt::TopLeftCorner) {
+            rectExternal.moveTopLeft(QPointF(opt->rect.topLeft().x() + radius, opt->rect.topLeft().y() + radius));
+            rectInner.moveCenter(rectExternal.center());
+            p->drawArc(rectInner, 115 * 16, 40 * 16);
+            p->drawArc(rectExternal, 110 * 16, 50 * 16);
+        }
+        p->restore();
+        return;
+    }
     default:
         break;
     }
@@ -3221,6 +3286,10 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             return size;
         }
     break;
+    case CT_SizeGrip: {
+        size = QSize(52, 52);
+        break;
+    }
     default:
         break;
     }
