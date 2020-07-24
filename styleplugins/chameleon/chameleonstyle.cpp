@@ -222,8 +222,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->setRenderHints(QPainter::Antialiasing);
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
 
-        if (DSpinBox *box = static_cast<DSpinBox*>(w->parentWidget())) {
-            if (box->property("_d_dtk_spinBox").toBool()) {
+        if (w && qobject_cast<DSpinBox*>(w->parentWidget())) {
+            if (w->property("_d_dtk_spinBox").toBool()) {
                 DDrawUtils::drawRoundedRect(p, opt->rect, frame_radius, frame_radius,
                                         DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
             } else {
@@ -417,8 +417,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_PanelItemViewRow: {
         //更改日历Saturday　Sunday　活动色改变时跟随
-        if (QCalendarWidget *calend = qobject_cast<QCalendarWidget *>(w->parentWidget())) {
+        if (w && qobject_cast<QCalendarWidget *>(w->parentWidget())) {
             QTextCharFormat fmt;
+            QCalendarWidget *calend = qobject_cast<QCalendarWidget *>(w->parentWidget());
             fmt.setForeground(QBrush(getColor(opt, DPalette::Highlight)));
             calend->setWeekdayTextFormat(Qt::Saturday, fmt);
             calend->setWeekdayTextFormat(Qt::Sunday, fmt);
@@ -1472,7 +1473,7 @@ bool ChameleonStyle::drawTabBar(QPainter *painter,  const QStyleOptionTab *tab, 
 
 bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *tab, const QWidget *widget) const
 {
-    const QTabBar *m_tabbar = static_cast<const QTabBar *>(widget);
+    const QTabBar *m_tabbar = qobject_cast<const QTabBar *>(widget);
 
     if (!m_tabbar)
         return false;
@@ -1708,6 +1709,8 @@ void ChameleonStyle::tabLayout(const QStyleOptionTab *opt, const QWidget *widget
 
 bool ChameleonStyle::drawTabBarCloseButton(QPainter *painter, const QStyleOption *tab, const QWidget *widget) const
 {
+    if (!widget)
+        return false;
     const QTabBar *tb = qobject_cast<QTabBar *>(widget->parent());
 
     if (!tb) {
@@ -1757,19 +1760,21 @@ bool ChameleonStyle::drawTabBarScrollButton(QPainter *painter, const QStyleOptio
     if (tabButton->arrowType() == Qt::NoArrow || !tabButton->icon().isNull())
         return false;
 
-    QTabBar *tabBar = qobject_cast<QTabBar *>(buttonWidget->parent());
     bool isTriangularMode = false;
-
-    switch (tabBar->shape()) {
-    case QTabBar::TriangularNorth:
-    case QTabBar::TriangularSouth:
-    case QTabBar::TriangularEast:
-    case QTabBar::TriangularWest:
-        isTriangularMode = true;
-        break;
-    default:
-        break;
+    if (QTabBar *tabBar = qobject_cast<QTabBar *>(buttonWidget->parent())) {
+        switch (tabBar->shape()) {
+        case QTabBar::TriangularNorth:
+        case QTabBar::TriangularSouth:
+        case QTabBar::TriangularEast:
+        case QTabBar::TriangularWest:
+            isTriangularMode = true;
+            break;
+        default:
+            break;
+        }
     }
+
+
 
     QStyleOptionToolButton toolButton(*qstyleoption_cast<const QStyleOptionToolButton *>(opt));
     int frameMargin = DStyle::pixelMetric(PM_FrameMargins);
@@ -1905,7 +1910,7 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
     QSize iconSize;
     if (hasIcon) {
         iconSize = cb->iconSize;
-        if (!iconSize.isValid()) {
+        if (!iconSize.isValid() && widget) {
             const int metric(widget->style()->pixelMetric(QStyle::PM_SmallIconSize, cb, widget));
             iconSize = QSize(metric, metric);
         }
@@ -2147,7 +2152,7 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
 
             // 未开启窗口混成时不应该设置背景色的alpha通道，应当显示纯色背景(设置StyleSheet时，不加载此设置，防止alpha通道等对其造成影响)
             if (DWindowManagerHelper::instance()->hasComposite()
-                    && option->styleObject
+                    && qobject_cast<QWidget *>(option->styleObject)
                     && !qobject_cast<QWidget *>(option->styleObject)->testAttribute(Qt::WA_StyleSheet)) {
                 if (DGuiApplicationHelper::toColorType(c) == DGuiApplicationHelper::LightType) {
                     c = Qt::white;
@@ -2436,9 +2441,9 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
     case SE_LineEditContents: {
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         int left_margins = DStyle::pixelMetric(PM_ContentsMargins, opt, widget);
-
-        if (qobject_cast<DSearchEdit *>(widget->parentWidget()))
-             return opt->rect.adjusted(frame_margins / 2, 0, -left_margins / 2, 0);
+        if (widget && qobject_cast<DSearchEdit *>(widget->parentWidget())) {
+            return opt->rect.adjusted(frame_margins / 2, 0, -left_margins / 2, 0);
+        }
 
         return opt->rect.adjusted(frame_margins + left_margins, 0, -(frame_margins + left_margins), 0);
     }
@@ -3048,7 +3053,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 QRect rect(0, 0, opt->rect.height(), opt->rect.height()) ;
                 int boxHeight = qAbs(rect.height());
 
-                if (w && !static_cast<const QComboBox *>(w)->isEditable())
+                if (w && !qobject_cast<const QComboBox *>(w)->isEditable())
                     break;
                 if (opt->direction == Qt::LeftToRight)
                     rect.moveRight(opt->rect.right());
@@ -3413,7 +3418,7 @@ void ChameleonStyle::polish(QWidget *w)
         }
     }
 
-    if (qobject_cast<DSearchEdit *>(w->parentWidget())) {
+    if (w && qobject_cast<DSearchEdit *>(w->parentWidget())) {
         w->setProperty("_d_dtk_lineeditActionWidth", -6);
         w->setProperty("_d_dtk_lineeditActionMargin", 6);
     }
@@ -3514,7 +3519,7 @@ void ChameleonStyle::unpolish(QWidget *w)
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, true);
     }
 
-    if (qobject_cast<DSearchEdit *>(w->parentWidget())) {
+    if (w && qobject_cast<DSearchEdit *>(w->parentWidget())) {
         w->setProperty("_d_dtk_lineeditActionWidth", QVariant());
         w->setProperty("_d_dtk_lineeditActionMargin", QVariant());
     }
@@ -3592,13 +3597,15 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
 bool ChameleonStyle::isNoticks(const QStyleOptionSlider *slider, QPainter *p, const QWidget *w) const
 {
     Q_UNUSED(p)
-    const DSlider *dslider = qobject_cast<const DSlider *>(w);
-    QSlider::TickPosition tickPosition = slider->tickPosition;
+    if (const DSlider *dslider = qobject_cast<const DSlider *>(w)) {
+        QSlider::TickPosition tickPosition = slider->tickPosition;
 
-    if (dslider)
-        tickPosition = dslider->tickPosition();
+        if (dslider)
+            tickPosition = dslider->tickPosition();
 
-    return tickPosition == QSlider::NoTicks;
+        return tickPosition == QSlider::NoTicks;
+    }
+    return false;
 }
 
 QBrush ChameleonStyle::generatedBrush(StateFlags flags, const QBrush &base, QPalette::ColorGroup cg, QPalette::ColorRole role, const QStyleOption *option) const
