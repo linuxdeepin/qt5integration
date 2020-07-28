@@ -217,6 +217,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             }
         }
 
+        // 此处设置painter的行为不应该影响外面的绘制，会导致lineedit光标不对 Bug-20967。
+        p->save();
         p->setBrush(opt->palette.button());
         p->setPen(Qt::NoPen);
         p->setRenderHints(QPainter::Antialiasing);
@@ -236,6 +238,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         if (w && w->parent() && (
                     qobject_cast<const QComboBox *>(w->parent())
                 )) {
+            p->restore();
             //禁用一些控件绘制子lineEdit时产生的ForceRect
             return;
         }
@@ -244,6 +247,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             proxy()->drawPrimitive(PE_FrameFocusRect, opt, p, w);
         }
 
+        p->restore();
         return;
     }
     case PE_FrameLineEdit: {
