@@ -2770,6 +2770,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         QRect subRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, widget);
         QStyleOptionButton buttonOpt;
         buttonOpt.rect = subRect;
+        buttonOpt.palette = opt->palette;
         updateSpinBoxButtonState(opt, buttonOpt, upIsActive, upIsEnabled);
         bool isPlusMinus = opt->buttonSymbols & QAbstractSpinBox::PlusMinus;
 
@@ -2816,6 +2817,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
         QRect subRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, widget);
         QStyleOptionButton buttonOpt;
         buttonOpt.rect = subRect;
+        buttonOpt.palette = opt->palette;
         updateSpinBoxButtonState(opt, buttonOpt, downIsActive, downIsEnabled);
         bool isPlusMinus = opt->buttonSymbols & QAbstractSpinBox::PlusMinus;
 
@@ -2840,7 +2842,7 @@ bool ChameleonStyle::drawSpinBox(const QStyleOptionSpinBox *opt,
             if (opt->activeSubControls == SC_SpinBoxDown) {
                 DDrawUtils::drawSubtract(painter, cent_rect, getColor(opt, QPalette::ButtonText), 1);
             } else {
-                DDrawUtils::drawSubtract(painter, cent_rect,  buttonOpt.palette.color(QPalette::ButtonText), 1);
+                DDrawUtils::drawSubtract(painter, cent_rect, buttonOpt.palette.color(QPalette::ButtonText), 1);
             }
         } else {
             QRect arrowRect = subRect;
