@@ -3055,7 +3055,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 QRect rect(0, 0, opt->rect.height(), opt->rect.height()) ;
                 int boxHeight = qAbs(rect.height());
 
-                if (w && !qobject_cast<const QComboBox *>(w)->isEditable())
+                if (w && qobject_cast<const QComboBox *>(w) && !qobject_cast<const QComboBox *>(w)->isEditable())
                     break;
                 if (opt->direction == Qt::LeftToRight)
                     rect.moveRight(opt->rect.right());
