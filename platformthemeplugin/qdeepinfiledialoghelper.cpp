@@ -199,6 +199,11 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
     DIALOG_CALL(show());
 
     if (nativeDialog && parent) {
+        // 如果能获取到wayland下的display 应该 XSetTransientForHint(wayland_dispaly
+        // 此处暂时返回，至少不会导致崩溃。。。task-view-31919.
+        if (qApp->platformName() != "dxcb" && !qApp->property("_d_isDxcb").toBool())
+            return true;
+
         XSetTransientForHint(QX11Info::display(), nativeDialog->winId(), parent->winId());
     }
 
