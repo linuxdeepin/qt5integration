@@ -570,6 +570,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 }
             }
 
+            p->save();
             p->setBrush(getColor(opt, QPalette::Highlight));
             p->setPen(Qt::NoPen);
             p->setRenderHint(QPainter::Antialiasing);
@@ -639,26 +640,40 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 rect.moveRight(scrollBar->rect.right() - 2);
             }
 
-            p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
-
             QColor lineColor(opt->palette.color(QPalette::Base));
             if (DGuiApplicationHelper::toColorType(lineColor) == DGuiApplicationHelper::LightType) {
+                // 内侧绘制一个像素的inside border
+                p->setPen(QPen(QColor(0, 0, 0, 0.05 * 255), Metrics::Painter_PenWidth));
+                // normal状态
                 p->setBrush(QColor(0, 0, 0, 0.3 * 255));
 
-                if (scrollBar->state & QStyle::State_Enabled)
-                    p->setBrush(QColor(0, 0, 0, 0.5 * 255));
                 if (scrollBar->state & QStyle::State_MouseOver)
+                    // hover 状态
                     p->setBrush(QColor(0, 0, 0, 0.6 * 255));
+                if (scrollBar->state & QStyle::State_Sunken)
+                    // active状态
+                    p->setBrush(QColor(0, 0, 0, 0.5 * 255));
             } else {
-                p->setBrush(QColor(255, 255, 255, 0.2 * 255));
+                // 外侧拓展一个像素的outside border
+                p->setPen(QPen(QColor(0, 0, 0, 0.2 * 255), Metrics::Painter_PenWidth));
+                p->setBrush(Qt::NoBrush);
+                p->drawRoundedRect(rect.adjusted(-1, -1, 1, 1),
+                                   realRadius, realRadius);
+                // 内侧绘制一个像素的inside border
+                p->setPen(QPen(QColor(255, 255, 255, 0.05 * 255), Metrics::Painter_PenWidth));
+                // normal状态
+                p->setBrush(QColor(96, 96, 96, 0.7 * 255));
 
-                if (scrollBar->state & QStyle::State_Enabled)
-                    p->setBrush(QColor(255, 255, 255, 0.1 * 255));
                 if (scrollBar->state & QStyle::State_MouseOver)
-                    p->setBrush(QColor(255, 255, 255, 0.2 * 255));
+                    // hover 状态
+                    p->setBrush(QColor(96, 96, 96, 0.8 * 255));
+                if (scrollBar->state & QStyle::State_Sunken)
+                    // active状态
+                    p->setBrush(QColor(112, 112, 112, 0.8 * 255));
             }
 
             p->drawRoundedRect(rect, realRadius, realRadius);
+            p->restore();
         }
         break;
     }
