@@ -1816,10 +1816,6 @@ bool ChameleonStyle::drawTabBarScrollButton(QPainter *painter, const QStyleOptio
 
 bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox *comboBox, const QWidget *widget) const
 {
-    if (comboBox->editable && comboBox->state.testFlag(QStyle::State_HasFocus)) {
-        proxy()->drawPrimitive(PE_FrameFocusRect, comboBox, painter, widget);
-    }
-
     QRect rect(comboBox->rect);
     QStyleOptionComboBox comboBoxCopy = *comboBox;
     QRect downArrowRect = proxy()->subControlRect(CC_ComboBox, &comboBoxCopy, SC_ComboBoxArrow, widget);
@@ -1892,6 +1888,10 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
 
         painter->setPen(getColor(comboBox, DPalette::ButtonText));
         proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
+    }
+
+    if (comboBox->state.testFlag(QStyle::State_HasFocus)) {
+        proxy()->drawPrimitive(PE_FrameFocusRect, comboBox, painter, widget);
     }
 
     return true;
