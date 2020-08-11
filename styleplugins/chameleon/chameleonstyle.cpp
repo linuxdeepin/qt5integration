@@ -2039,6 +2039,81 @@ void ChameleonStyle::drawSliderHandle(const QStyleOptionComplex *opt, QRectF& re
     }
 }
 
+void ChameleonStyle::drawSliderHandleFocus(const QStyleOptionComplex *opt, QRectF &rectHandle, QPainter *p, const QWidget *w) const
+{
+    if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+        const DSlider *dslider = qobject_cast<const DSlider *>(w);
+        QSlider::TickPosition tickPosition = slider->tickPosition;
+
+        int lineOffset = DStyle::pixelMetric(PM_FocusBorderWidth) / 2;
+        int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
+        int marginRect = DStyle::pixelMetric(PM_FocusBorderSpacing) + lineOffset;
+
+        if (dslider)
+            tickPosition = dslider->tickPosition();
+
+        if (tickPosition == QSlider::NoTicks) {
+            p->drawRoundedRect(rectHandle.adjusted(-marginRect, -marginRect, marginRect, marginRect),
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) + marginRect,
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) + marginRect);
+        } else {
+            qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
+            QPainterPath focusPath;
+
+            if (slider->orientation == Qt::Horizontal) {
+                if (tickPosition == QSlider::TicksAbove) {  //尖角朝上
+                    focusPath.moveTo(QPointF(rectHandle.left() - marginRect, rectHandle.bottom() - radius));
+                    focusPath.lineTo(QPointF(rectHandle.left() - marginRect, rectHandle.top() + radius - lineOffset));
+                    focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.top() - margin));
+                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.top() + radius - lineOffset));
+                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.bottom() - radius));
+                    focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - marginRect, rectHandle.bottom() - radius - radius -marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
+                                    -0, -90);
+                    focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + marginRect));
+                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.bottom() - radius -radius -marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
+                                    -90, -90);
+                } else { //尖角朝下
+                    focusPath.moveTo(QPointF(rectHandle.left() - marginRect, rectHandle.top() + radius));
+                    focusPath.lineTo(QPointF(rectHandle.left() - marginRect, rectHandle.bottom() - radius + lineOffset));
+                    focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.bottom() + margin));
+                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.bottom() - radius + lineOffset));
+                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.top() + radius));
+                    focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - marginRect, rectHandle.top() - marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
+                                    0, 90);
+                    focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.top() - marginRect));
+                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.top() - marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
+                                    90, 90);
+                }
+            } else {
+                if (tickPosition == QSlider::TicksLeft) {  //尖角朝左
+                    focusPath.moveTo(QPointF(rectHandle.right() - radius, rectHandle.top() - marginRect));
+                    focusPath.lineTo(QPointF(rectHandle.left() + radius - lineOffset, rectHandle.top() - marginRect));
+                    focusPath.lineTo(QPointF(rectHandle.left() - margin, rectHandle.center().y()));
+                    focusPath.lineTo(QPointF(rectHandle.left() + radius - lineOffset, rectHandle.bottom() + marginRect));
+                    focusPath.lineTo(QPointF(rectHandle.right() - radius, rectHandle.bottom() + marginRect));
+                    focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - marginRect, rectHandle.bottom() - radius - radius - marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
+                                    -90, 90);
+                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.top() + radius));
+                    focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - marginRect, rectHandle.top() - marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
+                                    0, 90);
+                } else { //尖角朝右
+                    focusPath.moveTo(QPointF(rectHandle.left() + radius, rectHandle.top() - marginRect));
+                    focusPath.lineTo(QPointF(rectHandle.right() - radius + lineOffset, rectHandle.top() - marginRect));
+                    focusPath.lineTo(QPointF(rectHandle.right() + margin, rectHandle.center().y()));
+                    focusPath.lineTo(QPointF(rectHandle.right() - radius + lineOffset, rectHandle.bottom() + marginRect));
+                    focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + marginRect));
+                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.bottom() - radius - radius - marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
+                                    -90, -90);
+                    focusPath.lineTo(QPointF(rectHandle.left() - marginRect, rectHandle.top() + radius));
+                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.top() - marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
+                                    180, -90);
+                }
+            }
+            p->drawPath(focusPath);
+        }
+    }
+}
+
 void ChameleonStyle::drawIcon(const QStyleOption *opt, QPainter *p, QRect& rect, const QIcon& icon, bool checked) const
 {
     bool enabled = opt->state & State_Enabled;
@@ -2643,6 +2718,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             QRectF rectHandle = proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, w);                    //滑块矩形
             QRectF rectSliderTickmarks = proxy()->subControlRect(CC_Slider, opt, SC_SliderTickmarks, w);        //刻度的矩形
             QRect rectGroove = proxy()->subControlRect(CC_Slider, opt, SC_SliderGroove, w);                     //滑槽的矩形
+            int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
 
 //            //测试(保留不删)
 //            p->fillRect(rect, Qt::gray);
@@ -2714,6 +2790,15 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 p->setPen(Qt::NoPen);
                 p->setBrush((opt->activeSubControls & SC_SliderHandle) ? getColor(opt, QPalette::Highlight) : opt->palette.highlight());
                 drawSliderHandle(opt, rectHandle, p, w);
+
+                // 绘画 滑块焦点
+                if (slider->state & State_HasFocus) {
+                    pen.setColor(getColor(opt, DPalette::Highlight));
+                    pen.setWidth(DStyle::pixelMetric(PM_FocusBorderWidth));
+                    p->setPen(pen);
+                    p->setBrush(Qt::NoBrush);
+                    drawSliderHandleFocus(opt, rectHandle, p, w);
+                }
             }
 
             //绘画 刻度,绘画方式了参考qfusionstyle.cpp
@@ -2728,7 +2813,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 int len = proxy()->pixelMetric(PM_SliderLength, slider, w);
                 while (v <= slider->maximum + 1) {                                          //此处不添加+1的话, 会少绘画一根线
                     const int v_ = qMin(v, slider->maximum);
-                    int pos = sliderPositionFromValue(slider->minimum, slider->maximum, v_, available) + len / 2;
+                    int pos = margin + sliderPositionFromValue(slider->minimum, slider->maximum, v_, available - (2 * margin)) + len / 2;
 
                     if (slider->orientation == Qt::Horizontal) {
                         if (slider->tickPosition == QSlider::TicksBothSides) {              //两侧都会绘画, 总的矩形-中心滑槽滑块最小公共矩形
@@ -2979,21 +3064,27 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
     }
     case CC_Slider: {
         if (const QStyleOptionSlider *option = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
+            int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
             QRectF rect = option->rect;                                                    //Slider控件总的大小矩形
             int slider_size = proxy()->pixelMetric(PM_SliderControlThickness, opt, w);     //滑块的高度
 //            int tick_size = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, w);         //刻度的高度
             QRectF slider_handle_rect = rect;                                              //滑块和滑漕的的最小公共矩形 (后面被用作临时且被改变的)
 
+
             if (option->orientation == Qt::Horizontal) {
                 slider_handle_rect.setHeight(slider_size);
-                if (option->tickPosition == QSlider::TicksAbove) slider_handle_rect.moveBottom(rect.bottom());
-                if (option->tickPosition == QSlider::TicksBelow) slider_handle_rect.moveTop(rect.top());
-                if (option->tickPosition == QSlider::TicksBothSides) slider_handle_rect.moveCenter(rect.center());
+                slider_handle_rect.adjust(margin, 0, -margin, 0);
+                if (option->tickPosition == QSlider::TicksAbove) slider_handle_rect.moveBottom(rect.bottom() - margin);
+                if (option->tickPosition == QSlider::TicksBelow) slider_handle_rect.moveTop(rect.top() + margin);
+                if (option->tickPosition == QSlider::TicksBothSides || option->tickPosition == QSlider::NoTicks)
+                    slider_handle_rect.moveCenter(rect.center());
             } else {
                 slider_handle_rect.setWidth(slider_size);
-                if (option->tickPosition == QSlider::TicksRight)  slider_handle_rect.moveLeft(rect.left());
-                if (option->tickPosition == QSlider::TicksLeft)   slider_handle_rect.moveRight(rect.right());
-                if (option->tickPosition == QSlider::TicksBothSides) slider_handle_rect.moveCenter(rect.center());
+                slider_handle_rect.adjust(0, margin, 0, -margin);
+                if (option->tickPosition == QSlider::TicksRight) slider_handle_rect.moveLeft(rect.left() + margin);
+                if (option->tickPosition == QSlider::TicksLeft)   slider_handle_rect.moveRight(rect.right() - margin);
+                if (option->tickPosition == QSlider::TicksBothSides || option->tickPosition == QSlider::NoTicks)
+                    slider_handle_rect.moveCenter(rect.center());
             }
 
             QRectF rectStatic =  slider_handle_rect;   //rectStatic作为 滑块和滑漕的的最小公共矩形(不改变)
@@ -3039,20 +3130,22 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                 QRectF tick_rect = rect;
 
                 if (option->orientation == Qt::Horizontal) {
-                    tick_rect.setHeight(rect.height() - slider_handle_rect.height());
+                    tick_rect.setHeight(rect.height() - slider_handle_rect.height() - ( 2 * margin));
+                    tick_rect.adjust(margin, 0, -margin, 0);
 
                     if (option->tickPosition == QSlider::TicksAbove) {
-                        tick_rect.moveTop(rect.top());
+                        tick_rect.moveTop(rect.top() + margin);
                     } else if (option->tickPosition == QSlider::TicksBelow) {
-                        tick_rect.moveBottom(rect.bottom());
+                        tick_rect.moveBottom(rect.bottom() -margin);
                     }
                 } else {
-                    tick_rect.setWidth(rect.width() - slider_handle_rect.width());
+                    tick_rect.setWidth(rect.width() - slider_handle_rect.width() - (2 *margin));
+                    tick_rect.adjust(0, margin, 0, -margin);
 
                     if (option->tickPosition == QSlider::TicksLeft) {
-                        tick_rect.moveLeft(rect.left());
+                        tick_rect.moveLeft(rect.left() + margin);
                     } else if (option->tickPosition == QSlider::TicksRight) {
-                        tick_rect.moveRight(rect.right());
+                        tick_rect.moveRight(rect.right() - margin);
                     }
                 }
 
@@ -3215,10 +3308,12 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             } else {
             }
 
+            int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
             if (slider->orientation == Qt::Horizontal){
-                size.setHeight(qMax(size.height(), sliderContHeight));
+                size.setHeight(qMax(size.height(), sliderContHeight) + (2 * margin));
+                size.setWidth(50);
             } else {
-                size.setWidth(qMax(size.width(), sliderContHeight));
+                size.setWidth(qMax(size.width(), sliderContHeight) + (2 * margin));
             }
         }
         break;
