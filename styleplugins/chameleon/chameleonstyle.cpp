@@ -785,13 +785,20 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setBrush(inactive);
                 } else {
                     // 初始化 tabbar 的背景色
-                    if (DGuiApplicationHelper::instance()->paletteType() != DGuiApplicationHelper::DarkType) {
+                    if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::LightType
+                            || (DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::LightType
+                                && DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::UnknownType)) {
                         inactive = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Light), 0, 0, 0, +20, +20, +20, 0);
-                    } else if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::DarkType) {
+                    } else if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::DarkType
+                               || (DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
+                                   && DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::UnknownType)) {
                         inactive = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Light), 0, 0, 0, -57, -57, -57, 0);
+                    } else {
+                        inactive = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Light), 0, 0, 0, +20, +20, +20, 0);
                     }
 
                     p->setBrush(inactive);
+                    const_cast<QWidget *>(w)->update();
                 }
 
                 p->setPen(Qt::NoPen);
@@ -799,11 +806,19 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 p->drawRect(opt->rect);
 
                 // 绘制边框线
-                if (DGuiApplicationHelper::instance()->paletteType() != DGuiApplicationHelper::DarkType) {
+                if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::LightType
+                        || (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::UnknownType
+                            && DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::LightType)) {
                     p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
-                } else {
+                } else if (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::DarkType
+                           || (DGuiApplicationHelper::instance()->paletteType() == DGuiApplicationHelper::UnknownType
+                               && DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType)){
                     p->setPen(QPen(QColor(0, 0, 0, static_cast<int>(0.05 * 255)), Metrics::Painter_PenWidth));
+                } else {
+                    p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
                 }
+
+
                 p->setBrush(Qt::NoBrush);
                 p->drawRect(opt->rect);
                 //对tabbar尾后加一根明显的线
