@@ -225,7 +225,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
 
         if (w && qobject_cast<DSpinBox*>(w->parentWidget())) {
-            if (w->property("_d_dtk_spinBox").toBool()) {
+            if (w->parentWidget()->property("_d_dtk_spinBox").toBool()) {
                 DDrawUtils::drawRoundedRect(p, opt->rect, frame_radius, frame_radius,
                                         DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
             } else {
