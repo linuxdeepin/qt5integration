@@ -1,2 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS += dstyleplugin chameleon
+SUBDIRS += chameleon
+
+!isEmpty(ENABLE_OLD_STYLE): SUBDIRS += dstyleplugin
