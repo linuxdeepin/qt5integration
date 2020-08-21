@@ -58,6 +58,7 @@
 #include <DTabBar>
 #include <DDateTimeEdit>
 #include <private/qcombobox_p.h>
+#include <private/qcommonstyle_p.h>
 
 #include <qdrawutil.h>
 #include <qpa/qplatformwindow.h>
@@ -133,6 +134,19 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_PanelItemViewItem: {
+        if (w && w->objectName() == "qt_calendar_calendarview") {
+            if (opt->state & QStyle::State_Selected) {
+                QRect textRect = opt->rect;
+                textRect.setWidth(textRect.height());
+                p->setBrush(opt->palette.brush(QPalette::Highlight));
+                textRect.moveCenter(opt->rect.center());
+                p->setPen(Qt::NoPen);
+                p->setRenderHint(QPainter::Antialiasing);
+                p->drawEllipse(textRect.adjusted(1, 1, -1, -1));
+            }
+            return;
+        }
+
         //QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
             //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
@@ -1388,6 +1402,61 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         }
         p->restore();
         return;
+    }
+    case CE_ItemViewItem: {
+        if (w && w->objectName() == "qt_calendar_calendarview") {
+            if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+                p->save();
+                p->setClipRect(opt->rect);
+
+                //绘制禁用项
+                if (!(vopt->state & QStyle::State_Enabled)) {
+                    p->save();
+                    p->setPen(Qt::NoPen);
+                    p->setBrush(getColor(vopt, DPalette::Window));
+                    p->drawRect(vopt->rect);
+                    p->restore();
+                }
+
+                // 绘制当前选中项
+                proxy()->drawPrimitive(PE_PanelItemViewItem, opt, p, w);
+
+                // draw the text
+                if (!vopt->text.isEmpty()) {
+                    QPalette::ColorGroup cg = vopt->state & QStyle::State_Enabled
+                                          ? QPalette::Normal : QPalette::Disabled;
+                    if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
+                        cg = QPalette::Inactive;
+
+                    if (vopt->state & QStyle::State_Selected) {
+                        p->setPen(vopt->palette.color(cg, QPalette::HighlightedText));
+                    } else {
+                        p->setPen(vopt->palette.color(cg, QPalette::Text));
+                    }
+
+                    QCommonStylePrivate *d = reinterpret_cast<QCommonStylePrivate *>(qGetPtrHelper(d_ptr));
+                    d->viewItemDrawText(p, vopt, opt->rect);
+                }
+
+                // draw the focus rect
+                 if (vopt->state & QStyle::State_HasFocus) {
+                    QStyleOptionFocusRect o;
+                    o.QStyleOption::operator=(*vopt);
+                    o.rect = proxy()->subElementRect(SE_ItemViewItemFocusRect, vopt, w);
+                    o.state |= QStyle::State_KeyboardFocusChange;
+                    o.state |= QStyle::State_Item;
+                    QPalette::ColorGroup cg = (vopt->state & QStyle::State_Enabled)
+                                  ? QPalette::Normal : QPalette::Disabled;
+                    o.backgroundColor = vopt->palette.color(cg, (vopt->state & QStyle::State_Selected)
+                                                 ? QPalette::Highlight : QPalette::Window);
+                    proxy()->drawPrimitive(QStyle::PE_FrameFocusRect, &o, p, w);
+                }
+
+                 p->restore();
+            }
+            return;
+        }
+        break;
     }
     default:
         break;
@@ -2703,7 +2772,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
 
                 //DelayedPopup 模式，箭头右居中, 加一个日历 月按钮箭头居中
                 if (toolbutton->features & QStyleOptionToolButton::PopupDelay || (w && w->objectName() == "qt_calendar_monthbutton")) {
-                    newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() / 2, mbi - 6, mbi - 6);
+                    newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() / 2, mbi - 4, mbi - 4);
                     newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
                 }
 
@@ -2716,7 +2785,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                  int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, w);
                  QRect ir = toolbutton->rect;
 
-                 newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() / 2, mbi - 6, mbi - 6);
+                 newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() / 2, mbi - 4, mbi - 4);
                  newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
                  proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, w);
             }
@@ -3575,7 +3644,7 @@ void ChameleonStyle::polish(QWidget *w)
         calendar->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
 
         auto topWidget = calendar->findChild<QWidget *>("qt_calendar_navigationbar");
-        topWidget->setBackgroundRole(DPalette::Window);
+        topWidget->setBackgroundRole(QPalette::Base);
 
         auto layout = qobject_cast<QLayout*>(topWidget->layout());
         layout->setMargin(radius / 2);
@@ -3584,12 +3653,20 @@ void ChameleonStyle::polish(QWidget *w)
     if (w->objectName() == "qt_calendar_yearbutton"
                         || w->objectName() == "qt_calendar_monthbutton") {
         w->setProperty("_d_calendarToolBtn", true);
+
+        DFontSizeManager *fontManager =  DFontSizeManager::instance();
+        fontManager->bind(w, DFontSizeManager::T5, QFont::Normal);
     }
 
     if (w->objectName() == "qt_calendar_prevmonth"
             || w->objectName() == "qt_calendar_nextmonth") {
         int btnWidget = DStyle::pixelMetric(DStyle::PM_ButtonMinimizedSize);
         w->setMinimumSize(btnWidget, btnWidget);
+    }
+
+    if (w->objectName() == "qt_calendar_calendarview") {
+        auto view = qobject_cast<QTableView *>(w);
+        view->setItemDelegate(new QStyledItemDelegate);
     }
 
     if (DApplication::isDXcbPlatform()) {
@@ -3702,8 +3779,16 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
     }
 
     bool table = qobject_cast<const QTableView *>(w);
+    //QCalendarWidget的QTableView焦点状态与QTableView不同
+    bool calendar = w && (w->objectName() == "qt_calendar_calendarview");
 
-    if (table) {
+    if (calendar) {
+        QRect rect = opt->rect;
+        rect.setWidth(rect.height());
+        rect.moveCenter(opt->rect.center());
+        p->drawEllipse(rect.adjusted(1, 1, -1, -1));
+
+    } else if (table) {
         p->drawRect(border);
     } else {
         p->drawRoundedRect(border, frame_radius + margins, frame_radius + margins);
@@ -3714,7 +3799,12 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
     p->setPen(pen);
     const int offset = 2;
 
-    if (table) {
+    if (calendar) {
+        QRect rect = opt->rect;
+        rect.setWidth(rect.height());
+        rect.moveCenter(opt->rect.center());
+        p->drawEllipse(rect.adjusted(offset, offset, -offset, -offset));
+    } else if (table) {
         QRect rect = border.adjusted(offset, offset, -1, -1);
         p->drawLine(rect.topLeft(), rect.topRight());
         p->drawLine(rect.bottomLeft(), rect.bottomRight());
