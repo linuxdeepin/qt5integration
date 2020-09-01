@@ -220,9 +220,15 @@ void DBuiltinIconEngine::paint(QPainter *painter, const QRect &rect,
     if (!entry)
         return;
 
-    QPixmap pm = entry->pixmap(pixmapSize, mode, state);
-    ImageEntry::Type type = static_cast<ImageEntry*>(entry)->type;
+    // 如果有 background 则绘制背景图先
+    QString bgFileName = entry->filename + QStringLiteral(".background");
+    QIcon bgIcon = QIcon(bgFileName);
+    if (!bgIcon.isNull()) {
+        bgIcon.paint(painter, rect, Qt::AlignCenter, mode, state);
+    }
 
+    QPixmap pm = entry->pixmap(pixmapSize, mode, state);
+    ImageEntry::Type type = static_cast<ImageEntry *>(entry)->type;
     if (type == ImageEntry::TextType || (type == ImageEntry::ActionType && mode != QIcon::Normal)) {
         QPainter pa(&pm);
         pa.setCompositionMode(QPainter::CompositionMode_SourceIn);
@@ -292,7 +298,8 @@ QThemeIconInfo DBuiltinIconEngine::loadIcon(const QString &iconName, uint key)
         for (const QFileInfo &icon_file_info : dir.entryInfoList()) {
             const QString &file_name = icon_file_info.fileName();
 
-            if (!file_name.startsWith(iconName))
+            // do not load background file
+            if (!file_name.startsWith(iconName) || file_name.endsWith(QStringLiteral(".background")))
                 continue;
 
             // 先找到px所在位置
