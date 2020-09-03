@@ -2817,6 +2817,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             if (opt->subControls & SC_SliderGroove) {
                 pen.setStyle(Qt::CustomDashLine);
                 pen.setWidth(4);
+                // 默认高亮色滑槽颜色
                 pen.setBrush((opt->activeSubControls & SC_SliderHandle) ? getColor(opt, QPalette::Highlight) : opt->palette.highlight());
                 pen.setDashOffset(0);
                 pen.setDashPattern(QVector<qreal>()<< 0.5 << 0.25);
@@ -2824,48 +2825,37 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 p->setPen(pen);
                 p->setRenderHint(QPainter::Antialiasing);
 
-                //pen.color 默认进来就是高亮色Highlight
-                if (!isNoticks(slider, p, w)) {
-                    QColor color = getColor(opt, DPalette::ObviousBackground, w);
+                QColor color = getColor(opt, DPalette::ObviousBackground, w); //绘画的右侧/上侧的滑槽颜色一定是灰
+
+                // 属性启用灰色滑槽
+                QVariant prop = dslider ? const_cast<DSlider *>(dslider)->slider()->property("_d_dtk_sldier_across") : QVariant();
+                bool hasProperty = prop.isValid();
+                // 0. dslider 默认没有设置此属性(设置在d->slider上了...)
+                // 1. 设置了属性 true 则灰色滑槽
+                // 2. 如果设置了 false 高亮
+                // 3. 没有设置属性时，没有刻度的（圆角） slider 默认高亮色，有刻度(尖角) slider 默认灰色
+                if (prop.toBool() || (!hasProperty && !isNoticks(slider, p, w))) {
                     pen.setColor(color);
                     p->setPen(pen);
                 }
 
-                QColor color = getColor(opt, DPalette::ObviousBackground, w);  //绘画的右侧/上侧的滑槽颜色一定是灰
-
                 if (slider->orientation == Qt::Horizontal) {
-                    if (w && w->property("_d_dtk_sldier_across").toBool()) {
-                        pen.setColor(color);
-                        p->setPen(pen);
-                    }
-
+                    // 绘制最左边到滑块的位置的滑槽
                     qreal rectWidth = rectHandle.width() / 2.0;
-                    if (tickPosition == QSlider::NoTicks) {
-                        p->drawLine(QPointF(rectGroove.left() + rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
-
-                        pen.setColor(color);
-                        p->setPen(pen);
-                        p->drawLine(QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
-                    } else {
-                        p->drawLine(QPointF(rectGroove.left() + rectWidth, rectHandle.center().y()), QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()));
-                    }
+                    p->drawLine(QPointF(rectGroove.left() + rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
+                    // 绘制滑块到最右的位置的滑槽
+                    pen.setColor(color);
+                    p->setPen(pen);
+                    p->drawLine(QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
 
                 } else {
-                    if (w && w->property("_d_dtk_sldier_across").toBool()) {
-                        pen.setColor(color);
-                        p->setPen(pen);
-                    }
-
+                    // 绘制最上边到滑块的位置的滑槽
                     qreal rectWidth = rectHandle.height() / 2.0;
-                    if (tickPosition == QSlider::NoTicks) {
-                        p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - rectWidth), QPointF(rectGroove.center().x(),  rectHandle.center().y()));
-
-                        pen.setColor(color);
-                        p->setPen(pen);
-                        p->drawLine(QPointF(rectGroove.center().x(),  rectGroove.top()  + rectWidth), QPointF(rectGroove.center().x(),  rectHandle.center().y()));
-                    } else {
-                        p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - rectWidth), QPointF(rectGroove.center().x(),  rectGroove.top()  + rectWidth));
-                    }
+                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - rectWidth), QPointF(rectGroove.center().x(), rectHandle.center().y()));
+                    // 绘制滑块到最下的位置的滑槽
+                    pen.setColor(color);
+                    p->setPen(pen);
+                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.top() + rectWidth), QPointF(rectGroove.center().x(), rectHandle.center().y()));
                 }
             }
 
