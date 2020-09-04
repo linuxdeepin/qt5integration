@@ -1577,9 +1577,7 @@ bool ChameleonStyle::drawTabBar(QPainter *painter,  const QStyleOptionTab *tab, 
 
 bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *tab, const QWidget *widget) const
 {
-    const QTabBar *m_tabbar = qobject_cast<const QTabBar *>(widget);
-
-    if (!m_tabbar)
+    if (!widget)
         return false;
 
     bool isTriangularMode = false;
