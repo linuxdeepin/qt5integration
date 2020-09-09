@@ -1240,6 +1240,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
                 if (toolbutton->state & (State_MouseOver | State_Sunken))   //hover状态 、press状态
                     p->setBrush(getColor(toolbutton, DPalette::Button));
+                if (toolbutton->state & State_HasFocus)
+                    p->setPen(getColor(toolbutton, DPalette::Highlight));
 
                 //强制绘制　日历　左右翻页背景
                 if (w->objectName() == "qt_calendar_prevmonth"
@@ -2735,15 +2737,6 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 }
             }
 
-            if (toolbutton->state & State_HasFocus) {
-                QStyleOptionFocusRect fr;
-                fr.QStyleOption::operator=(*toolbutton);
-                fr.rect.adjust(3, 3, -3, -3);
-                if (toolbutton->features & QStyleOptionToolButton::MenuButtonPopup)
-                    fr.rect.adjust(0, 0, -proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator,
-                                                      toolbutton, w), 0);
-                proxy()->drawPrimitive(PE_FrameFocusRect, &fr, p, w);
-            }
             QStyleOptionToolButton label = *toolbutton;
             label.state = bflags;
             int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, w);
@@ -2754,6 +2747,16 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             }
 
             proxy()->drawControl(CE_ToolButtonLabel, &label, p, w);
+
+            if (toolbutton->state & State_HasFocus) {
+                QStyleOptionFocusRect fr;
+                fr.QStyleOption::operator=(*toolbutton);
+                //fr.rect.adjust(3, 3, -3, -3);
+                if (toolbutton->features & QStyleOptionToolButton::MenuButtonPopup)
+                    fr.rect.adjust(0, 0, -proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator,
+                                                      toolbutton, w), 0);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fr, p, w);
+            }
 
             if (toolbutton->subControls & SC_ToolButtonMenu) {
                 tool.rect = menuarea;
