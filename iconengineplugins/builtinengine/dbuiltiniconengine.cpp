@@ -168,7 +168,8 @@ DBuiltinIconEngine::DBuiltinIconEngine(const DBuiltinIconEngine &other)
 
 DBuiltinIconEngine::~DBuiltinIconEngine()
 {
-
+    if (!m_info.entries.isEmpty())
+        qDeleteAll(m_info.entries);
 }
 
 QSize DBuiltinIconEngine::actualSize(const QSize &size, QIcon::Mode mode,
