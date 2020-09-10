@@ -486,6 +486,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         return;
     }
+    case PE_FrameStatusBarItem: {
+        return;
+    }
     default:
         break;
     }
