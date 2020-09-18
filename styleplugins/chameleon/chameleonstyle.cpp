@@ -1319,8 +1319,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         const bool isLast( headerOption->position == QStyleOptionHeader::End );
 
         // fill background
-        QColor color(opt->palette.color(QPalette::Base));
-//        color = DGuiApplicationHelper::adjustColor(color, 0, 0, -5, 0, 0, 0, 0);
+        QColor color(opt->palette.color(QPalette::Button));//此处用Button，与QCommonstyle保持一致
         p->fillRect(opt->rect, QBrush(color));
 
         QColor lineColor(opt->palette.color(QPalette::Base));
