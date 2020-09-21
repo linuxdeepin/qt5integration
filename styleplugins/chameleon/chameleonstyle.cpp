@@ -30,6 +30,7 @@
 #include <DSlider>
 #include <DTabBar>
 #include <DSearchEdit>
+#include <DButtonBox>
 
 #include <QLabel>
 #include <QCalendarWidget>
@@ -3775,6 +3776,9 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
     bool table = qobject_cast<const QTableView *>(w);
     //QCalendarWidget的QTableView焦点状态与QTableView不同
     bool calendar = w && (w->objectName() == "qt_calendar_calendarview");
+    // DButtonBoxButton在不同位置焦点不同
+    const DButtonBoxButton *buttonBoxButton = qobject_cast<const DButtonBoxButton *>(w);
+    const DStyleOptionButtonBoxButton *btnopt = qstyleoption_cast<const DStyleOptionButtonBoxButton *>(opt);
 
     if (calendar) {
         QRect rect = opt->rect;
@@ -3784,6 +3788,32 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
 
     } else if (table) {
         p->drawRect(border);
+    } else if (buttonBoxButton && btnopt) {
+        if (btnopt->position == DStyleOptionButtonBoxButton::Beginning) {
+            // Begin
+            if (btnopt->orientation == Qt::Horizontal) {
+                DDrawUtils::drawRoundedRect(p, border, frame_radius, frame_radius,
+                                            DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
+            } else {
+                DDrawUtils::drawRoundedRect(p, border, frame_radius, frame_radius,
+                                            DDrawUtils::TopLeftCorner | DDrawUtils::TopRightCorner);
+            }
+        } else if (btnopt->position == DStyleOptionButtonBoxButton::End) {
+            // End
+            if (btnopt->orientation == Qt::Horizontal) {
+                DDrawUtils::drawRoundedRect(p, border, frame_radius, frame_radius,
+                                            DDrawUtils::TopRightCorner | DDrawUtils::BottomRightCorner);
+            } else {
+                DDrawUtils::drawRoundedRect(p, border, frame_radius, frame_radius,
+                                            DDrawUtils::BottomLeftCorner | DDrawUtils::BottomRightCorner);
+            }
+        } else if (btnopt->position == DStyleOptionButtonBoxButton::Middle) {
+            // Middle
+            p->drawRect(border);
+        } else if (btnopt->position == DStyleOptionButtonBoxButton::OnlyOne) {
+            // OnlyOne
+            p->drawRoundedRect(border, frame_radius, frame_radius);
+        }
     } else {
         p->drawRoundedRect(border, frame_radius + margins, frame_radius + margins);
     }
@@ -3804,10 +3834,35 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
         p->drawLine(rect.bottomLeft(), rect.bottomRight());
         p->drawLine(rect.topLeft(), rect.bottomLeft());
         p->drawLine(rect.topRight(), rect.bottomRight());
+    } else if (buttonBoxButton && btnopt) {
+        if (btnopt->position == DStyleOptionButtonBoxButton::Beginning) {
+            // Begin
+            if (btnopt->orientation == Qt::Horizontal) {
+                DDrawUtils::drawRoundedRect(p, border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius,
+                                            DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
+            } else {
+                DDrawUtils::drawRoundedRect(p, border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius,
+                                            DDrawUtils::TopLeftCorner | DDrawUtils::TopRightCorner);
+            }
+        } else if (btnopt->position == DStyleOptionButtonBoxButton::End) {
+            // End
+            if (btnopt->orientation == Qt::Horizontal) {
+                DDrawUtils::drawRoundedRect(p, border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius,
+                                            DDrawUtils::TopRightCorner | DDrawUtils::BottomRightCorner);
+            } else {
+                DDrawUtils::drawRoundedRect(p, border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius,
+                                            DDrawUtils::BottomLeftCorner | DDrawUtils::BottomRightCorner);
+            }
+        } else if (btnopt->position == DStyleOptionButtonBoxButton::Middle) {
+            // Middle
+            p->drawRect(border.adjusted(offset, offset, -offset, -offset));
+        } else if (btnopt->position == DStyleOptionButtonBoxButton::OnlyOne) {
+            // OnlyOne
+            p->drawRoundedRect(border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius);
+        }
     } else {
         p->drawRoundedRect(border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius);
     }
-
 }
 
 bool ChameleonStyle::isNoticks(const QStyleOptionSlider *slider, QPainter *p, const QWidget *w) const
