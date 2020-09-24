@@ -1152,7 +1152,22 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 QPainterPath inter = pathRoundRect.intersected(pathRect);
                 p->drawPath(inter);
             } else {
-                p->drawRoundedRect(rect, frameRadius, frameRadius);
+                if (rect.width() < 8 && rect.width() != 0) {
+                    QPainterPath path;
+                    QRect startRect = rect;
+                    QRect endRect = rect;
+                    startRect.setWidth(w->height());
+                    startRect.setHeight(w->height());
+                    path.moveTo(rect.x() + startRect.height() / 2, rect.y());
+                    //绘制进度条最小样式（半圆）
+                    path.arcTo(startRect, 90, 180);
+                    p->drawPath(path);
+                    //绘制进度条样式为圆前样式
+                    endRect.setX(startRect.x() + startRect.width() / 4);
+                    DDrawUtils::drawRoundedRect(p, endRect, frameRadius / 2, frameRadius / 2,
+                                                DDrawUtils::TopRightCorner | DDrawUtils::BottomRightCorner);
+                } else
+                    p->drawRoundedRect(rect, frameRadius, frameRadius);
             }
         }
         return;
