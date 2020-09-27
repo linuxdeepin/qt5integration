@@ -545,7 +545,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 bool prevVisible = opt->styleObject->property("_d_slider_visible").toBool();
 
                 // 判断是否应当进入动画流程
-                if ((!ok || prevValue == scrollBar->sliderValue) && !(opt->state & QStyle::State_MouseOver)) {
+                if ((!ok || prevValue == scrollBar->sliderValue) && !(scrollBar->activeSubControls)) {
                     bool disable_animation = opt->styleObject->property("_d_disable_animation").toBool();
 
                     if (!disable_animation) {
