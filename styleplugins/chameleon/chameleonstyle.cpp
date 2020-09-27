@@ -197,21 +197,31 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-
-            if (vopt->state & QStyle::State_Selected) {
+            if(qobject_cast<const QTableView *>(w)) {
                 QRect select_rect = opt->rect;
+                p->setPen(Qt::NoPen);
+                if (vopt->state & QStyle::State_Selected) {
+                    if (!vopt->showDecorationSelected) {
+                        select_rect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
+                    } else {
+                        select_rect -= frameExtentMargins();
+                    }
 
-                if (!vopt->showDecorationSelected) {
-                    select_rect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
+                    p->setBrush(getColor(opt, QPalette::Highlight));
                 } else {
-                    select_rect -= frameExtentMargins();
+                    p->setBrush(vopt->backgroundBrush);
                 }
 
-                p->setPen(Qt::NoPen);
-                p->setBrush(getColor(opt, QPalette::Highlight));
-                p->setRenderHint(QPainter::Antialiasing);
-                p->drawRoundedRect(select_rect, frame_radius, frame_radius);
-                return;
+                if (w->property("_d_dtk_enable_tableviewitem_radius").toBool()) {
+                    p->setRenderHint(QPainter::Antialiasing);
+                    p->drawRoundedRect(select_rect, frame_radius, frame_radius);
+                    return;
+                } else {
+                    const_cast<QStyleOptionViewItem *>(vopt)->palette.setBrush(vopt->palette.currentColorGroup(),
+                                                                               QPalette::Highlight,
+                                                                               getColor(opt, QPalette::Highlight));
+                    return DStyle::drawPrimitive(pe, vopt, p, w);
+                }
             }
         }
         break;
@@ -3789,7 +3799,7 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
         return;
     }
 
-    bool table = qobject_cast<const QTableView *>(w);
+    bool table = qobject_cast<const QTableView *>(w) && !w->property("_d_dtk_enable_tableviewitem_radius").toBool();
     //QCalendarWidget的QTableView焦点状态与QTableView不同
     bool calendar = w && (w->objectName() == "qt_calendar_calendarview");
     // DButtonBoxButton在不同位置焦点不同
