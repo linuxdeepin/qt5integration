@@ -88,6 +88,8 @@ private:
     void drawSliderHandleFocus(const QStyleOptionComplex *opt, QRectF& rectHandle, QPainter *p, const QWidget *w) const;
     void drawIcon(const QStyleOption *opt, QPainter *p, QRect &rect, const QIcon &icon, bool checked = false) const;
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const;
+    bool drawTableViewItem(QStyle::PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
+                       const QWidget *w = nullptr) const;
 
 public:
 #ifndef QT_NO_ANIMATION

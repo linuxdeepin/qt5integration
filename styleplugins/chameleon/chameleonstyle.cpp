@@ -195,33 +195,26 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             return;
         }
 
+        if (drawTableViewItem(pe, opt, p, w))
+            return;
+
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-            if(qobject_cast<const QTableView *>(w)) {
-                QRect select_rect = opt->rect;
-                p->setPen(Qt::NoPen);
-                if (vopt->state & QStyle::State_Selected) {
-                    if (!vopt->showDecorationSelected) {
-                        select_rect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
-                    } else {
-                        select_rect -= frameExtentMargins();
-                    }
 
-                    p->setBrush(getColor(opt, QPalette::Highlight));
-                } else {
-                    p->setBrush(vopt->backgroundBrush);
-                }
+            if (vopt->state & QStyle::State_Selected) {
+               QRect select_rect = opt->rect;
 
-                if (w->property("_d_dtk_enable_tableviewitem_radius").toBool()) {
-                    p->setRenderHint(QPainter::Antialiasing);
-                    p->drawRoundedRect(select_rect, frame_radius, frame_radius);
-                    return;
-                } else {
-                    const_cast<QStyleOptionViewItem *>(vopt)->palette.setBrush(vopt->palette.currentColorGroup(),
-                                                                               QPalette::Highlight,
-                                                                               getColor(opt, QPalette::Highlight));
-                    return DStyle::drawPrimitive(pe, vopt, p, w);
-                }
+               if (!vopt->showDecorationSelected) {
+                   select_rect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
+               } else {
+                   select_rect -= frameExtentMargins();
+               }
+
+               p->setPen(Qt::NoPen);
+               p->setBrush(getColor(opt, QPalette::Highlight));
+               p->setRenderHint(QPainter::Antialiasing);
+               p->drawRoundedRect(select_rect, frame_radius, frame_radius);
+               return;
             }
         }
         break;
@@ -1836,6 +1829,46 @@ void ChameleonStyle::tabLayout(const QStyleOptionTab *opt, const QWidget *widget
         tr = proxy()->visualRect(opt->direction, opt->rect, tr);
 
     *textRect = tr;
+}
+
+bool ChameleonStyle::drawTableViewItem(QStyle::PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *w) const
+{
+    if(!qobject_cast<const QTableView *>(w))
+        return false;
+
+    const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt);
+    if (!vopt)
+        return false;
+
+    int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+    QRect select_rect = opt->rect;
+
+    // 设置item的背景颜色
+    p->setPen(Qt::NoPen);
+    if (vopt->state & QStyle::State_Selected) {
+        if (!vopt->showDecorationSelected) {
+            select_rect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
+        } else {
+            select_rect -= frameExtentMargins();
+        }
+        p->setBrush(getColor(opt, QPalette::Highlight));
+    } else {
+        p->setBrush(vopt->backgroundBrush);
+    }
+
+    // 绘制背景，选中的item圆角由属性来控制
+    if (w->property("_d_dtk_enable_tableviewitem_radius").toBool()) {
+        p->setRenderHint(QPainter::Antialiasing);
+        p->drawRoundedRect(select_rect, frame_radius, frame_radius);
+    } else {
+        // 所有的item都是非圆角
+        const_cast<QStyleOptionViewItem *>(vopt)->palette.setBrush(vopt->palette.currentColorGroup(),
+                                                                   QPalette::Highlight,
+                                                                   getColor(opt, QPalette::Highlight));
+        DStyle::drawPrimitive(pe, vopt, p, w);
+    }
+
+    return true;
 }
 
 bool ChameleonStyle::drawTabBarCloseButton(QPainter *painter, const QStyleOption *tab, const QWidget *widget) const
