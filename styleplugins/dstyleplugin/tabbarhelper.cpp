@@ -249,24 +249,16 @@ bool Style::drawTabBarTabShapeControl(const QStyleOption *opt, QPainter *p, cons
     if (!selected) {
         switch (tab->shape) {
         case QTabBar::TriangularNorth:
-            rect.adjust(0, 0, 0, -tabOverlap);
-            if(!selected)
-                rect.adjust(1, 1, -1, 0);
+            rect.adjust(1, 1, -1, -tabOverlap);
             break;
         case QTabBar::TriangularSouth:
-            rect.adjust(0, tabOverlap, 0, 0);
-            if(!selected)
-                rect.adjust(1, 0, -1, -1);
+            rect.adjust(1, tabOverlap, -1, -1);
             break;
         case QTabBar::TriangularEast:
-            rect.adjust(tabOverlap, 0, 0, 0);
-            if(!selected)
-                rect.adjust(0, 1, -1, -1);
+            rect.adjust(tabOverlap, 1, -1, -1);
             break;
         case QTabBar::TriangularWest:
-            rect.adjust(0, 0, -tabOverlap, 0);
-            if(!selected)
-                rect.adjust(1, 1, 0, -1);
+            rect.adjust(1, 1, -tabOverlap, -1);
             break;
         default:
             break;
