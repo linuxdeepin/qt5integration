@@ -1648,9 +1648,16 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
             }
             int close_button_width = proxy()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth, tab, widget);
             qreal stop = qreal(tr.right() - close_button_width - text_rect.x() - 5) / text_rect.width();
+            QBrush brush;
+
+            //选中状态下文字颜色
+            if (type_check) {
+                brush = getColor(tab, QPalette::Highlight);
+            } else {
+                brush = newTab.palette.windowText();
+            }
 
             if (stop < 1.0 && tr.right() - close_button_width < text_rect.right()) {
-                const QBrush &brush = newTab.palette.windowText();
                 QLinearGradient lg(0, 0, 1, 0);
                 QGradientStops stops;
                 qreal offset = 5.0 / text_rect.width();
@@ -1669,15 +1676,13 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
                 lg.setCoordinateMode(QLinearGradient::ObjectBoundingMode);
                 lg.setStops(stops);
                 newTab.palette.setBrush(QPalette::WindowText, lg);
+            } else {
+                newTab.palette.setBrush(QPalette::WindowText, brush);
             }
         }
 
         // 禁止QCommonStyle中绘制默认的焦点颜色
         newTab.state &= ~QStyle::State_HasFocus;
-
-        if (type_check) {
-            newTab.palette.setBrush(QPalette::WindowText, getColor(tab, QPalette::Highlight));
-        }
 
         if (tab->state & QStyle::State_HasFocus) {
             QStyleOptionFocusRect fropt;
