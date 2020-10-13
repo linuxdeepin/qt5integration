@@ -1158,8 +1158,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     QPainterPath path;
                     QRect startRect = rect;
                     QRect endRect = rect;
-                    startRect.setWidth(w->height());
-                    startRect.setHeight(w->height());
+                    startRect.setWidth(rect.height());
+                    startRect.setHeight(rect.height());
                     path.moveTo(rect.x() + startRect.height() / 2, rect.y());
                     //绘制进度条最小样式（半圆）
                     path.arcTo(startRect, 90, 180);
