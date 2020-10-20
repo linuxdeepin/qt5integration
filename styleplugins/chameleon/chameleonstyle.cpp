@@ -3744,7 +3744,8 @@ void ChameleonStyle::polish(QWidget *w)
             }
         }
 
-        if (is_menu) {
+        // fix qtcreator QDesignerMenu setnotitlebar qmainwindow
+        if (is_menu && w->isWindow()) {
             DPlatformWindowHandle handle(w);
 
             if (DPlatformWindowHandle::isEnabledDXcb(w)) {
