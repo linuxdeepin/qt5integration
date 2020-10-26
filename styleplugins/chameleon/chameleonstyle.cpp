@@ -1460,6 +1460,28 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     d->viewItemDrawText(p, vopt, opt->rect);
                 }
 
+                //绘制日历分割线
+                if (vopt->index.row() == 0) {
+                    p->save();
+                    QColor color = getColor(vopt, DPalette::FrameBorder, w);
+                    color.setAlpha(static_cast<int>(255 * 0.05));
+                    QPen pen(color, 2);
+                    p->setPen(pen);
+                    const QTableView *view = static_cast<const QTableView *>(w);
+
+                    int margins = DStyle::pixelMetric(proxy(), DStyle::PM_ContentsMargins);
+
+                    if (vopt->index.column() == 0)
+                        p->drawLine(vopt->rect.bottomLeft() + QPoint(margins, 0), vopt->rect.bottomRight());
+                    else if (vopt->index.column() == view->model()->columnCount() - 1) {
+                        p->drawLine(vopt->rect.bottomLeft(), vopt->rect.bottomRight() - QPoint(margins, 0));
+                    } else {
+                        p->drawLine(vopt->rect.bottomLeft(), vopt->rect.bottomRight());
+                    }
+
+                    p->restore();
+                }
+
                 // draw the focus rect
                  if (vopt->state & QStyle::State_HasFocus) {
                     QStyleOptionFocusRect o;
