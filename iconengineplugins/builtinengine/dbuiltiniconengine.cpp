@@ -223,9 +223,9 @@ void DBuiltinIconEngine::paint(QPainter *painter, const QRect &rect,
 
     // 如果有 background 则绘制背景图先
     QString bgFileName = entry->filename + QStringLiteral(".background");
-    QIcon bgIcon = QIcon(bgFileName);
-    if (!bgIcon.isNull()) {
-        bgIcon.paint(painter, rect, Qt::AlignCenter, mode, state);
+
+    if (QFile::exists(bgFileName)) {
+        QIcon(bgFileName).paint(painter, rect, Qt::AlignCenter, mode, state);
     }
 
     QPixmap pm = entry->pixmap(pixmapSize, mode, state);
