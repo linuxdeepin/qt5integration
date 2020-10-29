@@ -2016,8 +2016,15 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
     if (comboBox->frame && comboBox->subControls & SC_ComboBoxFrame) {
         int frameRadius = DStyle::pixelMetric(PM_FrameRadius);
         painter->setPen(Qt::NoPen);
-        painter->setBrush(comboBoxCopy.palette.button());
-        DDrawUtils::drawRoundedRect(painter, comboBoxCopy.rect - frameExtentMargins(), frameRadius, frameRadius,
+        painter->setRenderHint(QPainter::Antialiasing);
+
+        if (comboBox->editable)
+            painter->setBrush(getThemTypeColor(QColor(0, 0, 0, 255* 0.08),
+                                         QColor(255, 255, 255, 255 * 0.15)));
+         else
+            painter->setBrush(comboBoxCopy.palette.button());
+
+        DDrawUtils::drawRoundedRect(painter, comboBoxCopy.rect, frameRadius, frameRadius,
                                     DDrawUtils::Corner::TopLeftCorner
                                     | DDrawUtils::Corner::TopRightCorner
                                     | DDrawUtils::Corner::BottomLeftCorner
@@ -2028,7 +2035,7 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
     QStyleOptionButton buttonOption;
     buttonOption.QStyleOption::operator=(*comboBox);
     if (comboBox->editable) {
-        buttonOption.rect = rect - frameExtentMargins();
+        buttonOption.rect = rect;
         buttonOption.state = (comboBox->state & (State_Enabled | State_MouseOver | State_HasFocus))
                              | State_KeyboardFocusChange; // Always show hig
 
@@ -3333,7 +3340,8 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
 
             switch (sc) {
             case SC_ComboBoxArrow: {
-                QRect rect(0, 0, opt->rect.height(), opt->rect.height()) ;
+                QRect rect(0, 0, qMax(static_cast<int>(Metrics::ComboBox_ArrowButtonWidth), opt->rect.height()),
+                           opt->rect.height()) ;
                 int boxHeight = qAbs(rect.height());
 
                 if (w && qobject_cast<const QComboBox *>(w) && !qobject_cast<const QComboBox *>(w)->isEditable())

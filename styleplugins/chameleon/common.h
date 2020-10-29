@@ -52,6 +52,7 @@ enum Metrics
 
     // combobox
     ComboBox_FrameWidth = 5,
+    ComboBox_ArrowButtonWidth = 40,
 
     // spinbox
     SpinBox_FrameWidth = 1,
