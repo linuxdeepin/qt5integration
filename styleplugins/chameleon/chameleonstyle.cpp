@@ -77,6 +77,14 @@ ChameleonStyle::ChameleonStyle()
 
 }
 
+static QColor getThemTypeColor(QColor lightColor, QColor darkColor)
+{
+    if (DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::LightType)
+        return lightColor;
+    else
+        return darkColor;
+}
+
 void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOption *opt,
                                    QPainter *p, const QWidget *w) const
 {
@@ -220,6 +228,11 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         break;
     }
     case PE_PanelLineEdit: {
+        if (w && w->parent() &&
+                (qobject_cast<const QComboBox *>(w->parent()))) {
+            //lineEdit作为子控件时不进行绘制
+            return;
+        }
         if (auto fopt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
             // Flat时不绘制输入框的背景
             if (fopt->features == QStyleOptionFrame::Flat) {
@@ -236,7 +249,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         // 此处设置painter的行为不应该影响外面的绘制，会导致lineedit光标不对 Bug-20967。
         p->save();
-        p->setBrush(opt->palette.button());
+        p->setBrush(getThemTypeColor(QColor(0, 0, 0, 255* 0.08),
+                                     QColor(255, 255, 255, 255 * 0.15)));
         p->setPen(Qt::NoPen);
         p->setRenderHints(QPainter::Antialiasing);
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
@@ -250,15 +264,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                 p->drawRoundedRect(opt->rect - frameExtentMargins(), frame_radius, frame_radius);
             }
         } else {
-            p->drawRoundedRect(opt->rect - frameExtentMargins(), frame_radius, frame_radius);
-        }
-
-        if (w && w->parent() && (
-                    qobject_cast<const QComboBox *>(w->parent())
-                )) {
-            p->restore();
-            //禁用一些控件绘制子lineEdit时产生的ForceRect
-            return;
+            p->drawRoundedRect(opt->rect, frame_radius, frame_radius);
         }
 
         if (opt->state.testFlag(QStyle::State_HasFocus)) {
