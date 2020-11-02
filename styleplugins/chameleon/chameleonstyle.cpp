@@ -1271,8 +1271,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setPen(getColor(toolbutton, DPalette::Highlight));
 
                 //强制绘制　日历　左右翻页背景
-                if (w->objectName() == "qt_calendar_prevmonth"
-                        || w->objectName() == "qt_calendar_nextmonth") {
+                if (w && (w->objectName() == "qt_calendar_prevmonth" || w->objectName() == "qt_calendar_nextmonth")) {
                     p->setBrush(getColor(toolbutton, DPalette::Button));
                 }
 
