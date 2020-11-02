@@ -28,6 +28,7 @@
 #include <QFileDialog>
 #include <QX11Info>
 #include <QDebug>
+#include <QApplication>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
 #include <private/qwidgetwindow_qpa_p.h>
@@ -340,8 +341,7 @@ void QDeepinFileDialogHelper::initDBusFileDialogManager()
     if (manager)
         return;
 
-    if (QDBusConnection::sessionBus().interface()->isServiceRegistered(DIALOG_SERVICE).value()
-            || QFile::exists("/usr/bin/dde-file-manager")) {
+    if (QDBusConnection::sessionBus().interface()->isServiceRegistered(DIALOG_SERVICE).value()) {
         manager = new DFileDialogManager(DIALOG_SERVICE, "/com/deepin/filemanager/filedialogmanager", QDBusConnection::sessionBus());
     }
 }
@@ -403,7 +403,7 @@ void QDeepinFileDialogHelper::ensureDialog() const
         }
     }
 
-    if (!nativeDialog) {
+    if (!nativeDialog && qobject_cast<QApplication*>(qGuiApp)) {
         QDeepinTheme::m_usePlatformNativeDialog = false;
         qtDialog = new QFileDialog();
         QDeepinTheme::m_usePlatformNativeDialog = true;
