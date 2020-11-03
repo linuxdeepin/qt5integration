@@ -3570,7 +3570,8 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     case CT_CheckBox: {
         size.rwidth() += 2 * (DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing));
         // fix 当没有文字的时候高度不够绘制焦点圈
-        if (widget && qobject_cast<const QAbstractButton *>(widget)->text().isEmpty())
+        auto button = qobject_cast<const QAbstractButton *>(widget);
+        if (button && button->text().isEmpty())
             size.rheight() += 2 * (DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing));
         break;
     }
