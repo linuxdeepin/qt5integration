@@ -95,9 +95,14 @@ public:
 
     QPixmap followColorPixmap(ScalableEntry *color_entry, const QSize &size, QIcon::Mode mode, QIcon::State state)
     {
-        const QString &color_scheme = DEEPIN_QT_THEME::colorScheme.localData();
         quint64 cache_key = entryCacheKey(color_entry, mode, state);
         const QString &cache_color_scheme = entryToColorScheme.value(cache_key);
+
+        // 当size为1时表示此svg文件不需要处理ColorScheme标签
+        if (cache_color_scheme.size() == 1)
+            return color_entry->pixmap(size, mode, state);
+
+        const QString &color_scheme = DEEPIN_QT_THEME::colorScheme.localData();
         QPixmap pm = color_scheme == cache_color_scheme ? color_entry->svgIcon.pixmap(size, mode, state) : QPixmap();
         // Note: not checking the QIcon::isNull(), because in Qt5.10 the isNull() is not reliable
         // for svg icons desierialized from stream (see https://codereview.qt-project.org/#/c/216086/)
@@ -107,17 +112,14 @@ public:
             // KIconLoaderPrivate::processSvg() and KIconLoaderPrivate::createIconImage().
             // They read the SVG color scheme of SVG icons and give images based on the icon mode.
             QHash<int, QByteArray> svg_buffers;
+            bool invalidBuffers = true;
             QFile device{color_entry->filename};
             if (device.open(QIODevice::ReadOnly))
             {
                 // Note: indexes are assembled as in qtsvg (QSvgIconEnginePrivate::hashKey())
-                QMap<int, QString> style_sheets;
-                style_sheets[(mode<<4)|state] = QStringLiteral(".ColorScheme-Text{color:%1;}").arg(color_scheme);
-                QMap<int, QSharedPointer<QXmlStreamWriter> > writers;
-                for (auto i = style_sheets.cbegin(); i != style_sheets.cend(); ++i)
-                {
-                    writers[i.key()].reset(new QXmlStreamWriter{&svg_buffers[i.key()]});
-                }
+                QPair<int, QString> style_sheet;
+                style_sheet = qMakePair((mode<<4)|state, QStringLiteral(".ColorScheme-Text{color:%1;}").arg(color_scheme));
+                QSharedPointer<QXmlStreamWriter> writer(new QXmlStreamWriter{&svg_buffers[style_sheet.first]});
 
                 QXmlStreamReader xmlReader(&device);
                 while (!xmlReader.atEnd())
@@ -126,28 +128,31 @@ public:
                             && xmlReader.qualifiedName() == QLatin1String("style")
                             && xmlReader.attributes().value(QLatin1String("id")) == QLatin1String("current-color-scheme"))
                     {
-                        for (auto i = style_sheets.cbegin(); i != style_sheets.cend(); ++i)
-                        {
-                            QXmlStreamWriter & writer = *writers[i.key()];
-                            writer.writeStartElement(QLatin1String("style"));
-                            writer.writeAttributes(xmlReader.attributes());
-                            writer.writeCharacters(*i);
-                            writer.writeEndElement();
-                        }
+                        invalidBuffers = false;
+
+                        writer->writeStartElement(QLatin1String("style"));
+                        writer->writeAttributes(xmlReader.attributes());
+                        writer->writeCharacters(style_sheet.second);
+                        writer->writeEndElement();
+
                         while (xmlReader.tokenType() != QXmlStreamReader::EndElement)
                             xmlReader.readNext();
                     } else if (xmlReader.tokenType() != QXmlStreamReader::Invalid)
                     {
-                        for (auto i = style_sheets.cbegin(); i != style_sheets.cend(); ++i)
-                        {
-                            writers[i.key()]->writeCurrentToken(xmlReader);
-                        }
+                        writer->writeCurrentToken(xmlReader);
                     }
                 }
                 // duplicate the contents also for opposite state
 //                svg_buffers[(QIcon::Normal<<4)|QIcon::On] = svg_buffers[(QIcon::Normal<<4)|QIcon::Off];
 //                svg_buffers[(QIcon::Selected<<4)|QIcon::On] = svg_buffers[(QIcon::Selected<<4)|QIcon::Off];
             }
+
+            if (invalidBuffers) {
+                // 此svg图标无ColorScheme标签时不应该再下面的操作，且应该记录下来，避免后续再处理svg文件内容
+                entryToColorScheme[cache_key] = QStringLiteral("#");
+                return color_entry->pixmap(size, mode, state);
+            }
+
             // use the QSvgIconEngine
             //  - assemble the content as it is done by the operator <<(QDataStream &s, const QIcon &icon)
             //  (the QSvgIconEngine::key() + QSvgIconEngine::write())
@@ -158,6 +163,7 @@ public:
             str.setVersion(QDataStream::Qt_4_4);
             QHash<int, QString> filenames;
             filenames[0] = color_entry->filename; // Note: filenames are ignored in the QSvgIconEngine::read()
+            filenames[-1] = color_scheme; // 在dsvg插件中会为svg图标做缓存，此处是为其添加额外的缓存文件key标识，避免不同color的svg图标会命中同一个缓存文件
             str << QStringLiteral("svg") << filenames << static_cast<int>(0)/*isCompressed*/ << svg_buffers << static_cast<int>(0)/*hasAddedPimaps*/;
 
             QDataStream str_read{&icon_arr, QIODevice::ReadOnly};

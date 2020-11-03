@@ -9,7 +9,7 @@ OTHER_FILES += qsvgiconengine.json
 
 CONFIG += c++11
 
-QT += gui-private dtkgui
+QT += gui-private dtkgui concurrent
 DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/iconengines/
 
 unix {

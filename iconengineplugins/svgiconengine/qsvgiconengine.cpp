@@ -51,10 +51,20 @@
 #include <private/qguiapplication_p.h>
 
 #include <DSvgRenderer>
+#include <QCryptographicHash>
+#include <QImageReader>
+#include <QStandardPaths>
+#include <QtConcurrent>
 
 DGUI_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
+
+#ifdef QT_DEBUG
+Q_LOGGING_CATEGORY(lcDSvg, "dde.dsvg")
+#else
+Q_LOGGING_CATEGORY(lcDSvg, "dde.dsvg", QtInfoMsg)
+#endif
 
 class QSvgIconEnginePrivate : public QSharedData
 {
@@ -66,15 +76,15 @@ public:
     ~QSvgIconEnginePrivate()
         { delete addedPixmaps; delete svgBuffers; }
 
-    static int hashKey(QIcon::Mode mode, QIcon::State state)
+    static inline int hashKey(QIcon::Mode mode, QIcon::State state)
         { return (((mode)<<4)|state); }
 
-    QString pmcKey(const QSize &size, QIcon::Mode mode, QIcon::State state)
+    inline QString pmcKey(const QSize &size, QIcon::Mode mode, QIcon::State state)
         { return QLatin1String("$qt_svgicon_")
                  + QString::number(serialNum, 16).append(QLatin1Char('_'))
                  + QString::number((((((qint64(size.width()) << 11) | size.height()) << 11) | mode) << 4) | state, 16); }
 
-    void stepSerialNum()
+    inline void stepSerialNum()
         { serialNum = lastSerialNum.fetchAndAddRelaxed(1); }
 
     void loadDataForModeAndState(DSvgRenderer *renderer, QIcon::Mode mode, QIcon::State state);
@@ -151,13 +161,35 @@ void QSvgIconEnginePrivate::loadDataForModeAndState(DSvgRenderer *renderer, QIco
     }
 }
 
+static QString getIconCachePath()
+{
+     QString path = qgetenv("D_ICON_CACHE_PATH");
+
+     if (!qEnvironmentVariableIsSet("D_ICON_CACHE_PATH")) {
+         path = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation).append("/deepin/icons");
+     }
+
+     if (path.isEmpty()) {
+         qCInfo(lcDSvg) << "disable svg icon cache of dsvg plugin";
+
+         return path;
+     }
+
+     if (QDir::home().mkpath(path))
+         return path;
+
+     qCWarning(lcDSvg) << "can't create a invalid icon cache path:" << path;
+
+     return QString();
+}
+
 QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
                                QIcon::State state)
 {
     QPixmap pm;
 
     QString pmckey(d->pmcKey(size, mode, state));
-    if (QPixmapCache::find(pmckey, pm))
+    if (Q_LIKELY(QPixmapCache::find(pmckey, &pm)))
         return pm;
 
     if (d->addedPixmaps) {
@@ -166,26 +198,103 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
             return pm;
     }
 
-    DSvgRenderer renderer;
-    d->loadDataForModeAndState(&renderer, mode, state);
-    if (!renderer.isValid())
-        return pm;
+    const QIcon::State oppositeState = state == QIcon::Off ? QIcon::On : QIcon::Off;
+    QString svgFile = d->svgFiles.value(d->hashKey(mode, state));
+    if (svgFile.isEmpty())
+        svgFile = d->svgFiles.value(d->hashKey(QIcon::Normal, state));
+    if (svgFile.isEmpty())
+        svgFile = d->svgFiles.value(d->hashKey(QIcon::Normal, oppositeState));
 
-    QSize actualSize = renderer.defaultSize();
-    if (!actualSize.isNull())
-        actualSize.scale(size, Qt::KeepAspectRatio);
+    QString cacheFile;
 
-    if (actualSize.isEmpty())
-        return QPixmap();
+    if (Q_LIKELY(!svgFile.startsWith(":/") && QFile::exists(svgFile))) {
+        static const QString &cachePath = getIconCachePath();
 
-    pm = QPixmap::fromImage(renderer.toImage(actualSize));
-    if (qobject_cast<QGuiApplication *>(QCoreApplication::instance())) {
+        if (Q_LIKELY(!cachePath.isEmpty())) {
+            // svgFiles[-1] 是为了取到额外的cache key,例如会跟随颜色变化的svg图标，将会添加此特殊的标记
+            const QByteArray cacheKey = svgFile.toLocal8Bit() + d->svgFiles[-1].toLocal8Bit();
+            const QString &svgFileSha1 = QString::fromLatin1(QCryptographicHash::hash(cacheKey, QCryptographicHash::Sha1).toHex());
+            cacheFile = QStringLiteral("%1/%2.png").arg(cachePath).arg(svgFileSha1);
+        }
+    }
+
+    const QFileInfo cacheFileInfo(cacheFile);
+    if (Q_LIKELY(cacheFileInfo.exists())) {
+        const QFileInfo svgFileInfo(svgFile);
+
+        if (Q_UNLIKELY(svgFileInfo.lastModified() != cacheFileInfo.lastModified())) {
+            // clear invalid cache file
+            QFile::remove(cacheFile);
+        } else {
+            qCDebug(lcDSvg()) << "found cache file:" << cacheFile << ", for:" << svgFile;
+
+            QImageReader ir(cacheFile);
+            const QSize &cacheSize = ir.size();
+
+            if (Q_LIKELY(cacheSize.isValid() && cacheSize.width() >= size.width())) {
+                pm = QPixmap::fromImage(ir.read().scaledToWidth(size.width()));
+            } else { // 当对同一个图标文件有更大的size要求时，应当继续从源svg文件重新渲染图标并更新缓存文件
+                qCDebug(lcDSvg()) << "cache image size less then target size, cache size:" << cacheSize << ", request size:" << size;
+
+                if (Q_UNLIKELY(!ir.canRead())) {
+                    qCWarning(lcDSvg()) << "can't read the cache image:" << cacheFile << "file size:" << cacheFileInfo.size() << ", permissions:" << cacheFileInfo.permissions();
+                    QFile::remove(cacheFile);
+                }
+            }
+        }
+    }
+
+    if (Q_UNLIKELY(pm.isNull())) {
+        DSvgRenderer renderer;
+        d->loadDataForModeAndState(&renderer, mode, state);
+        if (Q_UNLIKELY(!renderer.isValid()))
+            return pm;
+
+        QSize actualSize = renderer.defaultSize();
+        if (actualSize.width() < size.width())
+            actualSize.scale(size, Qt::KeepAspectRatio);
+
+        if (Q_UNLIKELY(actualSize.isEmpty()))
+            return pm;
+
+        const QImage image = renderer.toImage(actualSize);
+
+        if (Q_LIKELY(!image.isNull() && !cacheFile.isEmpty())) {
+            QtConcurrent::run(QThreadPool::globalInstance(), [image, cacheFile, svgFile] {
+                QSaveFile file(cacheFile);
+                // 增加cache文件能被成功保存的概率
+                file.setDirectWriteFallback(true);
+                if (file.open(QFile::WriteOnly)) {
+                    if (image.save(&file, "png", 80) && file.commit()) {
+                        QFileInfo svgFileInfo(svgFile);
+                        // 不能直接使用QSaveFile改写文件的时间
+                        QFile file(cacheFile);
+                        if (!file.open(QFile::ReadWrite) || !file.setFileTime(svgFileInfo.lastModified(), QFileDevice::FileModificationTime)) {
+                            qCWarning(lcDSvg()) << "set cache file modified date time failed, error message:" << file.errorString()
+                                                << ", cache file:" << cacheFile << ", svg file:" << svgFile;
+                        }
+                    } else {
+                        file.cancelWriting();
+                        qCWarning(lcDSvg()) << "save cache image failed, cache file:" << cacheFile << ", svg file:" << svgFile;
+                    }
+                } else {
+                    qCWarning(lcDSvg()) << "open cache file failed, error message:" << file.errorString()
+                                        << ", cache file:" << cacheFile << ", svg file:" << svgFile;
+                }
+            });
+        }
+
+        // 缩放图标到目标大小
+        pm = QPixmap::fromImage(image.scaledToWidth(size.width()));
+    }
+
+    if (Q_LIKELY(qobject_cast<QGuiApplication *>(QCoreApplication::instance()))) {
         const QPixmap generated = QGuiApplicationPrivate::instance()->applyQIconStyleHelper(mode, pm);
-        if (!generated.isNull())
+        if (Q_LIKELY(!generated.isNull()))
             pm = generated;
     }
 
-    if (!pm.isNull())
+    if (Q_LIKELY(!pm.isNull()))
         QPixmapCache::insert(pmckey, pm);
 
     return pm;
@@ -293,6 +402,8 @@ bool QSvgIconEngine::read(QDataStream &in)
             d->addedPixmaps = new QHash<int, QPixmap>;
             in >> *d->addedPixmaps;
         }
+
+        d->svgFiles = fileNames;
     }
     else {
         QPixmap pixmap;
