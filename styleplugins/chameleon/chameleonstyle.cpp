@@ -249,8 +249,11 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         // 此处设置painter的行为不应该影响外面的绘制，会导致lineedit光标不对 Bug-20967。
         p->save();
-        p->setBrush(getThemTypeColor(QColor(0, 0, 0, 255* 0.08),
-                                     QColor(255, 255, 255, 255 * 0.15)));
+        if (w && w->property("_d_dtk_lineedit_opacity").toBool())
+            p->setBrush(getThemTypeColor(QColor(0, 0, 0, 255* 0.08),
+                                        QColor(255, 255, 255, 255 * 0.15)));
+        else
+            p->setBrush(opt->palette.button());
         p->setPen(Qt::NoPen);
         p->setRenderHints(QPainter::Antialiasing);
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
