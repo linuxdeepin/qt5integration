@@ -3906,6 +3906,12 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
         return;
     }
 
+    if (w && w->parentWidget() && w->parentWidget()->property("_d_dtk_spinBox").toBool()) {
+        DDrawUtils::drawRoundedRect(p, opt->rect.adjusted(1, 1, -1, -1), frame_radius, frame_radius,
+                                    DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
+        return;
+    }
+
     bool table = qobject_cast<const QTableView *>(w) && !w->property("_d_dtk_enable_tableviewitem_radius").toBool();
     //QCalendarWidget的QTableView焦点状态与QTableView不同
     bool calendar = w && (w->objectName() == "qt_calendar_calendarview");
