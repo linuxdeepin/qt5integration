@@ -228,8 +228,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         break;
     }
     case PE_PanelLineEdit: {
-        if (w && w->parent() &&
-                (qobject_cast<const QComboBox *>(w->parent()))) {
+        if (w && w->parent() && ((qobject_cast<const QComboBox *>(w->parent()))
+                                 || qobject_cast<const QDateTimeEdit *>(w->parentWidget())->calendarPopup())) {
             //lineEdit作为子控件时不进行绘制
             return;
         }
