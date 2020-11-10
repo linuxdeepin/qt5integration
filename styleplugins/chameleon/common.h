@@ -124,6 +124,7 @@ enum Metrics
     // progressbars
     ProgressBar_BusyIndicatorSize = 14,
     ProgressBar_ItemSpacing = 4,
+    ProgressBar_MinimumStyleHeight = 8,
 
     // mdi title bar
     TitleBar_MarginWidth = 4,

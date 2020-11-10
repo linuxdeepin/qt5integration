@@ -1169,20 +1169,30 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 QPainterPath inter = pathRoundRect.intersected(pathRect);
                 p->drawPath(inter);
             } else {
-                if (rect.width() < 8 && rect.width() != 0) {
+                //进度条高度 <= 8px && 进度条宽度 <= 8px && value有效
+                if (rect.height() <= ProgressBar_MinimumStyleHeight &&
+                        rect.width() <= ProgressBar_MinimumStyleHeight && progBar->progress > 0) {
                     QPainterPath path;
                     QRect startRect = rect;
-                    QRect endRect = rect;
                     startRect.setWidth(rect.height());
                     startRect.setHeight(rect.height());
-                    path.moveTo(rect.x() + startRect.height() / 2, rect.y());
-                    //绘制进度条最小样式（半圆）
+                    path.moveTo(rect.x() + startRect.width() / 2, rect.y());
+                    //绘制进度条最小样式前半圆
                     path.arcTo(startRect, 90, 180);
                     p->drawPath(path);
-                    //绘制进度条样式为圆前样式
-                    endRect.setX(startRect.x() + startRect.width() / 4);
-                    DDrawUtils::drawRoundedRect(p, endRect, frameRadius / 2, frameRadius / 2,
-                                                DDrawUtils::TopRightCorner | DDrawUtils::BottomRightCorner);
+
+                    //绘制进度条最小样式后半圆
+                    if (rect.width() > startRect.width() / 2) {
+                        QRect endRect = startRect;
+                        int width = rect.width() - startRect.width() / 2;
+                        endRect.setX(startRect.x() + startRect.width() / 2 - width);
+                        endRect.setWidth(width * 2);
+
+                        QPainterPath path2;
+                        path2.moveTo(endRect.x() + endRect.width() / 2, rect.y());
+                        path2.arcTo(endRect, 90, -180);
+                        p->drawPath(path2);
+                    }
                 } else
                     p->drawRoundedRect(rect, frameRadius, frameRadius);
             }
