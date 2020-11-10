@@ -228,11 +228,17 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         break;
     }
     case PE_PanelLineEdit: {
-        if (w && w->parent() && ((qobject_cast<const QComboBox *>(w->parent()))
-                                 || qobject_cast<const QDateTimeEdit *>(w->parentWidget())->calendarPopup())) {
+        if (w && w->parentWidget()) {
             //lineEdit作为子控件时不进行绘制
-            return;
+            if (qobject_cast<const QComboBox *>(w->parent()))
+                return;
+
+            if (auto edit = qobject_cast<const QDateTimeEdit *>(w->parentWidget())) {
+                if (edit->calendarPopup())
+                    return;
+            }
         }
+
         if (auto fopt = qstyleoption_cast<const QStyleOptionFrame*>(opt)) {
             // Flat时不绘制输入框的背景
             if (fopt->features == QStyleOptionFrame::Flat) {
