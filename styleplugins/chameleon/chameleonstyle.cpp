@@ -3229,7 +3229,7 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
                     return proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxFrame, w);
 
                 int rightBorder = option->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, opt, w) * 2 : 0;
-                int border = w && w->property("_d_dtk_spinBox").toBool() ? DStyle::pixelMetric(PM_FrameMargins) : DStyle::pixelMetric(PM_ContentsMargins);
+                int border = w && w->property("_d_dtk_spinBox").toBool() ? 0 : DStyle::pixelMetric(PM_ContentsMargins);
                 QRect spinboxRect = option->rect;
                 QRect dButtonRect = proxy()->subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w);
 
@@ -3793,21 +3793,28 @@ void ChameleonStyle::polish(QWidget *w)
         layout->setMargin(radius / 2);
     }
 
-    if (w->objectName() == "qt_calendar_yearbutton"
-                        || w->objectName() == "qt_calendar_monthbutton") {
+    if (w && (w->objectName() == "qt_calendar_yearbutton"
+                        || w->objectName() == "qt_calendar_monthbutton")) {
         w->setProperty("_d_calendarToolBtn", true);
 
         DFontSizeManager *fontManager =  DFontSizeManager::instance();
         fontManager->bind(w, DFontSizeManager::T5, QFont::Normal);
     }
 
-    if (w->objectName() == "qt_calendar_prevmonth"
-            || w->objectName() == "qt_calendar_nextmonth") {
+    if (w && w->objectName() == "qt_calendar_yearedit") {
+        w->setProperty("_d_dtk_spinBox", true);
+        //直接取用spinBox最大年限
+        int width = w->fontMetrics().width("9999");
+        w->setMaximumWidth(width * 3);
+    }
+
+    if (w && (w->objectName() == "qt_calendar_prevmonth"
+            || w->objectName() == "qt_calendar_nextmonth")) {
         int btnWidget = DStyle::pixelMetric(DStyle::PM_ButtonMinimizedSize);
         w->setMinimumSize(btnWidget, btnWidget);
     }
 
-    if (w->objectName() == "qt_calendar_calendarview") {
+    if (w && w->objectName() == "qt_calendar_calendarview") {
         auto view = qobject_cast<QTableView *>(w);
         view->setItemDelegate(new QStyledItemDelegate);
     }
