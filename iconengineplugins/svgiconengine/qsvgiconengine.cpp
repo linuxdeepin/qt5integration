@@ -232,7 +232,7 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
             const QSize &cacheSize = ir.size();
 
             if (Q_LIKELY(cacheSize.isValid() && cacheSize.width() >= size.width())) {
-                pm = QPixmap::fromImage(ir.read().scaledToWidth(size.width(), Qt::SmoothTransformation));
+                pm = QPixmap::fromImage(ir.read().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation));
             } else { // 当对同一个图标文件有更大的size要求时，应当继续从源svg文件重新渲染图标并更新缓存文件
                 qCDebug(lcDSvg()) << "cache image size less then target size, cache size:" << cacheSize << ", request size:" << size;
 
@@ -285,7 +285,7 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
         }
 
         // 缩放图标到目标大小
-        pm = QPixmap::fromImage(image.scaledToWidth(size.width(), Qt::SmoothTransformation));
+        pm = QPixmap::fromImage(image.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
     if (Q_LIKELY(qobject_cast<QGuiApplication *>(QCoreApplication::instance()))) {
