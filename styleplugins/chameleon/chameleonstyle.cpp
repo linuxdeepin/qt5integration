@@ -3942,88 +3942,77 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
     const DButtonBoxButton *buttonBoxButton = qobject_cast<const DButtonBoxButton *>(w);
     const DStyleOptionButtonBoxButton *btnopt = qstyleoption_cast<const DStyleOptionButtonBoxButton *>(opt);
 
-    if (calendar) {
-        QRect rect = opt->rect;
-        rect.setWidth(rect.height());
-        rect.moveCenter(opt->rect.center());
-        p->drawEllipse(rect.adjusted(1, 1, -1, -1));
+    pen.setWidth(2);
+    int offset = 1;
+    QRect rect = border.adjusted(offset, offset, -offset, -offset);
 
+    // 先画内框（黑or白）
+    pen.setColor(getColor(opt, QPalette::Base));
+    p->setPen(pen);
+    if (calendar) {
+        pen.setWidth(3);
+        p->setPen(pen);
+        offset = 2;
+        drawCalenderEllipse(p, opt->rect, offset);
+    } else if (table) {
+        p->drawRect(rect);
+    } else if (buttonBoxButton && btnopt) {
+        drawButtonBoxButton(btnopt, p, rect, frame_radius);
+    } else {
+        p->drawRoundedRect(rect, frame_radius, frame_radius);
+    }
+
+    // 再画外框（活动色即焦点）
+    pen.setColor(focus_color);
+    p->setPen(pen);
+    if (calendar) {
+        pen.setWidth(2);
+        p->setPen(pen);
+        offset = 1;
+        drawCalenderEllipse(p, opt->rect, offset);
     } else if (table) {
         p->drawRect(border);
     } else if (buttonBoxButton && btnopt) {
-        if (btnopt->position == DStyleOptionButtonBoxButton::Beginning) {
-            // Begin
-            if (btnopt->orientation == Qt::Horizontal) {
-                DDrawUtils::drawRoundedRect(p, border, frame_radius, frame_radius,
-                                            DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
-            } else {
-                DDrawUtils::drawRoundedRect(p, border, frame_radius, frame_radius,
-                                            DDrawUtils::TopLeftCorner | DDrawUtils::TopRightCorner);
-            }
-        } else if (btnopt->position == DStyleOptionButtonBoxButton::End) {
-            // End
-            if (btnopt->orientation == Qt::Horizontal) {
-                DDrawUtils::drawRoundedRect(p, border, frame_radius, frame_radius,
-                                            DDrawUtils::TopRightCorner | DDrawUtils::BottomRightCorner);
-            } else {
-                DDrawUtils::drawRoundedRect(p, border, frame_radius, frame_radius,
-                                            DDrawUtils::BottomLeftCorner | DDrawUtils::BottomRightCorner);
-            }
-        } else if (btnopt->position == DStyleOptionButtonBoxButton::Middle) {
-            // Middle
-            p->drawRect(border);
-        } else if (btnopt->position == DStyleOptionButtonBoxButton::OnlyOne) {
-            // OnlyOne
-            p->drawRoundedRect(border, frame_radius, frame_radius);
-        }
+        drawButtonBoxButton(btnopt, p, border, frame_radius);
     } else {
         p->drawRoundedRect(border, frame_radius + margins, frame_radius + margins);
     }
+}
 
-    pen.setWidth(1);
-    pen.setColor(getColor(opt, QPalette::Base));
-    p->setPen(pen);
-    const int offset = 2;
+void ChameleonStyle::drawCalenderEllipse(QPainter *p, const QRect &rect, int offset) const
+{
+    QRect ellipese = rect;
+    ellipese.setWidth(ellipese.height());
+    ellipese.moveCenter(rect.center());
+    p->drawEllipse(ellipese.adjusted(offset, offset, -offset, -offset));
+}
 
-    if (calendar) {
-        QRect rect = opt->rect;
-        rect.setWidth(rect.height());
-        rect.moveCenter(opt->rect.center());
-        p->drawEllipse(rect.adjusted(offset, offset, -offset, -offset));
-    } else if (table) {
-        QRect rect = border.adjusted(offset, offset, -1, -1);
-        p->drawLine(rect.topLeft(), rect.topRight());
-        p->drawLine(rect.bottomLeft(), rect.bottomRight());
-        p->drawLine(rect.topLeft(), rect.bottomLeft());
-        p->drawLine(rect.topRight(), rect.bottomRight());
-    } else if (buttonBoxButton && btnopt) {
-        if (btnopt->position == DStyleOptionButtonBoxButton::Beginning) {
-            // Begin
-            if (btnopt->orientation == Qt::Horizontal) {
-                DDrawUtils::drawRoundedRect(p, border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius,
-                                            DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
-            } else {
-                DDrawUtils::drawRoundedRect(p, border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius,
-                                            DDrawUtils::TopLeftCorner | DDrawUtils::TopRightCorner);
-            }
-        } else if (btnopt->position == DStyleOptionButtonBoxButton::End) {
-            // End
-            if (btnopt->orientation == Qt::Horizontal) {
-                DDrawUtils::drawRoundedRect(p, border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius,
-                                            DDrawUtils::TopRightCorner | DDrawUtils::BottomRightCorner);
-            } else {
-                DDrawUtils::drawRoundedRect(p, border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius,
-                                            DDrawUtils::BottomLeftCorner | DDrawUtils::BottomRightCorner);
-            }
-        } else if (btnopt->position == DStyleOptionButtonBoxButton::Middle) {
-            // Middle
-            p->drawRect(border.adjusted(offset, offset, -offset, -offset));
-        } else if (btnopt->position == DStyleOptionButtonBoxButton::OnlyOne) {
-            // OnlyOne
-            p->drawRoundedRect(border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius);
+void ChameleonStyle::drawButtonBoxButton(const DStyleOptionButtonBoxButton *btnopt, QPainter *p, const QRect &rect, int radius) const
+{
+    if (btnopt->position == DStyleOptionButtonBoxButton::Beginning) {
+        // Begin
+        if (btnopt->orientation == Qt::Horizontal) {
+            DDrawUtils::drawRoundedRect(p, rect, radius, radius,
+                                        DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
+        } else {
+            DDrawUtils::drawRoundedRect(p, rect, radius, radius,
+                                        DDrawUtils::TopLeftCorner | DDrawUtils::TopRightCorner);
         }
-    } else {
-        p->drawRoundedRect(border.adjusted(offset, offset, -offset, -offset), frame_radius, frame_radius);
+    } else if (btnopt->position == DStyleOptionButtonBoxButton::End) {
+        // End
+        if (btnopt->orientation == Qt::Horizontal) {
+            DDrawUtils::drawRoundedRect(p, rect, radius, radius,
+                                        DDrawUtils::TopRightCorner | DDrawUtils::BottomRightCorner);
+        } else {
+            DDrawUtils::drawRoundedRect(p, rect, radius, radius,
+                                        DDrawUtils::BottomLeftCorner | DDrawUtils::BottomRightCorner);
+        }
+    } else if (btnopt->position == DStyleOptionButtonBoxButton::Middle) {
+        // Middle
+        p->drawRect(rect);
+    } else if (btnopt->position == DStyleOptionButtonBoxButton::OnlyOne) {
+        // OnlyOne
+        p->drawRoundedRect(rect, radius, radius);
     }
 }
 

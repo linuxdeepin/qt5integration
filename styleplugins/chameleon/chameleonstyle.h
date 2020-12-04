@@ -29,6 +29,10 @@ namespace dstyle {
 class DStyleAnimation;
 }
 
+DWIDGET_BEGIN_NAMESPACE
+class DStyleOptionButtonBoxButton;
+DWIDGET_END_NAMESPACE
+
 namespace chameleon {
 
 class ChameleonStyle : public DStyle
@@ -65,6 +69,8 @@ public:
 private:
     void drawShadow(QPainter *p, const QRect &rect, const QColor &color) const;
     void drawBorder(QPainter *p, const QStyleOption *opt, const QWidget *w) const;
+    void drawCalenderEllipse(QPainter *p, const QRect &rect, int offset) const;
+    void drawButtonBoxButton(const DStyleOptionButtonBoxButton *btnopt, QPainter *p, const QRect &rect, int radius) const;
     void drawRoundedShadow(QPainter *p, const QRect &rect, const QColor &color,int frame_radius) const;
     bool isNoticks(const QStyleOptionSlider *slider, QPainter *p, const QWidget *w) const;
 
