@@ -264,8 +264,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->setRenderHints(QPainter::Antialiasing);
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
 
-        if ((w && qobject_cast<DSpinBox*>(w->parentWidget()))
-                || (w && qobject_cast<DDoubleSpinBox*>(w->parentWidget()))) {
+        if ((w && qobject_cast<QAbstractSpinBox*>(w->parentWidget()))) {
             if (w->parentWidget()->property("_d_dtk_spinBox").toBool()) {
                 DDrawUtils::drawRoundedRect(p, opt->rect, frame_radius, frame_radius,
                                         DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
