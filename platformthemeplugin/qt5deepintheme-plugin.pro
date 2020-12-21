@@ -81,4 +81,5 @@ CONFIG(release, debug|release) {
 DBUS_INTERFACES += $$dbus_interface_filedialogmanager $$dbus_interface_filedialog
 
 RESOURCES += \
-    icons/deepin-theme-plugin-icons.qrc
+    icons/deepin-theme-plugin-icons.qrc \
+    deepin-theme-plugin.qrc
