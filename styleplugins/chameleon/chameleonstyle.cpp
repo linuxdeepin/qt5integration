@@ -2531,6 +2531,72 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
     }
 }
 
+void ChameleonStyle::drawMenuItemRedPoint(const QStyleOptionMenuItem *option, QPainter *painter, const QWidget *widget) const
+{
+    if (!(option->state & QStyle::State_Enabled))
+        return;
+
+    QAction *action = nullptr;
+    if (const QMenu *menu = qobject_cast<const QMenu *>(widget)) {
+        action = menu->actionAt(option->rect.center());
+    }
+    if (!action)
+        return;
+
+    QObject *obj = action;
+    if (option->menuItemType == QStyleOptionMenuItem::SubMenu) {
+        obj = action->menu();
+    }
+
+    if (!obj->property("_d_menu_item_redpoint").toBool())
+        return;
+
+    int h = 6, w = 6; // red point size 6x6
+#ifdef ENABLE_RED_POINT_TEXT
+    QString text = obj->property("_d_menu_item_info").toString();
+    QFont f = option->font;
+    f.setPointSize(8);
+    if (!text.isEmpty()) {
+        QFontMetrics fontMetrics(f);
+        h = fontMetrics.height();
+        w = fontMetrics.horizontalAdvance(text) + Menu_ItemVTextMargin * 2; // margin left/right 4
+    }
+#endif
+    QPainterPath path;
+    QRectF rcf(option->rect);
+
+    rcf.setWidth(w);
+    rcf.setHeight(h);
+    rcf.moveTop(option->rect.top() + (option->rect.height() - h) / 2.0); // vcenter
+    rcf.moveLeft(option->rect.right() - w - 24); // 离右侧24像素
+
+#ifdef ENABLE_RED_POINT_TEXT
+    if (!text.isEmpty()) {
+        path.addRoundRect(rcf, 50, 99); // 0 is angled corners, 99 is maximum roundedness.
+    } else
+#endif
+    {
+        path.addEllipse(rcf);
+    }
+
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->fillPath(path, QColor("#FF3B30")); // color from ui.ds
+    QPen oldpen = painter->pen();
+    painter->setPen(QColor("#14000000")); // 外描边，边边颜色为8%的黑 hex(255*8/100)
+    painter->drawEllipse(rcf);
+    painter->setPen(oldpen);
+
+#ifdef ENABLE_RED_POINT_TEXT
+    if (!text.isEmpty()) {
+        painter->setPen(Qt::white); // 文字白色
+        painter->setFont(f);
+        painter->drawText(QPointF(rcf.left() + 4, rcf.bottom() - 4), text.left(3));
+    }
+#endif
+    painter->restore();
+}
+
 bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *painter, const QWidget *widget) const
 {
     if (const QStyleOptionMenuItem *menuItem = option) {
@@ -2672,6 +2738,8 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
             painter->setBrush(Qt::NoBrush);
             painter->drawText(vTextRect, text_flags, textToDraw);
+
+            drawMenuItemRedPoint(option, painter, widget);
         }
 
         // 绘制箭头
@@ -3586,6 +3654,15 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                 }
             }
 
+            int frameRadius = DStyle::pixelMetric(PM_FrameRadius); //打钩矩形的左侧距离item的左边缘； 也是 打钩矩形的右侧距离 图文内容的左边缘
+            int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, opt, widget); //打钩的宽度
+            int realMargins = smallIconSize + 2 * frameRadius; //左侧固定预留的margin，无论是否能够打钩都要预留
+
+            m_width = realMargins;
+#ifdef ENABLE_RED_POINT_TEXT
+            int redPointWith = opt->fontMetrics.size(Qt::TextSingleLine, QLatin1String("99+")).width();
+            m_width += redPointWith;
+#endif
             int tabSpacing = MenuItem_TabSpacing;
             if (menuItem->text.contains(QLatin1Char('\t'))) {  //若是项有快捷键，文本内容会以'\t'连接快捷键文本
                 if (!hideShortcutText)
@@ -3596,11 +3673,6 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                 }
             }
 
-            int frameRadius = DStyle::pixelMetric(PM_FrameRadius);  //打钩矩形的左侧距离item的左边缘； 也是 打钩矩形的右侧距离 图文内容的左边缘
-            int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);//打钩的宽度
-            int realMargins = smallIconSize + 2 * frameRadius;  //左侧固定预留的margin，无论是否能够打钩都要预留
-
-            m_width = realMargins;
             int textWidth = opt->fontMetrics.size(Qt::TextSingleLine, menuItem->text).width();
 
             if (!menuItem->text.isEmpty())

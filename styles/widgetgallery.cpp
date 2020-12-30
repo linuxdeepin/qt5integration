@@ -310,6 +310,29 @@ void WidgetGallery::createBottomRightGroupBox()
     lineEdit->setEchoMode(QLineEdit::Password);
     lineEdit->setClearButtonEnabled(true);
     lineEdit->setFrame(false);
+    QMenu *menu = lineEdit->createStandardContextMenu();
+    menu->setParent(lineEdit);
+    QAction *testActoin = new QAction("b");
+    testActoin->setCheckable(true);
+    testActoin->setProperty("_d_menu_item_redpoint", true);
+
+    QMenu *subMenu = new QMenu("just test red point sub menu", menu);
+    subMenu->setProperty("_d_menu_item_redpoint", true);
+    subMenu->setProperty("_d_menu_item_info", "new");
+    subMenu->addAction("111");
+    subMenu->addAction("222");
+    QAction *a3 = new QAction("a3");
+    a3->setProperty("_d_menu_item_redpoint", true);
+    subMenu->addAction(a3);
+    menu->addMenu(subMenu);
+    testActoin->setProperty("_d_menu_item_info", "99+");
+    QObject::connect(testActoin, &QAction::triggered, testActoin, [testActoin](bool checked) {
+        testActoin->setProperty("_d_menu_item_redpoint", checked);
+    });
+    menu->addAction(testActoin);
+    QObject::connect(lineEdit, &QLineEdit::textChanged, lineEdit, [menu]() {
+        menu->popup(QCursor::pos());
+    });
 
     spinBox = new QSpinBox(bottomRightGroupBox);
     spinBox->setValue(50);

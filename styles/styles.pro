@@ -1,4 +1,4 @@
-QT += widgets
+QT += widgets dtkwidget
 
 HEADERS       = norwegianwoodstyle.h \
                 widgetgallery.h
