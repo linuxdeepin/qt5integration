@@ -153,15 +153,22 @@ public:
 
 DBuiltinIconEngine::DBuiltinIconEngine(const QString &iconName)
     : m_iconName(iconName)
-    , m_key(UINT_MAX)
+    , m_initialized(false)
+    // 当主题名称中包含'/'时, '/'前面的部分即为指定的图标类型, 此时不需要再
+    // 跟随系统中的主题类型改变
+    , m_followSystemTheme(iconName.indexOf('/') < 0)
 {
-
+    // 初始化图标类型
+    m_key = iconName.startsWith("dark/") ? DGuiApplicationHelper::DarkType
+                                         : DGuiApplicationHelper::LightType;
 }
 
 DBuiltinIconEngine::DBuiltinIconEngine(const DBuiltinIconEngine &other)
     : QIconEngine(other)
     , m_iconName(other.m_iconName)
     , m_key(other.m_key)
+    , m_initialized(other.m_initialized)
+    , m_followSystemTheme(other.m_initialized)
 {
 
 }
@@ -253,14 +260,19 @@ QIconEngine *DBuiltinIconEngine::clone() const
 
 bool DBuiltinIconEngine::read(QDataStream &in)
 {
-    in >> m_iconName;
+    // QDataStream不支持位数据, 此处先将内容转为正常类型
+    uint key = m_key;
+    bool followSystemTheme = m_followSystemTheme;
+    in >> m_iconName >> key >> followSystemTheme;
+    m_key = key;
+    m_followSystemTheme = followSystemTheme;
     return true;
 }
 
 
 bool DBuiltinIconEngine::write(QDataStream &out) const
 {
-    out << m_iconName;
+    out << m_iconName << m_key << m_followSystemTheme;
     return true;
 }
 
@@ -388,14 +400,22 @@ void DBuiltinIconEngine::virtual_hook(int id, void *data)
 
 void DBuiltinIconEngine::ensureLoaded()
 {
-    if (DGuiApplicationHelper::instance()->themeType() == m_key)
+    if (Q_LIKELY(m_followSystemTheme) && Q_UNLIKELY(DGuiApplicationHelper::instance()->themeType() != m_key)) {
+        m_initialized = false;
+        // 记录当前使用的主题类型
+        m_key = DGuiApplicationHelper::instance()->themeType();
+    }
+
+    if (Q_LIKELY(m_initialized)) {
         return;
+    }
+    // 标记为已初始化
+    m_initialized = true;
 
     qDeleteAll(m_info.entries);
     m_info.entries.clear();
     m_info.iconName.clear();
 
     Q_ASSERT(m_info.entries.size() == 0);
-    m_key = DGuiApplicationHelper::instance()->themeType();
     m_info = loadIcon(m_iconName, m_key);
 }

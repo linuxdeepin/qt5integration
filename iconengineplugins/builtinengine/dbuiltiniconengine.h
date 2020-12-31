@@ -55,7 +55,12 @@ private:
     DBuiltinIconEngine(const DBuiltinIconEngine &other);
     QThemeIconInfo m_info;
     QString m_iconName;
-    uint m_key;
+    // 图标的类型(Dark/Light)
+    uint m_key:2;
+    // 记录是否已经初始化
+    bool m_initialized:1;
+    // 控制是否跟随系统级别的主题色来改变图标类型
+    bool m_followSystemTheme:1;
 
     friend class QIconLoader;
 };
