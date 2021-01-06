@@ -3643,7 +3643,8 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     }
     case CT_SpinBox:
         if (qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            size += QSize(size.height() * 2, LineEdit_FrameWidth);
+            int border = widget && widget->property("_d_dtk_spinBox").toBool() ? 0 : DStyle::pixelMetric(PM_ContentsMargins) * 2;
+            size += QSize(size.height() * 2 + border, LineEdit_FrameWidth);
             return size;
         }
     break;
