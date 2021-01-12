@@ -1443,9 +1443,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             p->setPen(QPen(QColor(0, 0, 0, 0.2 * 255), 1));
         }
 
-        int s = sw / 3;
-        QRectF rectInner(0, 0, 1.4 * s, 1.4 * s);  // 内侧弧线的外切正方形
-        QRectF rectExternal(0, 0, 2 * s, 2 * s); // 外侧弧线的外切正方形
+        QRectF rectInner(0, 0, 1.4 * sw, 1.4 * sw);  // 内侧弧线的外切正方形
+        QRectF rectExternal(0, 0, 2 * sw, 2 * sw); // 外侧弧线的外切正方形
 
         if (corner == Qt::BottomLeftCorner) {
             rectExternal.moveBottomLeft(QPointF(opt->rect.bottomLeft().x() + radius, opt->rect.bottomLeft().y() - radius));
@@ -3672,7 +3671,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         }
     break;
     case CT_SizeGrip: {
-        size = QSize(52, 52);
+        size = QSize(16, 16);
         break;
     }
     default:
