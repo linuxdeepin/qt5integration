@@ -1231,6 +1231,9 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     case CE_ToolButtonLabel: {
         if (const QStyleOptionToolButton *toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QRect rect = toolbutton->rect;
+            int toolButtonAlign = Qt::AlignLeft;
+            if (w)
+                toolButtonAlign = w->property("_d_dtk_toolButtonAlign").toInt(); // 设置tool button的对齐方式
             int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w); //在绘画icon和text之前,先绘画一层表示靠近或按下状态
             p->setRenderHint(QPainter::Antialiasing);
             p->setPen(Qt::NoPen);
@@ -1296,7 +1299,9 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 if (toolbutton->state & State_Enabled)
                     p->drawRoundedRect(rect, radius, radius);
 
+                // pr为图标的大小
                 QRect pr = rect;
+                // tr为文字的大小
                 QRect tr = rect;
                 pr.setHeight(pmSize.height());
                 pr.setWidth(pmSize.width());
@@ -1321,18 +1326,36 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                         alignment |= Qt::AlignCenter;
 
                     } else if (toolbutton->toolButtonStyle == Qt::ToolButtonTextBesideIcon) {
-                        //计算文字宽度
-                        int textWidget = w->fontMetrics().width(toolbutton->text);
-                        // 图标　spacing　文字的矩形,未找到适合的枚举，故用设计提出的spacing　8
-                        QRect textIcon = QRect(0, 0, pr.width() + 8 + textWidget, rect.height());
-                        textIcon.moveCenter(rect.center());
-                        pr.moveCenter(rect.center());
-                        //图标padding,未找到适合的枚举，故用设计提出的padding　4
-                        pr.moveLeft(qMax(textIcon.x(), 4));
-                        //调整text距离
-                        tr.adjust(pr.width() + 8, 0, -4, 0);
-                        drawIcon(toolbutton, p, pr, icon);
-                        alignment |= Qt::AlignCenter;
+                        if (toolButtonAlign == Qt::AlignCenter) {   //toolButton居中对齐
+                            //计算文字宽度
+                            int textWidget = w->fontMetrics().width(toolbutton->text);
+                            //图标 spacing 文字的矩形
+                            QRect textIcon = QRect(0, 0, pr.width() + ToolButton_MarginWidth + textWidget, rect.height());
+                            textIcon.moveCenter(rect.center());
+                            pr.moveCenter(rect.center());
+                            //图标padding
+                            pr.moveLeft(textIcon.x() > ToolButton_ItemSpacing ?
+                                        textIcon.x() : ToolButton_ItemSpacing );
+                            //调整text距离
+                            tr.adjust(pr.width() + ToolButton_AlignCenterPadding, 0, 0, 0);
+                            drawIcon(toolbutton, p, pr, icon);
+                            alignment |= Qt::AlignCenter;
+                        } else if (toolButtonAlign == Qt::AlignRight) { //toolButton右对齐
+                            int textWidget = w->fontMetrics().width(toolbutton->text);
+                            pr.moveCenter(rect.center());
+                            pr.moveRight(tr.width() - textWidget - ToolButton_AlignLeftPadding - ToolButton_ItemSpacing);
+                            tr.adjust(-ToolButton_AlignLeftPadding - pr.width() - ToolButton_MarginWidth, 0,
+                                      -ToolButton_AlignLeftMargin, 0);
+                            drawIcon(toolbutton, p, pr, icon);
+                            alignment |= Qt::AlignVCenter | Qt::AlignRight;
+                        } else {   //toolButton左对齐
+                            pr.moveCenter(rect.center());
+                            pr.moveLeft(ToolButton_AlignRightPadding);
+                            tr.adjust(ToolButton_AlignRightPadding + pr.width() + ToolButton_MarginWidth, 0,
+                                      -ToolButton_ItemSpacing, 0);
+                            drawIcon(toolbutton, p, pr, icon);
+                            alignment |= Qt::AlignVCenter | Qt::AlignLeft;
+                        }
                     } else {    //其他几种（文字和icon布局）方式
                         int radius = DStyle::pixelMetric(PM_FrameRadius);
                         pr.moveCenter(QPoint(rect.left(), rect.center().y()));

@@ -72,6 +72,10 @@ enum Metrics
     ToolButton_MarginWidth = 6,
     ToolButton_ItemSpacing = 4,
     ToolButton_InlineIndicatorWidth = 12,
+    ToolButton_AlignLeftPadding = 10,
+    ToolButton_AlignCenterPadding = 8,
+    ToolButton_AlignRightPadding = 9,
+    ToolButton_AlignLeftMargin = 7,
 
     // checkboxes and radio buttons
     CheckBox_Size = 20,
