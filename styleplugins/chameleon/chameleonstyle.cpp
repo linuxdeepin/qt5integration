@@ -848,7 +848,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     }
 
                     p->setBrush(inactive);
-                    const_cast<QWidget *>(w)->update();
+                    // Bug:33899 此处添加update出现重复触发绘图事件 导致cpu占用过高 目前注释未发现问题
+                    // const_cast<QWidget *>(w)->update();
                 }
 
                 p->setPen(Qt::NoPen);
