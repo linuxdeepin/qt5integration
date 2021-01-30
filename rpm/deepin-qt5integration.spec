@@ -1,7 +1,7 @@
 %global repo qt5integration
 
 Name:           deepin-qt5integration
-Version:        5.1.0.13
+Version:        5.1.5
 Release:        1%{?dist}
 Summary:        Qt platform theme integration plugins for DDE
 # The entire source code is GPLv3+ except styles/ which is BSD,
@@ -39,6 +39,7 @@ BuildRequires:  qt5-qtbase-common
 # for libQt5ThemeSupport.a
 BuildRequires:  qt5-qtbase-static
 BuildRequires:  qt5-qtbase-private-devel
+BuildRequires:  make
 %{?_qt5:Requires: %{_qt5}%{?_isa} = %{_qt5_version}}
 Requires:       deepin-qt5dxcb-plugin%{?_isa}
 
