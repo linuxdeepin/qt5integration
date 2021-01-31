@@ -1,5 +1,5 @@
 TEMPLATE = app
-QT += dtkgui
+QT += dtkgui concurrent
 CONFIG -= app_bundle
 
 CONFIG += testcase no_testcase_installs

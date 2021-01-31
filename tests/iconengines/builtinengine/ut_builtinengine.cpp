@@ -2,14 +2,15 @@
 #include <DGuiApplicationHelper>
 #include <QIcon>
 #include <QPainter>
-#include <dbuiltiniconengine.h>
+
+#include "dbuiltiniconengine.h"
 
 DGUI_USE_NAMESPACE
 
 #define ICONNAME "icon_Layout"
 #define ICONSIZE 16
 
-class gts_DBuiltinIconEngine : public testing::Test
+class ut_DBuiltinIconEngine : public testing::Test
 {
 protected:
     void SetUp() override;
@@ -18,17 +19,17 @@ protected:
     DBuiltinIconEngine *mIconEngine;
 };
 
-void gts_DBuiltinIconEngine::SetUp()
+void ut_DBuiltinIconEngine::SetUp()
 {
     mIconEngine = new DBuiltinIconEngine(ICONNAME);
 }
 
-void gts_DBuiltinIconEngine::TearDown()
+void ut_DBuiltinIconEngine::TearDown()
 {
     delete mIconEngine;
 }
 
-TEST_F(gts_DBuiltinIconEngine, loadIcon)
+TEST_F(ut_DBuiltinIconEngine, loadIcon)
 {
     const QThemeIconInfo &themeInfo = mIconEngine->loadIcon(ICONNAME, DGuiApplicationHelper::instance()->themeType());
 
@@ -44,7 +45,7 @@ TEST_F(gts_DBuiltinIconEngine, loadIcon)
     ASSERT_FALSE(entry->pixmap(QSize(ICONSIZE, ICONSIZE), QIcon::Normal, QIcon::On).isNull());
 }
 
-TEST_F(gts_DBuiltinIconEngine, actualSize)
+TEST_F(ut_DBuiltinIconEngine, actualSize)
 {
     QSize size(ICONSIZE, ICONSIZE);
 
@@ -58,14 +59,14 @@ TEST_F(gts_DBuiltinIconEngine, actualSize)
     }
 }
 
-TEST_F(gts_DBuiltinIconEngine, pixmap)
+TEST_F(ut_DBuiltinIconEngine, pixmap)
 {
     QPixmap iconenginePixmap = mIconEngine->pixmap(QSize(ICONSIZE, ICONSIZE), QIcon::Normal, QIcon::On);
 
     ASSERT_FALSE(iconenginePixmap.isNull());
 }
 
-TEST_F(gts_DBuiltinIconEngine, paint)
+TEST_F(ut_DBuiltinIconEngine, paint)
 {
     QImage iconImage(QSize(ICONSIZE, ICONSIZE), QImage::Format_ARGB32);
     QPainter iconPainter(&iconImage);
@@ -74,17 +75,17 @@ TEST_F(gts_DBuiltinIconEngine, paint)
     ASSERT_FALSE(iconImage.isNull());
 }
 
-TEST_F(gts_DBuiltinIconEngine, key)
+TEST_F(ut_DBuiltinIconEngine, key)
 {
     ASSERT_EQ(mIconEngine->key(), "DBuiltinIconEngine");
 }
 
-TEST_F(gts_DBuiltinIconEngine, clone)
+TEST_F(ut_DBuiltinIconEngine, clone)
 {
     ASSERT_FALSE(!mIconEngine->clone());
 }
 
-TEST_F(gts_DBuiltinIconEngine, read)
+TEST_F(ut_DBuiltinIconEngine, read)
 {
     QByteArray data;
     uint key = 1;
@@ -101,7 +102,7 @@ TEST_F(gts_DBuiltinIconEngine, read)
     ASSERT_EQ(mIconEngine->m_followSystemTheme, followSystemTheme);
 }
 
-TEST_F(gts_DBuiltinIconEngine, write)
+TEST_F(ut_DBuiltinIconEngine, write)
 {
     QByteArray data;
     QDataStream out(&data, QIODevice::WriteOnly);
@@ -119,12 +120,12 @@ TEST_F(gts_DBuiltinIconEngine, write)
     ASSERT_EQ(mIconEngine->m_followSystemTheme, followSystemTheme);
 }
 
-TEST_F(gts_DBuiltinIconEngine, iconName)
+TEST_F(ut_DBuiltinIconEngine, iconName)
 {
     ASSERT_EQ(mIconEngine->iconName(), ICONNAME);
 }
 
-TEST_F(gts_DBuiltinIconEngine, ensureLoaded)
+TEST_F(ut_DBuiltinIconEngine, ensureLoaded)
 {
     mIconEngine->ensureLoaded();
 
@@ -141,13 +142,13 @@ TEST_F(gts_DBuiltinIconEngine, ensureLoaded)
     ASSERT_EQ(entry->dir.type, QIconDirInfo::Scalable);
 }
 
-TEST_F(gts_DBuiltinIconEngine, hasIcon)
+TEST_F(ut_DBuiltinIconEngine, hasIcon)
 {
     mIconEngine->ensureLoaded();
     ASSERT_TRUE(mIconEngine->hasIcon());
 }
 
-TEST_F(gts_DBuiltinIconEngine, virtual_hook)
+TEST_F(ut_DBuiltinIconEngine, virtual_hook)
 {
     QIconEngine::AvailableSizesArgument data;
     void *arg = reinterpret_cast<void *>(&data);
@@ -165,6 +166,9 @@ TEST_F(gts_DBuiltinIconEngine, virtual_hook)
     ASSERT_FALSE(isNull);
 
     QIconEngine::ScaledPixmapArgument pixmapData;
+    // 参数值会在函数内部进行判断，需要初始化后传入 并判断函数是否执行成功
+    pixmapData.size = QSize(ICONSIZE, ICONSIZE);
+    pixmapData.scale = 1;
     arg = reinterpret_cast<void *>(&pixmapData);
     mIconEngine->virtual_hook(QIconEngine::ScaledPixmapHook, arg);
     ASSERT_FALSE(pixmapData.pixmap.isNull());
