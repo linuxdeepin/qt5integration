@@ -147,7 +147,9 @@ void QSvgIconEnginePrivate::loadDataForModeAndState(DSvgRenderer *renderer, QIco
     }
     if (!buf.isEmpty()) {
 #ifndef QT_NO_COMPRESS
-        buf = qUncompress(buf);
+        if (Q_LIKELY(!qEnvironmentVariableIsSet("QT_NO_COMPRESS"))) {
+            buf = qUncompress(buf);
+        }
 #endif
         renderer->load(buf);
     } else {
@@ -342,7 +344,7 @@ void QSvgIconEngine::addFile(const QString &fileName, const QSize &,
          const QString abs = fi.absoluteFilePath();
          const FileType type = fileType(fi);
 #ifndef QT_NO_COMPRESS
-         if (type == SvgFile || type == CompressedSvgFile) {
+         if ((type == SvgFile || type == CompressedSvgFile) && Q_LIKELY(!qEnvironmentVariableIsSet("QT_NO_COMPRESS"))) {
 #else
          if (type == SvgFile) {
 #endif
@@ -389,7 +391,8 @@ bool QSvgIconEngine::read(QDataStream &in)
         QHash<int, QString> fileNames;  // For memoryoptimization later
         in >> fileNames >> isCompressed >> *d->svgBuffers;
 #ifndef QT_NO_COMPRESS
-        if (!isCompressed) {
+
+        if (!isCompressed && Q_LIKELY(!qEnvironmentVariableIsSet("QT_NO_COMPRESS"))) {
             for (auto it = d->svgBuffers->begin(), end = d->svgBuffers->end(); it != end; ++it)
                 it.value() = qCompress(it.value());
         }
@@ -418,7 +421,9 @@ bool QSvgIconEngine::read(QDataStream &in)
         in >> data;
         if (!data.isEmpty()) {
 #ifndef QT_NO_COMPRESS
-            data = qUncompress(data);
+            if (Q_LIKELY(!qEnvironmentVariableIsSet("QT_NO_COMPRESS"))) {
+                data = qUncompress(data);
+            }
 #endif
             if (!data.isEmpty())
                 d->svgBuffers->insert(d->hashKey(QIcon::Normal, QIcon::Off), data);
@@ -444,7 +449,9 @@ bool QSvgIconEngine::write(QDataStream &out) const
     if (out.version() >= QDataStream::Qt_4_4) {
         int isCompressed = 0;
 #ifndef QT_NO_COMPRESS
-        isCompressed = 1;
+        if (Q_LIKELY(!qEnvironmentVariableIsSet("QT_NO_COMPRESS"))) {
+            isCompressed = 1;
+        }
 #endif
         QHash<int, QByteArray> svgBuffers;
         if (d->svgBuffers)
@@ -455,7 +462,9 @@ bool QSvgIconEngine::write(QDataStream &out) const
             if (f.open(QIODevice::ReadOnly))
                 buf = f.readAll();
 #ifndef QT_NO_COMPRESS
-            buf = qCompress(buf);
+            if (Q_LIKELY(!qEnvironmentVariableIsSet("QT_NO_COMPRESS"))) {
+                buf = qCompress(buf);
+            }
 #endif
             svgBuffers.insert(it.key(), buf);
         }
@@ -478,7 +487,9 @@ bool QSvgIconEngine::write(QDataStream &out) const
             }
         }
 #ifndef QT_NO_COMPRESS
-        buf = qCompress(buf);
+        if (Q_LIKELY(!qEnvironmentVariableIsSet("QT_NO_COMPRESS"))) {
+            buf = qCompress(buf);
+        }
 #endif
         out << buf;
         // 4.3 has buggy handling of added pixmaps, so don't write any
