@@ -1118,13 +1118,15 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         return;
     }
     case CE_ProgressBarGroove: {  //滑槽显示
-        int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-        int height = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)->orientation == Qt::Horizontal ? opt->rect.height() : opt->rect.width();
-        if (frameRadius * 2 >= height) {
-            frameRadius = qMin(height / 2, 4);
+        if (const QStyleOptionProgressBar *progBar = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
+            int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+            int height = progBar->orientation == Qt::Horizontal ? opt->rect.height() : opt->rect.width();
+            if (frameRadius * 2 >= height) {
+                frameRadius = qMin(height / 2, 4);
+            }
+            p->setBrush(getColor(opt, DPalette::ObviousBackground, w));
+            p->drawRoundedRect(opt->rect, frameRadius, frameRadius);
         }
-        p->setBrush(getColor(opt, DPalette::ObviousBackground, w));
-        p->drawRoundedRect(opt->rect, frameRadius, frameRadius);
         return;
     }
     case CE_ProgressBarContents: { //进度滑块显示
