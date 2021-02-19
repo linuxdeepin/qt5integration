@@ -5,4 +5,3 @@ INCLUDEPATH += $$PWD/../../../styleplugins/chameleon
 
 SOURCES += \
     $$PWD/ut_chameleonstyle.cpp \
-    $$PWD/../../../styleplugins/chameleon/chameleonstyle.cpp \
