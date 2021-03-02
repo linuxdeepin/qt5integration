@@ -359,6 +359,7 @@ void WidgetGallery::createBottomRightGroupBox()
 
     scrollBar = new QScrollBar(Qt::Horizontal, bottomRightGroupBox);
     scrollBar->setValue(60);
+    scrollBar->setProperty("_d_dtk_slider_always_show", true);
 
     dial = new QDial(bottomRightGroupBox);
     dial->setValue(30);

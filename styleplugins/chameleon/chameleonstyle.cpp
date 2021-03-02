@@ -544,7 +544,10 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         return;
     case CE_ScrollBarSlider: {
         if (const QStyleOptionSlider* scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            if (opt->styleObject) {
+            // QScrollBar 可以通过设置属性 _d_slider_always_show 为 true 的方式，使得 Slider 一直显示
+            // scrollBarObj 获取的即应用界面上 QScrollBar 控件本身的指针值
+            auto scrollBarObj = opt->styleObject;
+            if (scrollBarObj && !(scrollBarObj->property("_d_dtk_slider_always_show").toBool())) {
                 bool ok = false;
                 int prevValue = opt->styleObject->property("_d_slider_value").toInt(&ok);
                 auto *animation = qobject_cast<dstyle::DScrollbarStyleAnimation*>(this->animation(opt->styleObject));
