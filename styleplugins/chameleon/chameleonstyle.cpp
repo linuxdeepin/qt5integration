@@ -2956,7 +2956,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             label.rect = button.adjusted(fw, fw, -fw, -fw);
 
             if (w && w->property("_d_calendarToolBtn").toBool()) {
-                label.palette.setColor(QPalette::ButtonText, QPalette::Highlight);
+                label.palette = DGuiApplicationHelper::instance()->standardPalette(DGuiApplicationHelper::instance()->themeType());
             }
 
             proxy()->drawControl(CE_ToolButtonLabel, &label, p, w);
