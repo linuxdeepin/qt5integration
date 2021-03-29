@@ -99,10 +99,12 @@ public:
     QPixmap followColorPixmap(ScalableEntry *color_entry, const QSize &size, QIcon::Mode mode, QIcon::State state)
     {
         if (mode == QIcon::Selected && mode != lastMode) {
-            quint64 selected_cache_key = entryCacheKey(color_entry, QIcon::Selected, state);
             // 由非选中状态切换至选中状态，如果颜色值不更新，会按照上一次的状态（非选中时的颜色值）
             // 从svg图标缓存中寻找异常图标，导致图标异常。
-            entryToColorScheme.remove(selected_cache_key);
+            for (int each_mode = QIcon::Normal; each_mode <= QIcon::Selected; ++each_mode) {
+                quint64 each_cache_key = entryCacheKey(color_entry, QIcon::Mode(each_mode), state);
+                entryToColorScheme.remove(each_cache_key);
+            }
         }
 
         lastMode = mode;
