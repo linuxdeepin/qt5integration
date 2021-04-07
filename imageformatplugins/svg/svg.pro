@@ -10,9 +10,9 @@ OTHER_FILES += svg.json
 CONFIG += c++11 link_pkgconfig
 PKGCONFIG += dtkgui
 
-DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/imageformats/
+DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/imageformats/$${BASED_DTK_DIR}
 
 unix {
-    target.path = $$[QT_INSTALL_PLUGINS]/imageformats/
+    target.path = $$[QT_INSTALL_PLUGINS]/imageformats/$${BASED_DTK_DIR}
     INSTALLS += target
 }

@@ -6,6 +6,8 @@ SUBDIRS += \
     imageformatplugins/imageformats.pro \
     tests
 
+!isEmpty(BASED_DTK_DIR): SUBDIRS += src
+
 CONFIG(debug, debug|release) {
     SUBDIRS += styles
     styles.depends += styleplugins

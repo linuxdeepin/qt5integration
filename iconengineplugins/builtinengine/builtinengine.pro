@@ -8,9 +8,9 @@ SOURCES += main.cpp \
 OTHER_FILES += builtinengine.json
 
 QT += gui-private dtkgui
-DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/iconengines/
+DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/iconengines/$${BASED_DTK_DIR}
 
 unix {
-    target.path = $$[QT_INSTALL_PLUGINS]/iconengines/
+    target.path = $$[QT_INSTALL_PLUGINS]/iconengines/$${BASED_DTK_DIR}
     INSTALLS += target
 }

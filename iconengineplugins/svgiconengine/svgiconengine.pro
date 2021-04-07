@@ -10,9 +10,9 @@ OTHER_FILES += qsvgiconengine.json
 CONFIG += c++11
 
 QT += gui-private dtkgui concurrent
-DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/iconengines/
+DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/iconengines/$${BASED_DTK_DIR}
 
 unix {
-    target.path = $$[QT_INSTALL_PLUGINS]/iconengines/
+    target.path = $$[QT_INSTALL_PLUGINS]/iconengines/$${BASED_DTK_DIR}
     INSTALLS += target
 }

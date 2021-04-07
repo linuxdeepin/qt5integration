@@ -34,7 +34,7 @@ PLUGIN_TYPE = platformthemes
 PLUGIN_EXTENDS = -
 PLUGIN_CLASS_NAME = QDeepinTheme
 
-DESTDIR = $$_PRO_FILE_PWD_/../bin/plugins/platformthemes
+DESTDIR = $$_PRO_FILE_PWD_/../bin/plugins/platformthemes/$${BASED_DTK_DIR}
 
 SOURCES += qdeepintheme.cpp \
     main.cpp \
@@ -53,7 +53,7 @@ DISTFILES += \
     deepin.json
 
 unix {
-    target.path = $$[QT_INSTALL_PLUGINS]/platformthemes
+    target.path = $$[QT_INSTALL_PLUGINS]/platformthemes/$${BASED_DTK_DIR}
     INSTALLS += target
 }
 

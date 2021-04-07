@@ -1,0 +1,17 @@
+TEMPLATE = lib
+CONFIG += plugin
+
+DEFINES += TARGET=\\\"$${TEMPLATE}$${TARGET}\\\" BASED_DTK_DIR=\\\"$${BASED_DTK_DIR}\\\"
+
+INCLUDEPATH += $$PWD
+HEADERS += $$PWD/dpluginloader.h
+SOURCES += main.cpp
+
+DISTFILES += $${JSON_FILE}
+
+DESTDIR = $$_PRO_FILE_PWD_/../../../bin/plugins/$${PLUGIN_TYPE}/
+
+unix {
+    target.path = $$[QT_INSTALL_PLUGINS]/$${PLUGIN_TYPE}/
+    INSTALLS += target
+}

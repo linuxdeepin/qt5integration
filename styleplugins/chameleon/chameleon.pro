@@ -11,10 +11,10 @@ SOURCES += \
 
 DISTFILES += $${TARGET}.json
 
-DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/styles/
+DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/styles/$${BASED_DTK_DIR}
 
 unix {
-    target.path = $$[QT_INSTALL_PLUGINS]/styles/
+    target.path = $$[QT_INSTALL_PLUGINS]/styles/$${BASED_DTK_DIR}
     INSTALLS += target
 }
 
