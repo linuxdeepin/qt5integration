@@ -2437,7 +2437,8 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
         // 如果当前菜单项时已选中的，并且shadow_base不等于当前区域，此时应当清理阴影区域
         // 如果当前要绘制的item是触发阴影绘制的那一项，那么，此时应当清空阴影区域
         if ((selected && shadow_base != option->rect)
-                || (!selected && shadow_base == option->rect)) {
+            || (!selected && shadow_base == option->rect)
+            || (!selected && shadow_base.width() != option->rect.width())) {
             // 清空阴影区域
             option->styleObject->setProperty("_d_menu_shadow_rect", QVariant());
             option->styleObject->setProperty("_d_menu_shadow_base_rect", QVariant());
