@@ -1388,15 +1388,18 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         const bool isLast( headerOption->position == QStyleOptionHeader::End );
 
         // fill background
-        QColor color(opt->palette.color(QPalette::Button));//此处用Button，与QCommonstyle保持一致
-        p->fillRect(opt->rect, QBrush(color));
+        QColor color(opt->palette.color(QPalette::Base));
+        QColor lineColor(opt->palette.color(QPalette::Button));           // 挑选一个比较接近的基准色 Button，基于此做微调
 
-        QColor lineColor(opt->palette.color(QPalette::Base));
-        if (DGuiApplicationHelper::toColorType(lineColor) == DGuiApplicationHelper::LightType) {
-            lineColor = DGuiApplicationHelper::adjustColor(color, 0, 0, -10, 0, 0, 0, 0);
+        if (DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::LightType) {
+            color = DGuiApplicationHelper::adjustColor(color, 0, 0, 0, 0, 0, 0, 60);
+            lineColor = DGuiApplicationHelper::adjustColor(lineColor, 0, 0, 0, 0, 0, 0, 10);
         } else {
-            lineColor = DGuiApplicationHelper::adjustColor(color, 0, 0, +10, 0, 0, 0, 0);
+            color = DGuiApplicationHelper::adjustColor(color, 0, 0, -20, 0, 0, 0, 80);
+            lineColor = DGuiApplicationHelper::adjustColor(lineColor, 0, 0, -25, 0, 0, 0, 0);
         }
+
+        p->fillRect(opt->rect, QBrush(color));
         p->setPen(lineColor);
         if (horizontal) {
             if (!isLast) {
