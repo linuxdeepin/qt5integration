@@ -6,9 +6,9 @@
 
 QT        += core gui widgets widgets-private core-private gui-private
 CONFIG    += link_pkgconfig c++11
-PKGCONFIG += dtkwidget
+PKGCONFIG += dtkwidget$${DTK_VERSION}
 
-TARGET = dstyleplugin
+TARGET = dstyleplugin$${DTK_VERSION}
 TEMPLATE = lib
 CONFIG += plugin
 
@@ -66,9 +66,9 @@ RESOURCES += \
     assets.qrc
 
 load(configure)
-qtCompileTest(dtkwidget) {
+qtCompileTest(dtkwidget$${DTK_VERSION}) {
     DEFINES += DTK_SUPPORT_BLUR_WINDOW
-    message(The libdtkwidget support blur window)
+    message(The libdtkwidget$${DTK_VERSION} support blur window)
 } else {
-    warning(The libdtkwidget can not support blur window)
+    warning(The libdtkwidget$${DTK_VERSION} can not support blur window)
 }

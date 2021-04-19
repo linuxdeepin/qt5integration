@@ -1,6 +1,6 @@
-QT        += core gui widgets widgets-private core-private gui-private dtkgui dtkwidget
+QT        += core gui widgets widgets-private core-private gui-private dtkgui$${DTK_VERSION} dtkwidget$${DTK_VERSION}
 
-TARGET = chameleon
+TARGET = chameleon$${DTK_VERSION}
 TEMPLATE = lib
 CONFIG += plugin
 

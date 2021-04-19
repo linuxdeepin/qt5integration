@@ -1,5 +1,5 @@
 TEMPLATE = app
-QT += dtkgui concurrent dtkwidget
+QT += dtkgui$${DTK_VERSION} concurrent dtkwidget$${DTK_VERSION}
 CONFIG -= app_bundle
 
 unix:LIBS += -lgtest

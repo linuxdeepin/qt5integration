@@ -1,4 +1,4 @@
-TARGET  = dtkbuiltin
+TARGET  = dtkbuiltin$${DTK_VERSION}
 TEMPLATE = lib
 CONFIG += plugin
 
@@ -7,7 +7,7 @@ SOURCES += main.cpp \
            dbuiltiniconengine.cpp
 OTHER_FILES += builtinengine.json
 
-QT += gui-private dtkgui
+QT += gui-private dtkgui$${DTK_VERSION}
 DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/iconengines/$${BASED_DTK_DIR}
 
 unix {
