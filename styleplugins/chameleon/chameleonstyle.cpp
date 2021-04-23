@@ -2815,6 +2815,8 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
             QStyleOptionViewItem option(*vopt);
             option.rect = opt->rect.adjusted(frame_radius, 0, -frame_radius, 0);
 
+            QStyleOptionViewItem::ViewItemFeatures old_features = option.features;
+
             // 默认把checkbox放置在右边，因此使用QCommonStyle的Item布局时先移除HasCheckIndicator标志
             option.features &= ~QStyleOptionViewItem::HasCheckIndicator;
 
@@ -2829,8 +2831,10 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
             const QRect indicator_rect = alignedRect(opt->direction, Qt::AlignRight | Qt::AlignVCenter,
                                                      QSize(indicator_width, indicator_height), text_rect);
 
-            int margin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget);
-            text_rect.setRight(qMin(text_rect.right(), indicator_rect.left() - margin));
+            if (old_features.testFlag(QStyleOptionViewItem::HasCheckIndicator)) {
+                int margin = proxy()->pixelMetric(QStyle::PM_FocusFrameHMargin, opt, widget);
+                text_rect.setRight(qMin(text_rect.right(), indicator_rect.left() - margin));
+            }
 
             return r == SE_ItemViewItemText ? text_rect : indicator_rect;
         }
