@@ -2209,6 +2209,7 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
     if (hasText && textRect.isValid() && !editable) {
         painter->setPen(getColor(cb, QPalette::ButtonText));
         QString text = painter->fontMetrics().elidedText(cb->currentText, Qt::ElideRight, textRect.width());
+        textRect.setWidth(textRect.width() + downArrowRect.width());
         painter->drawText(textRect, textFlags, text);
     }
 
