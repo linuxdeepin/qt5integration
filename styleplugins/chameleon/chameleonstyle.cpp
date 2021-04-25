@@ -1743,23 +1743,11 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
     if (!widget)
         return false;
 
-    bool isTriangularMode = false;
     bool type_check = false;
     bool selected = tab->state & State_Selected && tab->state & State_Enabled;
 
     if (widget)
         type_check = widget->property("_d_dtk_tabbartab_type").toBool();
-
-    switch (tab->shape) {
-    case QTabBar::TriangularNorth:
-    case QTabBar::TriangularSouth:
-    case QTabBar::TriangularEast:
-    case QTabBar::TriangularWest:
-        isTriangularMode = true;
-        break;
-    default:
-        break;
-    }
 
     bool visible_close_button = selected;
 
@@ -1774,7 +1762,8 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
     QStyleOptionTab newTab = *tab;
 
     if (selected) {
-        newTab.palette.setBrush(QPalette::WindowText, getColor(tab, isTriangularMode ? QPalette::BrightText : QPalette::HighlightedText));
+        QPalette::ColorRole role = type_check ? QPalette::Highlight : QPalette::HighlightedText;
+        newTab.palette.setBrush(QPalette::WindowText, adjustColor(getColor(tab, role), 0, 0, 0, 0, 0, 0, 50));
 
         // 拖拽的tab不需要绘制渐变到透明，因为没有关闭按钮。拖拽标签时是生成图片 QPaintDevice 是 QPixMap
         bool is_moving_tab = painter->device()->devType() != QInternal::Widget;
