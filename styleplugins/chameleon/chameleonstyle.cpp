@@ -3007,9 +3007,6 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
     case CC_Slider : {
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             const DSlider *dslider = qobject_cast<const DSlider *>(w);
-            QSlider::TickPosition tickPosition  = slider->tickPosition;
-            if (dslider)
-                tickPosition = dslider->tickPosition();
             //各个使用的矩形大小和位置
             QRectF rect = opt->rect;                                                                            //Slider控件最大的矩形(包含如下三个)
             QRectF rectHandle = proxy()->subControlRect(CC_Slider, opt, SC_SliderHandle, w);                    //滑块矩形
