@@ -554,8 +554,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 // 上一次的状态是显示还是隐藏
                 bool prevVisible = opt->styleObject->property("_d_slider_visible").toBool();
 
-                // 判断是否应当进入动画流程
-                if ((!ok || prevValue == scrollBar->sliderValue) && !(scrollBar->activeSubControls)) {
+                // 判断是否应当进入动画流程。任何滚动区域，在触发滚动的时候才能显示滚动条，在显示滚动条的时候鼠标移过去，才会有相应的hover到滚动条上的操作
+                if ((!ok || prevValue == scrollBar->sliderValue)) {
                     bool disable_animation = opt->styleObject->property("_d_disable_animation").toBool();
 
                     if (!disable_animation) {
