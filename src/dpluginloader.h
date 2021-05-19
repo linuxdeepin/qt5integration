@@ -30,6 +30,7 @@
 #include <QPluginLoader>
 #include <QDebug>
 #include <QLoggingCategory>
+#include <QRegularExpression>
 
 #ifdef QT_DEBUG
 Q_LOGGING_CATEGORY(lcDPlugin, "dtk.dpluginloader")
@@ -106,7 +107,13 @@ public:
         QFunctionPointer versionStrFunc = resolve(VERSION_STR_SYMBOL);
         if (versionStrFunc) {
             QString versionStr = reinterpret_cast<const char *(*)()>(versionStrFunc)();
-            pluginName += versionStr.left(versionStr.lastIndexOf("."));
+            // 5.5.3.01 ==> 5.5
+            const QRegularExpression reg(R"(\d+\.\d+)");
+            QRegularExpressionMatch rem = reg.match(versionStr);
+            if (rem.hasMatch())
+                pluginName += rem.captured();
+            else
+                qWarning() << versionStr << "is invalid";
         } else {
             qCDebug(lcDPlugin) << VERSION_STR_SYMBOL << "resolve failed, trying to read self maps";
             QString versoinName = resolveFromPSM(QLatin1String("dtkcore"));
