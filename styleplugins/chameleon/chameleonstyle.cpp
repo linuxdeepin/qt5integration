@@ -504,6 +504,21 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_FrameStatusBarItem: {
+        QColor bgcolor;
+        QColor lineColor;
+        if (DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType) {
+            bgcolor = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Base), 0, 0, -10, 0, 0, 0, 95);
+            lineColor = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Button), 0, 0, 0, 0, 0, 0, 5);
+        } else {
+            bgcolor = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Base), 0, 0, 0, 0, 0, 0, 70);
+            lineColor = DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Button), 0, 0, 60, 0, 0, 0, 0);
+        }
+        p->setPen(lineColor);
+        p->setBrush(bgcolor);
+
+        p->drawLine(opt->rect.topLeft(),  opt->rect.topRight());
+        p->drawRect(opt->rect);
+
         return;
     }
     default:
