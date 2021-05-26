@@ -504,6 +504,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_FrameStatusBarItem: {
+        return;
+    } case PE_PanelStatusBar: {
         QColor bgcolor;
         QColor lineColor;
         if (DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType) {
