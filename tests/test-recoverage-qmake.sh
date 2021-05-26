@@ -23,5 +23,7 @@ lcov --remove coverage_all.info "*/tests/*" "*/usr/include*" "*build/src*" --out
 cd ..
 genhtml -o $REPORT_DIR $BUILD_DIR/coverage.info
 
+mv ../build/asan.log* ../build/asan_qt5integration.log
+
 #rm -rf $BUILD_DIR
 #rm -rf ../$BUILD_DIR

@@ -7,6 +7,13 @@ unix:LIBS += -lgtest
 QMAKE_CXXFLAGS += -fno-access-control
 QMAKE_LFLAGS += -fno-access-control
 
+CONFIG(debug, debug|release) {
+LIBS += -lgtest -lgmock
+QMAKE_CXXFLAGS += -g -Wall -fprofile-arcs -ftest-coverage -fsanitize=address -O2
+QMAKE_LFLAGS += -g -Wall -fprofile-arcs -ftest-coverage -fsanitize=address -O2
+MAKE_CXX += -g -fprofile-arcs -ftest-coverage -fsanitize=address -O2
+}
+
 include($$PWD/iconengines/iconengines.pri)
 include($$PWD/styleplugins/styleplugins.pri)
 
