@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS += svgiconenginechooser builtinenginechooser
+SUBDIRS += svgiconenginechooser builtinenginechooser xdgiconproxyenginechooser

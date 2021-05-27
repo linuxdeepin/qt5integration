@@ -23,7 +23,7 @@ qtCompileTest(dthemed_icon_lookup) {
     HEADERS += diconengine.h
 }
 
-PKGCONFIG += mtdev Qt5Xdg x11 Qt5XdgIconLoader
+PKGCONFIG += mtdev Qt5Xdg x11
 
 PKG_CONFIG = $$pkgConfigExecutable()
 XDG_ICON_VERSION = $$system($$PKG_CONFIG --modversion Qt5XdgIconLoader)
