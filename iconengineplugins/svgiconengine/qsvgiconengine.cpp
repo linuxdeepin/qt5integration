@@ -217,7 +217,8 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
             if (d->svgBuffers && !d->svgBuffers->isEmpty())
                 mdst = QByteArray::number(d->hashKey(mode, state)).prepend("_");
             // svgFiles[-1] 是为了取到额外的cache key,例如会跟随颜色变化的svg图标，将会添加此特殊的标记
-            const QByteArray cacheKey = svgFile.toLocal8Bit() + d->svgFiles[-1].toLocal8Bit() + mdst; // add mode state to cachekey
+            const QByteArray extraKey = d->svgFiles.value(-1).isEmpty() ? QByteArrayLiteral("") : d->svgFiles.value(-1).toLocal8Bit() + mdst;
+            const QByteArray cacheKey = svgFile.toLocal8Bit() + extraKey; // add mode state to cachekey
             const QString &svgFileSha1 = QString::fromLatin1(QCryptographicHash::hash(cacheKey, QCryptographicHash::Sha1).toHex());
             cacheFile = QStringLiteral("%1/%2.png").arg(cachePath).arg(svgFileSha1);
         }

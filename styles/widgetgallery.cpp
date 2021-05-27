@@ -283,7 +283,7 @@ void WidgetGallery::createBottomLeftTabWidget()
     bottomLeftTabWidget->addTab(tab2, tr("Text &Edit"));
 
     QWidget *pTreeViewWidget = new QWidget;
-    QFileSystemModel *model = new QFileSystemModel;
+    QFileSystemModel *model = new QFileSystemModel(this);
     model->setRootPath(QDir::currentPath());
     QHBoxLayout *pTabLayout = new QHBoxLayout;
     pTabLayout->setMargin(0);
@@ -294,7 +294,29 @@ void WidgetGallery::createBottomLeftTabWidget()
     tree->setModel(model);
     pTabLayout->addWidget(tree);
 
+    QWidget *pListViewWidget = new QWidget;
+    QHBoxLayout *pListLayout = new QHBoxLayout;
+    QStandardItemModel *listModel = new QStandardItemModel(this);
+    pListLayout->setMargin(0);
+    pListViewWidget->setLayout(pListLayout);
+
+    QListView *lv = new QListView;
+    lv->setDragEnabled(true);
+    lv->setDragDropMode(QListView::DragDrop);
+    lv->setDefaultDropAction(Qt::CopyAction);
+    lv->setModel(listModel);
+    pListLayout->addWidget(lv);
+
+    for (uint8_t i = 0; i < 10; ++i) {
+        QStandardItem *item = new QStandardItem;
+        item->setIcon(this->style() ? this->style()->standardIcon(QStyle::StandardPixmap(QStyle::SP_DirIcon + i)) : QIcon());
+        item->setText(QStringLiteral("Row %1...............").arg(i + 1));
+        item->setDragEnabled(true);
+        listModel->appendRow(item);
+    }
+
     bottomLeftTabWidget->addTab(pTreeViewWidget, "&TreeView");
+    bottomLeftTabWidget->addTab(pListViewWidget, "&ListView");
     bottomLeftTabWidget->addTab(new QWidget(), "tab 2");
     bottomLeftTabWidget->addTab(new QWidget(), "tab 3");
     bottomLeftTabWidget->addTab(new QWidget(), "tab 4");
