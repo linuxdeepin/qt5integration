@@ -3627,6 +3627,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                 //加上Item自定义的margins
                 size = QRect(QPoint(0, 0), size).marginsAdded(item_margins).size();
             }
+            size.setWidth(size.width() + opt->fontMetrics.width("xxx"));
 
             return size;
         }
