@@ -58,7 +58,7 @@ class DStyleAnimation : public QAbstractAnimation
     Q_OBJECT
 
 public:
-    DStyleAnimation(QObject *target);
+    explicit DStyleAnimation(QObject *target);
     virtual ~DStyleAnimation();
 
     QObject *target() const;
@@ -113,7 +113,7 @@ public:
     void setSpeed(int speed);
 
 protected:
-    bool isUpdateNeeded() const Q_DECL_OVERRIDE;
+    virtual bool isUpdateNeeded() const Q_DECL_OVERRIDE;
 
 private:
     int _speed;
@@ -125,7 +125,7 @@ class DNumberStyleAnimation : public DStyleAnimation
     Q_OBJECT
 
 public:
-    DNumberStyleAnimation(QObject *target);
+    explicit DNumberStyleAnimation(QObject *target);
 
     qreal startValue() const;
     void setStartValue(qreal value);
@@ -136,7 +136,7 @@ public:
     qreal currentValue() const;
 
 protected:
-    bool isUpdateNeeded() const Q_DECL_OVERRIDE;
+    virtual bool isUpdateNeeded() const Q_DECL_OVERRIDE;
 
 private:
     qreal _start;

@@ -73,7 +73,7 @@ public:
         : svgBuffers(0), addedPixmaps(0)
         { stepSerialNum(); }
 
-    ~QSvgIconEnginePrivate()
+    virtual ~QSvgIconEnginePrivate()
         { delete addedPixmaps; delete svgBuffers; }
 
     static inline int hashKey(QIcon::Mode mode, QIcon::State state)
@@ -274,9 +274,9 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
                     if (image.save(&file, "png", 80) && file.commit()) {
                         QFileInfo svgFileInfo(svgFile);
                         // 不能直接使用QSaveFile改写文件的时间
-                        QFile file(cacheFile);
-                        if (!file.open(QFile::ReadWrite) || !file.setFileTime(svgFileInfo.lastModified(), QFileDevice::FileModificationTime)) {
-                            qCWarning(lcDSvg()) << "set cache file modified date time failed, error message:" << file.errorString()
+                        QFile timeFile(cacheFile);
+                        if (!timeFile.open(QFile::ReadWrite) || !timeFile.setFileTime(svgFileInfo.lastModified(), QFileDevice::FileModificationTime)) {
+                            qCWarning(lcDSvg()) << "set cache file modified date time failed, error message:" << timeFile.errorString()
                                                 << ", cache file:" << cacheFile << ", svg file:" << svgFile;
                         }
                     } else {

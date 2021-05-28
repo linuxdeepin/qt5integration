@@ -1032,7 +1032,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             if (!proxy()->styleHint(SH_UnderlineShortcut, button, w))
                 tf |= Qt::TextHideMnemonic;
 
-            const QPalette::ColorRole &text_color_role = opt->state & State_On ? QPalette::HighlightedText : QPalette::ButtonText;
+            const QPalette::ColorRole &text_color_role = (opt->state & State_On) ? QPalette::HighlightedText : QPalette::ButtonText;
 
             QPalette pa = button->palette;
 
@@ -1257,7 +1257,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int toolButtonAlign = Qt::AlignLeft;
             if (w)
                 toolButtonAlign = w->property("_d_dtk_toolButtonAlign").toInt(); // 设置tool button的对齐方式
-            int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w); //在绘画icon和text之前,先绘画一层表示靠近或按下状态
             p->setRenderHint(QPainter::Antialiasing);
             p->setPen(Qt::NoPen);
             p->setBrush(Qt::NoBrush);
@@ -1273,6 +1272,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 if (!proxy()->styleHint(SH_UnderlineShortcut, opt, w))
                     alignment |= Qt::TextHideMnemonic;
                 p->setFont(toolbutton->font);
+                int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w); //在绘画icon和text之前,先绘画一层表示靠近或按下状态
                 p->drawRoundedRect(rect, radius, radius);
 
                 if (toolbutton->state & State_On) {
@@ -1304,7 +1304,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     break;
                 }
 
-                int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w); //在绘画icon和text之前,先绘画一层表示靠近或按下状态
                 p->setRenderHint(QPainter::Antialiasing);
                 p->setPen(Qt::NoPen);
                 p->setBrush(Qt::NoBrush);
@@ -1319,8 +1318,10 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setBrush(getColor(toolbutton, DPalette::Button));
                 }
 
-                if (toolbutton->state & State_Enabled)
+                if (toolbutton->state & State_Enabled){
+                    int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w); //在绘画icon和text之前,先绘画一层表示靠近或按下状态
                     p->drawRoundedRect(rect, radius, radius);
+                }
 
                 // pr为图标的大小
                 QRect pr = rect;
@@ -1516,7 +1517,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
                 // draw the text
                 if (!vopt->text.isEmpty()) {
-                    QPalette::ColorGroup cg = vopt->state & QStyle::State_Enabled
+                    QPalette::ColorGroup cg = (vopt->state & QStyle::State_Enabled)
                                           ? QPalette::Normal : QPalette::Disabled;
                     if (cg == QPalette::Normal && !(vopt->state & QStyle::State_Active))
                         cg = QPalette::Inactive;
@@ -2654,41 +2655,35 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         }
 
         //绘制选择框
-        bool ignoreCheckMark = false;
-
         int frameRadius = DStyle::pixelMetric(PM_FrameRadius);  //打钩矩形的左侧距离item的左边缘； 也是 打钩矩形的右侧距离 图文内容的左边缘
         int smallIconSize = proxy()->pixelMetric(PM_ButtonIconSize, option, widget);//打钩的宽度
         int realMargins = smallIconSize + 2 * frameRadius;  //左侧固定预留的margin，无论是否能够打钩都要预留
 
-        if (!ignoreCheckMark) {
-            /*checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);*/
-            QRect checkRect(menuItem->rect);
+        /*checkRect = visualRect(menuItem->direction, menuItem->rect, checkRect);*/
+        QRect checkRect(menuItem->rect);
 
-            if (checkable) {
-                checkRect.setLeft(frameRadius);
-                checkRect.setWidth(smallIconSize);
-                checkRect.setHeight(smallIconSize);
-                checkRect.moveCenter(QPoint(checkRect.left() + smallIconSize / 2, menuItem->rect.center().y()));
-                painter->setRenderHint(QPainter::Antialiasing);
+        if (checkable) {
+            checkRect.setLeft(frameRadius);
+            checkRect.setWidth(smallIconSize);
+            checkRect.setHeight(smallIconSize);
+            checkRect.moveCenter(QPoint(checkRect.left() + smallIconSize / 2, menuItem->rect.center().y()));
+            painter->setRenderHint(QPainter::Antialiasing);
 
-                if (selected)
-                    painter->setPen(getColor(option, QPalette::HighlightedText));
-                else
-                    painter->setPen(getColor(option, QPalette::BrightText));
+            if (selected)
+                painter->setPen(getColor(option, QPalette::HighlightedText));
+            else
+                painter->setPen(getColor(option, QPalette::BrightText));
 
-                if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) { //单选框
-                    if (checked || sunken) {
-                        QIcon markIcon = DStyle::standardIcon(SP_MarkElement, option, widget);
-                        markIcon.paint(painter, checkRect);
-                    }
-                } else if (checked) { //复选框
+            if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) { //单选框
+                if (checked || sunken) {
                     QIcon markIcon = DStyle::standardIcon(SP_MarkElement, option, widget);
                     markIcon.paint(painter, checkRect);
-                } else {
                 }
+            } else if (checked) { //复选框
+                QIcon markIcon = DStyle::standardIcon(SP_MarkElement, option, widget);
+                markIcon.paint(painter, checkRect);
+            } else {
             }
-        } else { //ignore checkmark //用于combobox
-
         }
 
         if (selected) {
@@ -2772,9 +2767,9 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         // 绘制箭头
         if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {// draw sub menu arrow
             int dim = (menuRect.height() - 4) / 2;
-            int xpos = menuRect.left() + menuRect.width() - 3 - dim;
+            int xposArrow = menuRect.left() + menuRect.width() - 3 - dim;
             QStyleOptionMenuItem newMI = *menuItem;
-            xpos += realMargins + iconSize.width() + frameRadius;
+            xposArrow += realMargins + iconSize.width() + frameRadius;
             QPoint topLeft(menuItem->rect.right() - frameRadius - smallIconSize / 2, menuItem->rect.center().y() - smallIconSize / 3);  //箭头rect: Size(smallIconSize, smallIconSize*2/3)
             QPoint RightButtom(topLeft.x() + smallIconSize / 2, menuItem->rect.center().y() + smallIconSize / 3 );
             QRect rectArrow(topLeft, RightButtom);
@@ -3671,50 +3666,46 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     }
     case CT_MenuItem: {
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
-            int m_width = size.width();
-            bool hideShortcutText = false;
+//            int styleSizeWidth = size.width();
+//            styleSizeWidth -= menuItem->tabWidth;
+//            int tabIndex = menuItem->text.indexOf(QLatin1Char('\t'));
 
-            if (hideShortcutText) {
-                m_width -= menuItem->tabWidth;
-                int tabIndex = menuItem->text.indexOf(QLatin1Char('\t'));
+//            if (tabIndex != -1) {
+//                int textWidth = menuItem->fontMetrics.width(menuItem->text.mid(tabIndex + 1));
 
-                if (tabIndex != -1) {
-                    int textWidth = menuItem->fontMetrics.width(menuItem->text.mid(tabIndex + 1));
-
-                    if (menuItem->tabWidth == 0)
-                        m_width -= textWidth;
-                }
-            }
+//                if (menuItem->tabWidth == 0)
+//                    styleSizeWidth -= textWidth;
+//            }
 
             int frameRadius = DStyle::pixelMetric(PM_FrameRadius); //打钩矩形的左侧距离item的左边缘； 也是 打钩矩形的右侧距离 图文内容的左边缘
             int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize, opt, widget); //打钩的宽度
             int realMargins = smallIconSize + 2 * frameRadius; //左侧固定预留的margin，无论是否能够打钩都要预留
 
-            m_width = realMargins;
+            int styleSizeWidth = realMargins;
 #ifdef ENABLE_RED_POINT_TEXT
             int redPointWith = opt->fontMetrics.size(Qt::TextSingleLine, QLatin1String("99+")).width();
-            m_width += redPointWith;
+            styleSizeWidth += redPointWith;
 #endif
             int tabSpacing = MenuItem_TabSpacing;
             if (menuItem->text.contains(QLatin1Char('\t'))) {  //若是项有快捷键，文本内容会以'\t'连接快捷键文本
-                if (!hideShortcutText)
-                    m_width += tabSpacing;
+//                if (!hideShortcutText)
+                styleSizeWidth += tabSpacing;
             } else {
                 if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {
-                    m_width += 2 * Menu_ArrowHMargin;
+                    styleSizeWidth += 2 * Menu_ArrowHMargin;
                 }
             }
 
             int textWidth = opt->fontMetrics.size(Qt::TextSingleLine, menuItem->text).width();
 
             if (!menuItem->text.isEmpty())
-                m_width += (textWidth + frameRadius);
+                styleSizeWidth += (textWidth + frameRadius);
 
             if (!menuItem->icon.isNull())
-                m_width += (smallIconSize + + frameRadius);
+                styleSizeWidth += (smallIconSize + + frameRadius);
 
-            m_width += (smallIconSize + frameRadius);
-            size.setWidth(m_width);
+            styleSizeWidth += (smallIconSize + frameRadius);
+            size.setWidth(styleSizeWidth);
 
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 if (!menuItem->text.isEmpty()) {

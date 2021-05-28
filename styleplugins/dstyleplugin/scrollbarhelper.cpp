@@ -131,9 +131,7 @@ bool Style::drawScrollBarSliderControl(const QStyleOption *option, QPainter *pai
     const QStyleOptionSlider *scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(option);
     QObject *styleObject = option->styleObject;
 
-    bool wasActive = false;
-
-    if (styleObject && styleObject && proxy()->styleHint(SH_ScrollBar_Transient, option, widget)) {
+    if (styleObject && proxy()->styleHint(SH_ScrollBar_Transient, option, widget)) {
         Q_D(const Style);
 
         qreal opacity = 0.0;
@@ -189,6 +187,7 @@ bool Style::drawScrollBarSliderControl(const QStyleOption *option, QPainter *pai
 #ifndef QT_NO_ANIMATION
         DScrollbarStyleAnimation *anim = qobject_cast<DScrollbarStyleAnimation *>(d->animation(styleObject));
 
+        bool wasActive = false;
         if (anim && anim->mode() == DScrollbarStyleAnimation::Deactivating) {
             // once a scrollbar was active (hovered/pressed), it retains
             // the active look even if it's no longer active while fading out

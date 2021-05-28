@@ -47,7 +47,7 @@ public:
     bool defaultNameFilterDisables() const Q_DECL_OVERRIDE;
     void setDirectory(const QUrl &directory) Q_DECL_OVERRIDE;
     QUrl directory() const Q_DECL_OVERRIDE;
-    void selectFile(const QUrl &filename) Q_DECL_OVERRIDE;
+    void selectFile(const QUrl &fileUrl) Q_DECL_OVERRIDE;
     QList<QUrl> selectedFiles() const Q_DECL_OVERRIDE;
     void setFilter() Q_DECL_OVERRIDE;
     void selectNameFilter(const QString &filter) Q_DECL_OVERRIDE;

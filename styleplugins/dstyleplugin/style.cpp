@@ -769,10 +769,11 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
             }
 
             int maxpmw = menuItem->maxIconWidth;
-            int tabSpacing = 20;
             if (menuItem->text.contains(QLatin1Char('\t'))) {
-                if (!hideShortcutText)
+                if (!hideShortcutText){
+                    int tabSpacing = 20;
                     w += tabSpacing;
+                }
             } else {
                 if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu) {
                     w += 2 * Menu_ArrowHMargin;

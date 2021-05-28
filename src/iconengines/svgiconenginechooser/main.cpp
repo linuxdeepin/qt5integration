@@ -30,8 +30,8 @@ class QSvgIconPlugin : public QIconEnginePlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QIconEngineFactoryInterface" FILE "qsvgiconengine.json")
 
 public:
-    QSvgIconPlugin(QObject *parent = nullptr);
-    QIconEngine *create(const QString &filename = QString());
+    explicit QSvgIconPlugin(QObject *parent = nullptr);
+    QIconEngine *create(const QString &file = QString());
 
 private:
     QScopedPointer<QIconEnginePlugin> m_pluginProxy;

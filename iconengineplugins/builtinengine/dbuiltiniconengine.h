@@ -29,7 +29,7 @@ class DBuiltinIconEnginePrivate;
 class DBuiltinIconEngine : public QIconEngine
 {
 public:
-    DBuiltinIconEngine(const QString &iconName);
+    explicit DBuiltinIconEngine(const QString &iconName);
     ~DBuiltinIconEngine();
     void paint(QPainter *painter, const QRect &rect,
                QIcon::Mode mode, QIcon::State state);

@@ -169,7 +169,7 @@ QBrush PaletteExtended::brush(const QWidget *widget, PaletteExtended::BrushName 
     return defaultBrush;
 }
 
-static quint64 pseudoClass(QStyle::State state)
+static quint64 caclPseudoClass(QStyle::State state)
 {
     quint64 pc = 0;
     if (state & QStyle::State_Enabled) {
@@ -222,7 +222,7 @@ QBrush PaletteExtended::brush(const QWidget *widget, PaletteExtended::BrushName 
     if (extraTypes)
         normal = brush(widget, name, extraTypes, normal);
 
-    extraTypes |= pseudoClass(option->state);
+    extraTypes |= caclPseudoClass(option->state);
 
     if (const QStyleOptionButton* buttonOption = qstyleoption_cast<const QStyleOptionButton*>(option)) {
         if (buttonOption->features & QStyleOptionButton::Flat)

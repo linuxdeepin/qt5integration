@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 class QSvgIOHandlerPrivate
 {
 public:
-    QSvgIOHandlerPrivate(QSvgIOHandler *qq)
+    explicit QSvgIOHandlerPrivate(QSvgIOHandler *qq)
         : q(qq), loaded(false), readDone(false), backColor(Qt::transparent)
     {}
 
@@ -223,6 +223,7 @@ QVariant QSvgIOHandler::option(ImageOption option) const
 
 void QSvgIOHandler::setOption(ImageOption option, const QVariant & value)
 {
+    Q_UNUSED(value);
     switch(option) {
     case ClipRect:
         d->clipRect = value.toRect();
@@ -240,7 +241,6 @@ void QSvgIOHandler::setOption(ImageOption option, const QVariant & value)
         break;
     }
 }
-
 
 bool QSvgIOHandler::supportsOption(ImageOption option) const
 {

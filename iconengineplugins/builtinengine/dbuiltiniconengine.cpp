@@ -45,7 +45,7 @@ public:
         IconType // 任务状态都不跟随画笔颜色
     };
 
-    ImageEntry(Type t)
+    explicit ImageEntry(Type t)
         : type(t)
     {
 
@@ -153,14 +153,13 @@ public:
 
 DBuiltinIconEngine::DBuiltinIconEngine(const QString &iconName)
     : m_iconName(iconName)
+    , m_key(iconName.startsWith("dark/") ? DGuiApplicationHelper::DarkType
+                                         : DGuiApplicationHelper::LightType)
     , m_initialized(false)
     // 当主题名称中包含'/'时, '/'前面的部分即为指定的图标类型, 此时不需要再
     // 跟随系统中的主题类型改变
     , m_followSystemTheme(iconName.indexOf('/') < 0)
 {
-    // 初始化图标类型
-    m_key = iconName.startsWith("dark/") ? DGuiApplicationHelper::DarkType
-                                         : DGuiApplicationHelper::LightType;
 }
 
 DBuiltinIconEngine::DBuiltinIconEngine(const DBuiltinIconEngine &other)

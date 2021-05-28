@@ -31,7 +31,7 @@ class QSvgPlugin : public QImageIOPlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QImageIOHandlerFactoryInterface" FILE "dsvg.json")
 
 public:
-    QSvgPlugin(QObject *parent = nullptr);
+    explicit QSvgPlugin(QObject *parent = nullptr);
     Capabilities capabilities(QIODevice *device, const QByteArray &format) const;
     QImageIOHandler *create(QIODevice *device, const QByteArray &format = QByteArray()) const;
 

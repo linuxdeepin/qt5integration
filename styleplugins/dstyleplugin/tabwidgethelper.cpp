@@ -118,9 +118,9 @@ bool Style::drawFrameTabWidgetPrimitive( const QStyleOption* option, QPainter* p
         painter->fillPath(path, fill_color);
 
         QPainterPath inside_path;
-        QRectF rect = current_widget->parentWidget()->geometry();
+        QRectF currRect = current_widget->parentWidget()->geometry();
 
-        inside_path.addRoundedRect(rect.adjusted(5.5, 5.5, -5.5, -5.5), radius, radius);
+        inside_path.addRoundedRect(currRect.adjusted(5.5, 5.5, -5.5, -5.5), radius, radius);
 
         painter->fillPath(inside_path, option->palette.color(QPalette::Window));
         painter->drawPath(inside_path);

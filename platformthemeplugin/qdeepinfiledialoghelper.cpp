@@ -380,14 +380,14 @@ void QDeepinFileDialogHelper::ensureDialog() const
             QTimer *heartbeatTimer = new QTimer(nativeDialog);
 
             connect(heartbeatTimer, &QTimer::timeout, this, [this, heartbeatTimer] {
-                QDBusPendingReply<> reply = nativeDialog->makeHeartbeat();
+                QDBusPendingReply<> replyHandler = nativeDialog->makeHeartbeat();
 
-                reply.waitForFinished();
+                replyHandler.waitForFinished();
 
-                if (reply.isError()) {
-                    qWarning() << "Make heartbeat is failed:" << reply.error();
+                if (replyHandler.isError()) {
+                    qWarning() << "Make heartbeat is failed:" << replyHandler.error();
 
-                    if (reply.error().type() == QDBusError::UnknownMethod) {
+                    if (replyHandler.error().type() == QDBusError::UnknownMethod) {
                         qWarning() << "Make heartbeat is't support for current dbus file dialog, Will be stop heartbeat timer.";
 
                         heartbeatTimer->stop();

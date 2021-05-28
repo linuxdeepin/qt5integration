@@ -48,9 +48,8 @@
 //! [0]
 WidgetGallery::WidgetGallery(QWidget *parent)
     : QMainWindow(parent)
+    , originalPalette(QApplication::palette())
 {
-    originalPalette = QApplication::palette();
-
     styleComboBox = new QComboBox;
     styleComboBox->addItem("NorwegianWood");
     styleComboBox->addItems(QStyleFactory::keys());

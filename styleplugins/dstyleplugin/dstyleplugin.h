@@ -29,7 +29,7 @@ class DStylePlugin : public QStylePlugin
 #endif // QT_VERSION >= 0x050000
 
 public:
-    DStylePlugin(QObject *parent = 0);
+    explicit DStylePlugin(QObject *parent = 0);
 
     QStyle* create(const QString &key) Q_DECL_OVERRIDE;
 };

@@ -53,7 +53,6 @@ bool Style::drawComboBox(const QStyleOptionComplex *option, QPainter *painter, c
 
     // state
     const bool editable( comboBoxOption->editable );
-    bool flat( !comboBoxOption->frame );
 
     // frame
     if( option->subControls & SC_ComboBoxFrame )
@@ -73,9 +72,8 @@ bool Style::drawComboBox(const QStyleOptionComplex *option, QPainter *painter, c
             }
 
         } else {
-            if( flat ) {
-
-            } else {
+            bool flat( !comboBoxOption->frame );
+            if ( !flat ) {
                 // TODO(hualet): update button color from palette in case button is default
                 const QColor shadow( Qt::transparent );
                 const QBrush outline(m_palette->brush(PaletteExtended::PushButton_BorderBrush, option));

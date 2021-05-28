@@ -32,7 +32,7 @@ class Style : public QCommonStyle
 {
     Q_OBJECT
 public:
-    explicit Style(StyleType type);
+    explicit Style(StyleType style);
     ~Style();
 
     void polish(QPalette &p) Q_DECL_OVERRIDE;
@@ -77,7 +77,7 @@ private:
     // push button
     bool drawPushButtonBevel(const QStyleOption*, QPainter*, const QWidget*) const;
     bool drawPushButtonLabel(const QStyleOption *, QPainter *, const QWidget *) const;
-    bool drawPushButtonFrame(QPainter* painter, const QRect& rect, const QBrush &color, const QBrush &outline, const QColor& shadow,  const QWidget *widget = nullptr) const;
+    bool drawPushButtonFrame(QPainter* painter, const QRect& rect, const QBrush &brush, const QBrush &outline, const QColor& shadow,  const QWidget *widget = nullptr) const;
 
     // scroll bar
     QRect scrollbarSubControlRect(const QStyleOptionComplex *opt, SubControl sc, const QWidget *widget ) const;
@@ -94,7 +94,7 @@ private:
 
     // slider
     QRect sliderSubControlRect(const QStyleOptionComplex *option, SubControl subControl, const QWidget *widget ) const;
-    bool drawSlider(const QStyleOptionComplex *opt, QPainter *p, const QWidget *w) const;
+    bool drawSlider(const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const;
     void drawSliderGroove(QPainter*, const QRect&, const QBrush & brush) const;
     void drawSliderHandle(QPainter* painter, const QStyleOptionSlider *option, const QRect& rect, const QString &type) const;
     bool drawSliderTickmarkLabels(const QStyleOption*, QPainter*, const QWidget*) const;
@@ -119,9 +119,9 @@ private:
     bool drawProgressBarContentsControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
     bool drawProgressBarGrooveControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
     bool drawProgressBarLabelControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
-    QRect progressBarLabelRect(const QStyleOption *opt, const QWidget *widget) const;
-    QRect progressBarGrooveRect(const QStyleOption *opt, const QWidget *widget) const;
-    QRect progressBarContentsRect(const QStyleOption *opt, const QWidget *widget) const;
+    QRect progressBarLabelRect(const QStyleOption *option, const QWidget *widget) const;
+    QRect progressBarGrooveRect(const QStyleOption *option, const QWidget *widget) const;
+    QRect progressBarContentsRect(const QStyleOption *option, const QWidget *widget) const;
 
     // rubber band
     bool drawRubberBandControl(const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
@@ -147,8 +147,8 @@ private:
 
     // tab bar
     bool drawFrameTabBarBasePrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;
-    bool drawTabBarTabLabelControl(const QStyleOption* option, QPainter* p, const QWidget* widget) const;
-    bool drawTabBarTabShapeControl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
+    bool drawTabBarTabLabelControl(const QStyleOption* opt, QPainter* p, const QWidget* widget) const;
+    bool drawTabBarTabShapeControl(const QStyleOption* opt, QPainter* p, const QWidget* widget) const;
     bool drawTabBarAddButtonControl(const QStyleOption* option, QPainter* painter, const QWidget* widget) const;
     bool drawIndicatorTabClosePrimitive(const QStyleOption *opt, QPainter *p, const QWidget *widget) const;
     bool drawScrollButtonPrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const;

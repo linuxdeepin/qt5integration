@@ -65,7 +65,7 @@ public:
                   const QWidget *widget, QStyleHintReturn *returnData) const Q_DECL_OVERRIDE;
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
                        QPainter *painter, const QWidget *widget) const Q_DECL_OVERRIDE;
-    void drawControl(ControlElement control, const QStyleOption *option,
+    void drawControl(ControlElement element, const QStyleOption *option,
                      QPainter *painter, const QWidget *widget) const Q_DECL_OVERRIDE;
 
 private:

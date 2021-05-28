@@ -280,9 +280,9 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
             int dim = (menuItem->rect.height() - 4) / 2;
 //            PrimitiveElement arrow;
 //            arrow = option->direction == Qt::RightToLeft ? PE_IndicatorArrowLeft : PE_IndicatorArrowRight;
-            int xpos = menuItem->rect.left() + menuItem->rect.width() - 3 - dim;
+            int xposItem = menuItem->rect.left() + menuItem->rect.width() - 3 - dim;
             QRect  vSubMenuRect = visualRect(option->direction, menuItem->rect,
-                                             QRect(xpos, menuItem->rect.top() + menuItem->rect.height() / 2 - dim / 2, dim, dim));
+                                             QRect(xposItem, menuItem->rect.top() + menuItem->rect.height() / 2 - dim / 2, dim, dim));
             QStyleOptionMenuItem newMI = *menuItem;
             newMI.rect = vSubMenuRect;
             if (selected)

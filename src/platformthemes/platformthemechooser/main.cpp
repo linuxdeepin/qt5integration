@@ -28,7 +28,7 @@ class QDeepinThemePlugin : public QPlatformThemePlugin
     Q_PLUGIN_METADATA(IID QPlatformThemeFactoryInterface_iid FILE "deepin.json")
 
 public:
-    QDeepinThemePlugin(QObject *parent = nullptr);
+    explicit QDeepinThemePlugin(QObject *parent = nullptr);
     QPlatformTheme *create(const QString &key, const QStringList &params) Q_DECL_OVERRIDE;
 
 private:

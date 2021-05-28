@@ -79,8 +79,8 @@ private:
     QMargins frameExtentMargins() const;
     QRect drawButtonDownArrow(const QStyleOption *opt, QPainter *p, const QWidget *w) const;
 
-    bool drawSpinBox(const QStyleOptionSpinBox *opt, QPainter *p, const QWidget *w) const;
-    void updateSpinBoxButtonState(const QStyleOptionSpinBox *opt, QStyleOptionButton& button, bool isActive, bool isEnabled) const;
+    bool drawSpinBox(const QStyleOptionSpinBox *opt, QPainter *painter, const QWidget *widget) const;
+    void updateSpinBoxButtonState(const QStyleOptionSpinBox *opt, QStyleOptionButton& buttonOpt, bool isActive, bool isEnabled) const;
     bool drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &rect, QPainter *painter, const QWidget *widget) const;
     void drawMenuItemBackground(const QStyleOption *option, QPainter *painter, QStyleOptionMenuItem::MenuItemType type) const;
     bool drawMenuItem(const QStyleOptionMenuItem *option, QPainter *painter, const QWidget *widget) const;
@@ -89,7 +89,7 @@ private:
     bool drawTabBarCloseButton(QPainter *painter,const QStyleOption *tab , const QWidget *widget) const;
     bool drawTabBarScrollButton(QPainter *painter, const QStyleOption *opt, const QWidget *buttonWidget) const;
     bool drawComboBox(QPainter *painter, const QStyleOptionComboBox *comboBox, const QWidget *widget) const;
-    bool drawComboBoxLabel(QPainter *painter, const QStyleOptionComboBox *comboBox, const QWidget *widget) const;
+    bool drawComboBoxLabel(QPainter *painter, const QStyleOptionComboBox *cb, const QWidget *widget) const;
     void drawSliderHandle(const QStyleOptionComplex *opt, QRectF& rectHandle, QPainter *p, const QWidget *w) const;
     void drawSliderHandleFocus(const QStyleOptionComplex *opt, QRectF& rectHandle, QPainter *p, const QWidget *w) const;
     void drawIcon(const QStyleOption *opt, QPainter *p, QRect &rect, const QIcon &icon, bool checked = false) const;

@@ -29,7 +29,7 @@ class DBuiltinIconEnginePlugin : public QIconEnginePlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QIconEngineFactoryInterface" FILE "builtinengine.json")
 
 public:
-    DBuiltinIconEnginePlugin(QObject *parent = nullptr);
+    explicit DBuiltinIconEnginePlugin(QObject *parent = nullptr);
     QIconEngine *create(const QString &iconName = QString());
 
 private:

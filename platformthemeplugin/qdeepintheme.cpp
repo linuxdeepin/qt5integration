@@ -290,9 +290,8 @@ private:
 // 判断ScreenScaleFactor的值是否应该应用于所有屏幕
 static bool isGenericScreenScaleFactors(const QByteArray &value)
 {
-    for (char ch : value) {
-        if (ch == '=' || ch == ';')
-            return false;
+    if (value.contains('=') || value.contains(';')){
+        return false;
     }
 
     return true;

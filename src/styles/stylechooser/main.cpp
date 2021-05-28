@@ -27,7 +27,7 @@ class ChameleonStylePlugin : public QStylePlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "chameleon.json")
 
 public:
-    ChameleonStylePlugin(QObject *parent = nullptr)
+    explicit ChameleonStylePlugin(QObject *parent = nullptr)
         : QStylePlugin(parent)
     {
         m_pluginProxy.reset(DPluginLoader::load<QStylePlugin>(TARGET));

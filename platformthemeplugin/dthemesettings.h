@@ -41,7 +41,7 @@ class DThemeSettings : public QObject
     Q_PROPERTY(bool autoScaleWindow READ autoScaleWindow NOTIFY autoScaleWindowChanged)
 
 public:
-    explicit DThemeSettings(bool watchFile = true, QObject *parent = 0);
+    DThemeSettings(bool watchFile = true, QObject *parent = 0);
 
     static QSettings *makeSettings();
 
