@@ -570,6 +570,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 auto *animation = qobject_cast<dstyle::DScrollbarStyleAnimation*>(this->animation(opt->styleObject));
                 // 上一次的状态是显示还是隐藏
                 bool prevVisible = opt->styleObject->property("_d_slider_visible").toBool();
+                QWidget *sb = qobject_cast<QWidget *>(opt->styleObject);
 
                 // 判断是否应当进入动画流程。任何滚动区域，在触发滚动的时候才能显示滚动条，在显示滚动条的时候鼠标移过去，才会有相应的hover到滚动条上的操作
                 if ((!ok || prevValue == scrollBar->sliderValue)) {
@@ -586,6 +587,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                             animation = new dstyle::DScrollbarStyleAnimation(dstyle::DScrollbarStyleAnimation::Deactivating, opt->styleObject);
                             // 将滚动条标记为进入隐藏状态
                             opt->styleObject->setProperty("_d_slider_visible", false);
+                            if (sb)
+                                sb->setVisible(false);
                             // 开始动画
                             startAnimation(animation);
                         } else {
@@ -596,6 +599,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     if (!prevVisible) {
                         // 标记为显示状态
                         opt->styleObject->setProperty("_d_slider_visible", true);
+                        if (sb)
+                            sb->setVisible(true);
                     }
 
                     // 启动进入动画的定时器
