@@ -58,6 +58,7 @@
 #include <DIconButton>
 #include <DTabBar>
 #include <DDateTimeEdit>
+#include <QtMath>
 #include <private/qcombobox_p.h>
 #include <private/qcommonstyle_p.h>
 
@@ -292,16 +293,26 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->setRenderHint(QPainter::Antialiasing, true);
 
         if (opt->state & State_On) {  //Qt::Checked
-            double padding = standard.width() / 2.0 / 2.0;
+            int padding = qCeil(standard.width() / 2.0 / 2.0);
             QPainterPath path;
 
             path.addEllipse(standard);
             path.addEllipse(standard.adjusted(padding, padding, -padding, -padding));
 
             p->fillPath(path, getColor(opt, DPalette::Highlight));
+
+            // 内圈填充
+            QPainterPath innerCirclePath;
+            innerCirclePath.addEllipse(standard.adjusted(padding, padding, -padding, -padding));
+            p->fillPath(innerCirclePath, getThemTypeColor(Qt::white, Qt::black));
         } else if (opt->state & State_Off) {
             p->setPen(QPen(getColor(opt, DPalette::WindowText), 1));
             p->drawEllipse(standard.adjusted(1, 1, -1, -1));
+
+            // 内圈填充
+            QPainterPath innerCirclePath;
+            innerCirclePath.addEllipse(standard.adjusted(1, 1, -1, -1));
+            p->fillPath(innerCirclePath, getThemTypeColor(Qt::transparent, QColor(0, 0, 0, qCeil(255 * 0.5))));
         }
 
         return;
@@ -311,10 +322,20 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         if (opt->state & State_NoChange) {  //Qt::PartiallyChecked
             DDrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
+
+            // 内部矩形填充
+            p->setBrush(getThemTypeColor(Qt::transparent, QColor(0, 0, 0, qCeil(255 * 0.5))));
+            p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 2, 2);
+
             QRectF lineRect(0, 0, standard.width() / 2.0, 2);
             lineRect.moveCenter(standard.center());
             p->fillRect(lineRect, getColor(opt, DPalette::TextTitle, w));
         } else if (opt->state & State_On) {  //Qt::Checked
+            // 填充整个矩形
+            p->setPen(Qt::NoPen);
+            p->setBrush(getThemTypeColor(Qt::transparent, Qt::black));
+            p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 2, 2);
+
             p->setPen(getColor(opt, DPalette::Highlight));
             p->setBrush(Qt::NoBrush);
 
@@ -322,6 +343,10 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             icon.paint(p, opt->rect.adjusted(-1, -1, 1, 1));
         } else {
             DDrawUtils::drawBorder(p, standard, getColor(opt, DPalette::WindowText), 1, 2);
+
+            // 内部矩形填充
+            p->setBrush(getThemTypeColor(Qt::transparent, getThemTypeColor(Qt::transparent, QColor(0, 0, 0, qCeil(255 * 0.5)))));
+            p->drawRoundedRect(standard.adjusted(1, 1, -1, -1), 2, 2);
         }
 
         return;
