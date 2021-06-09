@@ -59,6 +59,7 @@
 #include <DTabBar>
 #include <DDateTimeEdit>
 #include <QtMath>
+#include <QtGlobal>
 #include <private/qcombobox_p.h>
 #include <private/qcommonstyle_p.h>
 
@@ -71,6 +72,15 @@ DGUI_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
 
 namespace chameleon {
+
+// 判断是TabBar否为竖直方向
+inline static bool verticalTabs(QTabBar::Shape shape)
+{
+    return shape == QTabBar::RoundedWest
+           || shape == QTabBar::RoundedEast
+           || shape == QTabBar::TriangularWest
+           || shape == QTabBar::TriangularEast;
+}
 
 ChameleonStyle::ChameleonStyle()
     : DStyle()
@@ -3613,7 +3623,14 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             button.text = tab->text;
             size = DStyle::sizeFromContents(QStyle::CT_PushButton, &button, tab->fontMetrics.size(0, tab->text), widget);
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
-            size.rwidth() += 2 * frame_radius + proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget) + TabBar_TabMargin;
+            // TabBar 竖直方向改变其宽高
+            if (verticalTabs(tab->shape)) {
+               qSwap(size.rwidth(), size.rheight());
+               size.rheight() += proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget) + TabBar_TabMargin;
+               size.rwidth() += 2 * frame_radius;
+            } else {
+                size.rwidth() +=  2 * frame_radius + proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget) + TabBar_TabMargin;
+            }
         }
         Q_FALLTHROUGH();
     }
