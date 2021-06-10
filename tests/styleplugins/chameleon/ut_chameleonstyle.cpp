@@ -185,6 +185,7 @@ TEST_P(TestForQtStandardPixmapParam, StandardPixmap)
 
     qDebug() << "QStyle::standardIcon:" << param << " isNull: " << (style->standardIcon(QStyle::StandardPixmap(param)).isNull());
     qDebug() << "QStyle::standardPixmap:" << param << " isNull: " << (style->standardPixmap(QStyle::StandardPixmap(param)).isNull());
+    delete style;
 }
 
 class TestForDrawUtil : public ::testing::Test
