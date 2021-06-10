@@ -3609,6 +3609,8 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                 int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
                 int left_margins = DStyle::pixelMetric(PM_ContentsMargins, opt, widget);
                 size.setWidth(size.width() + frame_margins + left_margins);
+            } else {
+                size.setWidth(size.width() + opt->fontMetrics.width("...")); //设置宽度为最小省略号("...")的宽度
             }
         }
         Q_FALLTHROUGH();
