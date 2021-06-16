@@ -1824,8 +1824,9 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
                 QRect text_rect = newTab.fontMetrics.boundingRect(tr, alignment | Qt::TextShowMnemonic, newTab.text);
                 QRect tabbar_rect = widget->findChild<QTabBar *>()->rect();
 
-                int stopx = tabbar_rect.x() + tabbar_rect.width();
-                int tabX = text_rect.x() + tabbar_rect.x();
+                bool vertTabs = verticalTabs(newTab.shape);
+                int stopx = tabbar_rect.x() + (vertTabs ? tabbar_rect.height() : tabbar_rect.width());
+                int tabX = (vertTabs ? newTab.rect.y() : text_rect.x()) + (vertTabs ? tabbar_rect.y() : tabbar_rect.x());
                 int tabWidth = tabX + text_rect.width();
 
                 if (tabX < stopx && stopx < tabWidth) {
@@ -1891,6 +1892,8 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         }
 
         proxy()->drawItemText(painter, tr.adjusted(1, 0, 0, 0), alignment, newTab.palette, newTab.state & State_Enabled, newTab.text, QPalette::WindowText);
+        if (verticalTabs)
+            painter->restore();
     } else {
         QCommonStyle::drawControl(CE_TabBarTabLabel, &newTab, painter, widget);
     }
@@ -3623,13 +3626,22 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             button.text = tab->text;
             size = DStyle::sizeFromContents(QStyle::CT_PushButton, &button, tab->fontMetrics.size(0, tab->text), widget);
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, widget);
+            // 获得Icon引起的增量
+            int iconSizeDelta = 0;
+            if (!tab->icon.isNull()) {
+                 iconSizeDelta += tab->iconSize.width();
+                 if (!tab->text.isEmpty())
+                     iconSizeDelta += Icon_Margins;
+            }
             // TabBar 竖直方向改变其宽高
             if (verticalTabs(tab->shape)) {
                qSwap(size.rwidth(), size.rheight());
                size.rheight() += proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget) + TabBar_TabMargin;
                size.rwidth() += 2 * frame_radius;
+               size.rheight() += iconSizeDelta;
             } else {
                 size.rwidth() +=  2 * frame_radius + proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget) + TabBar_TabMargin;
+                size.rwidth() += iconSizeDelta;
             }
         }
         Q_FALLTHROUGH();
