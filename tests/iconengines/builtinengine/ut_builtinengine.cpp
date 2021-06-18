@@ -43,6 +43,10 @@ TEST_F(ut_DBuiltinIconEngine, loadIcon)
     ASSERT_EQ(entry->dir.size, ICONSIZE);
     ASSERT_EQ(entry->dir.type, QIconDirInfo::Scalable);
     ASSERT_FALSE(entry->pixmap(QSize(ICONSIZE, ICONSIZE), QIcon::Normal, QIcon::On).isNull());
+
+    for (auto item : themeInfo.entries) {
+        delete item;
+    }
 }
 
 TEST_F(ut_DBuiltinIconEngine, actualSize)
@@ -82,7 +86,9 @@ TEST_F(ut_DBuiltinIconEngine, key)
 
 TEST_F(ut_DBuiltinIconEngine, clone)
 {
-    ASSERT_FALSE(!mIconEngine->clone());
+    auto clone = mIconEngine->clone();
+    ASSERT_FALSE(!clone);
+    delete clone;
 }
 
 TEST_F(ut_DBuiltinIconEngine, read)

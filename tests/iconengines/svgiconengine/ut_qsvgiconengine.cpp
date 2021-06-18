@@ -86,7 +86,9 @@ TEST_F(ut_QSvgIconEngine, key)
 
 TEST_F(ut_QSvgIconEngine, clone)
 {
-    ASSERT_TRUE(m_IconEngine->clone());
+    auto clone = m_IconEngine->clone();
+    ASSERT_TRUE(clone);
+    delete clone;
 }
 
 TEST_F(ut_QSvgIconEngine, readAndWrite)
@@ -133,11 +135,11 @@ void testForAddFile(int *ret)
 {
     *ret = -1;
 #ifdef NDEBUG
-    QSvgIconEngine *m_IconEngine = new QSvgIconEngine;
+    auto iconEngine = QSharedPointer<QSvgIconEngine>(new QSvgIconEngine);
     QString fileName = ICONNAME;
 
     // 死亡测试 优先进行 测试是否存在崩溃等问题
-    ASSERT_DEBUG_DEATH(m_IconEngine->addFile(fileName, QSize(), QIcon::Normal, QIcon::Off), "");
+    ASSERT_DEBUG_DEATH(iconEngine->addFile(fileName, QSize(), QIcon::Normal, QIcon::Off), "");
 #endif
     *ret = 0;
 }
