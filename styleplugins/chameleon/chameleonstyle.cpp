@@ -363,6 +363,13 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_IndicatorTabClose: {
         QIcon icon = DStyle::standardIcon(SP_CloseButton, opt, w);
+        if (DGuiApplicationHelper::isTabletEnvironment()) {
+            // 在平板中点击区域为36px 显示区域22px
+            QRect iconRect(0, 0, TabBar_TabButtonSize, TabBar_TabButtonSize);
+            iconRect.moveCenter(opt->rect.center());
+            icon.paint(p, iconRect);
+            return;
+        }
         icon.paint(p, opt->rect);
         return;
     }
@@ -1781,6 +1788,11 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
                 text_rect = tab->fontMetrics.boundingRect(tr, Qt::AlignCenter | Qt::TextShowMnemonic, tab->text);
             }
             int close_button_width = proxy()->pixelMetric(QStyle::PM_TabCloseIndicatorWidth, tab, widget);
+
+            // 防止在平板中错误的对文字渐变
+            if (DGuiApplicationHelper::isTabletEnvironment())
+                close_button_width = TabBar_TabButtonSize;
+
             qreal stop = qreal(tr.right() - close_button_width - text_rect.x() - 5) / text_rect.width();
             QBrush brush;
 
@@ -3836,7 +3848,8 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
         return SpinBox_FrameWidth;
     case PM_TabCloseIndicatorWidth:
     case PM_TabCloseIndicatorHeight:
-        return 22;
+        // 平板需求
+        return DGuiApplicationHelper::isTabletEnvironment() ? TabletTabBar_TabButtonSize : TabBar_TabButtonSize;
     case PM_TabBarTabVSpace:
     case PM_TabBarTabHSpace :
         return DStyle::pixelMetric(PM_FrameRadius, opt, widget) * 2;

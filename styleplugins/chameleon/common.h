@@ -149,6 +149,8 @@ enum Metrics
     TabBar_TabOverlap = 0,
     TabBar_BaseOverlap = 0,
     TabBar_TabMargin = 10,
+    TabBar_TabButtonSize = 22,      // 标签页按钮大小
+    TabletTabBar_TabButtonSize = 36,// 平板环境标签页按钮大小
 
     // tab widget
     TabWidget_MarginWidth = 4,
