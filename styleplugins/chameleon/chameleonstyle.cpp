@@ -3918,10 +3918,12 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
     return DStyle::styleHint(sh, opt, w, shret);
 }
 
-void ChameleonStyle::polish(QWidget *w)
+void ChameleonStyle::resetAttribute(QWidget *w, bool polish)
 {
-    DStyle::polish(w);
+    if (!w)
+        return;
 
+    bool enableHover = w->testAttribute(Qt::WA_Hover);
     if (qobject_cast<QAbstractButton *>(w)
             || qobject_cast<QComboBox *>(w)
             || qobject_cast<QScrollBar *>(w)
@@ -3929,12 +3931,31 @@ void ChameleonStyle::polish(QWidget *w)
             || qobject_cast<QAbstractSpinBox *>(w)
             || qobject_cast<QTabBar *>(w)
             || qobject_cast<QCheckBox *>(w)) {
-        w->setAttribute(Qt::WA_Hover, true);
+        enableHover = polish;
     }
 
     if (auto view = qobject_cast<QAbstractItemView *>(w)) {
-        view->viewport()->setAttribute(Qt::WA_Hover, true);
+        enableHover = polish;
+        w = view->viewport();
     }
+
+    // TODO: 是平板环境统一设置所有的控件的 WA_Hover 为 false，
+    // 不过在插入鼠标时还是有问题，现阶段先不考虑，以后 Qt 如果优化了如有更好的方案这里再改掉。
+    if (DGuiApplicationHelper::isTabletEnvironment())
+        enableHover = false;
+
+    w->setAttribute(Qt::WA_Hover, enableHover);
+
+    if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
+        scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, !polish);
+    }
+}
+
+void ChameleonStyle::polish(QWidget *w)
+{
+    DStyle::polish(w);
+
+    resetAttribute(w, true);
 
     if (auto listview = qobject_cast<QListView *>(w)) {
         if (listview->parentWidget() == nullptr) {
@@ -3946,10 +3967,6 @@ void ChameleonStyle::polish(QWidget *w)
     if (w && qobject_cast<DSearchEdit *>(w->parentWidget())) {
         w->setProperty("_d_dtk_lineeditActionWidth", -6);
         w->setProperty("_d_dtk_lineeditActionMargin", 6);
-    }
-
-    if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
-        scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, false);
     }
 
     if (auto container = qobject_cast<QComboBoxPrivateContainer *>(w)) {
@@ -4042,23 +4059,7 @@ void ChameleonStyle::unpolish(QWidget *w)
 {
     DStyle::unpolish(w);
 
-    if (qobject_cast<QAbstractButton *>(w)
-            || qobject_cast<QComboBox *>(w)
-            || qobject_cast<QScrollBar *>(w)
-            || qobject_cast<QCheckBox *>(w)
-            || qobject_cast<QAbstractSpinBox *>(w)
-            || qobject_cast<QTabBar *>(w)
-            || qobject_cast<QCheckBox *>(w)) {
-        w->setAttribute(Qt::WA_Hover, false);
-    }
-
-    if (auto view = qobject_cast<QAbstractItemView *>(w)) {
-        view->viewport()->setAttribute(Qt::WA_Hover, false);
-    }
-
-    if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
-        scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, true);
-    }
+    resetAttribute(w, false);
 
     if (w && qobject_cast<DSearchEdit *>(w->parentWidget())) {
         w->setProperty("_d_dtk_lineeditActionWidth", QVariant());

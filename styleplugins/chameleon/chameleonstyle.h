@@ -106,6 +106,7 @@ public:
 
 protected:
     void drawMenuItemRedPoint(const QStyleOptionMenuItem *option, QPainter *painter, const QWidget *widget) const;
+    void resetAttribute(QWidget *w, bool polish);
 
 private:
     mutable QHash<const QObject*, dstyle::DStyleAnimation*> animations;
