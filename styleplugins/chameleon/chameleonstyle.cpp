@@ -667,6 +667,29 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
         }
         return;
+    case CE_CheckBoxLabel:
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            int alignment = static_cast<int>(visualAlignment(btn->direction, Qt::AlignLeft | Qt::AlignVCenter));
+
+            if (!proxy()->styleHint(SH_UnderlineShortcut, btn, w))
+                alignment |= Qt::TextHideMnemonic;
+            QPixmap pix;
+            QRect textRect = btn->rect;
+            if (!btn->icon.isNull()) {
+                auto icon_mode_state = toIconModeState(opt); // 与PushButton一致，转换成icon的mode和state.
+                pix = btn->icon.pixmap(w ? w->window()->windowHandle() : nullptr, btn->iconSize, icon_mode_state.first, icon_mode_state.second);
+                proxy()->drawItemPixmap(p, btn->rect, alignment, pix);
+                if (btn->direction == Qt::RightToLeft)
+                    textRect.setRight(textRect.right() - btn->iconSize.width() - 4);
+                else
+                    textRect.setLeft(textRect.left() + btn->iconSize.width() + 4);
+            }
+            if (!btn->text.isEmpty()) {
+                proxy()->drawItemText(p, textRect, alignment | Qt::TextShowMnemonic,
+                    btn->palette, btn->state & State_Enabled, btn->text, QPalette::WindowText);
+            }
+        }
+        return;
     case CE_ScrollBarSlider: {
         if (const QStyleOptionSlider* scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
 
