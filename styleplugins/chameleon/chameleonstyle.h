@@ -96,6 +96,7 @@ private:
     void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const;
     bool drawTableViewItem(QStyle::PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
                        const QWidget *w = nullptr) const;
+    bool hideScrollBarByAnimation(const QStyleOptionSlider *scrollBar, QPainter *p) const;
 
 public:
 #ifndef QT_NO_ANIMATION

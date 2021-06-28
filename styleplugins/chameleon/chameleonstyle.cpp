@@ -565,6 +565,77 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     DStyle::drawPrimitive(pe, opt, p, w);
 }
 
+// 按动画效果渐变隐藏滚动条，返回值为`true`表示隐藏滚动条，`false`表示继续绘制滚动条(改变了透明度)
+bool ChameleonStyle::hideScrollBarByAnimation(const QStyleOptionSlider *scrollBar, QPainter *p) const
+{
+    // QScrollBar 可以通过设置属性 _d_slider_always_show 为 true 的方式，使得 Slider 一直显示
+    // scrollBarObj 获取的即应用界面上 QScrollBar 控件本身的指针值
+    auto scrollBarObj = scrollBar->styleObject;
+    if (scrollBarObj && !(scrollBarObj->property("_d_dtk_slider_always_show").toBool())) {
+        bool ok = false;
+        int prevValue = scrollBar->styleObject->property("_d_slider_value").toInt(&ok);
+        auto *animation = qobject_cast<dstyle::DScrollbarStyleAnimation*>(this->animation(scrollBar->styleObject));
+        // 上一次的状态是显示还是隐藏
+        bool prevVisible = scrollBar->styleObject->property("_d_slider_visible").toBool();
+
+        // 判断是否应当进入动画流程。任何滚动区域，在触发滚动的时候才能显示滚动条，在显示滚动条的时候鼠标移过去，才会有相应的hover到滚动条上的操作
+        if ((!ok || prevValue == scrollBar->sliderValue)) {
+            bool disable_animation = scrollBar->styleObject->property("_d_disable_animation").toBool();
+
+            bool isHoveredOrPressed = scrollBar->state & (QStyle::State_MouseOver | QStyle::State_Sunken);
+            if (isHoveredOrPressed && prevVisible) // hover、press状态下，当滚动条显示时，直接绘制
+                return false;
+
+            if (!disable_animation) {
+                if (!animation) {
+                    // 更新值的记录
+                    scrollBar->styleObject->setProperty("_d_slider_value", scrollBar->sliderValue);
+                    // 如果之前是未显示，应当继续保持隐藏状态
+                    if (!prevVisible)
+                        return true;
+
+                    animation = new dstyle::DScrollbarStyleAnimation(dstyle::DScrollbarStyleAnimation::Deactivating, scrollBar->styleObject);
+                    // 将滚动条标记为进入隐藏状态
+                    scrollBar->styleObject->setProperty("_d_slider_visible", false);
+                    // 开始动画
+                    this->startAnimation(animation);
+                } else {
+                    p->setOpacity(animation->currentValue());
+                }
+            }
+        } else {
+            if (!prevVisible) {
+                // 标记为显示状态
+                scrollBar->styleObject->setProperty("_d_slider_visible", true);
+            }
+
+            // 为ScrollBar添加一个动画定时器（不主动释放）
+            QTimer *animation_timer = scrollBar->styleObject->findChild<QTimer*>("_d_animation_timer");
+            if (!animation_timer) {
+                animation_timer = new QTimer(scrollBar->styleObject);
+                animation_timer->setObjectName("_d_animation_timer");
+                animation_timer->setSingleShot(true);
+                QObject::connect(animation_timer, &QTimer::timeout, scrollBar->styleObject, [animation_timer] {
+                    animation_timer->parent()->setProperty("_d_disable_animation", false);
+                    // 更新控件
+                    if (QWidget *w = qobject_cast<QWidget*>(animation_timer->parent())) {
+                        w->update();
+                    }
+                });
+            }
+
+            // 更新值的记录
+            scrollBar->styleObject->setProperty("_d_slider_value", scrollBar->sliderValue);
+            scrollBar->styleObject->setProperty("_d_disable_animation", true);
+            // 1秒后尝试进入到动画状态
+            animation_timer->start(1000);
+        }
+    }
+
+    return false;
+}
+
+
 void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOption *opt,
                                  QPainter *p, const QWidget *w) const
 {
@@ -596,73 +667,10 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         return;
     case CE_ScrollBarSlider: {
         if (const QStyleOptionSlider* scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            // QScrollBar 可以通过设置属性 _d_slider_always_show 为 true 的方式，使得 Slider 一直显示
-            // scrollBarObj 获取的即应用界面上 QScrollBar 控件本身的指针值
-            auto scrollBarObj = opt->styleObject;
-            if (scrollBarObj && !(scrollBarObj->property("_d_dtk_slider_always_show").toBool())) {
-                bool ok = false;
-                int prevValue = opt->styleObject->property("_d_slider_value").toInt(&ok);
-                auto *animation = qobject_cast<dstyle::DScrollbarStyleAnimation*>(this->animation(opt->styleObject));
-                // 上一次的状态是显示还是隐藏
-                bool prevVisible = opt->styleObject->property("_d_slider_visible").toBool();
-                QWidget *sb = qobject_cast<QWidget *>(opt->styleObject);
 
-                // 判断是否应当进入动画流程。任何滚动区域，在触发滚动的时候才能显示滚动条，在显示滚动条的时候鼠标移过去，才会有相应的hover到滚动条上的操作
-                if ((!ok || prevValue == scrollBar->sliderValue)) {
-                    bool disable_animation = opt->styleObject->property("_d_disable_animation").toBool();
-
-                    if (!disable_animation) {
-                        if (!animation) {
-                            // 更新值的记录
-                            opt->styleObject->setProperty("_d_slider_value", scrollBar->sliderValue);
-                            // 如果之前是未显示，应当继续保持隐藏状态
-                            if (!prevVisible)
-                                return;
-
-                            animation = new dstyle::DScrollbarStyleAnimation(dstyle::DScrollbarStyleAnimation::Deactivating, opt->styleObject);
-                            // 将滚动条标记为进入隐藏状态
-                            opt->styleObject->setProperty("_d_slider_visible", false);
-                            if (sb)
-                                sb->setVisible(false);
-                            // 开始动画
-                            startAnimation(animation);
-                        } else {
-                            p->setOpacity(animation->currentValue());
-                        }
-                    }
-                } else {
-                    if (!prevVisible) {
-                        // 标记为显示状态
-                        opt->styleObject->setProperty("_d_slider_visible", true);
-                        if (sb)
-                            sb->setVisible(true);
-                    }
-
-                    // 启动进入动画的定时器
-                    QTimer *animation_timer = opt->styleObject->findChild<QTimer*>("_d_animation_timer");
-
-                    if (!animation_timer) {
-                        animation_timer = new QTimer(opt->styleObject);
-                        animation_timer->setObjectName("_d_animation_timer");
-                        // 超时后自动销毁
-                        connect(animation_timer, &QTimer::timeout, opt->styleObject, [animation_timer] {
-                            animation_timer->parent()->setProperty("_d_disable_animation", false);
-                            // 更新控件
-                            if (QWidget *w = qobject_cast<QWidget*>(animation_timer->parent())) {
-                                w->update();
-                            }
-                        });
-                    }
-
-                    // 更新值的记录
-                    opt->styleObject->setProperty("_d_slider_value", scrollBar->sliderValue);
-                    opt->styleObject->setProperty("_d_disable_animation", true);
-                    // 1秒后尝试进入到动画状态
-                    animation_timer->start(1000);
-
-                    if (animation)
-                        animation->deleteLater();
-                }
+            // 滚动条渐变消失
+            if (hideScrollBarByAnimation(scrollBar, p)) {
+                return;
             }
 
             p->save();
