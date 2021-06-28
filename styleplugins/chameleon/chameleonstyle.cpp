@@ -388,6 +388,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         } else if (opt->state & State_On) {  //Qt::Checked
             p->setPen(getColor(opt, DPalette::Highlight));
             DStyle::standardIcon(SP_IndicatorChecked, opt, w).paint(p, standard.toRect());
+        } else if (opt->state & State_Off) {  //Qt::Unchecked
+            DStyle::standardIcon(SP_IndicatorUnchecked, opt, w).paint(p, standard.toRect());
         }
         return;
     }
