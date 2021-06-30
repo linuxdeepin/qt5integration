@@ -108,6 +108,7 @@ public:
 
 protected:
     void drawMenuItemRedPoint(const QStyleOptionMenuItem *option, QPainter *painter, const QWidget *widget) const;
+    void transScrollbarMouseEvents(QObject *obj, bool on = true) const;
 
 private:
     mutable QHash<const QObject*, dstyle::DStyleAnimation*> animations;

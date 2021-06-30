@@ -41,7 +41,7 @@
 
 namespace dstyle {
 
-static const qreal ScrollBarFadeOutDuration = 200.0;
+static const qreal ScrollBarFadeOutDuration = 1500.0;
 static const qreal ScrollBarFadeOutDelay = 450.0;
 
 DStyleAnimation::DStyleAnimation(QObject *target) : QAbstractAnimation(target),
@@ -88,6 +88,20 @@ void DStyleAnimation::setStartTime(const QTime &time)
     _startTime = time;
 }
 
+QAbstractAnimation::DeletionPolicy DStyleAnimation::deletePolicy() const
+{
+    return QAbstractAnimation::DeletionPolicy(_policy);
+}
+
+// policy will be applied the next time start() is called.
+void DStyleAnimation::setDeletePolicy(QAbstractAnimation::DeletionPolicy policy)
+{
+    if (_policy == policy)
+        return;
+
+    _policy = policy;
+}
+
 DStyleAnimation::FrameRate DStyleAnimation::frameRate() const
 {
     return _fps;
@@ -110,7 +124,7 @@ void DStyleAnimation::updateTarget()
 void DStyleAnimation::start()
 {
     _skip = 0;
-    QAbstractAnimation::start(DeleteWhenStopped);
+    QAbstractAnimation::start(deletePolicy());
 }
 
 bool DStyleAnimation::isUpdateNeeded() const
@@ -339,6 +353,24 @@ DScrollbarStyleAnimation::DScrollbarStyleAnimation(Mode mode, QObject *target) :
 DScrollbarStyleAnimation::Mode DScrollbarStyleAnimation::mode() const
 {
     return _mode;
+}
+
+void DScrollbarStyleAnimation::restart(bool blocksig/* = false*/)
+{
+    if (signalsBlocked() != blocksig) {
+        blockSignals(blocksig);
+    }
+
+    if (blocksig)
+        blockSignals(true);
+
+    if (state() == Running)
+        stop();
+
+    start();
+
+    if (blocksig)
+        blockSignals(false);
 }
 
 bool DScrollbarStyleAnimation::wasActive() const

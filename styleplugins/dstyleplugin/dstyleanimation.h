@@ -72,6 +72,9 @@ public:
     QTime startTime() const;
     void setStartTime(const QTime &time);
 
+    QAbstractAnimation::DeletionPolicy deletePolicy() const ;
+    void setDeletePolicy(QAbstractAnimation::DeletionPolicy policy);
+
     enum FrameRate {
         DefaultFps,
         SixtyFps,
@@ -97,6 +100,7 @@ private:
     QTime _startTime;
     FrameRate _fps;
     int _skip;
+    int _policy = QAbstractAnimation::DeletionPolicy::DeleteWhenStopped;
 };
 
 class DProgressStyleAnimation : public DStyleAnimation
@@ -181,6 +185,7 @@ public:
     DScrollbarStyleAnimation(Mode mode, QObject *target);
 
     Mode mode() const;
+    void restart(bool blocksig = false);
 
     bool wasActive() const;
     void setActive(bool active);
