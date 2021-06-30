@@ -908,9 +908,18 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             if (w)
                type_check = w->property("_d_dtk_tabbartab_type").toBool();
 
+            int leftMarge = 0;
+            int rightMarge = 0;
             if (!type_check) {
-                btn.rect.adjust(TabBar_TabMargin / 2, 0, -(TabBar_TabMargin / 2), 0);
+                leftMarge = TabBar_TabMargin / 2;
+                rightMarge = TabBar_TabMargin / 2;
             }
+            if (verticalTabs(tab->shape)) {
+                btn.rect.adjust(0, leftMarge, 0, -(rightMarge));
+            } else {
+                btn.rect.adjust(leftMarge, 0, -(rightMarge), 0);
+            }
+
             btn.state = tab->state;
 
             if (tab->state & QStyle::State_Selected) {
@@ -966,17 +975,21 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
                 p->setBrush(Qt::NoBrush);
                 p->drawRect(opt->rect);
-                //对tabbar尾后加一根明显的线
-                int lineX = opt->rect.x();
-                int rectW = opt->rect.width();
-                int rectH = opt->rect.height();
-                p->drawLine(lineX, lineX + rectW -1, lineX + rectH, lineX + rectH + rectW -1);
+                    //对中间的tabbar尾后加一根明显的线
+                if (QStyleOptionTab::End != tab->position && QStyleOptionTab::OnlyOneTab != tab->position) {
+                    const QRect &lintRect = opt->rect;
+                    if (verticalTabs(tab->shape)) {
+                        p->drawLine(lintRect.bottomLeft(), lintRect.bottomRight());
+                    } else {
+                        p->drawLine(lintRect.topRight(), lintRect.bottomRight());
+                    }
+                }
             } else {
                 DStyle::drawControl(CE_PushButtonBevel, &btn, p, w);
             }
 
             QStyleOptionTab* newTab = const_cast<QStyleOptionTab *>(tab);
-            newTab->rect.adjust(TabBar_TabMargin / 2, 0, -(TabBar_TabMargin / 2), 0);
+            newTab->rect = btn.rect;
             proxy()->drawControl(CE_TabBarTabLabel, newTab, p, w);
             return;
         }
@@ -3675,15 +3688,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                  if (!tab->text.isEmpty())
                      iconSizeDelta += Icon_Margins;
             }
+            size.rwidth() +=  2 * frame_radius + proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget) + TabBar_TabMargin;
+            size.rwidth() += iconSizeDelta;
             // TabBar 竖直方向改变其宽高
             if (verticalTabs(tab->shape)) {
                qSwap(size.rwidth(), size.rheight());
-               size.rheight() += proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget) + TabBar_TabMargin;
-               size.rwidth() += 2 * frame_radius;
-               size.rheight() += iconSizeDelta;
-            } else {
-                size.rwidth() +=  2 * frame_radius + proxy()->pixelMetric(PM_TabCloseIndicatorWidth, opt, widget) + TabBar_TabMargin;
-                size.rwidth() += iconSizeDelta;
             }
         }
         Q_FALLTHROUGH();
