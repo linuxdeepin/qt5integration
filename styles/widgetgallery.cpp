@@ -310,6 +310,9 @@ void WidgetGallery::createBottomLeftTabWidget()
         QStandardItem *item = new QStandardItem;
         item->setIcon(this->style() ? this->style()->standardIcon(QStyle::StandardPixmap(QStyle::SP_DirIcon + i)) : QIcon());
         item->setText(QStringLiteral("Row %1...............").arg(i + 1));
+        item->setEnabled(i % 2);
+        item->setCheckable(true);
+        item->setCheckState(Qt::Checked);
         item->setDragEnabled(true);
         listModel->appendRow(item);
     }

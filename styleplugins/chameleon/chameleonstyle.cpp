@@ -382,14 +382,15 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     case PE_IndicatorItemViewItemCheck: {
         QRectF standard = opt->rect;
         p->setRenderHint(QPainter::Antialiasing, true);
+        QIcon::Mode mode = opt->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
 
         if (opt->state & State_NoChange) {  //Qt::PartiallyChecked
-            DStyle::standardIcon(SP_IndicatorChecked, opt, w).paint(p, standard.toRect());
+            DStyle::standardIcon(SP_IndicatorChecked, opt, w).paint(p, standard.toRect(), Qt::AlignCenter, mode);
         } else if (opt->state & State_On) {  //Qt::Checked
             p->setPen(getColor(opt, DPalette::Highlight));
-            DStyle::standardIcon(SP_IndicatorChecked, opt, w).paint(p, standard.toRect());
+            DStyle::standardIcon(SP_IndicatorChecked, opt, w).paint(p, standard.toRect(), Qt::AlignCenter, mode);
         } else if (opt->state & State_Off) {  //Qt::Unchecked
-            DStyle::standardIcon(SP_IndicatorUnchecked, opt, w).paint(p, standard.toRect());
+            DStyle::standardIcon(SP_IndicatorUnchecked, opt, w).paint(p, standard.toRect(), Qt::AlignCenter, mode);
         }
         return;
     }
