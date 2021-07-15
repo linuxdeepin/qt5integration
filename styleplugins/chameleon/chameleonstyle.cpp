@@ -3850,9 +3850,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         break;
     }
     case CT_SpinBox:
-        if (qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
-            int border = widget && widget->property("_d_dtk_spinBox").toBool() ? 0 : DStyle::pixelMetric(PM_ContentsMargins) * 2;
-            size += QSize(size.height() * 2 + border, LineEdit_FrameWidth);
+        if (auto vopt = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
+            int spacing = widget && widget->property("_d_dtk_spinBox").toBool() ? 0 : DStyle::pixelMetric(PM_ContentsMargins);
+            const int fw = vopt->frame ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, vopt, widget) : 0;
+            // 增加左右箭头对应的宽和焦点边框的边距,(正方形箭头宽 + 边距 + 箭头控件左右边距, 焦点边框的宽）.
+            size += QSize((size.height() + spacing + fw * 2) * 2, LineEdit_FrameWidth);
             return size;
         }
     break;
