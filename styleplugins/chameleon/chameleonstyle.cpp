@@ -1319,8 +1319,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             p->setPen(Qt::NoPen);
             p->setBrush(Qt::NoBrush);
 
-            if (toolbutton->state & (State_MouseOver | State_Sunken))   //hover状态 、press状态
-                p->setBrush(getColor(toolbutton, DPalette::Button));
+            if (toolbutton->state & (State_MouseOver | State_Sunken))  //hover状态 、press状态
+                p->setBrush(getBrush(toolbutton, DPalette::Button));
 
             // Arrow type always overrules and is always shown
             bool hasArrow = toolbutton->features & QStyleOptionToolButton::Arrow;
@@ -1367,7 +1367,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 p->setBrush(Qt::NoBrush);
 
                 if (toolbutton->state & (State_MouseOver | State_Sunken))   //hover状态 、press状态
-                    p->setBrush(getColor(toolbutton, DPalette::Button));
+                    p->setBrush(getBrush(toolbutton, DPalette::Button));
+
                 if (toolbutton->state & State_HasFocus)
                     p->setPen(getColor(toolbutton, DPalette::Highlight));
 
@@ -4243,6 +4244,15 @@ QColor ChameleonStyle::getColor(const QStyleOption *option, DPalette::ColorType 
     const DPalette &pa = DApplicationHelper::instance()->palette(widget, option->palette);
 
     return DStyle::generatedBrush(option, pa.brush(type), pa.currentColorGroup(), type).color();
+}
+
+QBrush ChameleonStyle::getBrush(const QStyleOption *option, DPalette::ColorRole type) const
+{
+    QWidget *widget = qobject_cast<QWidget *>(option->styleObject);
+    if (widget && !widget->testAttribute(Qt::WA_Hover) && DGuiApplicationHelper::isTabletEnvironment()) {
+        return QBrush(Qt::NoBrush);
+    }
+    return QBrush(getColor(option, type));
 }
 
 QMargins ChameleonStyle::frameExtentMargins() const

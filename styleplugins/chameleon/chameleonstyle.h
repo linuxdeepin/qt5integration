@@ -76,6 +76,7 @@ private:
 
     QColor getColor(const QStyleOption *option, QPalette::ColorRole role) const;
     QColor getColor(const QStyleOption *option, DPalette::ColorType type, const QWidget *widget) const;
+    QBrush getBrush(const QStyleOption *option, DPalette::ColorRole type) const;
     QMargins frameExtentMargins() const;
     QRect drawButtonDownArrow(const QStyleOption *opt, QPainter *p, const QWidget *w) const;
 
