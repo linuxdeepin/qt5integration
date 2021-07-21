@@ -58,6 +58,7 @@
 #include <DIconButton>
 #include <DTabBar>
 #include <DDateTimeEdit>
+#include <DListView>
 #include <QtMath>
 #include <QtGlobal>
 #include <private/qcombobox_p.h>
@@ -383,7 +384,12 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             p->setPen(getColor(opt, DPalette::Highlight));
             DStyle::standardIcon(SP_IndicatorChecked, opt, w).paint(p, standard.toRect(), Qt::AlignCenter, mode);
         } else if (opt->state & State_Off) {  //Qt::Unchecked
-            DStyle::standardIcon(SP_IndicatorUnchecked, opt, w).paint(p, standard.toRect(), Qt::AlignCenter, mode);
+            if (w && w->property("_d_dtk_UncheckedItemIndicator").toBool()) {
+                DStyle::standardIcon(SP_IndicatorUnchecked, opt, w).paint(p, standard.toRect(), Qt::AlignCenter, mode);
+            }
+            if (w && !w->property("_d_dtk_UncheckedItemIndicator").isValid() && !qobject_cast<const Dtk::Widget::DListView *>(w)) {
+                DStyle::standardIcon(SP_IndicatorUnchecked, opt, w).paint(p, standard.toRect(), Qt::AlignCenter, mode);
+            }
         }
         return;
     }
