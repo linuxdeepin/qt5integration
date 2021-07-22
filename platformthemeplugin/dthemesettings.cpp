@@ -219,7 +219,7 @@ QByteArray DThemeSettings::screenScaleFactors() const
 
 // 从配置文件中获取dpi相关数据，文件中存储的格式为 ScaleLogicalDpi=x,y
 // 会被QSettings解析为QStringList，此处需要将其转换为QPair<qreal,qreal>
-static QPair<qreal, qreal> takePair(const QVariant &value)
+static DDpi takePair(const QVariant &value)
 {
     if (!value.isValid()) {
         return qMakePair(0.0, 0.0);
@@ -231,7 +231,7 @@ static QPair<qreal, qreal> takePair(const QVariant &value)
         return qMakePair(0.0, 0.0);
     }
 
-    QPair<qreal, qreal> ret;
+    DDpi ret;
 
     ret.first = l.first().toDouble();
     ret.second = l.at(1).toDouble();
@@ -239,7 +239,7 @@ static QPair<qreal, qreal> takePair(const QVariant &value)
     return ret;
 }
 
-QPair<qreal, qreal> DThemeSettings::scaleLogicalDpi() const
+DDpi DThemeSettings::scaleLogicalDpi() const
 {
     return takePair(value(SCALE_LOGICAL_DPI));
 }
