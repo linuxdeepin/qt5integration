@@ -24,6 +24,14 @@
 #include <QObject>
 #include <QSettings>
 
+/*!
+    \typedef DDpi
+    \relates DThemeSettings
+
+    Synonym for QPair<qreal, qreal>.
+*/
+typedef QPair<qreal, qreal> DDpi;
+
 class DThemeSettings : public QObject
 {
     Q_OBJECT
@@ -37,7 +45,7 @@ class DThemeSettings : public QObject
     Q_PROPERTY(int touchFlickBeginMoveDelay READ touchFlickBeginMoveDelay NOTIFY touchFlickBeginMoveDelayChanged)
     Q_PROPERTY(qreal scaleFactor READ scaleFactor NOTIFY scaleFactorChanged)
     Q_PROPERTY(QByteArray screenScaleFactors READ screenScaleFactors NOTIFY screenScaleFactorsChanged)
-    Q_PROPERTY(QPair<qreal, qreal> scaleLogicalDpi READ scaleLogicalDpi NOTIFY scaleLogicalDpiChanged)
+    Q_PROPERTY(DDpi scaleLogicalDpi READ scaleLogicalDpi NOTIFY scaleLogicalDpiChanged)
     Q_PROPERTY(bool autoScaleWindow READ autoScaleWindow NOTIFY autoScaleWindowChanged)
 
 public:
@@ -63,7 +71,7 @@ public:
     int touchFlickBeginMoveDelay() const;
     qreal scaleFactor() const;
     QByteArray screenScaleFactors() const;
-    QPair<qreal, qreal> scaleLogicalDpi() const;
+    DDpi scaleLogicalDpi() const;
     bool autoScaleWindow() const;
 
 signals:
@@ -77,7 +85,7 @@ signals:
     void touchFlickBeginMoveDelayChanged(int touchFlickBeginMoveDelay);
     void scaleFactorChanged(const qreal &scaleFactor);
     void screenScaleFactorsChanged(const QByteArray &screenScaleFactors);
-    void scaleLogicalDpiChanged(const QPair<qreal, qreal> scaleLogicalDpi);
+    void scaleLogicalDpiChanged(const DDpi scaleLogicalDpi);
     void autoScaleWindowChanged(bool autoScaleWindow);
 
 private:
