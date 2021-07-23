@@ -2517,6 +2517,13 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
     QBrush color;
     bool selected = (option->state & QStyle::State_Enabled) && option->state & QStyle::State_Selected;
 
+    if (selected && DGuiApplicationHelper::isTabletEnvironment()) {
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(getColor(option, QPalette::Highlight));
+        painter->drawRect(option->rect);
+        return;
+     }
+
     // 清理旧的阴影
     if (option->styleObject) {
         const QRect shadow = option->styleObject->property("_d_menu_shadow_rect").toRect();
