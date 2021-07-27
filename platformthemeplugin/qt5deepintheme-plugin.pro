@@ -1,5 +1,8 @@
 # load(configure) will clear DTK_VERSION
-include(../.qmake.conf)
+isEmpty(DTK_VERSION) {
+    include(../.qmake.conf)
+}
+
 QT       += dbus x11extras dtkgui$${DTK_VERSION}
 QT       += core-private gui-private
 greaterThan(QT_MAJOR_VERSION, 4) {
