@@ -216,7 +216,6 @@ void QDeepinFileDialogHelper::exec()
     qDebug() << "exec";
 
     ensureDialog();
-    applyOptions();
 
     if (nativeDialog) {
         // block input to the window, allow input to other GTK dialogs
@@ -263,6 +262,10 @@ bool QDeepinFileDialogHelper::defaultNameFilterDisables() const
 
 void QDeepinFileDialogHelper::setDirectory(const QUrl &directory)
 {
+    if (QDeepinFileDialogHelper::directory() == directory) {
+        return;
+    }
+
     qDebug() << __FUNCTION__ << directory;
 
     ensureDialog();
@@ -435,7 +438,8 @@ void QDeepinFileDialogHelper::applyOptions()
     DIALOG_CALL(setAcceptMode((QFileDialog::AcceptMode)options->acceptMode()));
     DIALOG_CALL(setNameFilters(options->nameFilters()));
 
-    setDirectory(options->initialDirectory());
+    if (options->initialDirectory().isLocalFile())
+        setDirectory(options->initialDirectory());
 
     foreach (const QUrl &filename, options->initiallySelectedFiles())
         selectFile(filename);
