@@ -2,6 +2,8 @@ greaterThan(QT_MAJOR_VERSION, 4) {
   QT += widgets widgets-private
 }
 
+LIBS += -ldl
+
 TARGET = qdeepin
 
 PLUGIN_TYPE = platformthemes
