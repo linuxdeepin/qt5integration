@@ -16,6 +16,7 @@ QMAKE_CXX += -g -fprofile-arcs -ftest-coverage -fsanitize=address -fsanitize-rec
 
 include($$PWD/iconengines/iconengines.pri)
 include($$PWD/styleplugins/styleplugins.pri)
+include($$PWD/imageformats/imageformats.pri)
 
 HEADERS += \
     $$PWD/../iconengineplugins/builtinengine/dbuiltiniconengine.h \

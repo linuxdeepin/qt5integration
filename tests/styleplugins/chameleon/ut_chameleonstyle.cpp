@@ -5,6 +5,13 @@
 #include <QToolButton>
 #include <QTableView>
 #include <QMenu>
+#include <QCalendarWidget>
+#include <QTreeView>
+#include <QListView>
+#include <QLineEdit>
+#include <DSpinBox>
+#include <QRadioButton>
+#include <QCheckBox>
 
 #include "chameleonstyle.h"
 
@@ -913,7 +920,7 @@ TEST_F(TestForDrawUtil, drawTableViewItem)
 
     pixmap.fill(Qt::green);
 
-    opt.state &= QStyle::State_Selected;
+    opt.state &= ~QStyle::State_Selected;
     view->setProperty("_d_dtk_enable_tableviewitem_radius", true);
     style->drawTableViewItem(QStyle::PE_PanelItemViewItem, &opt, &p, view);
     ASSERT_FALSE(pixmap.isNull());
@@ -959,4 +966,174 @@ TEST_F(TestForDrawUtil, drawMenuItemRedPoint)
     ASSERT_TRUE(testPixmapHasData());
 
     delete menu;
+}
+
+#define INIT_DEFAULTWIDGETSIZE(W) \
+    W.setGeometry(0, 0, 100, 100)
+
+TEST_F(TestForDrawUtil, drawPrimitivePanelItemViewItem)
+{
+    QCalendarWidget calWidget;
+    INIT_DEFAULTWIDGETSIZE(calWidget);
+    QStyleOption opt;
+    opt.initFrom(&calWidget);
+    opt.state |= QStyle::State_Selected;
+
+    QPainter p;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, &p, calWidget.findChild<QTableView *>("qt_calendar_calendarview"));
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
+
+    QTreeView tableView;
+    INIT_DEFAULTWIDGETSIZE(tableView);
+
+    QStyleOptionViewItem tableviewOption;
+    tableviewOption.initFrom(&tableView);
+    tableviewOption.showDecorationSelected = true;
+    tableviewOption.state |= (QStyle::State_Selected | QStyle::State_MouseOver);
+
+    tableviewOption.viewItemPosition = QStyleOptionViewItem::Beginning;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &tableviewOption, &p, &tableView);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
+
+    tableviewOption.viewItemPosition = QStyleOptionViewItem::End;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &tableviewOption, &p, &tableView);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
+
+    tableviewOption.showDecorationSelected = false;
+    tableviewOption.backgroundBrush = Qt::darkRed;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &tableviewOption, &p, &tableView);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
+    QListView listView;
+    INIT_DEFAULTWIDGETSIZE(listView);
+
+    QStyleOptionViewItem listViewOption;
+    listViewOption.initFrom(&listView);
+
+    listViewOption.state |= QStyle::State_Selected;
+    listViewOption.showDecorationSelected = true;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &listViewOption, &p, &listView);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+}
+
+TEST_F(TestForDrawUtil, drawPrimitivePanelLineEdit)
+{
+    QLineEdit lineEdit;
+    INIT_DEFAULTWIDGETSIZE(lineEdit);
+
+    QStyleOptionFrame frameOption;
+    frameOption.initFrom(&lineEdit);
+
+    frameOption.features |= QStyleOptionFrame::Flat;
+    frameOption.state |= QStyle::State_HasFocus;
+
+    QPainter p;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_PanelLineEdit, &frameOption, &p, &lineEdit);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
+
+    frameOption.features |= QStyleOptionFrame::Rounded;
+    frameOption.lineWidth = 5;
+
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_PanelLineEdit, &frameOption, &p, &lineEdit);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
+
+    lineEdit.setProperty("_d_dtk_lineedit_opacity", true);
+
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_PanelLineEdit, &frameOption, &p, &lineEdit);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
+
+    DSpinBox spinbox;
+    INIT_DEFAULTWIDGETSIZE(spinbox);
+    lineEdit.setParent(&spinbox);
+    spinbox.setProperty("_d_dtk_lineedit_opacity", true);
+
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_PanelLineEdit, &frameOption, &p, &lineEdit);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    lineEdit.setParent(nullptr);
+}
+
+TEST_F(TestForDrawUtil, drawPrimitiveIndicatorRadioButton)
+{
+    QRadioButton radioButton;
+    INIT_DEFAULTWIDGETSIZE(radioButton);
+
+    QStyleOption radioButtonOption;
+    radioButtonOption.initFrom(&radioButton);
+
+    radioButtonOption.state |= QStyle::State_On;
+
+    QPainter p;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_IndicatorRadioButton, &radioButtonOption, &p, &radioButton);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
+
+    radioButtonOption.state &= ~QStyle::State_On;
+    radioButtonOption.state |= QStyle::State_Off;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_IndicatorRadioButton, &radioButtonOption, &p, &radioButton);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+}
+
+TEST_F(TestForDrawUtil, drawPrimitiveIndicatorCheckBox)
+{
+    QCheckBox checkBox;
+    INIT_DEFAULTWIDGETSIZE(checkBox);
+
+    QStyleOption checkBoxOption;
+    checkBoxOption.initFrom(&checkBox);
+    checkBoxOption.state |= QStyle::State_NoChange;
+
+    QPainter p;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &checkBoxOption, &p, &checkBox);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
+
+    checkBoxOption.state &= ~QStyle::State_NoChange;
+    p.begin(&pixmap);
+    style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &checkBoxOption, &p, &checkBox);
+    p.end();
+
+    ASSERT_TRUE(testPixmapHasData());
+    pixmap.fill(Qt::green);
 }

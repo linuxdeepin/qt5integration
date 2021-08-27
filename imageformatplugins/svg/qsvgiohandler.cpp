@@ -54,6 +54,7 @@ DGUI_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
+#ifndef UT_QSVGIOHANDLERPRIVATE
 class QSvgIOHandlerPrivate
 {
 public:
@@ -73,10 +74,13 @@ public:
     bool             readDone;
     QColor           backColor;
 };
-
+#endif
 
 bool QSvgIOHandlerPrivate::load(QIODevice *device)
 {
+    if (!device)
+        return false;
+
     if (loaded)
         return true;
     if (q->format().isEmpty())
