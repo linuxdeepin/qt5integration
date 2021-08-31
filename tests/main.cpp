@@ -10,6 +10,16 @@ int main(int argc, char *argv[])
     // gerrit编译时没有显示器，需要指定环境变量
     qputenv("QT_QPA_PLATFORM", "offscreen");
 
+    // 风格插件需要添加平台主题，用于创建图标引擎
+    QByteArray platformThemePath;
+#ifdef UT_PLATFORMPLUGIN_PATH
+    platformThemePath = UT_PLATFORMPLUGIN_PATH;
+    QApplication::setLibraryPaths(QApplication::libraryPaths() << QString(UT_PLATFORMPLUGIN_PATH).append("../"));
+#endif
+    if (!platformThemePath.isEmpty())
+        qputenv("QT_QPA_PLATFORM_PLUGIN_PATH", platformThemePath);
+
+    qputenv("QT_QPA_PLATFORMTHEME", "deepin");
     QApplication app(argc, argv);
     ::testing::InitGoogleTest(&argc, argv);
     int ret = RUN_ALL_TESTS();

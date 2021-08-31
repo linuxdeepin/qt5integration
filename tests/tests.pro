@@ -17,6 +17,8 @@ QMAKE_CXX += -g -fprofile-arcs -ftest-coverage -fsanitize=address -fsanitize-rec
 include($$PWD/iconengines/iconengines.pri)
 include($$PWD/styleplugins/styleplugins.pri)
 include($$PWD/imageformats/imageformats.pri)
+DEFINES += UT_PLATFORMPLUGIN_PATH=\\\"$${PWD}/../bin/plugins/platformthemes/\\\"
+export(UT_PLATFORMPLUGIN_PATH)
 
 HEADERS += \
     $$PWD/../iconengineplugins/builtinengine/dbuiltiniconengine.h \
