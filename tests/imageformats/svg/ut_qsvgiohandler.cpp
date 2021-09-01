@@ -37,14 +37,7 @@ DGUI_USE_NAMESPACE
 class QSvgIOHandlerPrivate
 {
 public:
-    QSvgIOHandlerPrivate(QSvgIOHandler *qq)
-        : q(qq)
-        , loaded(false)
-        , readDone(false)
-        , backColor(Qt::transparent)
-    {
-    }
-
+    QSvgIOHandlerPrivate(QSvgIOHandler *qq);
     bool load(QIODevice *device);
 
     QSvgIOHandler *q;
