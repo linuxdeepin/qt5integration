@@ -446,7 +446,11 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_IndicatorArrowDown: {
         QIcon icon = DStyle::standardIcon(SP_ArrowDown, opt, w);
-        icon.paint(p, opt->rect);
+        QRect r = opt->rect;
+        int size = qMin(r.width(), r.height());
+        int xOffset = r.x() + (r.width() - size) / 2;
+        int yOffset = r.y() + (r.height() - size) / 2;
+        icon.paint(p, QRect(xOffset, yOffset, size, size));
         return;
     }
     case PE_IndicatorArrowRight: {
