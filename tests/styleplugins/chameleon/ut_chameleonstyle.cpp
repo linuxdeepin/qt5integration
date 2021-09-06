@@ -148,8 +148,30 @@ struct DrawComplexControl_Param {
     {
     }
 
+    void releaseOption()
+    {
+        switch (cc) {
+        case QStyle::CC_SpinBox:
+            delete qstyleoption_cast<QStyleOptionSpinBox *>(opt);
+            break;
+        case QStyle::CC_ToolButton:
+            delete qstyleoption_cast<QStyleOptionToolButton *>(opt);
+            break;
+        case QStyle::CC_Slider:
+            delete qstyleoption_cast<QStyleOptionSlider *>(opt);
+            break;
+        case QStyle::CC_ComboBox:
+            delete qstyleoption_cast<QStyleOptionComboBox *>(opt);
+            break;
+        default:
+            delete opt;
+        }
+
+        opt = nullptr;
+    }
+
     QStyle::ComplexControl cc;
-    QSharedPointer<QStyleOptionComplex> opt;
+    QStyleOptionComplex *opt;
 };
 
 class TestForQtDrawComplexControlParam : public ::testing::TestWithParam<DrawComplexControl_Param>
@@ -173,7 +195,8 @@ TEST_P(TestForQtDrawComplexControlParam, drawComplexControl)
 
     param.opt->init(testWidget);
     // 测试调用默认参数时函数是否会崩溃
-    style->drawComplexControl(param.cc, param.opt.data(), &p);
+    style->drawComplexControl(param.cc, param.opt, &p);
+    param.releaseOption();
 }
 
 void TestForQtDrawComplexControlParam::SetUp()
