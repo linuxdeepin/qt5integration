@@ -112,8 +112,9 @@ protected:
 
 private:
     mutable QHash<const QObject*, dstyle::DStyleAnimation*> animations;
-};
 
+    bool eventFilter(QObject *watched, QEvent *event) override;
+};
 } // namespace chameleon
 
 #endif // CHAMELEONSTYLE_H

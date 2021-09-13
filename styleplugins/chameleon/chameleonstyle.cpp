@@ -644,10 +644,52 @@ void ChameleonStyle::transScrollbarMouseEvents(QObject *obj, bool on /*= true*/)
     if (!sbar)
         return;
 
-    sbar->setAttribute(Qt::WidgetAttribute::WA_TransparentForMouseEvents, on);
-    // QAbstractScrollAreaScrollBarContainer
-    if (sbar->parentWidget()){
-        sbar->parentWidget()->setAttribute(Qt::WidgetAttribute::WA_TransparentForMouseEvents, on);
+    sbar->setProperty("_d_dtk_slider_visible", on);
+}
+
+static bool isContainer (QWidget *w)
+{
+    return !w->objectName().compare(QLatin1String("qt_scrollarea_vcontainer")) ||
+           !w->objectName().compare(QLatin1String("qt_scrollarea_hcontainer")) ;
+}
+
+bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
+{
+    QScrollBar *sbar = qobject_cast<QScrollBar *>(watched);
+    if (!sbar)
+        return false;
+
+    QContextMenuEvent *cme = dynamic_cast<QContextMenuEvent *>(event);
+    QMouseEvent *me = dynamic_cast<QMouseEvent *>(event);
+    if (!cme && !me)
+        return false;
+
+    bool on = sbar->property("_d_dtk_slider_visible").toBool();
+    // 有的应用会设置滚动条的 parent
+    QWidget *p = sbar->parentWidget();
+    QWidget *pp = isContainer(p) ? p->parentWidget() : p;
+
+    // 对于 QAbstractItemView 来说 item 一般在 viewport 上
+    QAbstractItemView *itemView = qobject_cast<QAbstractItemView *>(pp);
+    pp = itemView ? itemView->viewport() : pp;
+    if (!pp)
+        return false;
+
+    // scrollbar right click
+
+    if (cme) {
+        QContextMenuEvent menuEvent(cme->reason(), pp->mapFromGlobal(cme->globalPos()), cme->globalPos(), cme->modifiers());
+        return !on ? false : QApplication::sendEvent(pp, &menuEvent);
+    } else {
+        // 仅仅在滚动条显示时过滤鼠标(点击)事件
+        if (!me || !on)
+            return false;
+
+        QMouseEvent mevent = *me;
+        mevent.setLocalPos(pp->mapFromGlobal(mevent.globalPos()));
+
+        // 传递鼠标事件到后面的 widget
+        return QApplication::sendEvent(pp, &mevent);
     }
 }
 
@@ -4010,6 +4052,7 @@ void ChameleonStyle::polish(QWidget *w)
     }
 
     if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
+        scrollbar->installEventFilter(this);
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, false);
     }
 
@@ -4118,6 +4161,7 @@ void ChameleonStyle::unpolish(QWidget *w)
     }
 
     if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
+        scrollbar->removeEventFilter(this);
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, true);
     }
 
