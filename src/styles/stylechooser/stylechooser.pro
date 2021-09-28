@@ -1,5 +1,7 @@
 QT += core gui widgets
 
+LIBS += -ldl
+
 TARGET = chameleon
 
 PLUGIN_TYPE=styles

@@ -1,3 +1,5 @@
+LIBS += -ldl
+
 TARGET  = dsvg
 JSON_FILE=dsvg.json
 PLUGIN_TYPE=imageformats
