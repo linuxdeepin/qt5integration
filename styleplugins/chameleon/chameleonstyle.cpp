@@ -2336,16 +2336,16 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
 
     if (hasText && !hasIcon) {
         textRect = contentsRect;
-        int frame_radius = DStyle::pixelMetric(PM_FrameRadius, cb, widget);
-        textRect.adjust(frame_radius, 0, 0, 0);
+        int leftMargin = Metrics::ComboBox_ContentLeftMargin;
+        textRect.adjust(leftMargin, 0, 0, 0);
         textRect.setWidth(textRect.width() - downArrowRect.width());
     }
     else {
         const int contentsWidth(iconSize.width() + textSize.width() + Metrics::Button_ItemSpacing);
-        const int contentLeftPadding = flat ? (contentsRect.width() - contentsWidth) / 2 : frameExtentMargins().left();
+        const int contentLeftPadding = flat ? (contentsRect.width() - contentsWidth) / 2 : Metrics::ComboBox_ContentLeftMargin;
         iconRect = QRect(QPoint(contentsRect.left() + contentLeftPadding,
                                 contentsRect.top() + (contentsRect.height() - iconSize.height()) / 2), iconSize);
-        textRect = QRect(QPoint(iconRect.right() + Metrics::Button_ItemSpacing + 1,
+        textRect = QRect(QPoint(iconRect.right() + Metrics::Icon_Margins + 1,
                                 contentsRect.top() + (contentsRect.height() - textSize.height()) / 2), textSize);
     }
 
