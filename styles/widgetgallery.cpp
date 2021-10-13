@@ -258,6 +258,7 @@ void WidgetGallery::createBottomLeftTabWidget()
 
     QWidget *tab1 = new QWidget;
     tableWidget = new QTableWidget(10, 10);
+    tableWidget->setAlternatingRowColors(true);
 
     QHBoxLayout *tab1hbox = new QHBoxLayout;
     tab1hbox->setMargin(5);
