@@ -1427,7 +1427,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
                 p->drawText(rect, alignment, toolbutton->text);
             } else { //只显示文字的情景 的 补集
-                QIcon icon(toolbutton->icon.pixmap(QSize()));
+                QIcon icon;
                 QSize pmSize = toolbutton->iconSize;
 
                 switch (toolbutton->arrowType) {
