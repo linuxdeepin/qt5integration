@@ -605,6 +605,8 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(QGenericUnixTheme::xdgIconThemePaths() << QDir::homePath() + "/.local/share/icons");
     case UseFullScreenForPopupMenu:
         return true;
+    case ShowShortcutsInContextMenus:
+        return false;
     default:
         break;
     }
