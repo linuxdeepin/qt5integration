@@ -113,7 +113,7 @@ public:
             if (rem.hasMatch())
                 pluginName += rem.captured();
             else
-                qWarning() << versionStr << "is invalid";
+                qCDebug(lcDPlugin) << versionStr << "is invalid";
         } else {
             qCDebug(lcDPlugin) << VERSION_STR_SYMBOL << "resolve failed, trying to read self maps";
             QString versoinName = resolveFromPSM(QLatin1String("dtkcore"));
