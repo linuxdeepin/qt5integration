@@ -50,7 +50,7 @@ Multiple Qt plugins to provide better Qt5 integration for DDE is included.
 %autosetup -p1 -n %{repo}-%{version}
 
 %build
-%qmake_qt5 PREFIX=%{_prefix}
+%qmake_qt5 PREFIX=%{_prefix} BASED_DTK_DIR=based-dtk
 %make_build
 
 %install
@@ -59,10 +59,17 @@ Multiple Qt plugins to provide better Qt5 integration for DDE is included.
 %files
 %doc README.md
 %license LICENSE
+# chooser
 %{_qt5_plugindir}/platformthemes/libqdeepin.so
 %{_qt5_plugindir}/iconengines/libdsvgicon.so
 %{_qt5_plugindir}/imageformats/libdsvg.so
 %{_qt5_plugindir}/iconengines/libdtkbuiltin.so
 %{_qt5_plugindir}/styles/libchameleon.so
+# target
+%{_qt5_plugindir}/platformthemes/based-dtk/libqdeepin.so
+%{_qt5_plugindir}/iconengines/based-dtk/libdsvgicon.so
+%{_qt5_plugindir}/imageformats/based-dtk/libdsvg.so
+%{_qt5_plugindir}/iconengines/based-dtk/libdtkbuiltin.so
+%{_qt5_plugindir}/styles/based-dtk/libchameleon.so
 
 %changelog
