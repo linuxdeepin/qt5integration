@@ -2048,7 +2048,8 @@ void ChameleonStyle::tabLayout(const QStyleOptionTab *opt, const QWidget *widget
         // High-dpi icons do not need adjustment; make sure tabIconSize is not larger than iconSize
         tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.height()));
 
-        *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
+        // 由于Qt的历史原因 center 返回的坐标总是比矩形的真是中心坐标少一个像素 导致绘制图标时竖直方向无法对齐
+        *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2 + 1,
                     tabIconSize.width(), tabIconSize.height());
         if (!verticalTabs)
             *iconRect = proxy()->visualRect(opt->direction, opt->rect, *iconRect);
