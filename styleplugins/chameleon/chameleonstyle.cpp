@@ -1884,7 +1884,6 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
             if (DGuiApplicationHelper::isTabletEnvironment())
                 close_button_width = TabBar_TabButtonSize;
 
-            qreal stop = qreal(tr.right() - close_button_width - text_rect.x() - 5) / text_rect.width();
             QBrush brush;
 
             //选中状态下文字颜色
@@ -1893,8 +1892,9 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
             } else {
                 brush = newTab.palette.windowText();
             }
-
-            if (stop < 1.0 && tr.right() - close_button_width < text_rect.right()) {
+            // 小心除以 0
+            qreal stop = text_rect.width() > 0 ? qreal(tr.right() - close_button_width - text_rect.x() - 5) / text_rect.width() : 1.0;
+            if (stop < 1 && stop > 0 &&  tr.right() - close_button_width < text_rect.right()) {
                 QLinearGradient lg(0, 0, 1, 0);
                 QGradientStops stops;
                 qreal offset = 5.0 / text_rect.width();
@@ -1944,7 +1944,7 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
                 int tabX = (vertTabs ? newTab.rect.y() : text_rect.x()) + (vertTabs ? tabbar_rect.y() : tabbar_rect.x());
                 int tabWidth = tabX + text_rect.width();
 
-                if (tabX < stopx && stopx < tabWidth) {
+                if (text_rect.width() > 0 && tabX < stopx && stopx < tabWidth) {
                     const QBrush &brush = newTab.palette.windowText();
                     QLinearGradient lg(0, 0, 1, 0);
                     QGradientStops stops;
