@@ -1101,6 +1101,9 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
             switch (frameShape) {
             case QFrame::Box:
+                if (qobject_cast<QComboBoxPrivateContainer *>(const_cast<QWidget *>(w)) && DGuiApplicationHelper::isTabletEnvironment())
+                    break;
+
                 if (frameShadow == QFrame::Plain) {
                     qDrawPlainRect(p, f->rect, f->palette.color(foregroundRole), lw);
                 } else {
@@ -4057,7 +4060,8 @@ void ChameleonStyle::polish(QWidget *w)
             DPlatformWindowHandle handle(container);
             handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
         }
-        container->setFrameStyle(QFrame::NoFrame);
+        if (!DGuiApplicationHelper::isTabletEnvironment())
+            container->setFrameStyle(QFrame::NoFrame);
     }
 
     if (auto calendar = qobject_cast<QCalendarWidget* >(w)) {
