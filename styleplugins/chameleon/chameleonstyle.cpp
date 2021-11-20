@@ -749,14 +749,19 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         return;
     case CE_ScrollBarSlider: {
         if (const QStyleOptionSlider* scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-
-            // 滚动条渐变消失
-            if (hideScrollBarByAnimation(scrollBar, p)) {
-                transScrollbarMouseEvents(scrollBar->styleObject, true);
-                return;
-            } else {
-                transScrollbarMouseEvents(scrollBar->styleObject, false);
+            // 特殊设备不需要动画，只有显示和隐藏
+            if (DGuiApplicationHelper::isSpecialEffectsEnvironment()) {
+                bool isHoveredOrPressed = scrollBar->state & (QStyle::State_MouseOver | QStyle::State_Sunken);
+                transScrollbarMouseEvents(scrollBar->styleObject, !isHoveredOrPressed);
+                if (!isHoveredOrPressed)
+                    return;
             }
+
+            bool hidden = hideScrollBarByAnimation(scrollBar, p);
+            // 不绘制则将鼠标消息转发到 parentwidget
+            transScrollbarMouseEvents(scrollBar->styleObject, hidden);
+            if (hidden)
+                return;
 
             p->save();
             p->setBrush(getColor(opt, QPalette::Highlight));
@@ -2597,8 +2602,8 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
 {
     QBrush color;
     bool selected = (option->state & QStyle::State_Enabled) && option->state & QStyle::State_Selected;
-
-    if (selected && DGuiApplicationHelper::isTabletEnvironment()) {
+    if (selected && (DGuiApplicationHelper::isTabletEnvironment() ||
+                     DGuiApplicationHelper::isSpecialEffectsEnvironment())) {
         painter->setPen(Qt::NoPen);
         painter->setBrush(getColor(option, QPalette::Highlight));
         painter->drawRect(option->rect);
@@ -4062,6 +4067,11 @@ void ChameleonStyle::resetAttribute(QWidget *w, bool polish)
     w->setAttribute(Qt::WA_Hover, enableHover);
 
     if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
+        if (polish) {
+            scrollbar->installEventFilter(this);
+        } else {
+            scrollbar->removeEventFilter(this);
+        }
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, !polish);
     }
 }
