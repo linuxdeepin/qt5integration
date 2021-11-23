@@ -749,8 +749,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         return;
     case CE_ScrollBarSlider: {
         if (const QStyleOptionSlider* scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
-            // 特殊设备不需要动画，只有显示和隐藏
-            if (DGuiApplicationHelper::isSpecialEffectsEnvironment()) {
+            // 非特效不需要动画，只有显示和隐藏
+            if (!DGuiApplicationHelper::isSpecialEffectsEnvironment()) {
                 bool isHoveredOrPressed = scrollBar->state & (QStyle::State_MouseOver | QStyle::State_Sunken);
                 transScrollbarMouseEvents(scrollBar->styleObject, !isHoveredOrPressed);
                 if (!isHoveredOrPressed)
@@ -2603,7 +2603,7 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
     QBrush color;
     bool selected = (option->state & QStyle::State_Enabled) && option->state & QStyle::State_Selected;
     if (selected && (DGuiApplicationHelper::isTabletEnvironment() ||
-                     DGuiApplicationHelper::isSpecialEffectsEnvironment())) {
+                     !DGuiApplicationHelper::isSpecialEffectsEnvironment())) {
         painter->setPen(Qt::NoPen);
         painter->setBrush(getColor(option, QPalette::Highlight));
         painter->drawRect(option->rect);

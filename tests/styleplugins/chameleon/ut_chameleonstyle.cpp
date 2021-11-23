@@ -1843,8 +1843,8 @@ TEST_F(TestForDrawUtil, drawControlScrollBarSlider)
         {
             QStyleOptionSlider option;
             option.initFrom(testWidget());
-            option.state |= QStyle::State_Horizontal;
-
+            option.state |= QStyle::State_Horizontal | QStyle::State_MouseOver;
+            option.state |= QStyle::QStyle::State_MouseOver;
             style()->drawControl(QStyle::CE_ScrollBarSlider, &option, painter(), testWidget());
         }
 
@@ -1852,7 +1852,7 @@ TEST_F(TestForDrawUtil, drawControlScrollBarSlider)
         {
             QStyleOptionSlider option;
             option.initFrom(testWidget());
-
+            option.state |= QStyle::QStyle::State_MouseOver;
             style()->drawControl(QStyle::CE_ScrollBarSlider, &option, painter(), testWidget());
         }
 
@@ -1861,6 +1861,7 @@ TEST_F(TestForDrawUtil, drawControlScrollBarSlider)
             QStyleOptionSlider option;
             option.initFrom(testWidget());
             option.state |= QStyle::State_Horizontal;
+            option.state |= QStyle::QStyle::State_MouseOver;
 
             testWidget()->setProperty("_d_slider_spaceLeft", 10);
             testWidget()->setProperty("_d_slider_spaceRight", 10);
