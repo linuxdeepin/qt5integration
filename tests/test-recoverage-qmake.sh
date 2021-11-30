@@ -7,14 +7,14 @@ cd ../
 rm -rf $BUILD_DIR
 mkdir $BUILD_DIR
 cd $BUILD_DIR
-qmake ../ CONFIG+=debug BASED_DTK_DIR=based-dtk DTK_VERSION=5.5
+qmake ../ CONFIG+=debug BASED_DTK_DIR=based-dtk
 make -j$(nproc)
 cd ../tests/
 
 rm -rf $BUILD_DIR
 mkdir $BUILD_DIR
 cd $BUILD_DIR
-qmake ../ CONFIG+=debug BASED_DTK_DIR=based-dtk DTK_VERSION=5.5
+qmake ../ CONFIG+=debug BASED_DTK_DIR=based-dtk
 export ASAN_OPTIONS=halt_on_error=0
 TESTARGS="--gtest_output=xml:dde_test_report_qt5integration.xml" make check -j$(nproc)
 
