@@ -514,6 +514,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             fmt.setForeground(QBrush(getColor(opt, DPalette::Highlight)));
             calend->setWeekdayTextFormat(Qt::Saturday, fmt);
             calend->setWeekdayTextFormat(Qt::Sunday, fmt);
+            return;
         }
         //这里QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
