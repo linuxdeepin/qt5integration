@@ -1882,6 +1882,10 @@ TEST_F(TestForDrawUtil, drawControlScrollBarSlider)
 
     INIT_TESTWIDGET(QScrollBar);
     TestScrollBarSliderDrawUtil drawUtilInstance(this);
+
+    QScrollBar *bar = qobject_cast<QScrollBar*> (drawUtilInstance.testWidget());
+    bar->setProperty("_d_dtk_slider_always_show", true);
+
     ASSERT_DrawFuncHasData(drawUtilInstance.testDrawNormalScrollBarSlider);
     ASSERT_DrawFuncHasData(drawUtilInstance.testDrawNormalVerticalScrollBarSlider);
     ASSERT_DrawFuncHasData(drawUtilInstance.testDrawHorizontalSliderWithSpaceProperty);

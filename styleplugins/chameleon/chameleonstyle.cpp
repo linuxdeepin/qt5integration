@@ -613,7 +613,10 @@ bool ChameleonStyle::hideScrollBarByAnimation(const QStyleOptionSlider *scrollBa
         styleAnimation->setDeletePolicy(QAbstractAnimation::KeepWhenStopped);
 
         // 开始进入隐藏动画
-        this->startAnimation(styleAnimation);
+        connect(styleAnimation, &dstyle::DStyleAnimation::destroyed,
+                this, &ChameleonStyle::_q_removeAnimation, Qt::UniqueConnection);
+
+        animations.insert(styleAnimation->target(), styleAnimation);
 
         // 滚动和滚动条大小变化时，重启动画改变显示和隐藏
         QObject::connect(sbar, &QAbstractSlider::valueChanged, styleAnimation, &dstyle::DScrollbarStyleAnimation::restart);
