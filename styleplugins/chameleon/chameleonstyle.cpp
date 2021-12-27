@@ -83,6 +83,20 @@ inline static bool verticalTabs(QTabBar::Shape shape)
            || shape == QTabBar::TriangularEast;
 }
 
+static QWidget *getSbarParentWidget(QScrollBar *sbar)
+{
+    if (!sbar)
+        return nullptr;
+    QWidget *pw = sbar->parentWidget();
+    if (!pw)
+        return nullptr;
+
+    bool isContainer = !pw->objectName().compare(QLatin1String("qt_scrollarea_vcontainer")) ||
+            !pw->objectName().compare(QLatin1String("qt_scrollarea_hcontainer")) ;
+
+    return isContainer ? pw->parentWidget() : pw;
+}
+
 ChameleonStyle::ChameleonStyle()
     : DStyle()
 {
@@ -594,7 +608,7 @@ bool ChameleonStyle::hideScrollBarByAnimation(const QStyleOptionSlider *scrollBa
         return false;
 
     // ScrollBarAlwaysOn 也可以控制一直显示
-    QAbstractScrollArea *sa = qobject_cast<QAbstractScrollArea *>(sbar->parentWidget());
+    QAbstractScrollArea *sa = qobject_cast<QAbstractScrollArea *>(getSbarParentWidget(sbar));
     if (sa) {
         const QScrollBar *hsb = sa->horizontalScrollBar();
         const bool hsbAlwaysOn = sa->horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOn;
@@ -612,7 +626,6 @@ bool ChameleonStyle::hideScrollBarByAnimation(const QStyleOptionSlider *scrollBa
         styleAnimation = new dstyle::DScrollbarStyleAnimation(dstyle::DScrollbarStyleAnimation::Deactivating, sbar);
         styleAnimation->setDeletePolicy(QAbstractAnimation::KeepWhenStopped);
 
-        // 开始进入隐藏动画
         connect(styleAnimation, &dstyle::DStyleAnimation::destroyed,
                 this, &ChameleonStyle::_q_removeAnimation, Qt::UniqueConnection);
 
@@ -653,12 +666,6 @@ void ChameleonStyle::transScrollbarMouseEvents(QObject *obj, bool on /*= true*/)
     sbar->setProperty("_d_dtk_slider_visible", on);
 }
 
-static bool isContainer (QWidget *w)
-{
-    return !w->objectName().compare(QLatin1String("qt_scrollarea_vcontainer")) ||
-           !w->objectName().compare(QLatin1String("qt_scrollarea_hcontainer")) ;
-}
-
 bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
 {
     QScrollBar *sbar = qobject_cast<QScrollBar *>(watched);
@@ -672,9 +679,7 @@ bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
 
     bool on = sbar->property("_d_dtk_slider_visible").toBool();
     // 有的应用会设置滚动条的 parent
-    QWidget *p = sbar->parentWidget();
-    QWidget *pp = isContainer(p) ? p->parentWidget() : p;
-
+    QWidget *pp = getSbarParentWidget(sbar);
     // 对于 QAbstractItemView 来说 item 一般在 viewport 上
     QAbstractItemView *itemView = qobject_cast<QAbstractItemView *>(pp);
     pp = itemView ? itemView->viewport() : pp;
@@ -682,7 +687,6 @@ bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
         return false;
 
     // scrollbar right click
-
     if (cme) {
         QContextMenuEvent menuEvent(cme->reason(), pp->mapFromGlobal(cme->globalPos()), cme->globalPos(), cme->modifiers());
         return !on ? false : QApplication::sendEvent(pp, &menuEvent);
