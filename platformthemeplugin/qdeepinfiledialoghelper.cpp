@@ -41,7 +41,7 @@
 
 QT_BEGIN_NAMESPACE
 #define DIALOG_SERVICE "com.deepin.filemanager.filedialog"
-#define DIALOG_CALL(Fun) ({if(nativeDialog) nativeDialog->Fun; else qtDialog->Fun;})
+#define DIALOG_CALL(Fun) ({if(nativeDialog) nativeDialog->Fun; else if(qtDialog) qtDialog->Fun; else qWarning("ensure dialog failed");})
 
 QList<QUrl> stringList2UrlList(const QStringList &list)
 {
@@ -99,7 +99,7 @@ QDeepinFileDialogHelper::~QDeepinFileDialogHelper()
         auxiliaryWindow->deleteLater();
 
     if (nativeDialog)
-        nativeDialog->deleteLater();
+        nativeDialog->QObject::deleteLater();
 }
 
 bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
@@ -157,11 +157,11 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
 
             if (modality == Qt::ApplicationModal) {
                 connect(qApp, &QGuiApplication::applicationStateChanged,
-                        this, [this] (Qt::ApplicationState state) {
-                    if (state == Qt::ApplicationActive)
+                        nativeDialog, [this] (Qt::ApplicationState state) {
+                    if (state == Qt::ApplicationActive && nativeDialog)
                         nativeDialog->activateWindow();
                 });
-                connect(nativeDialog, &DFileDialogHandle::windowActiveChanged, this, [this] {
+                connect(nativeDialog, &DFileDialogHandle::windowActiveChanged, nativeDialog, [this] {
                     if (qApp->platformName() != "dxcb" && !qApp->property("_d_isDxcb").toBool())
                         return;
 
@@ -176,7 +176,7 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
                         return;
                     }
 
-                    if (!nativeDialog->windowActive() && qApp->applicationState() == Qt::ApplicationActive) {
+                    if (nativeDialog && !nativeDialog->windowActive() && qApp->applicationState() == Qt::ApplicationActive) {
                         nativeDialog->activateWindow();
                     }
                 });
@@ -218,6 +218,9 @@ void QDeepinFileDialogHelper::exec()
     ensureDialog();
 
     if (nativeDialog) {
+        // 快速打开关闭多次有一定概率出现没有调用 show 的情况,这里先 show
+        // 保证exec一定会显示出现
+        DIALOG_CALL(show());
         // block input to the window, allow input to other GTK dialogs
         QEventLoop loop;
         connect(this, SIGNAL(accept()), &loop, SLOT(quit()));
@@ -372,13 +375,23 @@ void QDeepinFileDialogHelper::ensureDialog() const
         } else {
             nativeDialog = new DFileDialogHandle(DIALOG_SERVICE, path, QDBusConnection::sessionBus());
             auxiliaryWindow = new QWindow();
+            auxiliaryWindow->setObjectName("QDeepinFileDialogHelper_auxiliaryWindow");
 
             connect(nativeDialog, &QObject::destroyed, auxiliaryWindow, &QWindow::deleteLater);
             connect(nativeDialog, &QObject::destroyed, nativeDialog, &DFileDialogHandle::deleteLater);
-            connect(nativeDialog, &DFileDialogHandle::destroyed, nativeDialog, &QObject::deleteLater);
             connect(nativeDialog, &DFileDialogHandle::accepted, this, &QDeepinFileDialogHelper::accept);
             connect(nativeDialog, &DFileDialogHandle::rejected, this, &QDeepinFileDialogHelper::reject);
             connect(nativeDialog, &DFileDialogHandle::destroyed, this, &QDeepinFileDialogHelper::reject);
+            connect(nativeDialog, &DFileDialogHandle::destroyed, this, [this](){
+                qWarning("filedialog dbus service destroyed.");
+                if (nativeDialog) {
+                    nativeDialog->QObject::deleteLater();
+                    nativeDialog = nullptr;
+                }
+
+                if (auxiliaryWindow && auxiliaryWindow->isModal() && qApp->modalWindow() == auxiliaryWindow)
+                    QGuiApplicationPrivate::hideModalWindow(auxiliaryWindow);
+            });
 
             QTimer *heartbeatTimer = new QTimer(nativeDialog);
 
