@@ -102,6 +102,32 @@ QDeepinFileDialogHelper::~QDeepinFileDialogHelper()
         nativeDialog->QObject::deleteLater();
 }
 
+void QDeepinFileDialogHelper::onApplicationStateChanged(Qt::ApplicationState state)
+{
+    if (state == Qt::ApplicationActive && nativeDialog)
+        nativeDialog->activateWindow();
+}
+
+void QDeepinFileDialogHelper::onWindowActiveChanged()
+{
+    if (qApp->platformName() != "dxcb" && !qApp->property("_d_isDxcb").toBool())
+        return;
+
+    QWindow *focus_window = qApp->focusWindow();
+    if (!focus_window)
+        return;
+
+    if (focus_window->type() != Qt::Widget
+            && focus_window->type() != Qt::Window
+            && focus_window->type() != Qt::Dialog) {
+        return;
+    }
+
+    if (nativeDialog && !nativeDialog->windowActive() && qApp->applicationState() == Qt::ApplicationActive) {
+        nativeDialog->activateWindow();
+    }
+}
+
 bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, QWindow *parent)
 {
     ensureDialog();
@@ -156,30 +182,8 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
             QGuiApplicationPrivate::showModalWindow(auxiliaryWindow);
 
             if (modality == Qt::ApplicationModal) {
-                connect(qApp, &QGuiApplication::applicationStateChanged,
-                        nativeDialog, [this] (Qt::ApplicationState state) {
-                    if (state == Qt::ApplicationActive && nativeDialog)
-                        nativeDialog->activateWindow();
-                });
-                connect(nativeDialog, &DFileDialogHandle::windowActiveChanged, nativeDialog, [this] {
-                    if (qApp->platformName() != "dxcb" && !qApp->property("_d_isDxcb").toBool())
-                        return;
-
-                    QWindow *focus_window = qApp->focusWindow();
-
-                    if (!focus_window)
-                        return;
-
-                    if (focus_window->type() != Qt::Widget
-                            && focus_window->type() != Qt::Window
-                            && focus_window->type() != Qt::Dialog) {
-                        return;
-                    }
-
-                    if (nativeDialog && !nativeDialog->windowActive() && qApp->applicationState() == Qt::ApplicationActive) {
-                        nativeDialog->activateWindow();
-                    }
-                });
+                connect(qApp, &QGuiApplication::applicationStateChanged, this, &QDeepinFileDialogHelper::onApplicationStateChanged);
+                connect(nativeDialog, &DFileDialogHandle::windowActiveChanged, this, &QDeepinFileDialogHelper::onWindowActiveChanged);
             }
         }
     } else {
@@ -379,6 +383,9 @@ void QDeepinFileDialogHelper::ensureDialog() const
 
             connect(nativeDialog, &QObject::destroyed, auxiliaryWindow, &QWindow::deleteLater);
             connect(nativeDialog, &QObject::destroyed, nativeDialog, &DFileDialogHandle::deleteLater);
+            connect(nativeDialog, &QObject::destroyed, nativeDialog, [this](){
+                qInfo() << "nativeDialog destroyed...";
+            });
             connect(nativeDialog, &DFileDialogHandle::accepted, this, &QDeepinFileDialogHelper::accept);
             connect(nativeDialog, &DFileDialogHandle::rejected, this, &QDeepinFileDialogHelper::reject);
             connect(nativeDialog, &DFileDialogHandle::destroyed, this, &QDeepinFileDialogHelper::reject);

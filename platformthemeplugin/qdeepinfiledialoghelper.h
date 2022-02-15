@@ -55,7 +55,9 @@ public:
 
     static void initDBusFileDialogManager();
     static bool iAmFileDialogDBusServer();
-
+protected:
+    void onApplicationStateChanged(Qt::ApplicationState state);
+    void onWindowActiveChanged();
 private:
     mutable QPointer<DFileDialogHandle> nativeDialog;
     mutable QPointer<QWindow> auxiliaryWindow;
