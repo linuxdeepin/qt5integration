@@ -112,7 +112,7 @@ public:
             QRegularExpressionMatch rem = reg.match(versionStr);
             if (rem.hasMatch())
                 pluginName += rem.captured();
-            else
+            else if (!versionStr.isEmpty())
                 qCDebug(lcDPlugin) << versionStr << "is invalid";
         } else {
             qCDebug(lcDPlugin) << VERSION_STR_SYMBOL << "resolve failed, trying to read self maps";
@@ -155,7 +155,7 @@ public:
                 pluginLoader.unload();
             }
         } else {
-            qCWarning(lcDPlugin) << pluginLoader.errorString();
+            qCCritical(lcDPlugin) << pluginLoader.errorString() << realTargetPath << "loaded failed";
         }
 
         return infc;
