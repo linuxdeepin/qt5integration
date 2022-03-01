@@ -383,9 +383,6 @@ void QDeepinFileDialogHelper::ensureDialog() const
 
             connect(nativeDialog, &QObject::destroyed, auxiliaryWindow, &QWindow::deleteLater);
             connect(nativeDialog, &QObject::destroyed, nativeDialog, &DFileDialogHandle::deleteLater);
-            connect(nativeDialog, &QObject::destroyed, nativeDialog, [this](){
-                qInfo() << "nativeDialog destroyed...";
-            });
             connect(nativeDialog, &DFileDialogHandle::accepted, this, &QDeepinFileDialogHelper::accept);
             connect(nativeDialog, &DFileDialogHandle::rejected, this, &QDeepinFileDialogHelper::reject);
             connect(nativeDialog, &DFileDialogHandle::destroyed, this, &QDeepinFileDialogHelper::reject);
