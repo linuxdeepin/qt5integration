@@ -16,6 +16,8 @@
 #include <DTabBar>
 #include <DSearchEdit>
 #include <DButtonBox>
+#include <DDciIcon>
+#include <DDciIconPalette>
 
 #include <QLabel>
 #include <QCalendarWidget>
@@ -94,6 +96,16 @@ static QColor getThemTypeColor(QColor lightColor, QColor darkColor)
         return lightColor;
     else
         return darkColor;
+}
+
+static DDciIconPalette makeIconPalette(const QPalette &pal)
+{
+    DDciIconPalette iconPalette;
+    iconPalette.setForeground(pal.color(QPalette::WindowText));
+    iconPalette.setBackground(pal.color(QPalette::Window));
+    iconPalette.setHighlight(pal.color(QPalette::Highlight));
+    iconPalette.setHighlightForeground(pal.color(QPalette::HighlightedText));
+    return iconPalette;
 }
 
 void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOption *opt,
@@ -1203,10 +1215,10 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             // 设置文字和图标的绘制颜色
             p->setPen(QPen(pa.buttonText(), 1));
 
-            if (!button->icon.isNull()) {
-                //Center both icon and text
-                QRect iconRect;
-
+            const DStyleOptionButton  *dciButton = qstyleoption_cast<const DStyleOptionButton *>(opt);
+            bool hasDciIcon = (dciButton->features & DStyleOptionButton::HasDciIcon);
+            QRect iconRect;
+            if (hasDciIcon || !button->icon.isNull()) {
                 int pixmapWidth = button->iconSize.width();
                 int pixmapHeight = button->iconSize.height();
                 int labelWidth = pixmapWidth;
@@ -1232,7 +1244,17 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 if (button->state & (State_On | State_Sunken))
                     iconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, w),
                                        proxy()->pixelMetric(PM_ButtonShiftVertical, opt, w));
-
+            }
+            if (hasDciIcon) {
+                auto dciTheme = (DGuiApplicationHelper::toColorType(opt->palette)
+                                        == DGuiApplicationHelper::LightType) ? DDciIcon::Light : DDciIcon::Dark;
+                auto icon_mode_state = toDciIconMode(opt);
+                const DDciIconPalette &iconPalette = makeIconPalette(opt->palette);
+                dciButton->dciIcon.paint(p, iconRect, p->device() ? p->device()->devicePixelRatioF()
+                                                               : qApp->devicePixelRatio(), dciTheme,
+                                            icon_mode_state, Qt::AlignCenter, iconPalette);
+            } else if (!button->icon.isNull()) {
+                //Center both icon and text
                 auto icon_mode_state = toIconModeState(opt);
                 button->icon.paint(p, iconRect, Qt::AlignCenter, icon_mode_state.first, icon_mode_state.second);
             } else {
