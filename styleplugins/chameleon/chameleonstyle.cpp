@@ -27,6 +27,7 @@
 #include <DPlatformWindowHandle>
 #include <DApplicationHelper>
 #include <DWindowManagerHelper>
+#include <DPlatformTheme>
 #include <DSlider>
 #include <DTabBar>
 #include <DSearchEdit>
@@ -4187,7 +4188,10 @@ void ChameleonStyle::polish(QWidget *w)
 
             if (DPlatformWindowHandle::isEnabledDXcb(w)) {
                 handle.setEnableBlurWindow(true);
-                handle.setWindowRadius(8);
+                // 最大圆角8, 18忒大了，原来默认是8
+                auto theme = DGuiApplicationHelper::instance()->applicationTheme();
+                int wradius = theme->windowRadius();
+                handle.setWindowRadius(qMax(0, qMin(wradius, 8)));
                 w->setAttribute(Qt::WA_TranslucentBackground);
 
                 connect(DWindowManagerHelper::instance(), SIGNAL(hasCompositeChanged()), w, SLOT(update()));
