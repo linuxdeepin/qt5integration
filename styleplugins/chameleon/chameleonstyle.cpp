@@ -4166,7 +4166,7 @@ void ChameleonStyle::polish(QWidget *w)
         view->setItemDelegate(new QStyledItemDelegate);
     }
 
-    if (DApplication::isDXcbPlatform()) {
+    if (DApplication::isDXcbPlatform() || (qApp->platformName() == "dwayland" || qApp->property("_d_isDwayland").toBool())) {
         bool is_menu = qobject_cast<QMenu *>(w);
         bool is_tip = w->inherits("QTipLabel");
 
