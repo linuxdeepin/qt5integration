@@ -2246,9 +2246,9 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
         painter->setRenderHint(QPainter::Antialiasing);
 
         if (comboBox->editable)
-            painter->setBrush(getThemTypeColor(QColor(0, 0, 0, 255* 0.08),
-                                         QColor(255, 255, 255, 255 * 0.15)));
-         else
+            painter->setBrush(widget->testAttribute(Qt::WA_SetPalette) ?
+                              comboBox->palette.button() : getThemTypeColor(QColor(0, 0, 0, 255* 0.08), QColor(255, 255, 255, 255 * 0.15)));
+        else
             painter->setBrush(Qt::transparent);
 
         DDrawUtils::drawRoundedRect(painter, comboBoxCopy.rect, frameRadius, frameRadius,
