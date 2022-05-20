@@ -2932,7 +2932,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         int xpos = menuRect.x(); //1.只有文本  2.只有图片加文本  ，xpos为文本的起始坐标
 
         if (iconSize.width() > 0) {
-            xpos += realMargins + smallIconSize + frameRadius;
+            xpos += realMargins + smallIconSize + frameRadius + iconSize.width();
         } else {
             xpos += realMargins;
         }
