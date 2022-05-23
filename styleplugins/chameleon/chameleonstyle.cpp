@@ -692,27 +692,42 @@ bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
     bool on = sbar->property("_d_dtk_slider_visible").toBool();
     // 有的应用会设置滚动条的 parent
     QWidget *pp = getSbarParentWidget(sbar);
-    // 对于 QAbstractItemView 来说 item 一般在 viewport 上
-    QAbstractItemView *itemView = qobject_cast<QAbstractItemView *>(pp);
+    // 对于 QAbstractScrollArea 来说 item 一般在 viewport 上
+    QAbstractScrollArea *itemView = qobject_cast<QAbstractScrollArea *>(pp);
     pp = itemView ? itemView->viewport() : pp;
     if (!pp)
         return false;
 
+    const bool isScrollArea = qobject_cast<QScrollArea *>(itemView);
+
+    // (`(!cme && !me)` is True) && (`cme` is False) ==> `me` is True, `me` can't be False.
+    const QPoint viewportPos = pp->mapFromGlobal(cme ? cme->globalPos() : me->globalPos());
+    QWidget *target = pp;
+    QPoint localPos = viewportPos;
+    if (isScrollArea){
+        target = pp->childAt(viewportPos);
+        localPos = target->mapFrom(pp, viewportPos);
+    }
+
     // scrollbar right click
     if (cme) {
-        QContextMenuEvent menuEvent(cme->reason(), pp->mapFromGlobal(cme->globalPos()), cme->globalPos(), cme->modifiers());
-        return !on ? false : QApplication::sendEvent(pp, &menuEvent);
+        if (target) {
+            QContextMenuEvent menuEvent(cme->reason(), localPos, cme->globalPos(), cme->modifiers());
+            return !on ? false : QApplication::sendEvent(target, &menuEvent);
+        }
     } else {
         // 仅仅在滚动条显示时过滤鼠标(点击)事件
         if (!me || !on)
             return false;
 
-        QMouseEvent mevent = *me;
-        mevent.setLocalPos(pp->mapFromGlobal(mevent.globalPos()));
-
-        // 传递鼠标事件到后面的 widget
-        return QApplication::sendEvent(pp, &mevent);
+        if (target) {
+            QMouseEvent mevent = *me;
+            mevent.setLocalPos(localPos);
+            // 传递鼠标事件到后面的 widget
+            return QApplication::sendEvent(target, &mevent);
+        }
     }
+    return false;
 }
 
 void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOption *opt,
