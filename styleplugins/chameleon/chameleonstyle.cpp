@@ -534,13 +534,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         return;
     }
     case PE_PanelItemViewRow: {
-        //更改日历Saturday　Sunday　活动色改变时跟随
+        // 不绘制选中的item背景，已经绘制了一个圆了
         if (w && qobject_cast<QCalendarWidget *>(w->parentWidget())) {
-            QTextCharFormat fmt;
-            QCalendarWidget *calend = qobject_cast<QCalendarWidget *>(w->parentWidget());
-            fmt.setForeground(QBrush(getColor(opt, DPalette::Highlight)));
-            calend->setWeekdayTextFormat(Qt::Saturday, fmt);
-            calend->setWeekdayTextFormat(Qt::Sunday, fmt);
             return;
         }
         //这里QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
@@ -4121,6 +4116,17 @@ void ChameleonStyle::resetAttribute(QWidget *w, bool polish)
     }
 }
 
+static void updateWeekendTextFormat(QCalendarWidget *calendar, QColor)
+{
+    if (!calendar)
+        return ;
+
+    QTextCharFormat fmt;
+    fmt.setForeground(QBrush(calendar->palette().highlight()));
+    calendar->setWeekdayTextFormat(Qt::Saturday, fmt);
+    calendar->setWeekdayTextFormat(Qt::Sunday, fmt);
+}
+
 void ChameleonStyle::polish(QWidget *w)
 {
     DStyle::polish(w);
@@ -4164,10 +4170,19 @@ void ChameleonStyle::polish(QWidget *w)
 
     if (auto calendar = qobject_cast<QCalendarWidget* >(w)) {
         int radius = DStyle::pixelMetric(PM_TopLevelWindowRadius);
-        DPlatformWindowHandle handle(calendar);
+        // 只有dtk的应用绘制日历窗口圆角
+        if (dynamic_cast<DApplication *>(QCoreApplication::instance())) {
+            DPlatformWindowHandle handle(calendar);
+            handle.setWindowRadius(radius);
+        }
 
-        handle.setWindowRadius(radius);
         calendar->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
+
+        // 更改日历Saturday　Sunday　活动色改变时跟随
+        DPlatformTheme *theme = DGuiApplicationHelper::instance()->applicationTheme();
+        updateWeekendTextFormat(calendar, QColor());
+        connect(theme, &DPlatformTheme::activeColorChanged, calendar,
+                std::bind(&updateWeekendTextFormat, calendar, std::placeholders::_1));
 
         auto topWidget = calendar->findChild<QWidget *>("qt_calendar_navigationbar");
         topWidget->setBackgroundRole(QPalette::Base);
