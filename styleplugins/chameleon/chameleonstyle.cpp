@@ -2365,8 +2365,9 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
         const int contentLeftPadding = flat ? (contentsRect.width() - contentsWidth) / 2 : Metrics::ComboBox_ContentLeftMargin;
         iconRect = QRect(QPoint(contentsRect.left() + contentLeftPadding,
                                 contentsRect.top() + (contentsRect.height() - iconSize.height()) / 2), iconSize);
+        const int availableTextWidth = contentsRect.width() - contentLeftPadding - iconSize.width() - Metrics::Icon_Margins - downArrowRect.width();
         textRect = QRect(QPoint(iconRect.right() + Metrics::Icon_Margins + 1,
-                                contentsRect.top() + (contentsRect.height() - textSize.height()) / 2), textSize);
+                                contentsRect.top() + (contentsRect.height() - textSize.height()) / 2), QSize(availableTextWidth, textSize.height()));
     }
 
     // handle right to left
