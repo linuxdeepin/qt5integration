@@ -682,15 +682,14 @@ bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
     if (!pp)
         return false;
 
-    const bool isScrollArea = qobject_cast<QScrollArea *>(itemView);
-
     // (`(!cme && !me)` is True) && (`cme` is False) ==> `me` is True, `me` can't be False.
     const QPoint viewportPos = pp->mapFromGlobal(cme ? cme->globalPos() : me->globalPos());
     QWidget *target = pp;
     QPoint localPos = viewportPos;
-    if (isScrollArea){
-        target = pp->childAt(viewportPos);
-        localPos = target->mapFrom(pp, viewportPos);
+    if (qobject_cast<QScrollArea *>(itemView)) {
+        if (target = pp->childAt(viewportPos)) {
+            localPos = target->mapFrom(pp, viewportPos);
+        }
     }
 
     // scrollbar right click
