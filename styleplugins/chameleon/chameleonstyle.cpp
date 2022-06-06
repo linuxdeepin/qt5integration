@@ -2254,11 +2254,23 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
         painter->setPen(Qt::NoPen);
         painter->setRenderHint(QPainter::Antialiasing);
 
-        if (comboBox->editable)
-            painter->setBrush(widget->testAttribute(Qt::WA_SetPalette) ?
-                              comboBox->palette.button() : getThemTypeColor(QColor(0, 0, 0, 255* 0.08), QColor(255, 255, 255, 255 * 0.15)));
-        else
+        if (comboBox->editable) {
+            if (widget->testAttribute(Qt::WA_SetPalette)) {
+                painter->setBrush(comboBox->palette.button());
+            } else {
+                const QComboBox *combobox = qobject_cast<const QComboBox *>(widget);
+                if (combobox && combobox->lineEdit()) {
+                    if (combobox->lineEdit()->testAttribute(Qt::WA_SetPalette)) {
+                        painter->setBrush(combobox->lineEdit()->palette().button());
+                    } else {
+                        painter->setBrush(getThemTypeColor(QColor(0, 0, 0, 255 * 0.08),
+                                                           QColor(255, 255, 255, 255 * 0.15)));
+                    }
+                }
+            }
+        } else {
             painter->setBrush(Qt::transparent);
+        }
 
         DDrawUtils::drawRoundedRect(painter, comboBoxCopy.rect, frameRadius, frameRadius,
                                     DDrawUtils::Corner::TopLeftCorner
