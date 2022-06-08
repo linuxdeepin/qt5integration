@@ -6,7 +6,6 @@ isEmpty(DTK_VERSION) {
 QT       += dbus x11extras dtkgui$${DTK_VERSION}
 QT       += core-private gui-private
 greaterThan(QT_MAJOR_VERSION, 4) {
-  QT += widgets widgets-private
   # Qt >= 5.8
   greaterThan(QT_MAJOR_VERSION, 5)|greaterThan(QT_MINOR_VERSION, 7): QT += theme_support-private
   else: QT += platformsupport-private

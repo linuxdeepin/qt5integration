@@ -24,7 +24,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFileDialog;
 class ComDeepinFilemanagerFiledialogInterface;
 typedef ComDeepinFilemanagerFiledialogInterface DFileDialogHandle;
 class ComDeepinFilemanagerFiledialogmanagerInterface;
@@ -59,11 +58,10 @@ protected:
     void onApplicationStateChanged(Qt::ApplicationState state);
     void onWindowActiveChanged();
 private:
-    mutable QPointer<DFileDialogHandle> nativeDialog;
+    mutable QPointer<DFileDialogHandle> filedlgInterface;
     mutable QPointer<QWindow> auxiliaryWindow;
-    mutable QPointer<QFileDialog> qtDialog;
     QPointer<QWindow> activeWindow;
-    QPointer<QFileDialog> sourceDialog;
+    QPointer<QObject> sourceDialog;
     static DFileDialogManager *manager;
 
     void ensureDialog() const;
