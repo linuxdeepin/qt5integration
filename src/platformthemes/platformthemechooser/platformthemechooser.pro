@@ -1,5 +1,5 @@
 greaterThan(QT_MAJOR_VERSION, 4) {
-  QT += widgets widgets-private
+  QT += gui-private
 }
 
 LIBS += -ldl
