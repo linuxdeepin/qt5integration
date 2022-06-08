@@ -29,25 +29,18 @@
 #include <QX11Info>
 #include <QDebug>
 #include <QApplication>
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
-#include <private/qwidgetwindow_qpa_p.h>
-#else
-#include <private/qwidgetwindow_p.h>
-#endif
 #include <private/qguiapplication_p.h>
 
 #include <X11/Xlib.h>
 
 QT_BEGIN_NAMESPACE
 #define DIALOG_SERVICE "com.deepin.filemanager.filedialog"
-#define DIALOG_CALL(Fun) ({if(nativeDialog) nativeDialog->Fun; else if(qtDialog) qtDialog->Fun; else qWarning("ensure dialog failed");})
 
 QList<QUrl> stringList2UrlList(const QStringList &list)
 {
     QList<QUrl> urlList;
 
-    for (const QString str : list)
+    for (const QString &str : list)
         urlList << str;
 
     return urlList;
@@ -68,9 +61,9 @@ DFileDialogManager *QDeepinFileDialogHelper::manager = Q_NULLPTR;
 QDeepinFileDialogHelper::QDeepinFileDialogHelper()
 {
     connect(this, &QDeepinFileDialogHelper::accept, this, [this] {
-        if (sourceDialog && nativeDialog) {
-            const QMap<QString, QVariant> &map_lineedit = nativeDialog->allCustomWidgetsValue(LineEditType);
-            const QMap<QString, QVariant> &map_combobox = nativeDialog->allCustomWidgetsValue(ComboBoxType);
+        if (sourceDialog && filedlgInterface) {
+            const QMap<QString, QVariant> &map_lineedit = filedlgInterface->allCustomWidgetsValue(LineEditType);
+            const QMap<QString, QVariant> &map_combobox = filedlgInterface->allCustomWidgetsValue(ComboBoxType);
 
             auto map_eidt_begin = map_lineedit.constBegin();
 
@@ -93,19 +86,19 @@ QDeepinFileDialogHelper::QDeepinFileDialogHelper()
 
 QDeepinFileDialogHelper::~QDeepinFileDialogHelper()
 {
-    DIALOG_CALL(deleteLater());
-
     if (auxiliaryWindow)
         auxiliaryWindow->deleteLater();
 
-    if (nativeDialog)
-        nativeDialog->QObject::deleteLater();
+    if (filedlgInterface) {
+        filedlgInterface->deleteLater(); // dbus
+        filedlgInterface->QObject::deleteLater();
+    }
 }
 
 void QDeepinFileDialogHelper::onApplicationStateChanged(Qt::ApplicationState state)
 {
-    if (state == Qt::ApplicationActive && nativeDialog)
-        nativeDialog->activateWindow();
+    if (state == Qt::ApplicationActive && filedlgInterface)
+        filedlgInterface->activateWindow();
 }
 
 void QDeepinFileDialogHelper::onWindowActiveChanged()
@@ -123,8 +116,8 @@ void QDeepinFileDialogHelper::onWindowActiveChanged()
         return;
     }
 
-    if (nativeDialog && !nativeDialog->windowActive() && qApp->applicationState() == Qt::ApplicationActive) {
-        nativeDialog->activateWindow();
+    if (filedlgInterface && !filedlgInterface->windowActive() && qApp->applicationState() == Qt::ApplicationActive) {
+        filedlgInterface->activateWindow();
     }
 }
 
@@ -133,15 +126,15 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
     ensureDialog();
     applyOptions();
 
-    if (nativeDialog) {
+    if (filedlgInterface) {
         if (parent)
             activeWindow = parent;
         else
             activeWindow = QGuiApplication::focusWindow();
 
-        nativeDialog->setParent(parent);
+        filedlgInterface->setParent(parent);
 
-        Qt::WindowFlags nd_flags = static_cast<Qt::WindowFlags>(nativeDialog->windowFlags());
+        Qt::WindowFlags nd_flags = static_cast<Qt::WindowFlags>(filedlgInterface->windowFlags());
         Qt::WindowFlags need_flags = Qt::WindowTitleHint | Qt::WindowSystemMenuHint
                                         | Qt::WindowMinMaxButtonsHint | Qt::WindowContextHelpButtonHint
                                         | Qt::WindowStaysOnTopHint | Qt::WindowTransparentForInput
@@ -149,12 +142,12 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
                                         | Qt::WindowCloseButtonHint | Qt::BypassWindowManagerHint;
 
         if (flags & need_flags)
-            nativeDialog->setWindowFlags(nd_flags | (flags & need_flags));
+            filedlgInterface->setWindowFlags(nd_flags | (flags & need_flags));
 
         static bool i_am_dbus_server = iAmFileDialogDBusServer();
 
         if (i_am_dbus_server) {
-            WId native_dialog_winId = nativeDialog->winId();
+            WId native_dialog_winId = filedlgInterface->winId();
             QWindow *real_native_dialog = nullptr;
 
             for (QWindow *window : qGuiApp->topLevelWindows()) {
@@ -168,7 +161,7 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
                 real_native_dialog->setTransientParent(parent);
                 real_native_dialog->setModality(modality);
                 // call later
-                QMetaObject::invokeMethod(nativeDialog.data(), "show", Qt::QueuedConnection);
+                QMetaObject::invokeMethod(filedlgInterface.data(), "show", Qt::QueuedConnection);
 
                 return true;
             }
@@ -183,36 +176,24 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
 
             if (modality == Qt::ApplicationModal) {
                 connect(qApp, &QGuiApplication::applicationStateChanged, this, &QDeepinFileDialogHelper::onApplicationStateChanged);
-                connect(nativeDialog, &DFileDialogHandle::windowActiveChanged, this, &QDeepinFileDialogHelper::onWindowActiveChanged);
+                connect(filedlgInterface, &DFileDialogHandle::windowActiveChanged, this, &QDeepinFileDialogHelper::onWindowActiveChanged);
             }
         }
-    } else {
-        qtDialog->setAttribute(Qt::WA_NativeWindow);
-
-        if (parent) {
-            if (parent->inherits("QWidgetWindow")) {
-                qtDialog->setParent(static_cast<QWidgetWindow*>(parent)->widget());
-            } else {
-                qtDialog->windowHandle()->setParent(parent);
-            }
-        }
-
-        qtDialog->setWindowModality(modality);
-        qtDialog->setWindowFlags(flags | qtDialog->windowFlags());
     }
 
-    DIALOG_CALL(show());
+    if (filedlgInterface)
+        filedlgInterface->show();
 
-    if (nativeDialog && parent) {
+    if (filedlgInterface && parent) {
         // 如果能获取到wayland下的display 应该 XSetTransientForHint(wayland_dispaly
         // 此处暂时返回，至少不会导致崩溃。。。task-view-31919.
         if (qApp->platformName() != "dxcb" && !qApp->property("_d_isDxcb").toBool())
             return true;
 
-        XSetTransientForHint(QX11Info::display(), nativeDialog->winId(), parent->winId());
+        XSetTransientForHint(QX11Info::display(), filedlgInterface->winId(), parent->winId());
     }
-
-    return true;
+    // 如果没有dbus接口 return false 至少可以显示默认的文件选择对话框
+    return filedlgInterface;
 }
 
 void QDeepinFileDialogHelper::exec()
@@ -221,25 +202,16 @@ void QDeepinFileDialogHelper::exec()
 
     ensureDialog();
 
-    if (nativeDialog) {
-        // 快速打开关闭多次有一定概率出现没有调用 show 的情况,这里先 show
-        // 保证exec一定会显示出现
-        DIALOG_CALL(show());
-        // block input to the window, allow input to other GTK dialogs
-        QEventLoop loop;
-        connect(this, SIGNAL(accept()), &loop, SLOT(quit()));
-        connect(this, SIGNAL(reject()), &loop, SLOT(quit()));
-        loop.exec();
-    } else {
-        QWindow *modalWindow = qApp->modalWindow();
+    // 快速打开关闭多次有一定概率出现没有调用 show 的情况,这里先 show
+    // 保证exec一定会显示出现
+    if (filedlgInterface)
+        filedlgInterface->show();
 
-        if (Q_LIKELY(modalWindow->inherits("QWidgetWindow")
-                     && qobject_cast<QFileDialog*>(static_cast<QWidgetWindow*>(modalWindow)->widget()))) {
-            QGuiApplicationPrivate::hideModalWindow(modalWindow);
-        }
-
-        qtDialog->exec();
-    }
+    // block input to the window, allow input to other GTK dialogs
+    QEventLoop loop;
+    connect(this, SIGNAL(accept()), &loop, SLOT(quit()));
+    connect(this, SIGNAL(reject()), &loop, SLOT(quit()));
+    loop.exec();
 }
 
 void QDeepinFileDialogHelper::hide()
@@ -248,7 +220,8 @@ void QDeepinFileDialogHelper::hide()
 
     ensureDialog();
 
-    DIALOG_CALL(hide());
+    if (filedlgInterface)
+        filedlgInterface->hide();
 
     if (auxiliaryWindow) {
         QGuiApplicationPrivate::hideModalWindow(auxiliaryWindow);
@@ -277,7 +250,10 @@ void QDeepinFileDialogHelper::setDirectory(const QUrl &directory)
 
     ensureDialog();
 
-    DIALOG_CALL(setDirectoryUrl(directory.toString()));
+    if (filedlgInterface)
+        filedlgInterface->setDirectoryUrl(directory.toString());
+    else
+        options()->setInitialDirectory(directory);
 }
 
 QUrl QDeepinFileDialogHelper::directory() const
@@ -286,10 +262,10 @@ QUrl QDeepinFileDialogHelper::directory() const
 
     ensureDialog();
 
-    if (nativeDialog)
-        return QUrl(nativeDialog->directoryUrl());
+    if (filedlgInterface)
+        return QUrl(filedlgInterface->directoryUrl());
 
-    return qtDialog->directoryUrl();
+    return options()->initialDirectory();
 }
 
 void QDeepinFileDialogHelper::selectFile(const QUrl &fileUrl)
@@ -298,10 +274,10 @@ void QDeepinFileDialogHelper::selectFile(const QUrl &fileUrl)
 
     ensureDialog();
 
-    if (nativeDialog)
-        nativeDialog->selectUrl(fileUrl.toString());
+    if (filedlgInterface)
+        filedlgInterface->selectUrl(fileUrl.toString());
     else
-        qtDialog->selectUrl(fileUrl);
+        options()->setInitiallySelectedFiles({fileUrl});
 }
 
 QList<QUrl> QDeepinFileDialogHelper::selectedFiles() const
@@ -310,10 +286,10 @@ QList<QUrl> QDeepinFileDialogHelper::selectedFiles() const
 
     ensureDialog();
 
-    if (nativeDialog)
-        return stringList2UrlList(nativeDialog->selectedUrls());
+    if (filedlgInterface)
+        return stringList2UrlList(filedlgInterface->selectedUrls());
 
-    return qtDialog->selectedUrls();
+    return options()->initiallySelectedFiles();
 }
 
 void QDeepinFileDialogHelper::setFilter()
@@ -322,7 +298,8 @@ void QDeepinFileDialogHelper::setFilter()
 
     ensureDialog();
 
-    DIALOG_CALL(setFilter(options()->filter()));
+    if (filedlgInterface)
+        filedlgInterface->setFilter(options()->filter());
 }
 
 void QDeepinFileDialogHelper::selectNameFilter(const QString &filter)
@@ -331,7 +308,10 @@ void QDeepinFileDialogHelper::selectNameFilter(const QString &filter)
 
     ensureDialog();
 
-    DIALOG_CALL(selectNameFilter(filter));
+    if (filedlgInterface)
+        filedlgInterface->selectNameFilter(filter);
+    else
+        options()->setInitiallySelectedNameFilter(filter);
 }
 
 QString QDeepinFileDialogHelper::selectedNameFilter() const
@@ -340,10 +320,10 @@ QString QDeepinFileDialogHelper::selectedNameFilter() const
 
     ensureDialog();
 
-    if (nativeDialog)
-        return nativeDialog->selectedNameFilter();
+    if (filedlgInterface)
+        return filedlgInterface->selectedNameFilter();
 
-    return qtDialog->selectedNameFilter();
+    return options()->initiallySelectedNameFilter();
 }
 
 void QDeepinFileDialogHelper::initDBusFileDialogManager()
@@ -366,7 +346,7 @@ bool QDeepinFileDialogHelper::iAmFileDialogDBusServer()
 
 void QDeepinFileDialogHelper::ensureDialog() const
 {
-    if (nativeDialog || qtDialog)
+    if (filedlgInterface)
         return;
 
     if (manager) {
@@ -377,30 +357,30 @@ void QDeepinFileDialogHelper::ensureDialog() const
         if (path.isEmpty()) {
             qWarning("Can not create native dialog, Will be use QFileDialog");
         } else {
-            nativeDialog = new DFileDialogHandle(DIALOG_SERVICE, path, QDBusConnection::sessionBus());
+            filedlgInterface = new DFileDialogHandle(DIALOG_SERVICE, path, QDBusConnection::sessionBus());
             auxiliaryWindow = new QWindow();
             auxiliaryWindow->setObjectName("QDeepinFileDialogHelper_auxiliaryWindow");
 
-            connect(nativeDialog, &QObject::destroyed, auxiliaryWindow, &QWindow::deleteLater);
-            connect(nativeDialog, &QObject::destroyed, nativeDialog, &DFileDialogHandle::deleteLater);
-            connect(nativeDialog, &DFileDialogHandle::accepted, this, &QDeepinFileDialogHelper::accept);
-            connect(nativeDialog, &DFileDialogHandle::rejected, this, &QDeepinFileDialogHelper::reject);
-            connect(nativeDialog, &DFileDialogHandle::destroyed, this, &QDeepinFileDialogHelper::reject);
-            connect(nativeDialog, &DFileDialogHandle::destroyed, this, [this](){
+            connect(filedlgInterface, &QObject::destroyed, auxiliaryWindow, &QWindow::deleteLater);
+            connect(filedlgInterface, &QObject::destroyed, filedlgInterface, &DFileDialogHandle::deleteLater);
+            connect(filedlgInterface, &DFileDialogHandle::accepted, this, &QDeepinFileDialogHelper::accept);
+            connect(filedlgInterface, &DFileDialogHandle::rejected, this, &QDeepinFileDialogHelper::reject);
+            connect(filedlgInterface, &DFileDialogHandle::destroyed, this, &QDeepinFileDialogHelper::reject);
+            connect(filedlgInterface, &DFileDialogHandle::destroyed, this, [this](){
                 qWarning("filedialog dbus service destroyed.");
-                if (nativeDialog) {
-                    nativeDialog->QObject::deleteLater();
-                    nativeDialog = nullptr;
+                if (filedlgInterface) {
+                    filedlgInterface->QObject::deleteLater();
+                    filedlgInterface = nullptr;
                 }
 
                 if (auxiliaryWindow && auxiliaryWindow->isModal() && qApp->modalWindow() == auxiliaryWindow)
                     QGuiApplicationPrivate::hideModalWindow(auxiliaryWindow);
             });
 
-            QTimer *heartbeatTimer = new QTimer(nativeDialog);
+            QTimer *heartbeatTimer = new QTimer(filedlgInterface);
 
             connect(heartbeatTimer, &QTimer::timeout, this, [this, heartbeatTimer] {
-                QDBusPendingReply<> reply = nativeDialog->makeHeartbeat();
+                QDBusPendingReply<> reply = filedlgInterface->makeHeartbeat();
 
                 reply.waitForFinished();
 
@@ -414,23 +394,18 @@ void QDeepinFileDialogHelper::ensureDialog() const
                         return;
                     }
 
-                    nativeDialog->QObject::deleteLater();
+                    filedlgInterface->QObject::deleteLater();
                     const_cast<QDeepinFileDialogHelper*>(this)->reject();
                 }
             });
-            int heartbeatInterval = nativeDialog->heartbeatInterval();
+            int heartbeatInterval = filedlgInterface->heartbeatInterval();
             heartbeatTimer->setInterval(qMax(1 * 1000, qMin(int(heartbeatInterval / 1.5), heartbeatInterval - 5 * 1000)));
             heartbeatTimer->start();
         }
     }
 
-    if (!nativeDialog && qobject_cast<QApplication*>(qGuiApp)) {
+    if (!filedlgInterface && qobject_cast<QApplication*>(qGuiApp)) {
         QDeepinTheme::m_usePlatformNativeDialog = false;
-        qtDialog = new QFileDialog();
-        QDeepinTheme::m_usePlatformNativeDialog = true;
-
-        connect(qtDialog, &QFileDialog::accepted, this, &QDeepinFileDialogHelper::accept);
-        connect(qtDialog, &QFileDialog::rejected, this, &QDeepinFileDialogHelper::reject);
     }
 }
 
@@ -440,20 +415,23 @@ void QDeepinFileDialogHelper::applyOptions()
 
     for (int i = 0; i < QFileDialogOptions::DialogLabelCount; ++i) {
         if (options->isLabelExplicitlySet((QFileDialogOptions::DialogLabel)i)) {
-            if (nativeDialog)
-                nativeDialog->setLabelText(i, options->labelText((QFileDialogOptions::DialogLabel)i));
+            if (filedlgInterface)
+                filedlgInterface->setLabelText(i, options->labelText((QFileDialogOptions::DialogLabel)i));
             else
-                qtDialog->setLabelText((QFileDialog::DialogLabel)i, options->labelText((QFileDialogOptions::DialogLabel)i));
+                qWarning() << "DFileDialogHandle invalid!!";
+
         }
     }
+    if (filedlgInterface) {
+        filedlgInterface->setOptions(int(options->options()));
+        filedlgInterface->setFilter(int(options->filter()));
+        filedlgInterface->setWindowTitle(options->windowTitle());
+        filedlgInterface->setViewMode(int(options->viewMode()));
+        filedlgInterface->setFileMode(int(options->fileMode()));
+        filedlgInterface->setAcceptMode(int(options->acceptMode()));
+        filedlgInterface->setNameFilters(options->nameFilters());
+    }
 
-    DIALOG_CALL(setOptions((QFileDialog::Options)(int)options->options()));
-    DIALOG_CALL(setFilter(options->filter()));
-    DIALOG_CALL(setWindowTitle(options->windowTitle()));
-    DIALOG_CALL(setViewMode((QFileDialog::ViewMode)options->viewMode()));
-    DIALOG_CALL(setFileMode((QFileDialog::FileMode)options->fileMode()));
-    DIALOG_CALL(setAcceptMode((QFileDialog::AcceptMode)options->acceptMode()));
-    DIALOG_CALL(setNameFilters(options->nameFilters()));
 
     if (options->initialDirectory().isLocalFile())
         setDirectory(options->initialDirectory());
@@ -464,25 +442,25 @@ void QDeepinFileDialogHelper::applyOptions()
     selectNameFilter(options->initiallySelectedNameFilter());
 
     if (!sourceDialog) {
-        sourceDialog = reinterpret_cast<QFileDialog*>(qvariant_cast<quintptr>(property("_dtk_widget_QFileDialog")));
+        sourceDialog = reinterpret_cast<QObject*>(qvariant_cast<quintptr>(property("_dtk_widget_QFileDialog")));
 
-        if (sourceDialog && nativeDialog) {
+        if (sourceDialog && filedlgInterface) {
             const QStringList lineedit_list = sourceDialog->property("_dtk_widget_custom_lineedit_list").toStringList();
             const QStringList combobox_list = sourceDialog->property("_dtk_widget_custom_combobox_list").toStringList();
 
-            nativeDialog->beginAddCustomWidget();
+            filedlgInterface->beginAddCustomWidget();
 
             for (const QString &i : lineedit_list)
-                nativeDialog->addCustomWidget(LineEditType, i);
+                filedlgInterface->addCustomWidget(LineEditType, i);
 
             for (const QString &i : combobox_list)
-                nativeDialog->addCustomWidget(ComboBoxType, i);
+                filedlgInterface->addCustomWidget(ComboBoxType, i);
 
-            nativeDialog->endAddCustomWidget();
+            filedlgInterface->endAddCustomWidget();
 
             const QVariant & mixedSelection = sourceDialog->property("_dtk_widget_filedialog_mixed_selection");
             if (mixedSelection.isValid()) {
-                nativeDialog->setAllowMixedSelection(mixedSelection.toBool());
+                filedlgInterface->setAllowMixedSelection(mixedSelection.toBool());
             }
         }
     }
