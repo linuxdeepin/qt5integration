@@ -1,3 +1,9 @@
+qt5integration (5.5.21.1) unstable; urgency=medium
+
+  * Release 5.5.21.1
+
+ -- Deepin Packages Builder <packages@deepin.com>  Tue, 14 Jun 2022 10:45:17 +0800
+
 qt5integration (1.0.0) unstable; urgency=medium
 
   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
