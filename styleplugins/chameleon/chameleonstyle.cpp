@@ -2918,7 +2918,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         int xpos = menuRect.x(); //1.只有文本  2.只有图片加文本  ，xpos为文本的起始坐标
 
         if (iconSize.width() > 0) {
-            xpos += realMargins + smallIconSize + frameRadius + iconSize.width();
+            xpos += realMargins + frameRadius + iconSize.width();
         } else {
             xpos += realMargins;
         }
@@ -3913,7 +3913,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                 m_width += (textWidth + frameRadius);
 
             if (!menuItem->icon.isNull())
-                m_width += (smallIconSize + + frameRadius);
+                m_width += (smallIconSize + frameRadius);
 
             m_width += (smallIconSize + frameRadius);
             size.setWidth(m_width);
