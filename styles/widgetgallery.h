@@ -42,6 +42,7 @@
 #define WIDGETGALLERY_H
 
 #include <QMainWindow>
+#include <QToolButton>
 
 QT_BEGIN_NAMESPACE
 class QCheckBox;
@@ -81,6 +82,8 @@ private:
     void createBottomLeftTabWidget();
     void createBottomRightGroupBox();
     void createProgressBar();
+    QToolButton* toolBtn(QToolButton::ToolButtonPopupMode mode, const QString &text = QString(), bool hasMenu = true, bool hasIcon = true, Qt::ToolButtonStyle style = Qt::ToolButtonStyle::ToolButtonTextBesideIcon);
+    QWidget* createToolButtons(QWidget *parent = nullptr, bool hasMenu = true);
 
     QPalette originalPalette;
 
