@@ -1459,6 +1459,41 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             if (toolbutton->state & (State_MouseOver | State_Sunken))  //hover状态 、press状态
                 p->setBrush(getBrush(toolbutton, DPalette::Button));
 
+            // 繪制背景
+            if (toolbutton->state & State_Enabled) {
+                if ((toolbutton->features & QStyleOptionToolButton::MenuButtonPopup) &&
+                    (toolbutton->state & (QStyle::State_MouseOver | QStyle::State_Sunken))) {
+
+                    // 绘制外层背景色
+                    int menuButtonIndicatorMargin = 4;
+                    auto btn = *toolbutton;
+                    if (btn.state & (QStyle::State_MouseOver))
+                        btn.state &= ~ QStyle::State_MouseOver;
+                    if (btn.state & (QStyle::State_Sunken))
+                        btn.state &= ~ QStyle::State_Sunken;
+                    p->setPen(getColor(&btn, DPalette::Button));
+                    p->setBrush(getBrush(&btn, DPalette::Button));
+                    QRect tmp = rect;
+                    tmp.adjust(0, 0, proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, w) + 2 * menuButtonIndicatorMargin, 0);
+                    p->drawRoundedRect(tmp, radius, radius);
+
+                    // 绘制子控件背景色
+                    p->setPen(getColor(toolbutton, DPalette::Button));
+                    p->setBrush(getBrush(toolbutton, DPalette::Button));
+                    if (toolbutton->activeSubControls & QStyle::SC_ToolButton) {
+                        DDrawUtils::drawRoundedRect(p, rect, radius, radius,
+                                                    DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
+                    } else if (toolbutton->activeSubControls & QStyle::SC_ToolButtonMenu) {
+                        QRect r = rect;
+                        r.adjust(r.width(), 0, proxy()->pixelMetric(PM_MenuButtonIndicator , toolbutton, w) + 2  * menuButtonIndicatorMargin, 0);
+                        DDrawUtils::drawRoundedRect(p, r, radius, radius,
+                                                    DDrawUtils::TopRightCorner | DDrawUtils::BottomRightCorner);
+                    }
+                } else {
+                    p->drawRoundedRect(rect, radius, radius);
+                }
+            }
+
             // Arrow type always overrules and is always shown
             bool hasArrow = toolbutton->features & QStyleOptionToolButton::Arrow;
             if (((!hasArrow && toolbutton->icon.isNull()) && !toolbutton->text.isEmpty())
@@ -1467,8 +1502,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 if (!proxy()->styleHint(SH_UnderlineShortcut, opt, w))
                     alignment |= Qt::TextHideMnemonic;
                 p->setFont(toolbutton->font);
-                p->drawRoundedRect(rect, radius, radius);
-
                 if (toolbutton->state & State_On) {
                     p->setPen(getColor(toolbutton, DPalette::Highlight));
                 } else {
@@ -1498,7 +1531,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     break;
                 }
 
-                int radius = DStyle::pixelMetric(PM_FrameRadius, opt, w); //在绘画icon和text之前,先绘画一层表示靠近或按下状态
                 p->setRenderHint(QPainter::Antialiasing);
                 p->setPen(Qt::NoPen);
                 p->setBrush(Qt::NoBrush);
@@ -1514,8 +1546,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setBrush(getColor(toolbutton, DPalette::Button));
                 }
 
-                if (toolbutton->state & State_Enabled)
-                    p->drawRoundedRect(rect, radius, radius);
+
 
                 // pr为图标的大小
                 QRect pr = rect;
@@ -1586,6 +1617,10 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
                     p->drawText(tr, alignment, toolbutton->text);
                 } else {   //只显示icon情况
+                    if (toolbutton->features & QStyleOptionToolButton::HasMenu &&
+                        !(toolbutton->features & QStyleOptionToolButton::MenuButtonPopup)) {
+                        rect.adjust(0, 0, - (proxy()->pixelMetric(PM_MenuButtonIndicator , toolbutton, w) + 4), 0);
+                    }
                     pr.moveCenter(rect.center());
                     drawIcon(toolbutton, p, pr, icon);
                 }
@@ -3180,8 +3215,14 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 mflags |= State_Sunken;
             }
 
+
+            int menuButtonIndicatorMargin = 4; // 菜单按钮右边距
             QStyleOption tool = *toolbutton;
-            if (toolbutton->subControls & SC_ToolButton) {
+            if (toolbutton->features & QStyleOptionToolButton::MenuButtonPopup) {
+                if (w && !w->property("_d_calendarToolBtn").toBool()) {
+                    button.adjust(0, 0, -2 * menuButtonIndicatorMargin, 0);
+                    menuarea.adjust(-2 * menuButtonIndicatorMargin, 0, 0, 0);
+                }
                 if (bflags & (State_Sunken | State_On | State_Raised)) {
                     tool.rect = button;
                     tool.state = bflags;
@@ -3197,7 +3238,6 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
             if (w && w->property("_d_calendarToolBtn").toBool()) {
                 label.palette = DGuiApplicationHelper::instance()->applicationPalette();
             }
-
             proxy()->drawControl(CE_ToolButtonLabel, &label, p, w);
 
             if (toolbutton->state & State_HasFocus) {
@@ -3206,29 +3246,33 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 //fr.rect.adjust(3, 3, -3, -3);
                 if (toolbutton->features & QStyleOptionToolButton::MenuButtonPopup)
                     fr.rect.adjust(0, 0, -proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator,
-                                                      toolbutton, w), 0);
+                                                      toolbutton , w) - 2 * menuButtonIndicatorMargin, 0);
                 proxy()->drawPrimitive(PE_FrameFocusRect, &fr, p, w);
             }
 
             if (toolbutton->subControls & SC_ToolButtonMenu) {
                 tool.rect = menuarea;
                 tool.state = mflags;
-                if (mflags & (State_Sunken | State_On | State_Raised))
-                    proxy()->drawPrimitive(PE_IndicatorButtonDropDown, &tool, p, w);
+                tool.rect.adjust(menuButtonIndicatorMargin, 0, -menuButtonIndicatorMargin, 0);
+                if ((toolbutton->state & (QStyle::State_Sunken)) && (toolbutton->activeSubControls & QStyle::SC_ToolButton)) {
+                    p->setPen(Qt::NoPen);
+                }
+                if((toolbutton->state & (QStyle::State_Sunken)) && toolbutton->activeSubControls & QStyle::SC_ToolButtonMenu) {
+                    p->setPen(getColor(toolbutton, DPalette::Highlight));
+                }
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &tool, p, w);
             } else if (toolbutton->features & QStyleOptionToolButton::HasMenu) {
                 int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, w);
                 QRect ir = toolbutton->rect;
                 QStyleOptionToolButton newBtn = *toolbutton;
-                newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() - mbi + 4, mbi - 6, mbi - 6);
+                newBtn.rect = QRect(ir.right() - mbi - menuButtonIndicatorMargin, (ir.height() - mbi) / 2, mbi, mbi);
                 newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
 
                 //DelayedPopup 模式，箭头右居中, 加一个日历 月按钮箭头居中
-                if (toolbutton->features & QStyleOptionToolButton::PopupDelay || (w && w->objectName() == "qt_calendar_monthbutton")) {
+                if (w && w->objectName() == "qt_calendar_monthbutton") {
                     newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() / 2, mbi - 4, mbi - 4);
                     newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
                 }
-
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, w);
             }
 
@@ -3975,7 +4019,21 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
     }
     case CT_ToolButton: {
         qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
-        return QSize(size.width() + radius, size.height() + radius);
+        if (widget && widget->property("_d_calendarToolBtn").toBool()) {
+            return QSize(size.width() + radius, size.height() + radius);
+        }
+        int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
+        int menuButtonIndicatorWidth = 0;
+        if (const QStyleOptionToolButton *toolbutton
+            = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
+            if ((toolbutton->features & QStyleOptionToolButton::HasMenu) &&
+                (!(toolbutton->features & QStyleOptionToolButton::MenuButtonPopup))) {
+                menuButtonIndicatorWidth = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, opt, widget);
+            }
+        }
+        int menuButtonIndicatorMargin = 4;
+        return QSize(size.width() + radius + 2 * menuButtonIndicatorMargin + 2 * fw + menuButtonIndicatorWidth,
+                     size.height() + radius + 2 * fw);
     }
     case CT_ProgressBar: {
         if (const QStyleOptionProgressBar *pbo = qstyleoption_cast<const QStyleOptionProgressBar*>(opt)) {
