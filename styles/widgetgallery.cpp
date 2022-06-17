@@ -319,9 +319,15 @@ void WidgetGallery::createBottomLeftTabWidget()
         listModel->appendRow(item);
     }
 
+    QWidget *toolbtns = new QWidget;
+    QVBoxLayout *tbVLayout = new QVBoxLayout(toolbtns);
+    tbVLayout->addWidget(createToolButtons(nullptr, false));
+    tbVLayout->addWidget(createToolButtons(nullptr, true));
+    QScrollArea *toolArea = new QScrollArea;
+    toolArea->setWidget(toolbtns);
     bottomLeftTabWidget->addTab(pTreeViewWidget, "&TreeView");
     bottomLeftTabWidget->addTab(pListViewWidget, "&ListView");
-    bottomLeftTabWidget->addTab(new QWidget(), "tab 2");
+    bottomLeftTabWidget->addTab(toolArea, "toolbuttons");
     bottomLeftTabWidget->addTab(new QWidget(), "tab 3");
     bottomLeftTabWidget->addTab(new QWidget(), "tab 4");
 }
@@ -415,3 +421,76 @@ void WidgetGallery::createProgressBar()
     timer->start(1000);
 }
 //! [13]
+
+QToolButton* WidgetGallery::toolBtn(QToolButton::ToolButtonPopupMode mode, const QString &text, bool hasMenu, bool hasIcon, Qt::ToolButtonStyle style)
+{
+    QToolButton *btn = new QToolButton;
+    QMenu *menu = new QMenu;
+    menu->addAction("action1");
+    menu->addAction("action2");
+    if (hasMenu)
+        btn->setMenu(menu);
+    if (hasIcon)
+        btn->setIcon(QIcon::fromTheme("edit"));
+    btn->setIconSize({16, 16});
+    btn->setPopupMode(mode);
+    if (!text.isEmpty()) {
+        btn->setText(text);
+        btn->setToolButtonStyle(style);
+    }
+
+    return btn;
+}
+
+QWidget* WidgetGallery::createToolButtons(QWidget *parent, bool hasMenu)
+{
+    QWidget *holder = new QWidget(parent);
+    holder->resize(300, 500);
+    QGridLayout *gridLayout = new QGridLayout(holder);
+    gridLayout->addWidget(new QLabel(QString("ToolButtonPopupMode")), 0, 0);
+    gridLayout->addWidget(new QLabel("IconOnly"), 0, 1);
+    gridLayout->addWidget(new QLabel("    TextOnly"), 0, 2);
+    gridLayout->addWidget(new QLabel("TextBesideIcon"), 0, 3);
+    gridLayout->addWidget(new QLabel("TextUnderIcon"), 0, 4);
+    gridLayout->addWidget(new QLabel("FollowStyle"), 0, 5);
+    QString tmp =  + hasMenu ? QString("(hasMenu)") : QString("(NoMenu)");
+    for (int i = 0; i < 3; ++i) {
+        auto mode = static_cast<QToolButton::ToolButtonPopupMode>(i);
+        QMetaEnum metaEnum = QMetaEnum::fromType<QToolButton::ToolButtonPopupMode>();
+
+        gridLayout->addWidget(new QLabel(metaEnum.valueToKey(mode) + tmp), i + 1, 0);
+
+        if (hasMenu) {
+            QToolButton *menuTextIconBtnUnderIconOnly = toolBtn(mode, "ToolButton", true, true, Qt::ToolButtonStyle::ToolButtonIconOnly);
+            gridLayout->addWidget(menuTextIconBtnUnderIconOnly, i + 1, 1);
+
+            QToolButton *menuTextIconBtnUnderTextOnly = toolBtn(mode, "ToolButton", true, true, Qt::ToolButtonStyle::ToolButtonTextOnly);
+            gridLayout->addWidget(menuTextIconBtnUnderTextOnly, i + 1, 2);
+
+            QToolButton *menuTextIconBtn = toolBtn(mode, "ToolButton", true, true, Qt::ToolButtonStyle::ToolButtonTextBesideIcon);
+            gridLayout->addWidget(menuTextIconBtn, i + 1, 3);
+
+            QToolButton *menuTextIconBtnUnder = toolBtn(mode, "ToolButton", true, true, Qt::ToolButtonStyle::ToolButtonTextUnderIcon);
+            gridLayout->addWidget(menuTextIconBtnUnder, i + 1, 4);
+
+            QToolButton *menuTextIconBtnUnderFollow = toolBtn(mode, "ToolButton", true, true, Qt::ToolButtonStyle::ToolButtonFollowStyle);
+            gridLayout->addWidget(menuTextIconBtnUnderFollow, i + 1, 5);
+        } else {
+            QToolButton *noMenuTextIconBtnIconOnly = toolBtn(mode, "ToolButton", false, true, Qt::ToolButtonStyle::ToolButtonIconOnly);
+            gridLayout->addWidget(noMenuTextIconBtnIconOnly, i + 1, 1);
+
+            QToolButton *noMenuTextIconBtnTextOnly = toolBtn(mode, "ToolButton", false, true, Qt::ToolButtonStyle::ToolButtonTextOnly);
+            gridLayout->addWidget(noMenuTextIconBtnTextOnly, i + 1, 2);
+
+            QToolButton *noMenuTextIconBtn = toolBtn(mode, "ToolButton", false, true, Qt::ToolButtonStyle::ToolButtonTextBesideIcon);
+            gridLayout->addWidget(noMenuTextIconBtn, i + 1, 3);
+
+            QToolButton *noMenuTextIconBtnUnder = toolBtn(mode, "ToolButton", false, true, Qt::ToolButtonStyle::ToolButtonTextUnderIcon);
+            gridLayout->addWidget(noMenuTextIconBtnUnder, i + 1, 4);
+
+            QToolButton *noMenuTextIconBtnFollow = toolBtn(mode, "ToolButton", false, true, Qt::ToolButtonStyle::ToolButtonFollowStyle);
+            gridLayout->addWidget(noMenuTextIconBtnFollow, i + 1, 5);
+        }
+    }
+    return holder;
+}
