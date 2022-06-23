@@ -4146,8 +4146,7 @@ void ChameleonStyle::polish(QWidget *w)
     }
 
     if (w && qobject_cast<QLineEdit *>(w)) {
-        w->setProperty("_d_dtk_lineeditActionWidth", -6);
-        w->setProperty("_d_dtk_lineeditActionMargin", 6);
+        w->setProperty("_d_dtk_lineeditActionMargin", 0);
     }
 
     if (auto container = qobject_cast<QComboBoxPrivateContainer *>(w)) {
