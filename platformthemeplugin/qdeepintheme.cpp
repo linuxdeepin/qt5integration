@@ -506,9 +506,17 @@ static QIconEngine *createBuiltinIconEngine(const QString &iconName)
     return plugin ? plugin->create(iconName) : nullptr;
 }
 
+inline QString dgetenv(const char * varname, const QString & defaultValue) {
+    if (Q_UNLIKELY(qEnvironmentVariableIsSet(varname))) {
+        return qgetenv(varname);
+    }
+
+    return defaultValue;
+}
+
 static QIconEngine *createXdgProxyIconEngine(const QString &iconName)
 {
-    static QIconEnginePlugin *plugin = getIconEngineFactory(QStringLiteral("XdgIconProxyEngine"));
+    static QIconEnginePlugin *plugin = getIconEngineFactory(dgetenv("D_PROXY_ICON_ENGINE", QStringLiteral("XdgIconProxyEngine")));
 
     return plugin ? plugin->create(iconName) : nullptr;
 }
