@@ -2312,19 +2312,18 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
         painter->setRenderHint(QPainter::Antialiasing);
 
         if (comboBox->editable) {
+            QBrush brush = getThemTypeColor(QColor(0, 0, 0, 255 * 0.08),
+                                            QColor(255, 255, 255, 255 * 0.15));
             if (widget->testAttribute(Qt::WA_SetPalette)) {
-                painter->setBrush(comboBox->palette.button());
-            } else {
-                const QComboBox *combobox = qobject_cast<const QComboBox *>(widget);
-                if (combobox && combobox->lineEdit()) {
-                    if (combobox->lineEdit()->testAttribute(Qt::WA_SetPalette)) {
-                        painter->setBrush(combobox->lineEdit()->palette().button());
-                    } else {
-                        painter->setBrush(getThemTypeColor(QColor(0, 0, 0, 255 * 0.08),
-                                                           QColor(255, 255, 255, 255 * 0.15)));
+                brush = comboBox->palette.button();
+            } else if (const QComboBox *combobox = qobject_cast<const QComboBox *>(widget)) {
+                if (auto lineEdit = combobox->lineEdit()) {
+                    if (lineEdit->testAttribute(Qt::WA_SetPalette)) {
+                        brush = lineEdit->palette().button();
                     }
                 }
             }
+            painter->setBrush(brush);
         } else {
             painter->setBrush(Qt::transparent);
         }
