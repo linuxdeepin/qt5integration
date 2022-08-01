@@ -1,0 +1,4 @@
+add_subdirectory(styles)
+add_subdirectory(platformthemes)
+add_subdirectory(iconengines)
+add_subdirectory(imageformats)

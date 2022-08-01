@@ -1,0 +1,3 @@
+add_subdirectory(svgiconengine)
+add_subdirectory(builtinengine)
+add_subdirectory(xdgiconproxyengine)

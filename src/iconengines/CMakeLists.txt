@@ -1,0 +1,3 @@
+add_subdirectory(svgiconenginechooser)
+add_subdirectory(builtinenginechooser)
+add_subdirectory(xdgiconproxyenginechooser)
