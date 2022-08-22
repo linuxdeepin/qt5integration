@@ -7,7 +7,6 @@ to make make DDE more Qt5 Apps friendly.
 
 ### Build dependencies
 
-* Qt (>= 5.6)
 * gtk+-2.0
 * mtdev
 * [dtk](https://github.com/linuxdeepin/deepin-tool-kit)
@@ -57,12 +56,18 @@ To be done.
 
 You may also find these channels useful if you encounter any other issues:
 
-* [Gitter](https://gitter.im/orgs/linuxdeepin/rooms)
-* [IRC Channel](https://webchat.freenode.net/?channels=deepin)
+* [Telegram group](https://t.me/deepin)
+* [Matrix](https://matrix.to/#/#deepin-community:matrix.org)
+* [IRC (libera.chat)](https://web.libera.chat/#deepin-community)
 * [Official Forum](https://bbs.deepin.org/)
 * [Wiki](http://wiki.deepin.org/)
 
+## Getting involved
+
+We encourage you to report issues and contribute changes
+
+* [Contribution guide for developers](https://github.com/linuxdeepin/developer-center/wiki/Contribution-Guidelines-for-Developers-en).
+
 ## License
 
-qt5integration is licensed under [GPLv3](LICENSE).
-
+qt5integration is licensed under [LGPLv3](LICENSE).
