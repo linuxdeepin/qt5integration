@@ -70,4 +70,4 @@ We encourage you to report issues and contribute changes
 
 ## License
 
-qt5integration is licensed under [LGPLv3](LICENSE).
+qt5integration is licensed under [LGPL-3.0-or-later](LICENSE).
