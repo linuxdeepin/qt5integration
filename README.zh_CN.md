@@ -70,4 +70,4 @@ sudo make install
 
 ## 协议
 
-qt5integration遵循协议 [LGPLv3](LICENSE).
+qt5integration遵循协议 [LGPL-3.0-or-later](LICENSE).

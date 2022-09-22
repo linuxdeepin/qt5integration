@@ -1,6 +1,6 @@
 /*
  * SPDX-FileCopyrightText: 2016 - 2022 UnionTech Software Technology Co., Ltd.  
- * SPDX-License-Identifier: GPL-3.0-or-later
+ * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include "style.h"
 #include "common.h"
