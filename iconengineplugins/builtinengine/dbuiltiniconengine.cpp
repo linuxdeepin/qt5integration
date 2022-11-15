@@ -217,12 +217,11 @@ void DBuiltinIconEngine::paint(QPainter *painter, const QRect &rect,
 {
     ensureLoaded();
 
-    QSize pixmapSize = rect.size();
-    qreal scale = 1;
-    if (painter->device())
-        scale = painter->device()->devicePixelRatioF();
+    qreal scale = 1.0;
+    if (qApp->testAttribute(Qt::AA_UseHighDpiPixmaps))
+        scale = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
 
-    pixmapSize *= scale;
+    QSize pixmapSize = rect.size() * scale;
 
     QIconLoaderEngineEntry *entry = QIconLoaderEngine::entryForSize(m_info, pixmapSize);
     if (!entry)
