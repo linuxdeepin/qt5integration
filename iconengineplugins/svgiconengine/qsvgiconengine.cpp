@@ -330,10 +330,15 @@ void QSvgIconEngine::addFile(const QString &fileName, const QSize &,
 void QSvgIconEngine::paint(QPainter *painter, const QRect &rect,
                            QIcon::Mode mode, QIcon::State state)
 {
-    QSize pixmapSize = rect.size();
-    if (painter->device())
-        pixmapSize *= painter->device()->devicePixelRatioF();
-    painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
+    qreal ratio = 1.0;
+    if (qApp->testAttribute(Qt::AA_UseHighDpiPixmaps))
+        ratio = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
+
+    QSize pixmapSize = rect.size() * ratio;
+    QPixmap pix = pixmap(pixmapSize, mode, state);
+
+    pix.setDevicePixelRatio(ratio);
+    painter->drawPixmap(rect, pix);
 }
 
 QString QSvgIconEngine::key() const
