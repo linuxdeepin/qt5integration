@@ -202,11 +202,16 @@ void XdgIconProxyEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode
         DEEPIN_QT_THEME::colorScheme.setLocalData(mode == QIcon::Selected ? pal.highlightedText().color().name() : pal.windowText().color().name());
     }
 
-    const QPixmap pix = pixmap(rect.size(), mode, state);
+    qreal ratio = 1.0;
+    if (qApp->testAttribute(Qt::AA_UseHighDpiPixmaps))
+        ratio = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
+
+    QPixmap pix = pixmap(rect.size() * ratio, mode, state);
 
     if (pix.isNull())
         return;
 
+    pix.setDevicePixelRatio(ratio);
     painter->drawPixmap(rect, pix);
 }
 
