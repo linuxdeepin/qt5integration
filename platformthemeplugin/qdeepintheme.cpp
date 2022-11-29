@@ -10,6 +10,7 @@
 
 #include <DGuiApplicationHelper>
 #include <DPlatformTheme>
+#include <DDciIcon>
 
 #include <QGuiApplication>
 #include <QIconEnginePlugin>
@@ -486,11 +487,22 @@ static QIconEnginePlugin *getIconEngineFactory(const QString &key)
     return nullptr;
 }
 
-static QIconEngine *createBuiltinIconEngine(const QString &iconName)
+static QIconEngine *createIconEngineWithKey(const QString &iconName, const QString &key)
 {
-    static QIconEnginePlugin *plugin = getIconEngineFactory(QStringLiteral("DBuiltinIconEngine"));
+    QIconEnginePlugin *plugin = getIconEngineFactory(key);
+    if (!plugin)
+        return nullptr;
 
-    return plugin ? plugin->create(iconName) : nullptr;
+    QIconEngine *iconEngine = plugin->create(iconName);
+    if (!iconEngine)
+        return nullptr;
+
+    if (iconEngine->isNull()) {
+        delete iconEngine;
+        return nullptr;
+    }
+
+    return iconEngine;
 }
 
 inline QString dgetenv(const char * varname, const QString & defaultValue) {
@@ -510,6 +522,9 @@ static QIconEngine *createXdgProxyIconEngine(const QString &iconName)
 
 QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 {
+    if (QIconEngine *engine = createIconEngineWithKey(iconName, QStringLiteral("DDciIconEngine")))
+        return engine;
+
 #ifdef DTHEMED_ICON_LOOKUP
     if (iconName.contains("/"))
         // handle Qt-standard paths.
@@ -519,19 +534,15 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 #elif XDG_ICON_VERSION_MAR < 3
     return XdgIconEngineCreator::create(iconName);
 #else
+
     static QSet<QString> non_builtin_icon_cache;
 
     if (!non_builtin_icon_cache.contains(iconName)) {
         // 记录下来此种类型的icon为内置图标
         // 因此，此处添加的缓存不考虑更新
         // 优先使用内置图标
-        if (QIconEngine *engine = createBuiltinIconEngine(iconName)) {
-            if (engine->isNull()) {
-                non_builtin_icon_cache.insert(iconName);
-                delete engine;
-            } else {
-                return engine;
-            }
+        if (QIconEngine *engine = createIconEngineWithKey(iconName, QStringLiteral("DBuiltinIconEngine"))) {
+            return engine;
         } else {
             non_builtin_icon_cache.insert(iconName);
         }

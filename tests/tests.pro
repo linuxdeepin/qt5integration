@@ -22,6 +22,7 @@ export(UT_PLATFORMPLUGIN_PATH)
 
 HEADERS += \
     $$PWD/../iconengineplugins/builtinengine/dbuiltiniconengine.h \
+    $$PWD/../iconengineplugins/dciiconengine/dciiconengine.h \
     $$PWD/../iconengineplugins/svgiconengine/qsvgiconengine.h \
     $$PWD/../imageformatplugins/svg/qsvgiohandler.h \
     $$PWD/../styleplugins/chameleon/chameleonstyle.h \
@@ -29,6 +30,7 @@ HEADERS += \
 
 SOURCES += \
     $$PWD/../iconengineplugins/builtinengine/dbuiltiniconengine.cpp \
+    $$PWD/../iconengineplugins/dciiconengine/dciiconengine.cpp \
     $$PWD/../iconengineplugins/svgiconengine/qsvgiconengine.cpp \
     $$PWD/../imageformatplugins/svg/qsvgiohandler.cpp \
     $$PWD/../styleplugins/chameleon/chameleonstyle.cpp \
