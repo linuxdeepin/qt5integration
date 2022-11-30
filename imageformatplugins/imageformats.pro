@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS += svg
+SUBDIRS += svg dci
