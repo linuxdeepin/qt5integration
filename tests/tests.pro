@@ -33,6 +33,7 @@ SOURCES += \
     $$PWD/../iconengineplugins/dciiconengine/dciiconengine.cpp \
     $$PWD/../iconengineplugins/svgiconengine/qsvgiconengine.cpp \
     $$PWD/../imageformatplugins/svg/qsvgiohandler.cpp \
+    $$PWD/../imageformatplugins/dci/qdciiohandler.cpp \
     $$PWD/../styleplugins/chameleon/chameleonstyle.cpp \
 
 

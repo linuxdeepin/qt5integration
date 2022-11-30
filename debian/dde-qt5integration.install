@@ -1,1 +1,2 @@
 usr/lib/*/qt5/plugins/*/*.so
+usr/share/*
