@@ -28,10 +28,9 @@ Files: *.qrc
 Copyright: None
 License: CC0-1.0
 
-# png svg 
-Files: platformthemeplugin/icons/* styleplugins/chameleon/menu_shadow.svg styles/images/woodbackground.png
-       styles/images/woodbutton.png tests/iconengines/builtinengine/icons/actions/icon_Layout_16px.svg
-       tests/iconengines/svgiconengine/icon_window_16px.svg
+# png svg dci
+Files: platformthemeplugin/icons/* styleplugins/chameleon/*.svg styles/images/*.png
+    tests/iconengines/*/icons/*/*.svg tests/iconengines/*/*.svg tests/iconengines/*/icons/*/*.dci 
 Copyright: None
 License: CC0-1.0
 
