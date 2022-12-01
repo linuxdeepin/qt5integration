@@ -71,7 +71,7 @@ QSize DDciIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::Sta
 {
     Q_UNUSED(state);
     int s = m_dciIcon.actualSize(qMin(size.width(), size.height()), dciTheme(), dciMode(mode));
-    return QSize(s, s);
+    return QSize(s, s).boundedTo(size);
 }
 
 QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
