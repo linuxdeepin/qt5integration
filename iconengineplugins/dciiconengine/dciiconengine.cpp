@@ -29,9 +29,10 @@ static inline DDciIconPalette dciPalettle(QPaintDevice *paintDevice = nullptr)
     QPalette pa;
     if (!paintDevice || paintDevice->devType() != QInternal::Widget) {
         pa = qApp->palette();
-    } else {
-        QObject *obj = reinterpret_cast<QObject *>(paintDevice);
+    } else if (QObject *obj = dynamic_cast<QObject *>(paintDevice)) {
         pa = qvariant_cast<QPalette>(obj->property("palette"));
+    } else {
+        pa = qApp->palette();
     }
 
     return DDciIconPalette(pa.windowText().color(), pa.window().color(),
