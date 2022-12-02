@@ -2360,6 +2360,7 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
     }
 
     if (comboBox->subControls & SC_ComboBoxArrow) {
+        const bool opened = comboBox->state & State_On;
         QStyleOption arrowOpt = *comboBox;
         arrowOpt.rect =  downArrowRect - frameExtentMargins();
 
@@ -2375,7 +2376,7 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
         }
 
         painter->setPen(getColor(comboBox, DPalette::ButtonText));
-        proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, painter, widget);
+        proxy()->drawPrimitive(opened ? PE_IndicatorArrowUp : PE_IndicatorArrowDown, &arrowOpt, painter, widget);
     }
 
     if (comboBox->state.testFlag(QStyle::State_HasFocus)) {
