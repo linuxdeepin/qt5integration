@@ -26,14 +26,8 @@ Standards-Version: 3.9.8
 Package: dde-qt5integration
 Architecture: any
 Provides: libqt5deepintheme-plugin
-Conflicts: libqt5deepintheme-plugin, dde-qt5integration5.5
-Replaces: dde-qt5integration5.5
-Depends: ${shlibs:Depends}, ${misc:Depends}, dde-qt5xcb-plugin, dde-qt5integration5
-Description: Qt platform theme integration plugin choosers for DDE
- Multiple Qt plugin choosers for DDE is included.
-
-Package: dde-qt5integration5
-Architecture: any
+Conflicts: libqt5deepintheme-plugin, dde-qt5integration5.5, dde-qt5integration5
+Replaces: dde-qt5integration5.5, dde-qt5integration5
 Depends: ${shlibs:Depends}, ${misc:Depends}, dde-qt5xcb-plugin
 Description: Qt platform theme integration plugins for DDE
  Multiple Qt plugins to provide better Qt5 integration for DDE is included.
