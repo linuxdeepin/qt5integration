@@ -1,9 +1,4 @@
-# load(configure) will clear DTK_VERSION
-isEmpty(DTK_VERSION) {
-    include(../.qmake.conf)
-}
-
-QT       += dbus x11extras dtkgui$${DTK_VERSION}
+QT       += dbus x11extras dtkgui
 QT       += core-private gui-private
 greaterThan(QT_MAJOR_VERSION, 4) {
   # Qt >= 5.8
@@ -11,7 +6,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
   else: QT += platformsupport-private
 }
 
-TARGET = qdeepin$${DTK_VERSION}
+TARGET = qdeepin
 TEMPLATE = lib
 CONFIG += plugin link_pkgconfig c++11
 
@@ -19,7 +14,7 @@ CONFIG += plugin link_pkgconfig c++11
 load(configure)
 qtCompileTest(dthemed_icon_lookup) {
     DEFINES += DTHEMED_ICON_LOOKUP
-    PKGCONFIG += dtkwidget$${DTK_VERSION} til
+    PKGCONFIG += dtkwidget til
 
     SOURCES += diconengine.cpp
     HEADERS += diconengine.h

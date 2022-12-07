@@ -1,4 +1,4 @@
-TARGET  = dsvgicon$${DTK_VERSION}
+TARGET  = dsvgicon
 TEMPLATE = lib
 CONFIG += plugin
 
