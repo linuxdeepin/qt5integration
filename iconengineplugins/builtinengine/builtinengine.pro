@@ -1,4 +1,4 @@
-TARGET  = dtkbuiltin$${DTK_VERSION}
+TARGET  = dtkbuiltin
 TEMPLATE = lib
 CONFIG += plugin
 

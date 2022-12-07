@@ -1,4 +1,4 @@
-TARGET  = dsvg$${DTK_VERSION}
+TARGET  = dsvg
 TEMPLATE = lib
 CONFIG += plugin
 
@@ -8,7 +8,7 @@ SOURCES += main.cpp \
 OTHER_FILES += svg.json
 
 CONFIG += c++11 link_pkgconfig
-PKGCONFIG += dtkgui$${DTK_VERSION}
+PKGCONFIG += dtkgui
 
 DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/imageformats/
 

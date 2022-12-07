@@ -1,6 +1,6 @@
 QT       += gui-private core gui
 
-TARGET = xdgicon$${DTK_VERSION}
+TARGET = xdgicon
 TEMPLATE = lib
 CONFIG += plugin link_pkgconfig
 
