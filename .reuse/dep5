@@ -45,8 +45,8 @@ Files: .git*
 Copyright: None
 License: CC0-1.0
 
-# xml toml json yaml
-Files: *.xml *.toml *.json *.yaml
+# xml toml json conf yaml
+Files: *.xml *.toml *.json *.conf *.yaml
 Copyright: None
 License: CC0-1.0
 
