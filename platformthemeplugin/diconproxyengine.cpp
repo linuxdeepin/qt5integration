@@ -1,45 +1,227 @@
-/*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.  
- * SPDX-License-Identifier: LGPL-3.0-or-later
- */
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 #include "diconproxyengine.h"
 
-DIconProxyEngine::DIconProxyEngine(const QIcon &proxyIcon)
-    : QIconEngine()
-    , m_proxyIcon(proxyIcon)
-{
+#include <DGuiApplicationHelper>
+#include <DPlatformTheme>
+#include <DIconTheme>
 
+#include <QIconEnginePlugin>
+#include <QPainter>
+#include <QPixmap>
+#include <QDebug>
+#include <QDir>
+
+#include <private/qiconloader_p.h>
+#include <private/qguiapplication_p.h>
+
+DGUI_USE_NAMESPACE
+
+static inline QString iconThemeName()
+{
+    return DGuiApplicationHelper::instance()->applicationTheme()->iconThemeName();
 }
 
-void DIconProxyEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
+static QIconEnginePlugin *getIconEngineFactory(const QString &key)
 {
-    m_proxyIcon.paint(painter, rect, Qt::AlignCenter, mode, state);
+    static QFactoryLoader loader("org.qt-project.Qt.QIconEngineFactoryInterface",
+                                 QLatin1String("/iconengines"), Qt::CaseSensitive);
+    int index = loader.indexOf(key);
+
+    if (index != -1) {
+        return qobject_cast<QIconEnginePlugin *>(loader.instance(index));
+    }
+
+    return nullptr;
 }
 
-QPixmap DIconProxyEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
+static QIconEngine *createIconEngineWithKey(const QString &iconName, const QString &key)
 {
-    return m_proxyIcon.pixmap(size, mode, state);
+    QIconEnginePlugin *plugin = getIconEngineFactory(key);
+    if (!plugin)
+        return nullptr;
+
+    QIconEngine *iconEngine = plugin->create(iconName);
+    if (!iconEngine)
+        return nullptr;
+
+    if (iconEngine->isNull()) {
+        delete iconEngine;
+        return nullptr;
+    }
+
+    return iconEngine;
+}
+
+static inline QIconEngine *createXdgProxyIconEngine(const QString &iconName)
+{
+    const QString &key(qEnvironmentVariable("D_PROXY_ICON_ENGINE", QStringLiteral("XdgIconProxyEngine")));
+    return createIconEngineWithKey(iconName, key);
+}
+
+static inline QIconEngine *createDciIconEngine(const QString &iconName)
+{
+    return createIconEngineWithKey(iconName, QLatin1String("DDciIconEngine"));
+}
+
+static inline QIconEngine *createDBuiltinIconEngine(const QString &iconName)
+{
+    static QSet<QString> non_builtin_icon_cache;
+
+    if (!non_builtin_icon_cache.contains(iconName)) {
+        // 记录下来此种类型的icon为内置图标
+        // 因此，此处添加的缓存不考虑更新
+        // 优先使用内置图标
+        if (QIconEngine *engine = createIconEngineWithKey(iconName, QStringLiteral("DBuiltinIconEngine"))) {
+            return engine;
+        } else {
+            non_builtin_icon_cache.insert(iconName);
+        }
+    }
+
+    return nullptr;
+}
+
+static bool hasDciIcon(const QString iconName, const QString iconThemeName)
+{
+    QString iconPath;
+    if (auto cached = DIconTheme::cached()) {
+        iconPath = cached->findDciIconFile(iconName, iconThemeName);
+    } else {
+        iconPath = DIconTheme::findDciIconFile(iconName, iconThemeName);
+    }
+
+    return !iconPath.isEmpty();
+}
+
+static inline bool isDciIconEngine(QIconEngine *engine)
+{
+    return engine ? engine->key() == QLatin1String("DDciIconEngine") : false;
+}
+
+DIconProxyEngine::DIconProxyEngine(const QString &iconName)
+    : m_iconName(iconName)
+{
+    ensureEngine();
+}
+
+DIconProxyEngine::DIconProxyEngine(const DIconProxyEngine &other)
+    : QIconEngine(other)
+    , m_iconName(other.m_iconName)
+    , m_iconThemeName(other.m_iconThemeName)
+    , m_iconEngine(other.m_iconEngine->clone())
+{
+    ensureEngine();
+}
+
+DIconProxyEngine::~DIconProxyEngine()
+{
+    if (m_iconEngine)
+        delete m_iconEngine;
 }
 
 QSize DIconProxyEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
-    return m_proxyIcon.actualSize(size, mode, state);
+    ensureEngine();
+    return m_iconEngine ? m_iconEngine->actualSize(size, mode, state) :QSize();
+}
+
+QPixmap DIconProxyEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
+{
+    ensureEngine();
+    return m_iconEngine ? m_iconEngine->pixmap(size, mode, state) : QPixmap();
+}
+
+void DIconProxyEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
+{
+    ensureEngine();
+    if (m_iconEngine)
+        m_iconEngine->paint(painter, rect, mode, state);
+}
+
+QString DIconProxyEngine::key() const
+{
+    const_cast<DIconProxyEngine *>(this)->ensureEngine();
+    return m_iconEngine ? m_iconEngine->key() : QLatin1String("DIconProxyEngine");
 }
 
 QIconEngine *DIconProxyEngine::clone() const
 {
-    return new DIconProxyEngine(m_proxyIcon);
+    return new DIconProxyEngine(*this);
 }
 
 bool DIconProxyEngine::read(QDataStream &in)
 {
-    in << m_proxyIcon.name();
-    return true;
+    ensureEngine();
+    in >> m_iconName >> m_iconThemeName;
+    return m_iconEngine ? m_iconEngine->read(in) : false;
 }
 
 bool DIconProxyEngine::write(QDataStream &out) const
 {
-    Q_UNUSED(out)
+    const_cast<DIconProxyEngine *>(this)->ensureEngine();
+    out << m_iconName << m_iconThemeName;
+    return m_iconEngine ? m_iconEngine->write(out) : false;
+}
 
-    return false;
+QString DIconProxyEngine::iconName() const
+{
+    return m_iconName;
+}
+
+void DIconProxyEngine::virtual_hook(int id, void *data)
+{
+    ensureEngine();
+    if (m_iconEngine) {
+        m_iconEngine->virtual_hook(id, data);
+        return;
+    }
+
+    QIconEngine::virtual_hook(id, data);
+}
+
+void DIconProxyEngine::ensureEngine()
+{
+    const QString &theme = iconThemeName();
+    if (theme == m_iconThemeName && m_iconEngine)
+        return;
+
+    if (m_iconEngine) {
+        // dci => dci
+        // xdg => xdg
+        if (!(hasDciIcon(m_iconName, theme) ^ isDciIconEngine(m_iconEngine))) {
+            m_iconThemeName = theme;
+            return;
+        }
+
+         // delete old engine and create a new engine
+        delete m_iconEngine;
+        m_iconEngine = nullptr;
+    }
+
+    // null => dci
+    // null => xdg
+    // dci  => xdg
+    // xdg  => dci
+    if (!m_iconEngine) {
+        // 1. try create dci iconengine
+        // 2. try create builtin iconengine
+        // 3. create xdgiconproxyengine
+        if (QIconEngine *iconEngine = createDciIconEngine(m_iconName)) {
+            m_iconEngine = iconEngine;
+        } else if (QIconEngine *iconEngine = createDBuiltinIconEngine(m_iconName)) {
+            m_iconEngine = iconEngine;
+        } else if (QIconEngine *iconEngine = createXdgProxyIconEngine(m_iconName)) {
+            m_iconEngine = iconEngine;
+        } else {
+            qErrnoWarning("create icon [%s] engine failed.[theme:%s]",
+                          m_iconName.toUtf8().data(),
+                          m_iconThemeName.toUtf8().data());
+            return;
+        }
+
+        m_iconThemeName = theme;
+    }
 }

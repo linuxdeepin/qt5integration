@@ -5,12 +5,10 @@
 #include "dciiconengine.h"
 
 #include <DGuiApplicationHelper>
+#include <DPlatformTheme>
 
 #include <QPainter>
 #include <QPixmap>
-#include <QDebug>
-#include <private/qiconloader_p.h>
-#include <private/qguiapplication_p.h>
 
 static inline DDciIcon::Theme dciTheme()
 {

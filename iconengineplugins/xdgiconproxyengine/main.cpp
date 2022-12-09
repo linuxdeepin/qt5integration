@@ -21,7 +21,7 @@ public:
 
 QStringList XdgProxyIconPlugin::keys() const
 {
-    return {"XdgProxyIconPlugin"};
+    return {"XdgIconProxyEngine"};
 }
 
 QIconEngine *XdgProxyIconPlugin::create(const QString &iconName)
