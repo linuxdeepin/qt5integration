@@ -1,7 +1,7 @@
-/*
- * SPDX-FileCopyrightText: 2017-2022 UnionTech Software Technology Co., Ltd.  
- * SPDX-License-Identifier: LGPL-3.0-or-later
- */
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 #ifndef DICONPROXYENGINE_H
 #define DICONPROXYENGINE_H
 
@@ -10,17 +10,27 @@
 class DIconProxyEngine : public QIconEngine
 {
 public:
-    explicit DIconProxyEngine(const QIcon &proxyIcon);
+    explicit DIconProxyEngine(const QString &iconName);
+    virtual ~DIconProxyEngine() override;
+    void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) override;
+    QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
 
-    void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
-    QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) Q_DECL_OVERRIDE;
-    QIconEngine *clone() const Q_DECL_OVERRIDE;
-    bool read(QDataStream &in) Q_DECL_OVERRIDE;
-    bool write(QDataStream &out) const Q_DECL_OVERRIDE;
+    QString key() const override;
+    QIconEngine *clone() const override;
+    bool read(QDataStream &in) override;
+    bool write(QDataStream &out) const override;
 
+    QString iconName() const override;
+    inline QString themeName() const { return m_iconThemeName; }
 private:
-    QIcon m_proxyIcon;
+    void virtual_hook(int id, void *data) override;
+
+    void ensureEngine();
+    DIconProxyEngine(const DIconProxyEngine &other);
+    QString m_iconName;
+    QString m_iconThemeName;
+    QIconEngine *m_iconEngine = nullptr;
 };
 
 #endif // DICONPROXYENGINE_H

@@ -28,14 +28,11 @@ public:
 
     QString iconName() const override;
 private:
-    bool hasIcon() const;
-    void ensureLoaded();
     void virtual_hook(int id, void *data) override;
 
     DDciIconEngine(const DDciIconEngine &other);
     QString m_iconName;
     DDciIcon m_dciIcon;
-    friend class QIconLoader;
 };
 
 #endif // DDCIICONENGINE_H

@@ -10,7 +10,6 @@
 
 #include <DGuiApplicationHelper>
 #include <DPlatformTheme>
-#include <DDciIcon>
 
 #include <QGuiApplication>
 #include <QIconEnginePlugin>
@@ -475,55 +474,14 @@ QPlatformDialogHelper *QDeepinTheme::createPlatformDialogHelper(DialogType type)
     return QGenericUnixTheme::createPlatformDialogHelper(type);
 }
 
-static QIconEnginePlugin *getIconEngineFactory(const QString &key)
-{
-    static QFactoryLoader loader(QIconEngineFactoryInterface_iid, QLatin1String("/iconengines"), Qt::CaseSensitive);
-    int index = loader.indexOf(key);
-
-    if (index != -1) {
-        return qobject_cast<QIconEnginePlugin *>(loader.instance(index));
-    }
-
-    return nullptr;
-}
-
-static QIconEngine *createIconEngineWithKey(const QString &iconName, const QString &key)
-{
-    QIconEnginePlugin *plugin = getIconEngineFactory(key);
-    if (!plugin)
-        return nullptr;
-
-    QIconEngine *iconEngine = plugin->create(iconName);
-    if (!iconEngine)
-        return nullptr;
-
-    if (iconEngine->isNull()) {
-        delete iconEngine;
-        return nullptr;
-    }
-
-    return iconEngine;
-}
-
-inline QString dgetenv(const char * varname, const QString & defaultValue) {
-    if (Q_UNLIKELY(qEnvironmentVariableIsSet(varname))) {
-        return qgetenv(varname);
-    }
-
-    return defaultValue;
-}
-
-static QIconEngine *createXdgProxyIconEngine(const QString &iconName)
-{
-    static QIconEnginePlugin *plugin = getIconEngineFactory(dgetenv("D_PROXY_ICON_ENGINE", QStringLiteral("XdgIconProxyEngine")));
-
-    return plugin ? plugin->create(iconName) : nullptr;
-}
-
 QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 {
-    if (QIconEngine *engine = createIconEngineWithKey(iconName, QStringLiteral("DDciIconEngine")))
+    QIconEngine *engine = new DIconProxyEngine(iconName);
+    if (!engine->isNull())
         return engine;
+
+    delete engine;
+    engine = nullptr;
 
 #ifdef DTHEMED_ICON_LOOKUP
     if (iconName.contains("/"))
@@ -535,20 +493,7 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
     return XdgIconEngineCreator::create(iconName);
 #else
 
-    static QSet<QString> non_builtin_icon_cache;
-
-    if (!non_builtin_icon_cache.contains(iconName)) {
-        // 记录下来此种类型的icon为内置图标
-        // 因此，此处添加的缓存不考虑更新
-        // 优先使用内置图标
-        if (QIconEngine *engine = createIconEngineWithKey(iconName, QStringLiteral("DBuiltinIconEngine"))) {
-            return engine;
-        } else {
-            non_builtin_icon_cache.insert(iconName);
-        }
-    }
-
-    return createXdgProxyIconEngine(iconName);
+    return nullptr;
 #endif
 }
 
