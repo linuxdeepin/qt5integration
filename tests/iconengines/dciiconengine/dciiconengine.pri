@@ -4,4 +4,4 @@ SOURCES += \
     $$PWD/ut_dciiconengine.cpp
 
 RESOURCES += \
-     $$PWD/icons/res.qrc
+     $$PWD/icons/dtk_dci_test_res.qrc

@@ -618,7 +618,7 @@ TEST_F(TestForDrawUtil, drawTabBar)
             tab.selectedPosition = QStyleOptionTab::NextIsSelected;
             tab.cornerWidgets = QStyleOptionTab::RightCornerWidget;
             tab.text = "test 2";
-            tab.icon = style()->standardIcon(QStyle::SP_DirIcon);
+            tab.icon = QIcon::fromTheme("icon_Layout");
             tab.iconSize = QSize(16, 16);
 
             style()->drawTabBar(painter(), &tab, testWidget());
@@ -925,7 +925,7 @@ TEST_F(TestForDrawUtil, drawComboBoxLabel)
             opt.popupRect = QRect(0, 0, 30, 30);
             opt.frame = true;
             opt.currentText = "test 1";
-            opt.currentIcon = style()->standardIcon(QStyle::SP_DirIcon);
+            opt.currentIcon = QIcon::fromTheme("icon_Layout");
             opt.iconSize = QSize(16, 16);
             opt.state = QStyle::State_Enabled | QStyle::State_MouseOver;
 
@@ -941,7 +941,7 @@ TEST_F(TestForDrawUtil, drawComboBoxLabel)
             opt.popupRect = QRect(0, 0, 30, 30);
             opt.frame = false;
             opt.currentText = "test 2";
-            opt.currentIcon = style()->standardIcon(QStyle::SP_DirIcon);
+            opt.currentIcon = QIcon::fromTheme("icon_Layout");
             opt.iconSize = QSize(16, 16);
             opt.subControls |= QStyle::SC_ComboBoxArrow | QStyle::SC_ComboBoxFrame | QStyle::SC_ComboBoxEditField | QStyle::SC_ComboBoxListBoxPopup;
 
@@ -968,7 +968,7 @@ TEST_F(TestForDrawUtil, drawComboBoxLabel)
             opt.init(testWidget());
 
             opt.currentText = "测试3";
-            opt.currentIcon = style()->standardIcon(QStyle::SP_DirIcon);
+            opt.currentIcon = QIcon::fromTheme("icon_Layout");
             opt.iconSize = QSize(16, 16);
             opt.state = QStyle::State_Enabled | QStyle::State_Selected | QStyle::State_HasFocus;
             opt.subControls |= QStyle::SC_ComboBoxEditField | QStyle::SC_ComboBoxListBoxPopup;
@@ -1144,7 +1144,7 @@ TEST_F(TestForDrawUtil, drawIcon)
         opt.state |= QStyle::State_Selected;
 
         QRect rect(0, 0, 10, 10);
-        style->drawIcon(&opt, painter, rect, style->standardIcon(QStyle::SP_DirIcon), true);
+        style->drawIcon(&opt, painter, rect, QIcon::fromTheme("icon_Layout"), true);
     };
 
     ASSERT_DrawFuncHasData(drawIconUtil);
@@ -1158,7 +1158,7 @@ TEST_F(TestForDrawUtil, tabLayout)
     tab.init(testWidget);
     tab.iconSize = QSize(32, 32);
     tab.shape = QTabBar::RoundedEast;
-    tab.icon = style->standardIcon(QStyle::SP_DirIcon);
+    tab.icon = QIcon::fromTheme("icon_Layout");
 
     QRect textRect, iconRect;
     style->tabLayout(&tab, testWidget, &textRect, &iconRect);
