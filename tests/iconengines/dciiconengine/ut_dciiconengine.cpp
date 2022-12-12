@@ -23,7 +23,7 @@ protected:
 
 void ut_DDciIconEngine::SetUp()
 {
-    mIconEngine = new DDciIconEngine("selected_indicator");
+    mIconEngine = new DDciIconEngine("test_selected_indicator");
 }
 
 void ut_DDciIconEngine::TearDown()
@@ -59,7 +59,7 @@ TEST_F(ut_DDciIconEngine, paint)
 TEST_F(ut_DDciIconEngine, key)
 {
     ASSERT_EQ(mIconEngine->key(), "DDciIconEngine");
-    ASSERT_EQ(QIcon::fromTheme("selected_indicator").data_ptr()->engine->key(), "DDciIconEngine");
+    ASSERT_EQ(QIcon::fromTheme("test_selected_indicator").data_ptr()->engine->key(), "DDciIconEngine");
 }
 
 TEST_F(ut_DDciIconEngine, clone)
@@ -72,7 +72,7 @@ TEST_F(ut_DDciIconEngine, clone)
 TEST_F(ut_DDciIconEngine, read)
 {
     QByteArray data;
-    QString iconName = "selected_indicator";
+    QString iconName = "test_selected_indicator";
     QDataStream out(&data, QIODevice::WriteOnly);
     out << iconName;
 
@@ -97,5 +97,5 @@ TEST_F(ut_DDciIconEngine, write)
 
 TEST_F(ut_DDciIconEngine, iconName)
 {
-    ASSERT_EQ(mIconEngine->iconName(), "selected_indicator");
+    ASSERT_EQ(mIconEngine->iconName(), "test_selected_indicator");
 }
