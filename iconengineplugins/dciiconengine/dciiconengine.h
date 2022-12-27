@@ -29,9 +29,11 @@ public:
     QString iconName() const override;
 private:
     void virtual_hook(int id, void *data) override;
+    void ensureIconTheme();
 
     DDciIconEngine(const DDciIconEngine &other);
     QString m_iconName;
+    QString m_iconThemeName;
     DDciIcon m_dciIcon;
 };
 
