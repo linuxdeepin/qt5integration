@@ -48,13 +48,16 @@ static inline qreal deviceRadio(QPaintDevice *paintDevice = nullptr)
 
 DDciIconEngine::DDciIconEngine(const QString &iconName)
     : m_iconName(iconName)
+    , m_iconThemeName(DGuiApplicationHelper::instance()->applicationTheme()->iconThemeName())
     , m_dciIcon(DDciIcon::fromTheme(iconName))
 {
+
 }
 
 DDciIconEngine::DDciIconEngine(const DDciIconEngine &other)
     : QIconEngine(other)
     , m_iconName(other.m_iconName)
+    , m_iconThemeName(other.m_iconThemeName)
     , m_dciIcon(other.m_dciIcon)
 {
 
@@ -68,6 +71,7 @@ DDciIconEngine::~DDciIconEngine()
 QSize DDciIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
     Q_UNUSED(state);
+    ensureIconTheme();
     int s = m_dciIcon.actualSize(qMin(size.width(), size.height()), dciTheme(), dciMode(mode));
     return QSize(s, s).boundedTo(size);
 }
@@ -80,6 +84,7 @@ QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State
 QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal radio)
 {
     Q_UNUSED(state)
+    ensureIconTheme();
     return m_dciIcon.pixmap(qFuzzyIsNull(radio) ? deviceRadio() : radio,
                             qMin(size.width(), size.height()), dciTheme(),
                             dciMode(mode), dciPalettle());
@@ -88,6 +93,7 @@ QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State
 void DDciIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
     Q_UNUSED(state);
+    ensureIconTheme();
     m_dciIcon.paint(painter, rect, deviceRadio(painter->device()), dciTheme(),
                     dciMode(mode), Qt::AlignCenter, dciPalettle(painter->device()));
 }
@@ -104,13 +110,15 @@ QIconEngine *DDciIconEngine::clone() const
 
 bool DDciIconEngine::read(QDataStream &in)
 {
-    in >> m_iconName >> m_dciIcon;
+    ensureIconTheme();
+    in >> m_iconThemeName >> m_iconName >> m_dciIcon;
     return true;
 }
 
 bool DDciIconEngine::write(QDataStream &out) const
 {
-    out << m_iconName << m_dciIcon;
+    const_cast<DDciIconEngine *>(this)->ensureIconTheme();
+    out << m_iconThemeName << m_iconName << m_dciIcon;
     return true;
 }
 
@@ -121,6 +129,7 @@ QString DDciIconEngine::iconName() const
 
 void DDciIconEngine::virtual_hook(int id, void *data)
 {
+    ensureIconTheme();
     switch (id) {
     case QIconEngine::AvailableSizesHook:
         {
@@ -154,5 +163,15 @@ void DDciIconEngine::virtual_hook(int id, void *data)
         break;
     default:
         QIconEngine::virtual_hook(id, data);
+    }
+}
+
+void DDciIconEngine::ensureIconTheme()
+{
+    QString iconThemeName = DGuiApplicationHelper::instance()->applicationTheme()->iconThemeName();
+    if (m_iconThemeName != iconThemeName) {
+        m_iconThemeName = iconThemeName;
+        // update dci icon when icon theme name changed.
+        m_dciIcon = DDciIcon::fromTheme(m_iconName);
     }
 }
