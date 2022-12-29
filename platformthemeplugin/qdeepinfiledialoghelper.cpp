@@ -319,7 +319,7 @@ void QDeepinFileDialogHelper::initDBusFileDialogManager()
         return;
 
     if (QDBusConnection::sessionBus().interface()->isServiceRegistered(DIALOG_SERVICE).value()
-        || QFile::exists("/usr/bin/dde-desktop")) {
+        || !QStandardPaths::findExecutable("dde-desktop").isEmpty()) {
         manager = new DFileDialogManager(DIALOG_SERVICE, "/com/deepin/filemanager/filedialogmanager", QDBusConnection::sessionBus());
     }
 }
