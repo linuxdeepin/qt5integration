@@ -4352,8 +4352,8 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
     if (!focus_color.isValid() || focus_color.alpha() == 0)
         return;
 
-    int frame_radius = DStyle::pixelMetric(PM_FrameRadius);
-    int margins = DStyle::pixelMetric(PM_FrameMargins);
+    int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
+    int margins = DStyle::pixelMetric(PM_FrameMargins, opt, w);
 
     QRect border = opt->rect.adjusted(margins, margins, -margins, -margins);
     p->setRenderHint(QPainter::Antialiasing);
@@ -4414,7 +4414,8 @@ void ChameleonStyle::drawBorder(QPainter *p, const QStyleOption *opt, const QWid
     } else if (buttonBoxButton && btnopt) {
         drawButtonBoxButton(btnopt, p, border, frame_radius);
     } else {
-        p->drawRoundedRect(border, frame_radius + margins, frame_radius + margins);
+        // FIX focus rect not covering corners [frame_radius - margins]
+        p->drawRoundedRect(border, frame_radius - margins, frame_radius - margins);
     }
 }
 
