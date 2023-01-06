@@ -4,7 +4,6 @@
  */
 #include "qdeepintheme.h"
 #include "qdeepinfiledialoghelper.h"
-#include "diconproxyengine.h"
 #include "filedialogmanager_interface.h"
 #include "dthemesettings.h"
 
@@ -29,7 +28,6 @@
 
 #undef signals
 #include <X11/Xlib.h>
-
 
 DGUI_USE_NAMESPACE
 
@@ -474,14 +472,40 @@ QPlatformDialogHelper *QDeepinTheme::createPlatformDialogHelper(DialogType type)
     return QGenericUnixTheme::createPlatformDialogHelper(type);
 }
 
+static QIconEnginePlugin *getIconEngineFactory(const QString &key)
+{
+    static QFactoryLoader loader(QIconEngineFactoryInterface_iid, QLatin1String("/iconengines"), Qt::CaseSensitive);
+    int index = loader.indexOf(key);
+
+    if (index != -1)
+        return qobject_cast<QIconEnginePlugin *>(loader.instance(index));
+
+    return nullptr;
+}
+
+static QIconEngine *createIconEngineWithKey(const QString &iconName, const QString &key)
+{
+    QIconEnginePlugin *plugin = getIconEngineFactory(key);
+    if (!plugin)
+        return nullptr;
+
+    QIconEngine *iconEngine = plugin->create(iconName);
+    if (!iconEngine)
+        return nullptr;
+
+    if (iconEngine->isNull()) {
+        delete iconEngine;
+        return nullptr;
+    }
+
+    return iconEngine;
+}
+
 QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 {
-    QIconEngine *engine = new DIconProxyEngine(iconName);
-    if (!engine->isNull())
+    QIconEngine *engine = createIconEngineWithKey(iconName, "DIconProxyEngine");
+    if (engine)
         return engine;
-
-    delete engine;
-    engine = nullptr;
 
 #ifdef DTHEMED_ICON_LOOKUP
     if (iconName.contains("/"))

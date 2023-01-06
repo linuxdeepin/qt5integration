@@ -1,3 +1,7 @@
 TEMPLATE = subdirs
 
-SUBDIRS += svgiconengine builtinengine xdgiconproxyengine dciiconengine
+SUBDIRS += svgiconengine \
+           builtinengine \
+           xdgiconproxyengine \
+           dciiconengine \
+           diconproxyengine

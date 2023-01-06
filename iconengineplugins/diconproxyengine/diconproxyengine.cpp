@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
@@ -57,7 +57,7 @@ static QIconEngine *createIconEngineWithKey(const QString &iconName, const QStri
 
 static inline QIconEngine *createXdgProxyIconEngine(const QString &iconName)
 {
-    const QString &key(qEnvironmentVariable("D_PROXY_ICON_ENGINE", QStringLiteral("XdgIconProxyEngine")));
+    const QString &key(qEnvironmentVariable("D_PROXY_ICON_ENGINE", QLatin1String("XdgIconProxyEngine")));
     return createIconEngineWithKey(iconName, key);
 }
 
@@ -143,8 +143,7 @@ void DIconProxyEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode m
 
 QString DIconProxyEngine::key() const
 {
-    const_cast<DIconProxyEngine *>(this)->ensureEngine();
-    return m_iconEngine ? m_iconEngine->key() : QLatin1String("DIconProxyEngine");
+    return QLatin1String("DIconProxyEngine");
 }
 
 QIconEngine *DIconProxyEngine::clone() const
@@ -154,14 +153,15 @@ QIconEngine *DIconProxyEngine::clone() const
 
 bool DIconProxyEngine::read(QDataStream &in)
 {
-    ensureEngine();
+    // read m_iconName and m_iconThemeName first
     in >> m_iconName >> m_iconThemeName;
+
+    ensureEngine();
     return m_iconEngine ? m_iconEngine->read(in) : false;
 }
 
 bool DIconProxyEngine::write(QDataStream &out) const
 {
-    const_cast<DIconProxyEngine *>(this)->ensureEngine();
     out << m_iconName << m_iconThemeName;
     return m_iconEngine ? m_iconEngine->write(out) : false;
 }
@@ -184,6 +184,9 @@ void DIconProxyEngine::virtual_hook(int id, void *data)
 
 void DIconProxyEngine::ensureEngine()
 {
+    if (m_iconName.isEmpty())
+        return;
+
     const QString &theme = iconThemeName();
     if (theme == m_iconThemeName && m_iconEngine)
         return;
