@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include <DDciIcon>
 #include <DGuiApplicationHelper>
+#include <DPlatformTheme>
 #include <QIcon>
 #include <QPainter>
 
@@ -58,8 +59,8 @@ TEST_F(ut_DDciIconEngine, paint)
 
 TEST_F(ut_DDciIconEngine, key)
 {
-    ASSERT_EQ(mIconEngine->key(), "DDciIconEngine");
-    ASSERT_EQ(QIcon::fromTheme("test_selected_indicator").data_ptr()->engine->key(), "DDciIconEngine");
+    QIcon icon(new DDciIconEngine("test_selected_indicator"));
+    ASSERT_EQ(icon.data_ptr()->engine->key(), "DDciIconEngine");
 }
 
 TEST_F(ut_DDciIconEngine, clone)
@@ -73,8 +74,9 @@ TEST_F(ut_DDciIconEngine, read)
 {
     QByteArray data;
     QString iconName = "test_selected_indicator";
+    QString iconThemeName = DGuiApplicationHelper::instance()->applicationTheme()->iconThemeName();
     QDataStream out(&data, QIODevice::WriteOnly);
-    out << iconName;
+    out << iconThemeName << iconName;
 
     QDataStream in(&data, QIODevice::ReadOnly);
     mIconEngine->read(in);
@@ -87,10 +89,10 @@ TEST_F(ut_DDciIconEngine, write)
     QByteArray data;
     QDataStream out(&data, QIODevice::WriteOnly);
     mIconEngine->write(out);
-    QString iconName;
+    QString iconName, iconThemeName;
 
     QDataStream in(&data, QIODevice::ReadOnly);
-    in >> iconName ;
+    in >> iconThemeName >> iconName ;
 
     ASSERT_EQ(mIconEngine->iconName(), iconName);
 }
