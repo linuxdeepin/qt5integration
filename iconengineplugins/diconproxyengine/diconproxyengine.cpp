@@ -191,6 +191,11 @@ void DIconProxyEngine::ensureEngine()
     if (theme == m_iconThemeName && m_iconEngine)
         return;
 
+    static QMap<QString, QSet<QString>> nonCache;
+    const auto it = nonCache.find(theme);
+    if (it != nonCache.end() && it->contains(m_iconName))
+        return;
+
     if (m_iconEngine) {
         // dci => dci
         // xdg => xdg
@@ -219,9 +224,10 @@ void DIconProxyEngine::ensureEngine()
         } else if (QIconEngine *iconEngine = createXdgProxyIconEngine(m_iconName)) {
             m_iconEngine = iconEngine;
         } else {
-            qErrnoWarning("create icon [%s] engine failed.[theme:%s]",
+            qErrnoWarning("create icon [%s] engine failed.[theme:%s] nonCache[theme].size[%d]",
                           m_iconName.toUtf8().data(),
-                          m_iconThemeName.toUtf8().data());
+                          theme.toUtf8().data(), nonCache[theme].size());
+            nonCache[theme].insert(m_iconName);
             return;
         }
 
