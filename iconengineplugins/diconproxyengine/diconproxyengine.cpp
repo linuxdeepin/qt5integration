@@ -179,7 +179,15 @@ void DIconProxyEngine::virtual_hook(int id, void *data)
         return;
     }
 
-    QIconEngine::virtual_hook(id, data);
+    switch (id) {
+    case QIconEngine::IsNullHook:
+        {
+            *reinterpret_cast<bool*>(data) = true;
+        }
+        break;
+    default:
+        QIconEngine::virtual_hook(id, data);
+    }
 }
 
 void DIconProxyEngine::ensureEngine()

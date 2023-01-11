@@ -517,7 +517,7 @@ QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
     return XdgIconEngineCreator::create(iconName);
 #else
 
-    return nullptr;
+    return QGenericUnixTheme::createIconEngine(iconName);
 #endif
 }
 
