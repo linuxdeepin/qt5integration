@@ -44,7 +44,7 @@ public:
 
 private:
     XdgIconLoaderEngine *engine;
-    QHash<quint64, QString> entryToColorScheme;
+    QHash<quint64, QPair<QString, QString>> entryToColorScheme;
     QIcon::Mode lastMode;
 };
 #endif
