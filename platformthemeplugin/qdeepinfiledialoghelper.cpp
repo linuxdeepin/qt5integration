@@ -211,6 +211,7 @@ void QDeepinFileDialogHelper::exec()
     QEventLoop loop;
     connect(this, SIGNAL(accept()), &loop, SLOT(quit()));
     connect(this, SIGNAL(reject()), &loop, SLOT(quit()));
+    connect(this, SIGNAL(destroyed(QObject*)), &loop, SLOT(quit()));
     loop.exec();
 }
 
