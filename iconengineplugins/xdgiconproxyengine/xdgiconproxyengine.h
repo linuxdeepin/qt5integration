@@ -16,6 +16,15 @@
 #include "xdgiconenginecreator.h"
 #endif
 
+namespace DEEPIN_QT_THEME {
+enum PaletteType {
+    Text,
+    Background,
+    Highlight,
+};
+typedef QMap<PaletteType, QString> PALETTE_MAP;
+};
+
 class ScalableEntry;
 class QIconLoaderEngineEntry;
 QT_BEGIN_NAMESPACE
@@ -44,7 +53,7 @@ public:
 
 private:
     XdgIconLoaderEngine *engine;
-    QHash<quint64, QPair<QString, QString>> entryToColorScheme;
+    QHash<quint64, DEEPIN_QT_THEME::PALETTE_MAP> entryToColorScheme;
     QIcon::Mode lastMode;
 };
 #endif
