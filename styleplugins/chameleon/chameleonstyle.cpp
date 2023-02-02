@@ -612,6 +612,20 @@ bool ChameleonStyle::hideScrollBarByAnimation(const QStyleOptionSlider *scrollBa
             return false;
     }
 
+    // 如果应用没有自行控制则查看是否 dcc 有设置相关 xsettings
+    DPlatformTheme *theme = DGuiApplicationHelper::instance()->systemTheme();
+    if (theme && theme->isValid()) {
+        int sb = theme->scrollBarPolicy();
+        switch (sb) {
+        case Qt::ScrollBarAlwaysOff:
+            return true;
+        case Qt::ScrollBarAlwaysOn:
+            return false;
+        default:
+            break;
+        }
+    }
+
     auto styleAnimation = qobject_cast<dstyle::DScrollbarStyleAnimation*>(this->animation(sbar));
     if (!styleAnimation) {
         // styleAnimation -> updateTarget --sendEvent--> StyleAnimationUpdate -> repaint
