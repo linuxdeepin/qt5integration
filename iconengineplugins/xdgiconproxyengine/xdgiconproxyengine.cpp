@@ -205,6 +205,16 @@ void XdgIconProxyEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode
         return;
 
     pix.setDevicePixelRatio(ratio);
+
+    if (!qFuzzyCompare(ratio, 1.0) && Q_UNLIKELY(!qEnvironmentVariableIsSet("D_XDG_DISABLE_SMOOTH"))) {
+        if (!painter->testRenderHint(QPainter::SmoothPixmapTransform)) {
+            painter->setRenderHint(QPainter::SmoothPixmapTransform);
+            painter->drawPixmap(rect, pix);
+            painter->setRenderHint(QPainter::SmoothPixmapTransform, false);
+            return;
+        }
+    }
+
     painter->drawPixmap(rect, pix);
 }
 
