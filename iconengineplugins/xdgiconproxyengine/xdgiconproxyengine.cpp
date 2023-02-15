@@ -70,6 +70,18 @@ quint64 XdgIconProxyEngine::entryCacheKey(const ScalableEntry *color_entry, cons
     return quint64(color_entry) ^ (quint64(mode) << 56) ^ (quint64(state) << 48);
 }
 
+static inline QPixmap entryPixmap (ScalableEntry *color_entry, const QSize &size, QIcon::Mode mode, QIcon::State state)
+{
+    if (!color_entry)
+        return QPixmap();
+
+    if (auto d = color_entry->svgIcon.data_ptr())
+        if (d->engine)
+            return d->engine->pixmap(size, mode, state);
+
+     return color_entry->svgIcon.pixmap(size, mode, state);
+}
+
 QPixmap XdgIconProxyEngine::followColorPixmap(ScalableEntry *color_entry, const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
     if (mode == QIcon::Selected && mode != lastMode) {
@@ -90,7 +102,7 @@ QPixmap XdgIconProxyEngine::followColorPixmap(ScalableEntry *color_entry, const 
         return color_entry->pixmap(size, mode, state);
 
     const DEEPIN_XDG_THEME::PALETTE_MAP &color_scheme = DEEPIN_XDG_THEME::colorScheme.localData();
-    QPixmap pm = color_scheme == cache_color_scheme ? color_entry->svgIcon.pixmap(size, mode, state) : QPixmap();
+    QPixmap pm = color_scheme == cache_color_scheme ? entryPixmap(color_entry, size, mode, state) : QPixmap();
     // Note: not checking the QIcon::isNull(), because in Qt5.10 the isNull() is not reliable
     // for svg icons desierialized from stream (see https://codereview.qt-project.org/#/c/216086/)
     if (pm.isNull()) {
@@ -152,12 +164,13 @@ QPixmap XdgIconProxyEngine::followColorPixmap(ScalableEntry *color_entry, const 
         str_read.setVersion(QDataStream::Qt_4_4);
 
         str_read >> color_entry->svgIcon;
-        pm = color_entry->svgIcon.pixmap(size, mode, state);
+
+        pm = entryPixmap(color_entry, size, mode, state);
 
         // load the icon directly from file, if still null
         if (pm.isNull()) {
             color_entry->svgIcon = QIcon(color_entry->filename);
-            pm = color_entry->svgIcon.pixmap(size, mode, state);
+            pm = entryPixmap(color_entry, size, mode, state);
         }
 
         entryToColorScheme[cache_key] = color_scheme;
