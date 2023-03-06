@@ -16,7 +16,7 @@
 #include "xdgiconenginecreator.h"
 #endif
 
-namespace DEEPIN_QT_THEME {
+namespace DEEPIN_XDG_THEME {
 enum PaletteType {
     Text,
     Background,
@@ -53,7 +53,7 @@ public:
 
 private:
     XdgIconLoaderEngine *engine;
-    QHash<quint64, DEEPIN_QT_THEME::PALETTE_MAP> entryToColorScheme;
+    QHash<quint64, DEEPIN_XDG_THEME::PALETTE_MAP> entryToColorScheme;
     QIcon::Mode lastMode;
 };
 #endif
