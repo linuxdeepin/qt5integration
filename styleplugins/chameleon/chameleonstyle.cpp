@@ -98,6 +98,15 @@ static QWidget *getSbarParentWidget(QScrollBar *sbar)
     return isContainer ? pw->parentWidget() : pw;
 }
 
+// Calculating indicator's size for spinbox.
+static QRect spinboxIndicatorRect(const QRect &r)
+{
+    int size = qMin(r.width(), r.height());
+    int xOffset = r.x() + (r.width() - size) / 2;
+    int yOffset = r.y() + (r.height() - size) / 2;
+    return QRect(xOffset, yOffset, size, size);
+}
+
 ChameleonStyle::ChameleonStyle()
     : DStyle()
 {
@@ -463,16 +472,12 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_IndicatorArrowUp: {
         QIcon icon = DStyle::standardIcon(SP_ArrowUp, opt, w);
-        icon.paint(p, opt->rect);
+        icon.paint(p, spinboxIndicatorRect(opt->rect));
         return;
     }
     case PE_IndicatorArrowDown: {
         QIcon icon = DStyle::standardIcon(SP_ArrowDown, opt, w);
-        QRect r = opt->rect;
-        int size = qMin(r.width(), r.height());
-        int xOffset = r.x() + (r.width() - size) / 2;
-        int yOffset = r.y() + (r.height() - size) / 2;
-        icon.paint(p, QRect(xOffset, yOffset, size, size));
+        icon.paint(p, spinboxIndicatorRect(opt->rect));
         return;
     }
     case PE_IndicatorArrowRight: {
