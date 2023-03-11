@@ -5,13 +5,19 @@
 #include <qpa/qplatformthemeplugin.h>
 #include "qdeepintheme.h"
 
-#include <private/xdgiconloader/xdgiconloader_p.h>
+//#include <private/xdgiconloader/xdgiconloader_p.h>
+
+#include <QDBusConnection>
+#include <QDBusMessage>
 
 QT_BEGIN_NAMESPACE
 
 void updateXdgIconSystemTheme()
 {
-    XdgIconLoader::instance()->updateSystemTheme();
+//    XdgIconLoader::instance()->updateSystemTheme();
+    QDBusMessage message = QDBusMessage::createSignal(QStringLiteral("/KIconLoader"), QStringLiteral("org.kde.KIconLoader"), QStringLiteral("iconChanged"));
+    message << 0;
+    QDBusConnection::sessionBus().send(message);
 }
 
 class QDeepinThemePlugin : public QPlatformThemePlugin

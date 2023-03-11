@@ -7,7 +7,7 @@ SOURCES += main.cpp \
            diconproxyengine.cpp
 OTHER_FILES += diconproxyengine.json
 
-QT +=  dtkgui
+QT +=  dtkgui KIconThemes
 DESTDIR = $$_PRO_FILE_PWD_/../../bin/plugins/iconengines/
 
 unix {

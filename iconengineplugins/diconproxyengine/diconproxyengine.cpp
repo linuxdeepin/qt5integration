@@ -13,6 +13,8 @@
 #include <QPixmap>
 #include <QDebug>
 #include <QDir>
+#include <KIconLoader>
+#include <KIconEngine>
 
 #include <private/qiconloader_p.h>
 #include <private/qguiapplication_p.h>
@@ -57,8 +59,9 @@ static QIconEngine *createIconEngineWithKey(const QString &iconName, const QStri
 
 static inline QIconEngine *createXdgProxyIconEngine(const QString &iconName)
 {
-    const QString &key(qEnvironmentVariable("D_PROXY_ICON_ENGINE", QLatin1String("XdgIconProxyEngine")));
-    return createIconEngineWithKey(iconName, key);
+    return new KIconEngine(iconName, KIconLoader::global());
+//    const QString &key(qEnvironmentVariable("D_PROXY_ICON_ENGINE", QLatin1String("XdgIconProxyEngine")));
+//    return createIconEngineWithKey(iconName, key);
 }
 
 static inline QIconEngine *createDciIconEngine(const QString &iconName)
