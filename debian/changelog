@@ -1,3 +1,9 @@
+qt5integration (5.6.6) unstable; urgency=medium
+
+  * Release 5.6.6
+
+ -- Deepin Packages Builder <packages@deepin.com>  Mon, 13 Mar 2023 10:13:11 +0800
+
 qt5integration (5.6.5) unstable; urgency=medium
 
   * Release 5.6.5
