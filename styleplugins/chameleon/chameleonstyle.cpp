@@ -18,6 +18,7 @@
 #include <DButtonBox>
 #include <DDciIcon>
 #include <DDciIconPalette>
+#include <DSizeMode>
 
 #include <QLabel>
 #include <QCalendarWidget>
@@ -4023,6 +4024,11 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         int menuButtonIndicatorWidth = 0;
         if (const QStyleOptionToolButton *toolbutton
             = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
+            if (toolbutton->toolButtonStyle == Qt::ToolButtonIconOnly &&
+                    !toolbutton->features.testFlag(QStyleOptionToolButton::Arrow) &&
+                    !toolbutton->features.testFlag(QStyleOptionToolButton::HasMenu))
+                return DSizeModeHelper::element(QSize(24, 24), QSize(36, 36));
+
             if ((toolbutton->features & QStyleOptionToolButton::HasMenu) &&
                 (!(toolbutton->features & QStyleOptionToolButton::MenuButtonPopup))) {
                 menuButtonIndicatorWidth = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, opt, widget);
