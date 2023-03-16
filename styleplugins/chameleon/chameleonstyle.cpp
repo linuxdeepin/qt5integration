@@ -3865,6 +3865,8 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
         Q_FALLTHROUGH();
     }
     case CT_PushButton: {
+        // 只将width加上ButtonMargin，对于height的margin通过frame_margins体现
+        size.rheight() -= proxy()->pixelMetric(PM_ButtonMargin, opt, widget);
         int frame_margins = DStyle::pixelMetric(PM_FrameMargins, opt, widget);
         size += QSize(frame_margins * 2, frame_margins * 2);
 
