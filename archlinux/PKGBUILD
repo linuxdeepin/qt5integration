@@ -2,6 +2,9 @@
 pkgname=deepin-qt5integration-git
 pkgver=5.1.12.r54.g732a237
 pkgrel=1
+sourcename=qt5integration
+sourcetar=("$sourcename"_"$pkgver".tar.xz)
+sourcedir="$sourcename"
 pkgdesc='Qt platform theme integration plugins for DDE'
 arch=('x86_64' 'aarch64')
 url="https://github.com/linuxdeepin/qt5integration"
@@ -11,20 +14,20 @@ makedepends=('git' 'qt5-tools' 'xcb-util-renderutil' 'gtest')
 conflicts=('deepin-qt5integration')
 provides=('deepin-qt5integration')
 groups=('deepin-git')
-source=('source.tar.gz')
+source=("${sourcetars[@]}")
 sha512sums=('SKIP')
 
 prepare() {
-    cd $deepin_source_name
+    cd $sourcedir
 }
 
 build() {
-  cd $deepin_source_name
+  cd $sourcedir
   qmake-qt5 PREFIX=/usr
   make
 }
 
 package() {
-  cd $deepin_source_name
+  cd $sourcedir
   make INSTALL_ROOT="$pkgdir" install
 }
