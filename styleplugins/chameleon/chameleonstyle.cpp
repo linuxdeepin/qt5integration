@@ -4126,7 +4126,7 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
     case SH_ComboBox_Popup:
         return true;
     case SH_ComboBox_PopupFrameStyle:
-        return true;
+        return QFrame::NoFrame | QFrame::Plain;
     case SH_Slider_AbsoluteSetButtons:
         return Qt::LeftButton | Qt::MidButton;
     case SH_ToolTipLabel_Opacity:
