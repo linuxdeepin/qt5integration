@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017 - 2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include "chameleonstyle.h"
@@ -553,7 +553,14 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                     }
 
                     if (vopt->viewItemPosition != QStyleOptionViewItem::End) {
-                        p->drawRoundedRect(vopt->rect.adjusted(0, 0, frame_radius, 0), frame_radius, frame_radius);
+                        // TODO: determine the positon(left and right) by a flag, draw rounded rect respectively.
+                        if (vopt->rect.x() == 0) { // left component
+                            DDrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius,
+                                                        DDrawUtils::TopLeftCorner | DDrawUtils::BottomLeftCorner);
+                        } else { // right component
+                            DDrawUtils::drawRoundedRect(p, vopt->rect, frame_radius, frame_radius,
+                                                        DDrawUtils::TopRightCorner | DDrawUtils::BottomRightCorner);
+                        }
                     } else if(vopt->viewItemPosition != QStyleOptionViewItem::Invalid){
                         p->drawRoundedRect(vopt->rect, frame_radius, frame_radius);
                     }
