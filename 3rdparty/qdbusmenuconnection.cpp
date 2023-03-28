@@ -43,18 +43,22 @@
 #include "qdbustrayicon_p.h"
 #endif
 #include "qdbusmenuconnection_p.h"
-#include "qdbusmenuadaptor_p.h"
-#include "qdbusplatformmenu_p.h"
 
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusServiceWatcher>
 #include <QtDBus/QDBusConnectionInterface>
+#include <private/qdbusmenuadaptor_p.h>
+#include <private/qdbusplatformmenu_p.h>
 #include <qdebug.h>
 #include <qcoreapplication.h>
 
-QT_BEGIN_NAMESPACE
+namespace thirdparty {
 
-Q_DECLARE_LOGGING_CATEGORY(qLcMenu)
+#ifndef QT_DEBUG
+Q_LOGGING_CATEGORY(dLcMenu, "dtk.qpa.Menu");
+#else
+Q_LOGGING_CATEGORY(dLcMenu, "dtk.qpa.Menu", QtInfoMsg);
+#endif
 
 const QString StatusNotifierWatcherService = QLatin1String("org.kde.StatusNotifierWatcher");
 const QString StatusNotifierWatcherPath = QLatin1String("/StatusNotifierWatcher");
@@ -79,7 +83,7 @@ QDBusMenuConnection::QDBusMenuConnection(QObject *parent, const QString &service
     if (systrayHost.isValid() && systrayHost.property("IsStatusNotifierHostRegistered").toBool())
         m_statusNotifierHostRegistered = true;
     else
-        qCDebug(qLcMenu) << "StatusNotifierHost is not registered";
+        qCDebug(dLcMenu) << "StatusNotifierHost is not registered";
 #endif
 }
 
@@ -93,7 +97,7 @@ bool QDBusMenuConnection::registerTrayIconMenu(QDBusTrayIcon *item)
 {
     bool success = connection().registerObject(MenuBarPath, item->menu());
     if (!success)  // success == false is normal, because the object may be already registered
-        qCDebug(qLcMenu) << "failed to register" << item->instanceId() << MenuBarPath;
+        qCDebug(dLcMenu) << "failed to register" << item->instanceId() << MenuBarPath;
     return success;
 }
 
@@ -144,4 +148,4 @@ bool QDBusMenuConnection::unregisterTrayIcon(QDBusTrayIcon *item)
 }
 #endif // QT_NO_SYSTEMTRAYICON
 
-QT_END_NAMESPACE
+} // namespace thirdparty

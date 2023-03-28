@@ -6,6 +6,7 @@
 #include "qdeepinfiledialoghelper.h"
 #include "filedialogmanager_interface.h"
 #include "dthemesettings.h"
+#include "../3rdparty/qdbustrayicon_p.h"
 
 #include <DGuiApplicationHelper>
 #include <DPlatformTheme>
@@ -54,6 +55,19 @@ QMimeDatabase QDeepinTheme::m_mimeDatabase;
 DThemeSettings *QDeepinTheme::m_settings = 0;
 
 extern void updateXdgIconSystemTheme();
+
+static bool isDBusTrayAvailable() {
+    static bool dbusTrayAvailable = false;
+    static bool dbusTrayAvailableKnown = false;
+    if (!dbusTrayAvailableKnown) {
+        thirdparty::QDBusMenuConnection conn;
+        if (conn.isStatusNotifierHostRegistered())
+            dbusTrayAvailable = true;
+        dbusTrayAvailableKnown = true;
+        qCDebug(qLcTray) << "D-Bus tray available:" << dbusTrayAvailable;
+    }
+    return dbusTrayAvailable;
+}
 
 static void onIconThemeSetCallback()
 {
@@ -539,6 +553,15 @@ QPixmap QDeepinTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &si
     Q_UNUSED(iconOptions);
 
     return XdgIcon::fromTheme(m_mimeDatabase.mimeTypeForFile(fileInfo).iconName()).pixmap(size.toSize());
+}
+#endif
+
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+QPlatformSystemTrayIcon *QDeepinTheme::createPlatformSystemTrayIcon() const
+{
+    if (isDBusTrayAvailable())
+        return new thirdparty::QDBusTrayIcon();
+    return nullptr;
 }
 #endif
 

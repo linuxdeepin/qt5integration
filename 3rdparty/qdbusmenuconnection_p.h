@@ -54,11 +54,14 @@
 #include <QtCore/QString>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusVariant>
-
-QT_BEGIN_NAMESPACE
+#include <QLoggingCategory>
 
 class QDBusServiceWatcher;
+
+namespace thirdparty {
+
 #ifndef QT_NO_SYSTEMTRAYICON
+Q_DECLARE_LOGGING_CATEGORY(dLcMenu);
 class QDBusTrayIcon;
 #endif // QT_NO_SYSTEMTRAYICON
 
@@ -93,6 +96,6 @@ private:
     bool m_statusNotifierHostRegistered;
 };
 
-QT_END_NAMESPACE
+} // namespace thirdparty
 
 #endif // DBUSCONNECTION_H
