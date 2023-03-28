@@ -54,10 +54,7 @@
 
 #include "qdbustrayicon_p.h"
 
-QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(qLcMenu)
-Q_DECLARE_LOGGING_CATEGORY(qLcTray)
+namespace thirdparty{
 
 QStatusNotifierItemAdaptor::QStatusNotifierItemAdaptor(QDBusTrayIcon *parent)
     : QDBusAbstractAdaptor(parent), m_trayIcon(parent)
@@ -159,28 +156,28 @@ QXdgDBusToolTipStruct QStatusNotifierItemAdaptor::toolTip() const
 
 void QStatusNotifierItemAdaptor::Activate(int x, int y)
 {
-    qCDebug(qLcTray) << x << y;
+    qCDebug(dLcTray) << x << y;
     emit m_trayIcon->activated(QPlatformSystemTrayIcon::Trigger);
 }
 
 void QStatusNotifierItemAdaptor::ContextMenu(int x, int y)
 {
-    qCDebug(qLcTray) << x << y;
+    qCDebug(dLcTray) << x << y;
     emit m_trayIcon->activated(QPlatformSystemTrayIcon::Context);
 }
 
 void QStatusNotifierItemAdaptor::Scroll(int w, const QString &s)
 {
-    qCDebug(qLcTray) << w << s;
+    qCDebug(dLcTray) << w << s;
     // unsupported
 }
 
 void QStatusNotifierItemAdaptor::SecondaryActivate(int x, int y)
 {
-    qCDebug(qLcTray) << x << y;
+    qCDebug(dLcTray) << x << y;
     emit m_trayIcon->activated(QPlatformSystemTrayIcon::MiddleClick);
 }
 
-QT_END_NAMESPACE
+} // namespace thirdparty
 
 #endif // QT_NO_SYSTEMTRAYICON

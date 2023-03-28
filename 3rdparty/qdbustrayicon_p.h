@@ -52,23 +52,27 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
+#include "qdbusmenuconnection_p.h"
+#include "qstatusnotifieritemadaptor_p.h"
+#include <private/qtguiglobal_p.h>
 
 QT_REQUIRE_CONFIG(systemtrayicon);
 
 #include <QIcon>
 #include <QTemporaryFile>
 #include <QTimer>
-#include "QtGui/qpa/qplatformsystemtrayicon.h"
-#include "private/qdbusmenuconnection_p.h"
+#include <QLoggingCategory>
+#include <qpa/qplatformsystemtrayicon.h>
 
-QT_BEGIN_NAMESPACE
-
-class QStatusNotifierItemAdaptor;
 class QDBusMenuAdaptor;
 class QDBusPlatformMenu;
 class QXdgNotificationInterface;
 
+namespace thirdparty {
+
+Q_DECLARE_LOGGING_CATEGORY(dLcTray);
+
+class QStatusNotifierItemAdaptor;
 class QDBusTrayIcon: public QPlatformSystemTrayIcon
 {
     Q_OBJECT
@@ -161,7 +165,6 @@ private:
     QTimer m_attentionTimer;
     bool m_registered;
 };
+}// namespace thirdparty
 
-QT_END_NAMESPACE
-
-#endif // QDBUSTRAYICON_H
+#endif // QBUSTRAYICON_H

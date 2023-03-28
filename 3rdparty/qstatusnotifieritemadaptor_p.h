@@ -63,15 +63,12 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-
-QT_REQUIRE_CONFIG(systemtrayicon);
-
 #include <QtCore/QObject>
 #include <QtDBus/QtDBus>
+#include <private/qdbustraytypes_p.h>
 
-#include "qdbustraytypes_p.h"
-
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(systemtrayicon);
+namespace thirdparty {
 class QDBusTrayIcon;
 
 /*
@@ -201,6 +198,6 @@ private:
     QDBusTrayIcon *m_trayIcon;
 };
 
-QT_END_NAMESPACE
+} // namespace thirdparty
 
 #endif // QSTATUSNOTIFIERITEMADAPTER_P_H

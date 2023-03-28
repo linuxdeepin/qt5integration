@@ -31,6 +31,10 @@ public:
                            QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
 #endif
 
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
+#endif
+
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
     const QPalette *palette(Palette type) const override;
     const QFont *font(Font type) const Q_DECL_OVERRIDE;

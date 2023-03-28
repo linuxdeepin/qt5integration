@@ -43,9 +43,6 @@
 
 #include "qdbusmenuconnection_p.h"
 #include "qstatusnotifieritemadaptor_p.h"
-#include "qdbusmenuadaptor_p.h"
-#include "qdbusplatformmenu_p.h"
-#include "qxdgnotificationproxy_p.h"
 
 #include <qpa/qplatformmenu.h>
 #include <qstring.h>
@@ -57,13 +54,20 @@
 #include <qdbusconnectioninterface.h>
 #include <private/qlockfile_p.h>
 #include <private/qguiapplication_p.h>
+#include <private/qdbusmenuadaptor_p.h>
+#include <private/qdbusplatformmenu_p.h>
+#include <private/qxdgnotificationproxy_p.h>
 
 // Defined in Windows headers which get included by qlockfile_p.h
 #undef interface
 
-QT_BEGIN_NAMESPACE
+namespace thirdparty {
 
-Q_LOGGING_CATEGORY(qLcTray, "qt.qpa.tray")
+#ifndef QT_DEBUG
+Q_LOGGING_CATEGORY(dLcTray, "dtk.qpa.tray");
+#else
+Q_LOGGING_CATEGORY(dLcTray, "dtk.qpa.tray", QtInfoMsg);
+#endif
 
 static QString iconTempPath()
 {
@@ -88,7 +92,29 @@ static QString iconTempPath()
     return QDir::tempPath();
 }
 
-static const QString KDEItemFormat = QStringLiteral("org.kde.StatusNotifierItem-%1-%2");
+static QString generateServiceName()
+{
+    const QCoreApplication *app = QCoreApplication::instance();
+    const QString domain = app->organizationDomain();
+    const QStringList parts = domain.split(QLatin1Char('.'), QString::SkipEmptyParts);
+
+    QString reversedDomain;
+    if (parts.isEmpty()) {
+        reversedDomain = QStringLiteral("local.");
+    } else {
+        for (const QString &part : parts) {
+            reversedDomain.prepend(QLatin1Char('.'));
+            reversedDomain.prepend(part);
+        }
+    }
+
+    return reversedDomain + app->applicationName();
+}
+
+static const QString KDEItemFormat = QStringLiteral("%2.kdbus-%1")
+                                         .arg(QDBusConnection::sessionBus().baseService().replace(
+                                             QRegularExpression(QStringLiteral("[\\.:]")), QStringLiteral("_")));
+
 static const QString KDEWatcherService = QStringLiteral("org.kde.StatusNotifierWatcher");
 static const QString XdgNotificationService = QStringLiteral("org.freedesktop.Notifications");
 static const QString XdgNotificationPath = QStringLiteral("/org/freedesktop/Notifications");
@@ -112,7 +138,7 @@ QDBusTrayIcon::QDBusTrayIcon()
     , m_menuAdaptor(nullptr)
     , m_menu(nullptr)
     , m_notifier(nullptr)
-    , m_instanceId(KDEItemFormat.arg(QCoreApplication::applicationPid()).arg(++instanceCount))
+    , m_instanceId(KDEItemFormat.arg(generateServiceName()))
     , m_category(QStringLiteral("ApplicationStatus"))
     , m_defaultStatus(QStringLiteral("Active")) // be visible all the time.  QSystemTrayIcon has no API to control this.
     , m_status(m_defaultStatus)
@@ -120,7 +146,8 @@ QDBusTrayIcon::QDBusTrayIcon()
     , m_tempAttentionIcon(nullptr)
     , m_registered(false)
 {
-    qCDebug(qLcTray);
+    qCDebug(dLcTray);
+    ++instanceCount;
     if (instanceCount == 1) {
         QDBusMenuItem::registerDBusTypes();
         qDBusRegisterMetaType<QXdgDBusImageStruct>();
@@ -143,7 +170,7 @@ QDBusTrayIcon::~QDBusTrayIcon()
 
 void QDBusTrayIcon::init()
 {
-    qCDebug(qLcTray) << "registering" << m_instanceId;
+    qCDebug(dLcTray) << "registering" << m_instanceId;
     m_registered = dBusConnection()->registerTrayIcon(this);
     QObject::connect(dBusConnection()->dbusWatcher(), &QDBusServiceWatcher::serviceRegistered,
                      this, &QDBusTrayIcon::watcherServiceRegistered);
@@ -151,7 +178,7 @@ void QDBusTrayIcon::init()
 
 void QDBusTrayIcon::cleanup()
 {
-    qCDebug(qLcTray) << "unregistering" << m_instanceId;
+    qCDebug(dLcTray) << "unregistering" << m_instanceId;
     if (m_registered)
         dBusConnection()->unregisterTrayIcon(this);
     delete m_dbusConnection;
@@ -182,7 +209,7 @@ void QDBusTrayIcon::attentionTimerExpired()
 
 void QDBusTrayIcon::setStatus(const QString &status)
 {
-    qCDebug(qLcTray) << status;
+    qCDebug(dLcTray) << status;
     if (m_status == status)
         return;
     m_status = status;
@@ -241,13 +268,13 @@ void QDBusTrayIcon::updateIcon(const QIcon &icon)
         if (m_tempIcon)
             m_iconName = m_tempIcon->fileName();
     }
-    qCDebug(qLcTray) << m_iconName << icon.availableSizes();
+    qCDebug(dLcTray) << m_iconName << icon.availableSizes();
     emit iconChanged();
 }
 
 void QDBusTrayIcon::updateToolTip(const QString &tooltip)
 {
-    qCDebug(qLcTray) << tooltip;
+    qCDebug(dLcTray) << tooltip;
     m_tooltip = tooltip;
     emit tooltipChanged();
 }
@@ -259,7 +286,7 @@ QPlatformMenu *QDBusTrayIcon::createMenu() const
 
 void QDBusTrayIcon::updateMenu(QPlatformMenu * menu)
 {
-    qCDebug(qLcTray) << menu;
+    qCDebug(dLcTray) << menu;
     QDBusPlatformMenu *newMenu = qobject_cast<QDBusPlatformMenu *>(menu);
     if (m_menu != newMenu) {
         if (m_menu) {
@@ -310,7 +337,7 @@ void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const 
         if (m_tempAttentionIcon)
             m_attentionIconName = m_tempAttentionIcon->fileName();
     }
-    qCDebug(qLcTray) << title << msg <<
+    qCDebug(dLcTray) << title << msg <<
         QPlatformSystemTrayIcon::metaObject()->enumerator(
             QPlatformSystemTrayIcon::staticMetaObject.indexOfEnumerator("MessageIcon")).valueToKey(iconType)
         << m_attentionIconName << msecs;
@@ -333,21 +360,22 @@ void QDBusTrayIcon::showMessage(const QString &title, const QString &msg, const 
 
 void QDBusTrayIcon::actionInvoked(uint id, const QString &action)
 {
-    qCDebug(qLcTray) << id << action;
+    qCDebug(dLcTray) << id << action;
     emit messageClicked();
 }
 
 void QDBusTrayIcon::notificationClosed(uint id, uint reason)
 {
-    qCDebug(qLcTray) << id << reason;
+    qCDebug(dLcTray) << id << reason;
 }
 
 bool QDBusTrayIcon::isSystemTrayAvailable() const
 {
     QDBusMenuConnection * conn = const_cast<QDBusTrayIcon *>(this)->dBusConnection();
-    qCDebug(qLcTray) << conn->isStatusNotifierHostRegistered();
+    qCDebug(dLcTray) << conn->isStatusNotifierHostRegistered();
     return conn->isStatusNotifierHostRegistered();
 }
 
-QT_END_NAMESPACE
 #endif //QT_NO_SYSTEMTRAYICON
+
+} // namespace thirdparty
