@@ -259,6 +259,13 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                p->setRenderHint(QPainter::Antialiasing);
                p->drawRoundedRect(select_rect, frame_radius, frame_radius);
                return;
+            } else {
+                if (vopt->backgroundBrush.style() != Qt::NoBrush) {
+                    p->setPen(Qt::NoPen);
+                    p->setRenderHint(QPainter::Antialiasing);
+                    p->drawRoundedRect(opt->rect, frame_radius, frame_radius);
+                    return;
+                }
             }
         }
         break;
