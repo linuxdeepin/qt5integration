@@ -64,7 +64,7 @@ static bool isDBusTrayAvailable() {
         if (conn.isStatusNotifierHostRegistered())
             dbusTrayAvailable = true;
         dbusTrayAvailableKnown = true;
-        qCDebug(qLcTray) << "D-Bus tray available:" << dbusTrayAvailable;
+        qCDebug(thirdparty::dLcTray) << "D-Bus tray available:" << dbusTrayAvailable;
     }
     return dbusTrayAvailable;
 }
