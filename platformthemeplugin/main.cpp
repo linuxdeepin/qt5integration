@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017 - 2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include <qpa/qplatformthemeplugin.h>
@@ -26,10 +26,11 @@ public:
 QPlatformTheme *QDeepinThemePlugin::create(const QString &key, const QStringList &params)
 {
     Q_UNUSED(params);
-    if (!key.compare(QLatin1String(QDeepinTheme::name), Qt::CaseInsensitive))
+    const QStringList &keys = {QLatin1String(QDeepinTheme::name), QLatin1String("DDE")};
+    if (keys.contains(key, Qt::CaseInsensitive))
         return new QDeepinTheme;
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE
