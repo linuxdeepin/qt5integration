@@ -4202,6 +4202,13 @@ static void updateWeekendTextFormat(QCalendarWidget *calendar, QColor)
     calendar->setWeekdayTextFormat(Qt::Sunday, fmt);
 }
 
+// 最大圆角18, 原来默认是8
+static inline void setWindowRadius(QWidget *w, int radius)
+{
+    DPlatformWindowHandle handle(w);
+    handle.setWindowRadius(radius);
+}
+
 void ChameleonStyle::polish(QWidget *w)
 {
     DStyle::polish(w);
@@ -4223,10 +4230,8 @@ void ChameleonStyle::polish(QWidget *w)
     }
 
     if (auto listview = qobject_cast<QListView *>(w)) {
-        if (listview->parentWidget() == nullptr) {
-            DPlatformWindowHandle handle(listview);
-            handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
-        }
+        if (listview->parentWidget() == nullptr)
+            setWindowRadius(listview, DStyle::pixelMetric(PM_FrameRadius));
     }
 
     if (w && qobject_cast<QLineEdit *>(w)) {
@@ -4235,10 +4240,9 @@ void ChameleonStyle::polish(QWidget *w)
     }
 
     if (auto container = qobject_cast<QComboBoxPrivateContainer *>(w)) {
-        if (DWindowManagerHelper::instance()->hasComposite()) {
-            DPlatformWindowHandle handle(container);
-            handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
-        }
+        if (DWindowManagerHelper::instance()->hasComposite())
+            setWindowRadius(container, DStyle::pixelMetric(PM_FrameRadius));
+
         if (!DGuiApplicationHelper::isTabletEnvironment())
             container->setFrameStyle(QFrame::NoFrame);
     }
@@ -4246,10 +4250,8 @@ void ChameleonStyle::polish(QWidget *w)
     if (auto calendar = qobject_cast<QCalendarWidget* >(w)) {
         int radius = DStyle::pixelMetric(PM_TopLevelWindowRadius);
         // 只有dtk的应用绘制日历窗口圆角
-        if (dynamic_cast<DApplication *>(QCoreApplication::instance())) {
-            DPlatformWindowHandle handle(calendar);
-            handle.setWindowRadius(radius);
-        }
+        if (dynamic_cast<DApplication *>(QCoreApplication::instance()))
+            setWindowRadius(calendar, radius);
 
         calendar->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
 
@@ -4314,12 +4316,14 @@ void ChameleonStyle::polish(QWidget *w)
 
             if (DPlatformWindowHandle::isEnabledDXcb(w)) {
                 handle.setEnableBlurWindow(true);
-                // 最大圆角8, 18忒大了，原来默认是8
-                auto theme = DGuiApplicationHelper::instance()->applicationTheme();
-                int wradius = theme->windowRadius();
-                handle.setWindowRadius(qMax(0, qMin(wradius, 8)));
-                w->setAttribute(Qt::WA_TranslucentBackground);
+                DPlatformTheme *theme = DGuiApplicationHelper::instance()->applicationTheme();
+                // 最大圆角8, 18忒大了，原来默认是 8 (v20 上就保持默认最大 8 吧。。)
+                setWindowRadius(w, qMax(0, qMin(theme->windowRadius(), 8)));
 
+                connect(theme, &DPlatformTheme::windowRadiusChanged, w, [w](int r){
+                   setWindowRadius(w, qMax(0, qMin(r, 8)));
+                });
+                w->setAttribute(Qt::WA_TranslucentBackground);
                 connect(DWindowManagerHelper::instance(), SIGNAL(hasCompositeChanged()), w, SLOT(update()));
             }
         } else if (is_tip) {
