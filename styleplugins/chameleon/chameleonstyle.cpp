@@ -453,7 +453,8 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
     }
     case PE_Frame: {
         if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt)) {
-            if (f->features & QStyleOptionFrame::Rounded) {
+            const bool hasProp = w && w->property("_d_dtk_frameRadius").isValid();
+            if (f->features & QStyleOptionFrame::Rounded || hasProp) {
                 p->setRenderHint(QPainter::Antialiasing);
                 p->setBrush(p->background());
 
