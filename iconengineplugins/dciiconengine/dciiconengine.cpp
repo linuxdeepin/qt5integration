@@ -78,15 +78,16 @@ QSize DDciIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::Sta
 
 QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
 {
-    return pixmap(size, mode, state, 0);
+    // QIcon::pixmap has already been multiplied by the screen scaling factor
+    // so there is no need to do it again here. set radio 1.0 .
+    return pixmap(size, mode, state, 1.0);
 }
 
 QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal radio)
 {
     Q_UNUSED(state)
     ensureIconTheme();
-    return m_dciIcon.pixmap(qFuzzyIsNull(radio) ? deviceRadio() : radio,
-                            qMin(size.width(), size.height()), dciTheme(),
+    return m_dciIcon.pixmap(radio, qMin(size.width(), size.height()), dciTheme(),
                             dciMode(mode), dciPalettle());
 }
 
@@ -158,7 +159,7 @@ void DDciIconEngine::virtual_hook(int id, void *data)
     case QIconEngine::ScaledPixmapHook:
         {
             QIconEngine::ScaledPixmapArgument &arg = *reinterpret_cast<QIconEngine::ScaledPixmapArgument*>(data);
-            arg.pixmap = pixmap(arg.size, arg.mode, arg.state, arg.scale);
+            arg.pixmap = pixmap(arg.size, arg.mode, arg.state);
         }
         break;
     default:
