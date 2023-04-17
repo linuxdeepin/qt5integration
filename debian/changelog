@@ -1,3 +1,13 @@
+qt5integration (5.6.10) unstable; urgency=medium
+
+  * Release 5.6.10
+  * FIX dtkwidget/#399 dtkwidget/#409
+  * FIX developer-center/#4068 developer-center/#4077
+  * deepin theme plugin add DDE key
+
+
+ -- Deepin Packages Builder <packages@deepin.com>  Mon, 17 Apr 2023 17:18:59 +0800
+
 qt5integration (5.6.9) unstable; urgency=medium
 
   * Release 5.6.9
