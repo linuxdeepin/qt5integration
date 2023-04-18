@@ -368,6 +368,9 @@ void QDeepinFileDialogHelper::ensureDialog() const
             QTimer *heartbeatTimer = new QTimer(filedlgInterface);
 
             connect(heartbeatTimer, &QTimer::timeout, this, [this, heartbeatTimer] {
+                if (!filedlgInterface)
+                    return ;
+
                 QDBusPendingReply<> reply = filedlgInterface->makeHeartbeat();
 
                 reply.waitForFinished();
