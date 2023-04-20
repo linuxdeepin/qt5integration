@@ -301,8 +301,17 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         bool isTransBg = false;
         if (w) {
-            isTransBg = w->topLevelWidget()->testAttribute(Qt::WA_TranslucentBackground) ||
-                    w->property("_d_dtk_lineedit_opacity").toBool();
+            auto prop = w->property("_d_dtk_lineedit_opacity");
+
+            if (prop.isValid()) {
+                isTransBg = prop.toBool();
+            } else {
+                const auto windowFlags = w->window()->windowFlags();
+                const bool hasTransAttr = w->window()->testAttribute(Qt::WA_TranslucentBackground);
+                const bool isDialog = windowFlags.testFlag(Qt::Dialog);
+                const bool isPopup = windowFlags.testFlag(Qt::Popup);
+                isTransBg = hasTransAttr && isDialog && !isPopup;
+            }
         }
 
         if (isTransBg)
