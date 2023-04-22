@@ -10,6 +10,8 @@
 #include <QPainter>
 #include <QPixmap>
 
+#include <private/qhexstring_p.h>
+
 static inline DDciIcon::Theme dciTheme()
 {
     auto theme = DGuiApplicationHelper::instance()->themeType();
@@ -85,10 +87,25 @@ QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State
 
 QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal radio)
 {
-    Q_UNUSED(state)
+    QString key = QLatin1String("qt_") + m_iconName
+            % HexString<uint>(mode)
+            % HexString<uint>(state)
+            % HexString<uint>(uint(radio * 100))
+            % HexString<qint64>(QGuiApplication::palette().cacheKey())
+            % HexString<int>(size.width())
+            % HexString<int>(size.height());
+
+    QPixmap pix;
+    if (QPixmapCache::find(key, &pix))
+        return pix;
+
     ensureIconTheme();
-    return m_dciIcon.pixmap(radio, qMin(size.width(), size.height()), dciTheme(),
+    pix = m_dciIcon.pixmap(radio, qMin(size.width(), size.height()), dciTheme(),
                             dciMode(mode), dciPalettle());
+    if (!pix.isNull())
+        QPixmapCache::insert(key, pix);
+
+    return pix;
 }
 
 void DDciIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
