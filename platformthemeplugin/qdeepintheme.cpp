@@ -652,12 +652,14 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
                 font_size = 10.5;
             }
 
-            static QFont font = QFont(QString());
+            static QScopedPointer<QFont> sysFont;
 
-            font.setFamily(font_name);
-            font.setPointSizeF(font_size);
+            // We need to re-contruct a new QFont each time, inorder to refresh font dpi
+            sysFont.reset(new QFont(QString()));
+            sysFont->setFamily(font_name);
+            sysFont->setPointSizeF(font_size);
 
-            return &font;
+            return sysFont.data();
         }
 
         break;
@@ -675,12 +677,14 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
                 font_size = 10.5;
             }
 
-            static QFont font = QFont(QString());
+            static QScopedPointer<QFont> fixedFont;
 
-            font.setFamily(font_name);
-            font.setPointSizeF(font_size);
+            // We need to re-contruct a new QFont each time, inorder to refresh font dpi
+            fixedFont.reset(new QFont(QString()));
+            fixedFont->setFamily(font_name);
+            fixedFont->setPointSizeF(font_size);
 
-            return &font;
+            return fixedFont.data();
         }
 
         break;
