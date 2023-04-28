@@ -73,8 +73,13 @@ QDeepinFileDialogHelper::QDeepinFileDialogHelper()
 
 QDeepinFileDialogHelper::~QDeepinFileDialogHelper()
 {
-    if (auxiliaryWindow)
+    if (auxiliaryWindow) {
+        // Note that we must hide auxiliaryWindow if it's modal to avoid direct invocation of deleteLater() to QDeepinFileDialogHelper
+        // When someone creates a QFileDialog, runs exec amd uses a timer to invoke QFileDialog::deleteLater later. auxiliaryWindow
+        // will just be deleted but not be hidden. Mainwindow will keep blocked by a dead modal window.
+        hideAuxiliaryWindow();
         auxiliaryWindow->deleteLater();
+    }
 
     if (filedlgInterface) {
         filedlgInterface->deleteLater(); // dbus
@@ -196,9 +201,10 @@ void QDeepinFileDialogHelper::exec()
 
     // block input to the window, allow input to other GTK dialogs
     QEventLoop loop;
-    connect(this, SIGNAL(accept()), &loop, SLOT(quit()));
-    connect(this, SIGNAL(reject()), &loop, SLOT(quit()));
-    connect(this, SIGNAL(destroyed(QObject*)), &loop, SLOT(quit()));
+    execLoop = &loop;
+    connect(this, &QPlatformDialogHelper::accept, &loop, &QEventLoop::quit);
+    connect(this, &QPlatformDialogHelper::reject, &loop, &QEventLoop::quit);
+    connect(this, &QObject::destroyed, &loop, &QEventLoop::quit);
     loop.exec();
 }
 
@@ -211,13 +217,11 @@ void QDeepinFileDialogHelper::hide()
     if (filedlgInterface)
         filedlgInterface->hide();
 
-    if (auxiliaryWindow) {
-        QGuiApplicationPrivate::hideModalWindow(auxiliaryWindow);
+    if (auxiliaryWindow)
+        hideAuxiliaryWindow();
 
-        if (activeWindow) {
-            activeWindow->requestActivate();
-            activeWindow.clear();
-        }
+    if (execLoop && execLoop->isRunning()) {
+        execLoop->quit();
     }
 }
 
@@ -362,7 +366,7 @@ void QDeepinFileDialogHelper::ensureDialog() const
                 }
 
                 if (auxiliaryWindow && auxiliaryWindow->isModal() && qApp->modalWindow() == auxiliaryWindow)
-                    QGuiApplicationPrivate::hideModalWindow(auxiliaryWindow);
+                    hideAuxiliaryWindow();
             });
 
             QTimer *heartbeatTimer = new QTimer(filedlgInterface);
@@ -457,4 +461,11 @@ void QDeepinFileDialogHelper::applyOptions()
     }
 }
 
+void QDeepinFileDialogHelper::hideAuxiliaryWindow() const
+{
+    QGuiApplicationPrivate::hideModalWindow(auxiliaryWindow);
+
+    if (activeWindow)
+        activeWindow->requestActivate();
+}
 QT_END_NAMESPACE
