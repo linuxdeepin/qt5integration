@@ -8,6 +8,7 @@
 #include <qpa/qplatformdialoghelper.h>
 
 #include <QPointer>
+#include <QEventLoop>
 
 QT_BEGIN_NAMESPACE
 
@@ -49,10 +50,12 @@ private:
     mutable QPointer<QWindow> auxiliaryWindow;
     QPointer<QWindow> activeWindow;
     QPointer<QObject> sourceDialog;
+    QPointer<QEventLoop> execLoop;
     static DFileDialogManager *manager;
 
     void ensureDialog() const;
     void applyOptions();
+    void hideAuxiliaryWindow() const;
 
     friend class QDeepinTheme;
 };
