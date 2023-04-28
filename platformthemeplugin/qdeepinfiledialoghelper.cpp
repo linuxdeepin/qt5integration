@@ -16,12 +16,14 @@
 #include <QX11Info>
 #include <QDebug>
 #include <QApplication>
+#include <QLoggingCategory>
 #include <private/qguiapplication_p.h>
 
 #include <X11/Xlib.h>
 
 QT_BEGIN_NAMESPACE
 #define DIALOG_SERVICE "com.deepin.filemanager.filedialog"
+Q_LOGGING_CATEGORY(fileDialogHelper, "dtk.qpa.fileDialogHelper");
 
 QList<QUrl> stringList2UrlList(const QStringList &list)
 {
@@ -190,7 +192,7 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
 
 void QDeepinFileDialogHelper::exec()
 {
-    qDebug() << "exec";
+    qCDebug(fileDialogHelper) << "exec";
 
     ensureDialog();
 
@@ -206,11 +208,13 @@ void QDeepinFileDialogHelper::exec()
     connect(this, &QPlatformDialogHelper::reject, &loop, &QEventLoop::quit);
     connect(this, &QObject::destroyed, &loop, &QEventLoop::quit);
     loop.exec();
+
+    qCDebug(fileDialogHelper) << "Exec finished, dispose event loop.";
 }
 
 void QDeepinFileDialogHelper::hide()
 {
-    qDebug() << "hide";
+    qCDebug(fileDialogHelper) << "hide";
 
     ensureDialog();
 
@@ -227,7 +231,7 @@ void QDeepinFileDialogHelper::hide()
 
 bool QDeepinFileDialogHelper::defaultNameFilterDisables() const
 {
-    qDebug() << __FUNCTION__;
+    qCDebug(fileDialogHelper) << __FUNCTION__;
 
     return true;
 }
@@ -238,7 +242,7 @@ void QDeepinFileDialogHelper::setDirectory(const QUrl &directory)
         return;
     }
 
-    qDebug() << __FUNCTION__ << directory;
+    qCDebug(fileDialogHelper) << __FUNCTION__ << directory;
 
     ensureDialog();
 
@@ -250,7 +254,7 @@ void QDeepinFileDialogHelper::setDirectory(const QUrl &directory)
 
 QUrl QDeepinFileDialogHelper::directory() const
 {
-    qDebug() << __FUNCTION__;
+    qCDebug(fileDialogHelper) << __FUNCTION__;
 
     ensureDialog();
 
@@ -262,7 +266,7 @@ QUrl QDeepinFileDialogHelper::directory() const
 
 void QDeepinFileDialogHelper::selectFile(const QUrl &fileUrl)
 {
-    qDebug() << __FUNCTION__ << fileUrl;
+    qCDebug(fileDialogHelper) << __FUNCTION__ << fileUrl;
 
     ensureDialog();
 
@@ -274,7 +278,7 @@ void QDeepinFileDialogHelper::selectFile(const QUrl &fileUrl)
 
 QList<QUrl> QDeepinFileDialogHelper::selectedFiles() const
 {
-    qDebug() << __FUNCTION__;
+    qCDebug(fileDialogHelper) << __FUNCTION__;
 
     ensureDialog();
 
@@ -286,7 +290,7 @@ QList<QUrl> QDeepinFileDialogHelper::selectedFiles() const
 
 void QDeepinFileDialogHelper::setFilter()
 {
-    qDebug() << __FUNCTION__;
+    qCDebug(fileDialogHelper) << __FUNCTION__;
 
     ensureDialog();
 
@@ -296,7 +300,7 @@ void QDeepinFileDialogHelper::setFilter()
 
 void QDeepinFileDialogHelper::selectNameFilter(const QString &filter)
 {
-    qDebug() << __FUNCTION__ << filter;
+    qCDebug(fileDialogHelper) << __FUNCTION__ << filter;
 
     ensureDialog();
 
@@ -308,7 +312,7 @@ void QDeepinFileDialogHelper::selectNameFilter(const QString &filter)
 
 QString QDeepinFileDialogHelper::selectedNameFilter() const
 {
-    qDebug() << __FUNCTION__;
+    qCDebug(fileDialogHelper) << __FUNCTION__;
 
     ensureDialog();
 
@@ -347,7 +351,7 @@ void QDeepinFileDialogHelper::ensureDialog() const
         const QString &path = reply.value().path();
 
         if (path.isEmpty()) {
-            qWarning("Can not create native dialog, Will be use QFileDialog");
+            qCWarning(fileDialogHelper) << "Can not create native dialog, Will be use QFileDialog";
         } else {
             filedlgInterface = new DFileDialogHandle(DIALOG_SERVICE, path, QDBusConnection::sessionBus());
             auxiliaryWindow = new QWindow();
@@ -359,7 +363,7 @@ void QDeepinFileDialogHelper::ensureDialog() const
             connect(filedlgInterface, &DFileDialogHandle::rejected, this, &QDeepinFileDialogHelper::reject);
             connect(filedlgInterface, &DFileDialogHandle::destroyed, this, &QDeepinFileDialogHelper::reject);
             connect(filedlgInterface, &DFileDialogHandle::destroyed, this, [this](){
-                qWarning("filedialog dbus service destroyed.");
+                qCWarning(fileDialogHelper) << "filedialog dbus service destroyed.";
                 if (filedlgInterface) {
                     filedlgInterface->QObject::deleteLater();
                     filedlgInterface = nullptr;
@@ -380,10 +384,10 @@ void QDeepinFileDialogHelper::ensureDialog() const
                 reply.waitForFinished();
 
                 if (reply.isError()) {
-                    qWarning() << "Make heartbeat is failed:" << reply.error();
+                    qCWarning(fileDialogHelper) << "Make heartbeat is failed:" << reply.error();
 
                     if (reply.error().type() == QDBusError::UnknownMethod) {
-                        qWarning() << "Make heartbeat is't support for current dbus file dialog, Will be stop heartbeat timer.";
+                        qCWarning(fileDialogHelper) << "Make heartbeat is't support for current dbus file dialog, Will be stop heartbeat timer.";
 
                         heartbeatTimer->stop();
                         return;
@@ -413,7 +417,7 @@ void QDeepinFileDialogHelper::applyOptions()
             if (filedlgInterface)
                 filedlgInterface->setLabelText(i, options->labelText((QFileDialogOptions::DialogLabel)i));
             else
-                qWarning() << "DFileDialogHandle invalid!!";
+                qCWarning(fileDialogHelper) << "DFileDialogHandle invalid!!";
 
         }
     }
