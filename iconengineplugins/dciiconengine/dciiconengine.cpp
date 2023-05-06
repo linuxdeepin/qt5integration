@@ -87,21 +87,25 @@ QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State
 
 QPixmap DDciIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal radio)
 {
-    QString key = QLatin1String("qt_") + m_iconName
+    Q_UNUSED(state);
+
+    const int s = qMin(size.width(), size.height());
+    const DDciIcon::Theme theme = dciTheme();
+    const DDciIconPalette pa = dciPalettle();
+
+    QString key = QLatin1String("dci_") + m_iconName +
+            DDciIconPalette::convertToString(pa)
             % HexString<uint>(mode)
-            % HexString<uint>(state)
-            % HexString<uint>(uint(radio * 100))
-            % HexString<qint64>(QGuiApplication::palette().cacheKey())
-            % HexString<int>(size.width())
-            % HexString<int>(size.height());
+            % HexString<int>(theme)
+            % HexString<int>(s)
+            % HexString<uint>(uint(radio * 100));
 
     QPixmap pix;
     if (QPixmapCache::find(key, &pix))
         return pix;
 
     ensureIconTheme();
-    pix = m_dciIcon.pixmap(radio, qMin(size.width(), size.height()), dciTheme(),
-                            dciMode(mode), dciPalettle());
+    pix = m_dciIcon.pixmap(radio, s, theme, dciMode(mode), pa);
     if (!pix.isNull())
         QPixmapCache::insert(key, pix);
 
