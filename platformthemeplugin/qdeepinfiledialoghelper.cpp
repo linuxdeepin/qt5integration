@@ -21,6 +21,9 @@
 
 #include <X11/Xlib.h>
 
+#include <DPlatformHandle>
+DGUI_USE_NAMESPACE
+
 QT_BEGIN_NAMESPACE
 #define DIALOG_SERVICE "com.deepin.filemanager.filedialog"
 Q_LOGGING_CATEGORY(fileDialogHelper, "dtk.qpa.fileDialogHelper");
@@ -95,23 +98,44 @@ void QDeepinFileDialogHelper::onApplicationStateChanged(Qt::ApplicationState sta
         filedlgInterface->activateWindow();
 }
 
+static inline void setTransientForHint(WId wid, WId propWid)
+{
+    if (!qApp->platformName().contains("xcb"))
+        return;
+
+    // set WM_TRANSIENT_FOR propWid for wid
+    // to make sure filedialog window on the top of app window
+    XSetTransientForHint(QX11Info::display(), wid, propWid);
+}
+
 void QDeepinFileDialogHelper::onWindowActiveChanged()
 {
-    if (qApp->platformName() != "dxcb" && !qApp->property("_d_isDxcb").toBool())
+    if (!filedlgInterface)
         return;
 
-    QWindow *focus_window = qApp->focusWindow();
-    if (!focus_window)
-        return;
-
-    if (focus_window->type() != Qt::Widget
-            && focus_window->type() != Qt::Window
-            && focus_window->type() != Qt::Dialog) {
-        return;
+    // FIX dtk#65
+    // XSetTransientForHint 有可能被覆盖为桌面的 id,当窗口激活时再次设置一次
+    if (filedlgInterface->windowActive() && auxiliaryWindow &&
+            auxiliaryWindow->parent(QWindow::IncludeTransients)) {
+        Window fileDlgWId = filedlgInterface->winId();
+        Window parentWId = auxiliaryWindow->parent(QWindow::IncludeTransients)->winId();
+        setTransientForHint(fileDlgWId, parentWId);
     }
 
-    if (filedlgInterface && !filedlgInterface->windowActive() && qApp->applicationState() == Qt::ApplicationActive) {
-        filedlgInterface->activateWindow();
+    if (DPlatformHandle::isDXcbPlatform()) {
+        QWindow *focus_window = qApp->focusWindow();
+        if (!focus_window)
+            return;
+
+        if (focus_window->type() != Qt::Widget
+                && focus_window->type() != Qt::Window
+                && focus_window->type() != Qt::Dialog) {
+            return;
+        }
+
+        if (!filedlgInterface->windowActive() && qApp->applicationState() == Qt::ApplicationActive) {
+            filedlgInterface->activateWindow();
+        }
     }
 }
 
@@ -169,8 +193,8 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
             QGuiApplicationPrivate::showModalWindow(auxiliaryWindow);
 
             if (modality == Qt::ApplicationModal) {
-                connect(qApp, &QGuiApplication::applicationStateChanged, this, &QDeepinFileDialogHelper::onApplicationStateChanged);
-                connect(filedlgInterface, &DFileDialogHandle::windowActiveChanged, this, &QDeepinFileDialogHelper::onWindowActiveChanged);
+                connect(qApp, &QGuiApplication::applicationStateChanged, this, &QDeepinFileDialogHelper::onApplicationStateChanged, Qt::UniqueConnection);
+                connect(filedlgInterface, &DFileDialogHandle::windowActiveChanged, this, &QDeepinFileDialogHelper::onWindowActiveChanged, Qt::UniqueConnection);
             }
         }
     }
@@ -179,12 +203,7 @@ bool QDeepinFileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality mod
         filedlgInterface->show();
 
     if (filedlgInterface && parent) {
-        // 如果能获取到wayland下的display 应该 XSetTransientForHint(wayland_dispaly
-        // 此处暂时返回，至少不会导致崩溃。。。task-view-31919.
-        if (qApp->platformName() != "dxcb" && !qApp->property("_d_isDxcb").toBool())
-            return true;
-
-        XSetTransientForHint(QX11Info::display(), filedlgInterface->winId(), parent->winId());
+        setTransientForHint(filedlgInterface->winId(), parent->winId());
     }
     // 如果没有dbus接口 return false 至少可以显示默认的文件选择对话框
     return filedlgInterface;
