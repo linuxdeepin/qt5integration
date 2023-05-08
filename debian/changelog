@@ -1,3 +1,10 @@
+qt5integration (5.6.11) unstable; urgency=medium
+
+  * Release 5.6.11
+  * FIX dtk#53 dtk#55 dtk#64 dtk#65 developer-center#4122
+
+ -- Deepin Packages Builder <packages@deepin.com>  Mon, 08 May 2023 13:50:24 +0800
+
 qt5integration (5.6.10) unstable; urgency=medium
 
   * Release 5.6.10
