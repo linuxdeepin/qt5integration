@@ -5,7 +5,7 @@
 #define DDBUSTRAYICON_H
 #include "../3rdparty/qdbustrayicon_p.h"
 
-class DDBusTrayIcon : public QDBusTrayIcon
+class DDBusTrayIcon : public thirdparty::QDBusTrayIcon
 {
     Q_OBJECT
 public:
