@@ -21,7 +21,11 @@ public:
     bool read(QDataStream &in) override;
     bool write(QDataStream &out) const override;
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QString iconName() override;
+#else
     QString iconName() const override;
+#endif
     inline QString themeName() const { return m_iconThemeName; }
 private:
     void virtual_hook(int id, void *data) override;

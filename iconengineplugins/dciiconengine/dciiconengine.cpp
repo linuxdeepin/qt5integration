@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2023 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
@@ -42,8 +42,12 @@ static inline DDciIconPalette dciPalettle(QPaintDevice *paintDevice = nullptr)
 static inline qreal deviceRadio(QPaintDevice *paintDevice = nullptr)
 {
     qreal scale = 1.0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (qApp->testAttribute(Qt::AA_UseHighDpiPixmaps))
         scale = paintDevice ? paintDevice->devicePixelRatioF() : qApp->devicePixelRatio();
+#else
+    scale = paintDevice ? paintDevice->devicePixelRatioF() : qApp->devicePixelRatio();
+#endif
 
     return scale;
 }
@@ -144,7 +148,11 @@ bool DDciIconEngine::write(QDataStream &out) const
     return true;
 }
 
-QString DDciIconEngine::iconName() const
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QString DDciIconEngine::iconName()
+#else
+    QString DDciIconEngine::iconName() const
+#endif
 {
     return m_iconName;
 }
@@ -153,6 +161,7 @@ void DDciIconEngine::virtual_hook(int id, void *data)
 {
     ensureIconTheme();
     switch (id) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     case QIconEngine::AvailableSizesHook:
         {
             auto &arg = *reinterpret_cast<QIconEngine::AvailableSizesArgument*>(data);
@@ -172,6 +181,7 @@ void DDciIconEngine::virtual_hook(int id, void *data)
             name = iconName();
         }
         break;
+#endif
     case QIconEngine::IsNullHook:
         {
             *reinterpret_cast<bool*>(data) = m_dciIcon.isNull();

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017 - 2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include "dthemesettings.h"
@@ -110,7 +110,9 @@ QSettings * DThemeSettings::makeSettings()
         QSettings::setPath(s->format(), s->scope(), saveConfigPath);
     }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     s->setIniCodec("utf-8");
+#endif
     s->beginGroup("Theme");
 
     return s;

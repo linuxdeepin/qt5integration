@@ -1,20 +1,14 @@
 /*
- * SPDX-FileCopyrightText: 2021-2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2021-2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #ifndef XDGICONPROXYENGINE_H
 #define XDGICONPROXYENGINE_H
 
 #include <QIconEngine>
-#if XDG_ICON_VERSION_MAR >= 3
 #define private public
 #include <private/xdgiconloader/xdgiconloader_p.h>
 #undef private
-#elif XDG_ICON_VERSION_MAR == 2
-//这个版本中的xdgiconloader_p.h定义和qiconloader_p.h有冲突
-//只能通过此方式提供创建XdgIconLoaderEngine对象的接口
-#include "xdgiconenginecreator.h"
-#endif
 
 namespace DEEPIN_XDG_THEME {
 enum PaletteType {

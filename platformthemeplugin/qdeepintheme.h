@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017-2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017-2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #ifndef QDEEPINTHEME_H
@@ -25,7 +25,7 @@ public:
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const Q_DECL_OVERRIDE;
 #if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
     QIcon fileIcon(const QFileInfo &fileInfo,
-                   QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
+                   QPlatformTheme::IconOptions iconOptions = {}) const Q_DECL_OVERRIDE;
 #else
     QPixmap fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size,
                            QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;

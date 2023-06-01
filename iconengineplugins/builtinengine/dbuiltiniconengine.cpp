@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2019 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2019 - 2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include "dbuiltiniconengine.h"
@@ -56,7 +56,7 @@ public:
 
         QPixmap pm;
         QString pmckey(pmcKey(size, mode, state));
-        if (QPixmapCache::find(pmckey, pm)) {
+        if (QPixmapCache::find(pmckey, &pm)) {
             genIconTypeIcon(pm, mode);
             return pm;
         }
@@ -202,9 +202,12 @@ void DBuiltinIconEngine::paint(QPainter *painter, const QRect &rect,
     ensureLoaded();
 
     qreal scale = 1.0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (qApp->testAttribute(Qt::AA_UseHighDpiPixmaps))
         scale = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
-
+#else
+    scale = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
+#endif
     QSize pixmapSize = rect.size() * scale;
 
     QIconLoaderEngineEntry *entry = QIconLoaderEngine::entryForSize(m_info, pixmapSize);
@@ -259,7 +262,11 @@ bool DBuiltinIconEngine::write(QDataStream &out) const
     return true;
 }
 
-QString DBuiltinIconEngine::iconName() const
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QString DBuiltinIconEngine::iconName()
+#else
+    QString DBuiltinIconEngine::iconName() const
+#endif
 {
     return m_iconName;
 }
@@ -339,6 +346,7 @@ void DBuiltinIconEngine::virtual_hook(int id, void *data)
     ensureLoaded();
 
     switch (id) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     case QIconEngine::AvailableSizesHook:
         {
             QIconEngine::AvailableSizesArgument &arg
@@ -362,6 +370,7 @@ void DBuiltinIconEngine::virtual_hook(int id, void *data)
             name = m_info.iconName;
         }
         break;
+#endif
     case QIconEngine::IsNullHook:
         {
             *reinterpret_cast<bool*>(data) = m_info.entries.isEmpty();

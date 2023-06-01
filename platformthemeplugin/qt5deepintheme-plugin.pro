@@ -38,7 +38,6 @@ SOURCES += qdeepintheme.cpp \
     main.cpp \
     qdeepinfiledialoghelper.cpp \
     dthemesettings.cpp \
-    xdgiconenginecreator.cpp \
     $$_PRO_FILE_PWD_/../3rdparty/qdbustrayicon.cpp \
     $$_PRO_FILE_PWD_/../3rdparty/qstatusnotifieritemadaptor.cpp \
     $$_PRO_FILE_PWD_/../3rdparty/qdbusmenuconnection.cpp
@@ -46,7 +45,6 @@ SOURCES += qdeepintheme.cpp \
 HEADERS += qdeepintheme.h \
     qdeepinfiledialoghelper.h \
     dthemesettings.h \
-    xdgiconenginecreator.h \
     $$_PRO_FILE_PWD_/../3rdparty/qdbustrayicon_p.h \
     $$_PRO_FILE_PWD_/../3rdparty/qstatusnotifieritemadaptor_p.h \
     $$_PRO_FILE_PWD_/../3rdparty/qdbusmenuconnection_p.h

@@ -20,6 +20,7 @@
 #include <QImageReader>
 #include <QStandardPaths>
 #include <QtConcurrent>
+#include <QDir>
 
 DGUI_USE_NAMESPACE
 
@@ -331,8 +332,12 @@ void QSvgIconEngine::paint(QPainter *painter, const QRect &rect,
                            QIcon::Mode mode, QIcon::State state)
 {
     qreal ratio = 1.0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (qApp->testAttribute(Qt::AA_UseHighDpiPixmaps))
         ratio = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
+#else
+    ratio = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
+#endif
 
     QSize pixmapSize = rect.size() * ratio;
     QPixmap pix = pixmap(pixmapSize, mode, state);

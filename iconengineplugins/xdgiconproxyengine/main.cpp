@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include <qiconengineplugin.h>
@@ -26,7 +26,13 @@ QStringList XdgProxyIconPlugin::keys() const
 
 QIconEngine *XdgProxyIconPlugin::create(const QString &iconName)
 {
+#if XDG_ICON_VERSION_MAR >= 3
     return new XdgIconProxyEngine(new XdgIconLoaderEngine(iconName));
+#else
+    //这个版本中的xdgiconloader_p.h定义和qiconloader_p.h有冲突
+    //只能通过此方式提供XdgIconLoaderEngine
+    return new XdgIconLoaderEngine(iconName);
+#endif
 }
 
 QT_END_NAMESPACE

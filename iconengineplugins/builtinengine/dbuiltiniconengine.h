@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2019-2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2019-2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #ifndef DBUILTINICONENGINE_H
@@ -27,7 +27,11 @@ public:
     bool read(QDataStream &in);
     bool write(QDataStream &out) const;
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QString iconName() override;
+#else
     QString iconName() const override;
+#endif
 
     static QThemeIconInfo loadIcon(const QString &iconName, uint key);
 
