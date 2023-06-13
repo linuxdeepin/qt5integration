@@ -17,24 +17,18 @@
 #include <qmath.h>
 
 #include <XdgIcon>
+
+static const QString STYLE = QStringLiteral(".ColorScheme-Text, .ColorScheme-NeutralText{color:%1;}\
+\n.ColorScheme-Highlight{color:%2;}");
+
 #if XDG_ICON_VERSION_MAR >= 3
 #define private public
 #include <private/xdgiconloader/xdgiconloader_p.h>
 #undef private
-#elif XDG_ICON_VERSION_MAR == 2
-//这个版本中的xdgiconloader_p.h定义和qiconloader_p.h有冲突
-//只能通过此方式提供创建XdgIconLoaderEngine对象的接口
-#include "xdgiconenginecreator.h"
-#endif
 
-#if XDG_ICON_VERSION_MAR >= 3
 namespace DEEPIN_XDG_THEME {
 static QThreadStorage<PALETTE_MAP> colorScheme; // <type, color>
 };
-#endif
-
-static const QString STYLE = QStringLiteral(".ColorScheme-Text, .ColorScheme-NeutralText{color:%1;}\
-\n.ColorScheme-Highlight{color:%2;}");
 
 QT_BEGIN_NAMESPACE
 XdgIconProxyEngine::XdgIconProxyEngine(XdgIconLoaderEngine *proxy)
@@ -294,3 +288,4 @@ void XdgIconProxyEngine::virtual_hook(int id, void *data)
 }
 
 QT_END_NAMESPACE
+#endif

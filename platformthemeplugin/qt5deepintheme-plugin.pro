@@ -10,15 +10,7 @@ TARGET = qdeepin
 TEMPLATE = lib
 CONFIG += plugin link_pkgconfig c++11
 
-# Test using dthemed_icon_lookup
 load(configure)
-qtCompileTest(dthemed_icon_lookup) {
-    DEFINES += DTHEMED_ICON_LOOKUP
-    PKGCONFIG += dtkwidget til
-
-    SOURCES += diconengine.cpp
-    HEADERS += diconengine.h
-}
 
 PKGCONFIG += mtdev Qt5Xdg x11
 
@@ -38,7 +30,6 @@ SOURCES += qdeepintheme.cpp \
     main.cpp \
     qdeepinfiledialoghelper.cpp \
     dthemesettings.cpp \
-    xdgiconenginecreator.cpp \
     $$_PRO_FILE_PWD_/../3rdparty/qdbustrayicon.cpp \
     $$_PRO_FILE_PWD_/../3rdparty/qstatusnotifieritemadaptor.cpp \
     $$_PRO_FILE_PWD_/../3rdparty/qdbusmenuconnection.cpp
@@ -46,7 +37,6 @@ SOURCES += qdeepintheme.cpp \
 HEADERS += qdeepintheme.h \
     qdeepinfiledialoghelper.h \
     dthemesettings.h \
-    xdgiconenginecreator.h \
     $$_PRO_FILE_PWD_/../3rdparty/qdbustrayicon_p.h \
     $$_PRO_FILE_PWD_/../3rdparty/qstatusnotifieritemadaptor_p.h \
     $$_PRO_FILE_PWD_/../3rdparty/qdbusmenuconnection_p.h
@@ -63,23 +53,8 @@ CONFIG(release, debug|release) {
     DEFINES += QT_NO_DEBUG_OUTPUT
 }
 
-#dbus_interface_filedialogmanager = /usr/share/dbus-1/interfaces/com.deepin.filemanager.filedialogmanager.xml
-#dbus_interface_filedialog = /usr/share/dbus-1/interfaces/com.deepin.filemanager.filedialog.xml
-
-#!exists($$dbus_interface_filedialogmanager) {
-#    warning(Not found $$dbus_interface_filedialogmanager)
-    dbus_interface_filedialogmanager = $$PWD/xmls/com.deepin.filemanager.filedialogmanager.xml
-#}
-
-#message(Will be use $$dbus_interface_filedialogmanager)
-
-#!exists($$dbus_interface_filedialog) {
-#    warning(Not found $$dbus_interface_filedialog)
-    dbus_interface_filedialog = $$PWD/xmls/com.deepin.filemanager.filedialog.xml
-#}
-
-#message(Will be use $$dbus_interface_filedialog)
-
+dbus_interface_filedialogmanager = $$PWD/xmls/com.deepin.filemanager.filedialogmanager.xml
+dbus_interface_filedialog = $$PWD/xmls/com.deepin.filemanager.filedialog.xml
 DBUS_INTERFACES += $$dbus_interface_filedialogmanager $$dbus_interface_filedialog
 
 RESOURCES += \

@@ -10,10 +10,6 @@
 #define private public
 #include <private/xdgiconloader/xdgiconloader_p.h>
 #undef private
-#elif XDG_ICON_VERSION_MAR == 2
-//这个版本中的xdgiconloader_p.h定义和qiconloader_p.h有冲突
-//只能通过此方式提供创建XdgIconLoaderEngine对象的接口
-#include "xdgiconenginecreator.h"
 #endif
 
 namespace DEEPIN_XDG_THEME {
@@ -25,7 +21,7 @@ enum PaletteType {
 typedef QMap<PaletteType, QString> PALETTE_MAP;
 };
 
-class ScalableEntry;
+struct ScalableEntry;
 class QIconLoaderEngineEntry;
 QT_BEGIN_NAMESPACE
 #if XDG_ICON_VERSION_MAR >= 3

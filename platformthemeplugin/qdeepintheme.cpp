@@ -518,21 +518,7 @@ static QIconEngine *createIconEngineWithKey(const QString &iconName, const QStri
 QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 {
     QIconEngine *engine = createIconEngineWithKey(iconName, "DIconProxyEngine");
-    if (engine)
-        return engine;
-
-#ifdef DTHEMED_ICON_LOOKUP
-    if (iconName.contains("/"))
-        // handle Qt-standard paths.
-        return QGenericUnixTheme::createIconEngine(iconName);
-    else
-        return new DIconEngine(iconName);
-#elif XDG_ICON_VERSION_MAR < 3
-    return XdgIconEngineCreator::create(iconName);
-#else
-
-    return QGenericUnixTheme::createIconEngine(iconName);
-#endif
+    return engine ? engine : QGenericUnixTheme::createIconEngine(iconName);
 }
 
 QPixmap QDeepinTheme::standardPixmap(QPlatformTheme::StandardPixmap sp, const QSizeF &size) const
