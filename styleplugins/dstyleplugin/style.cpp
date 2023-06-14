@@ -1,12 +1,10 @@
 /*
- * SPDX-FileCopyrightText: 2016 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2016 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include "style.h"
 #include "common.h"
-#include "geometryutils.h"
 #include "paletteextended.h"
-#include "commonhelper.h"
 #include "dstyleanimation.h"
 #include "hidpihelper.h"
 
@@ -40,11 +38,29 @@
 DWIDGET_USE_NAMESPACE
 
 namespace dstyle {
+inline static int menuItemShortcutWidth(const QStyleOptionMenuItem *menuItem)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    return menuItem->reservedShortcutWidth;
+#else
+    return menuItem->tabWidth;
+#endif
+}
+
+inline static QPixmap iconPixmap(const QIcon &icon, const QWidget *context, const QSize &size, QIcon::Mode mode = QIcon::Normal, QIcon::State state = QIcon::Off)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    return icon.pixmap(size, context ? context->devicePixelRatio() : qApp->devicePixelRatio(), mode, state);
+#else
+    return icon.pixmap(context ? context->window()->windowHandle() : nullptr, size, mode, state);
+#endif
+}
+
 QColor StylePrivate::outline(const QPalette &pal) const
 {
     if (pal.window().style() == Qt::TexturePattern)
         return QColor(0, 0, 0, 160);
-    return pal.background().color().darker(140);
+    return pal.window().color().darker(140);
 }
 
 QColor StylePrivate::buttonColor(const QPalette &pal) const
@@ -238,9 +254,9 @@ void Style::polish(QWidget *w)
     // line edit completer drop-list
     if (widgetIsComboBoxPopupFramePrimitive(w)) {
         polish(palette);
-        palette.setBrush(QPalette::Background, m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
+        palette.setBrush(QPalette::Window, m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
                                                                 PaletteExtended::PseudoClass_Unspecified,
-                                                                palette.brush(QPalette::Background)));
+                                                                palette.brush(QPalette::Window)));
     }
 
     // TODO(zccrs): 临时解决方案，用于支持应用程序中自定义DTabBar的被选中Tab的文本颜色
@@ -550,7 +566,7 @@ void Style::drawPrimitive(QStyle::PrimitiveElement element, const QStyleOption *
     case PE_PanelMenu: {
         QBrush menu_background_brush = m_palette->brush(PaletteExtended::Menu_BackgroundBrush,
                                                         PaletteExtended::PseudoClass_Unspecified,
-                                                        option->palette.brush(QPalette::Background));
+                                                        option->palette.brush(QPalette::Window));
 #ifdef DTK_SUPPORT_BLUR_WINDOW
         QColor menu_background_color = menu_background_brush.color();
 
@@ -678,7 +694,7 @@ int Style::styleHint(QStyle::StyleHint sh, const QStyleOption *opt, const QWidge
     case SH_Menu_SubMenuUniDirection: return 1000;
 #endif
     case SH_Slider_AbsoluteSetButtons: return Qt::LeftButton;
-    case SH_Slider_PageSetButtons: return Qt::MidButton;
+    case SH_Slider_PageSetButtons: return Qt::MiddleButton;
 #if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
     case SH_Widget_Animate: return true;
 #endif
@@ -744,13 +760,13 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
             bool hideShortcutText = !isVisibleMenuShortText();
 
             if (hideShortcutText) {
-                w -= menuItem->tabWidth;
+                w -= menuItemShortcutWidth(menuItem);
 
                 int t = menuItem->text.indexOf(QLatin1Char('\t'));
                 if (t != -1) {
-                    int textWidth = option->fontMetrics.width(menuItem->text.mid(t + 1));
+                    int textWidth = option->fontMetrics.horizontalAdvance(menuItem->text.mid(t + 1));
 
-                    if (menuItem->tabWidth == 0)
+                    if (menuItemShortcutWidth(menuItem) == 0)
                         w -= textWidth;
                 }
             }
@@ -768,7 +784,7 @@ QSize Style::sizeFromContents(QStyle::ContentsType type, const QStyleOption *opt
                     QFont fontBold = menuItem->font;
                     fontBold.setBold(true);
                     QFontMetrics fmBold(fontBold);
-                    w += fmBold.width(menuItem->text) - fm.width(menuItem->text);
+                    w += fmBold.horizontalAdvance(menuItem->text) - fm.horizontalAdvance(menuItem->text);
                 }
             }
             int checkcol = qMax<int>(maxpmw, Menu_CheckMarkWidth); // Windows always shows a check column
@@ -970,8 +986,8 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
                 const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
                 for (int i = 0 ; i < sizes.size() ; ++i) {
                     int size = sizes[i].width();
-                    QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
-                    QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+                    QPixmap basePixmap = iconPixmap(baseIcon, widget, QSize(size, size));
+                    QPixmap linkPixmap = iconPixmap(linkIcon, widget, QSize(size / 2, size / 2));
                     QPainter painter(&basePixmap);
                     painter.drawPixmap(size/2, size/2, linkPixmap);
                     icon.addPixmap(basePixmap);
@@ -987,8 +1003,8 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
                 const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
                 for (int i = 0 ; i < sizes.size() ; ++i) {
                     int size = sizes[i].width();
-                    QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
-                    QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+                    QPixmap basePixmap = iconPixmap(baseIcon, widget, QSize(size, size));
+                    QPixmap linkPixmap = iconPixmap(linkIcon, widget, QSize(size / 2, size / 2));
                     QPainter painter(&basePixmap);
                     painter.drawPixmap(size/2, size/2, linkPixmap);
                     icon.addPixmap(basePixmap);
@@ -1079,8 +1095,8 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
         sizes << QSize(128, 128);
         for (int i = 0 ; i < sizes.size() ; ++i) {
             int size = sizes[i].width();
-            QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
-            QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+            QPixmap basePixmap = iconPixmap(baseIcon, widget, QSize(size, size));
+            QPixmap linkPixmap = iconPixmap(linkIcon, widget, QSize(size / 2, size / 2));
             QPainter painter(&basePixmap);
             painter.drawPixmap(size/1.5, size/1.5, linkPixmap);
             icon.addPixmap(basePixmap);
@@ -1094,8 +1110,8 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
         sizes << QSize(128, 128);
         for (int i = 0 ; i < sizes.size() ; ++i) {
             int size = sizes[i].width();
-            QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
-            QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+            QPixmap basePixmap = iconPixmap(baseIcon, widget, QSize(size, size));
+            QPixmap linkPixmap = iconPixmap(linkIcon, widget, QSize(size / 2, size / 2));
             QPainter painter(&basePixmap);
             painter.drawPixmap(size/1.5, size/1.5, linkPixmap);
             icon.addPixmap(basePixmap);
@@ -1119,8 +1135,8 @@ QIcon Style::standardIcon(QStyle::StandardPixmap standardIcon, const QStyleOptio
         sizes << QSize(128, 128);
         for (int i = 0 ; i < sizes.size() ; ++i) {
             int size = sizes[i].width();
-            QPixmap basePixmap = baseIcon.pixmap(qt_getWindow(widget), QSize(size, size));
-            QPixmap linkPixmap = linkIcon.pixmap(qt_getWindow(widget), QSize(size / 2, size / 2));
+            QPixmap basePixmap = iconPixmap(baseIcon, widget, QSize(size, size));
+            QPixmap linkPixmap = iconPixmap(linkIcon, widget, QSize(size / 2, size / 2));
             QPainter painter(&basePixmap);
             painter.drawPixmap(size/1.5, size/1.5, linkPixmap);
             icon.addPixmap(basePixmap);
@@ -1253,9 +1269,9 @@ void Style::drawStandardIcon(QStyle::StandardPixmap sp, const QStyleOption *opt,
     else if (hasFocus)
         mode = QIcon::Selected;
 
-    QPixmap pixmap = standardIcon(sp, opt, widget).pixmap(widget ? widget->window()->windowHandle() : 0,
-                                                          QSize(size, size), mode,
-                                                          sunken ? QIcon::On : QIcon::Off);
+    QPixmap pixmap =
+        iconPixmap(standardIcon(sp, opt, widget), widget, QSize(size, size),
+                   mode, sunken ? QIcon::On : QIcon::Off);
 
     int xOffset = r.x() + (r.width() - size)/2;
     int yOffset = r.y() + (r.height() - size)/2;
@@ -1335,7 +1351,7 @@ QPixmap Style::colorizedImage(const QString &fileName, const QColor &color, int 
 {
     QString pixmapName = QLatin1String("$qt_ia-") % fileName % HexString<uint>(color.rgba()) % QString::number(rotation);
     QPixmap pixmap;
-    if (!QPixmapCache::find(pixmapName, pixmap)) {
+    if (!QPixmapCache::find(pixmapName, &pixmap)) {
         QImage image(fileName);
 
         if (image.format() != QImage::Format_ARGB32_Premultiplied)
@@ -1368,9 +1384,9 @@ QPixmap Style::colorizedImage(const QString &fileName, const QColor &color, int 
         }
         if (rotation != 0) {
             QTransform transform;
-            transform.translate(-image.width()/2, -image.height()/2);
+            transform.translate(-image.width()/2.0, -image.height()/2.0);
             transform.rotate(rotation);
-            transform.translate(image.width()/2, image.height()/2);
+            transform.translate(image.width()/2.0, image.height()/2.0);
             image = image.transformed(transform);
         }
 

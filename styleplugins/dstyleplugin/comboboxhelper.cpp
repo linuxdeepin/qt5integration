@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2016 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2016 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include "style.h"
@@ -22,7 +22,7 @@ void Style::drawComboBoxPopupFramePrimitive(const QStyleOption *option, QPainter
     painter->setRenderHints(painter->renderHints() | QPainter::Antialiasing);
 
     painter->setPen(m_palette->brush(PaletteExtended::Menu_BorderColor).color());
-    painter->setBrush(option->palette.brush(QPalette::Background));
+    painter->setBrush(option->palette.brush(QPalette::Window));
 
     painter->drawRoundedRect(rect, 4, 4);
 }
@@ -237,7 +237,7 @@ bool Style::widgetIsComboBoxPopupFramePrimitive(const QWidget *w)
     // line edit completer drop-list
     return w->inherits("QComboBoxListView")
             || w->inherits("QComboBoxPrivateContainer")
-            || (w->inherits("QAbstractItemView") && w->isTopLevel());
+            || (w->inherits("QAbstractItemView") && w->isWindow());
 }
 
 }

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include "style.h"
@@ -73,7 +73,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
                 proxy()->drawItemText(painter, menuItem->rect.adjusted(Menu_SeparatorItemHMargin, 0, -Menu_SeparatorItemHMargin, 0), Qt::AlignLeft | Qt::AlignVCenter,
                                       menuItem->palette, menuItem->state & State_Enabled, menuItem->text,
                                       QPalette::Text);
-                w = menuItem->fontMetrics.width(menuItem->text) + Menu_SeparatorItemHMargin;
+                w = menuItem->fontMetrics.horizontalAdvance(menuItem->text) + Menu_SeparatorItemHMargin;
             }
             painter->setPen(m_palette->brush(PaletteExtended::Menu_SeparatorColor, option).color());
             bool reverse = menuItem->direction == Qt::RightToLeft;
@@ -207,7 +207,11 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
         }
         int x, y, w, h;
         menuitem->rect.getRect(&x, &y, &w, &h);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        int tab = menuItem->reservedShortcutWidth;
+#else
         int tab = menuitem->tabWidth;
+#endif
         QColor discol;
         if (dis) {
             discol = menuitem->palette.brush(QPalette::Disabled, QPalette::Text).color();
@@ -273,7 +277,7 @@ bool Style::drawMenuItemControl(const QStyleOption *option, QPainter *painter, c
             QStyleOptionMenuItem newMI = *menuItem;
             newMI.rect = vSubMenuRect;
             if (selected)
-                newMI.palette.setColor(QPalette::Foreground,
+                newMI.palette.setColor(QPalette::WindowText,
                                        newMI.palette.highlightedText().color());
 
             drawDeepinStyleIcon("arrow-right", &newMI, painter, widget);
@@ -308,7 +312,11 @@ bool Style::drawMenuBarItemControl(const QStyleOption *option, QPainter *painter
         if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
             alignment |= Qt::TextHideMnemonic;
         int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        QPixmap pix = mbi->icon.pixmap(QSize(iconExtent, iconExtent), widget->devicePixelRatio(), (enabled) ? (mouseOver ? QIcon::Active : QIcon::Normal) : QIcon::Disabled);
+#else
         QPixmap pix = mbi->icon.pixmap(qt_getWindow(widget), QSize(iconExtent, iconExtent), (enabled) ? (mouseOver ? QIcon::Active : QIcon::Normal) : QIcon::Disabled);
+#endif
         if (!pix.isNull())
             proxy()->drawItemPixmap(painter, mbi->rect, alignment, pix);
         else

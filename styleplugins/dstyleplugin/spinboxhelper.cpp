@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include "style.h"
@@ -125,7 +125,6 @@ QRect Style::spinboxSubControlRect(const QStyleOptionComplex *opt, QStyle::SubCo
         bs.setHeight(spinbox->rect.height() - 2 * fw);
         // 1.6 -approximate golden mean
         bs.setWidth(bs.height());
-        bs = bs.expandedTo(QApplication::globalStrut());
         int y = fw;
         int x, lx, rx;
         x = spinbox->rect.right() - fw - bs.width();

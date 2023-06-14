@@ -1,0 +1,60 @@
+# SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+dtk_add_plugin(
+    NAME dstyleplugin
+    OUTPUT_DIR
+        ${PLUGIN_OUTPUT_BASE_DIR}/styles
+    INSTALL_DIR
+        ${PLUGIN_INSTALL_BASE_DIR}/styles
+    SOURCES
+        dstyleplugin.cpp
+        style.cpp
+        sliderhelper.cpp
+        colorutils.cpp
+        geometryutils.cpp
+        paletteextended.cpp
+        pushbuttonhelper.cpp
+        framehelper.cpp
+        lineedithelper.cpp
+        commonhelper.cpp
+        scrollbarhelper.cpp
+        painterhelper.cpp
+        menuhelper.cpp
+        dstyleanimation.cpp
+        progressbarhelper.cpp
+        checkboxhelper.cpp
+        rubberbandhelper.cpp
+        headerviewhelper.cpp
+        comboboxhelper.cpp
+        toolbuttonhelper.cpp
+        tabwidgethelper.cpp
+        spinboxhelper.cpp
+        hidpihelper.cpp
+        tabbarhelper.cpp
+    HEADERS
+        dstyleplugin.h
+        style.h
+        common.h
+        colorutils.h
+        geometryutils.h
+        paletteextended.h
+        commonhelper.h
+        painterhelper.h
+        dstyleanimation.h
+        hidpihelper.h
+    RESOURCES
+        brushchemes.qrc
+        assets_light.qrc
+        assets_dark.qrc
+        assets_semidark.qrc
+        assets_semilight.qrc
+        assets.qrc
+    DEPENDENCIES
+        Dtk${VERSION_SUFFIX}::Widget
+        Qt${QT_VERSION_MAJOR}::CorePrivate
+        Qt${QT_VERSION_MAJOR}::GuiPrivate
+        Qt${QT_VERSION_MAJOR}::WidgetsPrivate
+    DEFINITIONS
+        -DDTK_SUPPORT_BLUR_WINDOW
+)
