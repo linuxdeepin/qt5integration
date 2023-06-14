@@ -1,15 +1,13 @@
 /*
- * SPDX-FileCopyrightText: 2016 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2016 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include "style.h"
 
 #include "common.h"
-#include "colorutils.h"
 #include "geometryutils.h"
 #include "paletteextended.h"
-#include "commonhelper.h"
-#include "painterhelper.h"
+#include <QPainter>
 
 #include <QStyleOptionSlider>
 #include <QDebug>
@@ -272,7 +270,7 @@ bool Style::drawSliderTickmarkLabels(const QStyleOption *option, QPainter *paint
 
             for (int i = 0; i < positions.length() && i < labels.length(); i++) {
                 const QString text = labels.at(i).toString();
-                const int rWidth = option->fontMetrics.width(text);
+                const int rWidth = option->fontMetrics.horizontalAdvance(text);
 
                 const int deltaX = slider->x() - widget->x();
                 const int x = positions.at(i).toInt() + deltaX;

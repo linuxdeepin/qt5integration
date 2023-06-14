@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2016 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2016 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include "style.h"
@@ -54,7 +54,7 @@ bool Style::drawProgressBarContentsControl(const QStyleOption *option, QPainter 
     const QStyleOptionProgressBar* progressBarOption( qstyleoption_cast<const QStyleOptionProgressBar*>( option ) );
     if( !progressBarOption ) return false;
 
-    const bool horizontal( !progressBarOption || progressBarOption->orientation == Qt::Horizontal );
+    const bool horizontal( !progressBarOption || progressBarOption->state & QStyle::State_Horizontal );
 
     // copy rect and palette
     const qreal radius( ProgressBar_Radius );
@@ -115,7 +115,7 @@ bool Style::drawProgressBarLabelControl(const QStyleOption *option, QPainter *pa
 
     // get direction and check
     const QStyleOptionProgressBar *progressBarOption2(qstyleoption_cast<const QStyleOptionProgressBar *>(option));
-    const bool horizontal = !progressBarOption2 || progressBarOption2->orientation == Qt::Horizontal;
+    const bool horizontal = !progressBarOption2 || progressBarOption->state & QStyle::State_Horizontal;
     if( !horizontal ) return true;
 
     // store rect and palette
@@ -144,7 +144,7 @@ QRect Style::progressBarGrooveRect(const QStyleOption *option, const QWidget *wi
     const bool busy( progressBarOption->minimum == 0 && progressBarOption->maximum == 0 );
 
     const QStyleOptionProgressBar *progressBarOption2(qstyleoption_cast<const QStyleOptionProgressBar *>(option));
-    const bool horizontal( !progressBarOption2 || progressBarOption2->orientation == Qt::Horizontal );
+    const bool horizontal( !progressBarOption2 || progressBarOption->state & QStyle::State_Horizontal );
 
     // copy rectangle and adjust
     QRect rect( option->rect );
@@ -177,7 +177,7 @@ QRect Style::progressBarContentsRect(const QStyleOption *option, const QWidget *
 
     // get orientation
     const QStyleOptionProgressBar *progressBarOption2(qstyleoption_cast<const QStyleOptionProgressBar *>(option));
-    const bool horizontal( !progressBarOption2 || progressBarOption2->orientation == Qt::Horizontal );
+    const bool horizontal( !progressBarOption2 || progressBarOption->state & QStyle::State_Horizontal );
 
     // check inverted appearance
     const bool inverted( progressBarOption2 ? progressBarOption2->invertedAppearance : false );
@@ -217,7 +217,7 @@ QRect Style::progressBarLabelRect(const QStyleOption *option, const QWidget *) c
 
     // get direction and check
     const QStyleOptionProgressBar *progressBarOption2(qstyleoption_cast<const QStyleOptionProgressBar *>(option));
-    const bool horizontal( !progressBarOption2 || progressBarOption2->orientation == Qt::Horizontal );
+    const bool horizontal( !progressBarOption2 || progressBarOption->state & QStyle::State_Horizontal );
     if( !horizontal ) return QRect();
 
     int textWidth = qMax(

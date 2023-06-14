@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include "style.h"
@@ -145,11 +145,19 @@ bool Style::drawTabBarTabLabelControl(const QStyleOption *opt, QPainter *p, cons
     tr = proxy()->subElementRect(SE_TabBarTabText, opt, widget); //we compute tr twice because the style may override subElementRect
 
     if (!tab->icon.isNull()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        QPixmap tabIcon = tab->icon.pixmap(tab->iconSize, widget ? widget->devicePixelRatio() : qApp->devicePixelRatio(),
+                                           (tab->state & State_Enabled) ? QIcon::Normal
+                                                                        : QIcon::Disabled,
+                                           (tab->state & State_Selected) ? QIcon::On
+                                                                         : QIcon::Off);
+#else
         QPixmap tabIcon = tab->icon.pixmap(qt_getWindow(widget), tab->iconSize,
                                            (tab->state & State_Enabled) ? QIcon::Normal
                                                                         : QIcon::Disabled,
                                            (tab->state & State_Selected) ? QIcon::On
                                                                          : QIcon::Off);
+#endif
         p->drawPixmap(iconRect.x(), iconRect.y(), tabIcon);
     }
 

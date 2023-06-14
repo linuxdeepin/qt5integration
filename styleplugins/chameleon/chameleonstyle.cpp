@@ -47,10 +47,13 @@
 #include <DTabBar>
 #include <DDateTimeEdit>
 #include <DListView>
+#include <DToolTip>
+#include <DPaletteHelper>
 #include <QtMath>
 #include <QtGlobal>
 #include <private/qcombobox_p.h>
 #include <private/qcommonstyle_p.h>
+#include <private/qevent_p.h>
 
 #include <qdrawutil.h>
 #include <qpa/qplatformwindow.h>
@@ -69,6 +72,15 @@ inline static bool verticalTabs(QTabBar::Shape shape)
            || shape == QTabBar::RoundedEast
            || shape == QTabBar::TriangularWest
            || shape == QTabBar::TriangularEast;
+}
+
+inline static int menuItemShortcutWidth(const QStyleOptionMenuItem *menuItem)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    return menuItem->reservedShortcutWidth;
+#else
+    return menuItem->tabWidth;
+#endif
 }
 
 static QWidget *getSbarParentWidget(QScrollBar *sbar)
@@ -191,8 +203,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         //QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
+            const auto &delegate = *qobject_cast<const QTreeView *>(w)->itemDelegate();
             //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
-            if (typeid(*qobject_cast<const QTreeView *>(w)->itemDelegate()) != typeid(QStyledItemDelegate)) {
+            if (typeid(delegate) != typeid(QStyledItemDelegate)) {
                 break;
             }
 
@@ -558,8 +571,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         }
         //这里QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
+            const auto &delegate = *qobject_cast<const QTreeView *>(w)->itemDelegate();
             //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
-            if (typeid(*qobject_cast<const QTreeView *>(w)->itemDelegate()) != typeid(QStyledItemDelegate)) {
+            if (typeid(delegate) != typeid(QStyledItemDelegate)) {
                 break;
             }
 
@@ -734,11 +748,15 @@ bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
         return false;
 
     // (`(!cme && !me)` is True) && (`cme` is False) ==> `me` is True, `me` can't be False.
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    const QPoint viewportPos = pp->mapFromGlobal(cme ? cme->globalPos() : me->globalPosition().toPoint());
+#else
     const QPoint viewportPos = pp->mapFromGlobal(cme ? cme->globalPos() : me->globalPos());
+#endif
     QWidget *target = pp;
     QPoint localPos = viewportPos;
     if (qobject_cast<QScrollArea *>(itemView)) {
-        if (target = pp->childAt(viewportPos)) {
+        if ((target = pp->childAt(viewportPos))) {
             localPos = target->mapFrom(pp, viewportPos);
         }
     }
@@ -755,10 +773,16 @@ bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
             return false;
 
         if (target) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            QScopedPointer<QMutableSinglePointEvent> mevent(QMutableSinglePointEvent::from(me->clone()));
+            mevent->mutablePoint().setPosition(localPos);
+            // 传递鼠标事件到后面的 widget
+            return QApplication::sendEvent(target, mevent.data());
+#else
             QMouseEvent mevent = *me;
             mevent.setLocalPos(localPos);
-            // 传递鼠标事件到后面的 widget
             return QApplication::sendEvent(target, &mevent);
+#endif
         }
     }
     return false;
@@ -803,7 +827,11 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             QRect textRect = btn->rect;
             if (!btn->icon.isNull()) {
                 auto icon_mode_state = toIconModeState(opt); // 与PushButton一致，转换成icon的mode和state.
+            #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                pix = btn->icon.pixmap(btn->iconSize, w ? w->devicePixelRatio() : qApp->devicePixelRatio(), icon_mode_state.first, icon_mode_state.second);
+            #else
                 pix = btn->icon.pixmap(w ? w->window()->windowHandle() : nullptr, btn->iconSize, icon_mode_state.first, icon_mode_state.second);
+            #endif
                 proxy()->drawItemPixmap(p, btn->rect, alignment, pix);
                 if (btn->direction == Qt::RightToLeft)
                     textRect.setRight(textRect.right() - btn->iconSize.width() - 4);
@@ -1351,7 +1379,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int val = progBar->progress;
             int drawWidth = 0;
 
-            if (progBar->orientation == Qt::Horizontal) {
+            if (progBar->state & State_Horizontal) {
                 drawWidth = (val * 1.0 / (max - min)) * rect.width();
                 rect = QRect(rect.left(), rect.top(), drawWidth, rect.height());
             } else {
@@ -1363,7 +1391,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             QStyleOptionProgressBar subopt = *progBar;
             proxy()->drawControl(CE_ProgressBarContents, &subopt, p, w);
 
-            if (progBar->textVisible && progBar->orientation == Qt::Horizontal) {
+            if (progBar->textVisible && progBar->state & State_Horizontal) {
                 subopt.rect = proxy()->subElementRect(SE_ProgressBarLabel, progBar, w);
                 proxy()->drawControl(CE_ProgressBarLabel, &subopt, p, w);
             }
@@ -1373,7 +1401,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     case CE_ProgressBarGroove: {  //滑槽显示
         if (const QStyleOptionProgressBar *progBar = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-            int height = progBar->orientation == Qt::Horizontal ? opt->rect.height() : opt->rect.width();
+            int height = (progBar->state & State_Horizontal) ? opt->rect.height() : opt->rect.width();
             if (frameRadius * 2 >= height) {
                 frameRadius = qMin(height / 2, 4);
             }
@@ -1393,12 +1421,12 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int val = progBar->progress;
             int drawWidth = 0;
             int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-            int height = progBar->orientation == Qt::Horizontal ? rect.height() : rect.width();
+            int height = (progBar->state & State_Horizontal) ? rect.height() : rect.width();
             if (frameRadius * 2 >= height) {
                 frameRadius = qMin(height / 2, 4);
             }
 
-            if (progBar->orientation == Qt::Horizontal) {
+            if (progBar->state & State_Horizontal) {
                 drawWidth = (val * 1.0 / (max - min)) * rect.width();
                 rect = QRect(rect.left(), rect.top(), drawWidth, rect.height());
             } else {
@@ -1431,7 +1459,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     QRect startRect = rect;
                     startRect.setWidth(rect.height());
                     startRect.setHeight(rect.height());
-                    path.moveTo(rect.x() + startRect.width() / 2, rect.y());
+                    path.moveTo(rect.x() + startRect.width() / 2.0, rect.y());
                     //绘制进度条最小样式前半圆
                     path.arcTo(startRect, 90, 180);
                     p->drawPath(path);
@@ -1444,7 +1472,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                         endRect.setWidth(width * 2);
 
                         QPainterPath path2;
-                        path2.moveTo(endRect.x() + endRect.width() / 2, rect.y());
+                        path2.moveTo(endRect.x() + endRect.width() / 2.0, rect.y());
                         path2.arcTo(endRect, 90, -180);
                         p->drawPath(path2);
                     }
@@ -1616,7 +1644,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     } else if (toolbutton->toolButtonStyle == Qt::ToolButtonTextBesideIcon) {
                         if (toolButtonAlign == Qt::AlignCenter) {   //toolButton居中对齐
                             //计算文字宽度
-                            int textWidget = w->fontMetrics().width(toolbutton->text);
+                            int textWidget = w->fontMetrics().horizontalAdvance(toolbutton->text);
                             //图标 spacing 文字的矩形
                             QRect textIcon = QRect(0, 0, pr.width() + ToolButton_MarginWidth + textWidget, rect.height());
                             textIcon.moveCenter(rect.center());
@@ -1629,7 +1657,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                             drawIcon(toolbutton, p, pr, icon);
                             alignment |= Qt::AlignCenter;
                         } else if (toolButtonAlign == Qt::AlignRight) { //toolButton右对齐
-                            int textWidget = w->fontMetrics().width(toolbutton->text);
+                            int textWidget = w->fontMetrics().horizontalAdvance(toolbutton->text);
                             pr.moveCenter(rect.center());
                             pr.moveRight(tr.width() - textWidget - ToolButton_AlignLeftPadding - ToolButton_ItemSpacing);
                             tr.adjust(-ToolButton_AlignLeftPadding - pr.width() - ToolButton_MarginWidth, 0,
@@ -2116,12 +2144,20 @@ bool ChameleonStyle::drawTabBarLabel(QPainter *painter, const QStyleOptionTab *t
         tr = proxy()->subElementRect(SE_TabBarTabText, &newTab, widget);
 
         if (!tab->icon.isNull()) {
+ #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            QPixmap tabIcon = tab->icon.pixmap(
+                tab->iconSize,
+                widget ? widget->devicePixelRatio()
+                       : qApp->devicePixelRatio(),
+                (tab->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled,
+                (tab->state & State_Selected) ? QIcon::On : QIcon::Off);
+#else
             QPixmap tabIcon = tab->icon.pixmap(widget ? widget->window()->windowHandle() : 0, tab->iconSize,
                                                (tab->state & State_Enabled) ? QIcon::Normal
                                                                             : QIcon::Disabled,
                                                (tab->state & State_Selected) ? QIcon::On
                                                                              : QIcon::Off);
-
+#endif
             painter->drawPixmap(iconRect, tabIcon);
         }
 
@@ -2706,8 +2742,20 @@ bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &
             alignment |= Qt::TextHideMnemonic;
 
         int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
-        QPixmap pix = option->icon.pixmap(widget ? widget->window()->windowHandle() : nullptr, QSize(iconExtent, iconExtent), (enabled) ? (mouseOver ? QIcon::Active : QIcon::Normal) : QIcon::Disabled);
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        QPixmap pix = option->icon.pixmap(
+            QSize(iconExtent, iconExtent),
+            widget ? widget->devicePixelRatio()
+                   : qApp->devicePixelRatio(),
+            (enabled) ? (mouseOver ? QIcon::Active : QIcon::Normal)
+                      : QIcon::Disabled);
+#else
+        QPixmap pix = option->icon.pixmap(
+            widget ? widget->window()->windowHandle() : nullptr,
+            QSize(iconExtent, iconExtent),
+            (enabled) ? (mouseOver ? QIcon::Active : QIcon::Normal)
+                      : QIcon::Disabled);
+#endif
         if (!pix.isNull()) {
             proxy()->drawItemPixmap(painter, option->rect, alignment, pix);
         } else {
@@ -2777,7 +2825,7 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
 
         painter->fillRect(option->rect, color);
     } else {
-        color = option->palette.background().color();
+        color = option->palette.window().color();
 
         if (color.color().isValid()) {
             QColor c = color.color();
@@ -3009,7 +3057,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         // 绘制文本
         int x, y, w, h;
         menuRect.getRect(&x, &y, &w, &h);
-        int tab = menuItem->tabWidth;
+        int tab = menuItemShortcutWidth(menuItem);
         int xpos = menuRect.x(); //1.只有文本  2.只有图片加文本  ，xpos为文本的起始坐标
 
         if (iconSize.width() > 0) {
@@ -3020,7 +3068,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
         QRect textRect(xpos, y + Menu_ItemHTextMargin, w - xpos - tab, h - 2 * Menu_ItemVTextMargin);
         QRect vTextRect = textRect /*visualRect(option->direction, menuRect, textRect)*/; // 区分左右方向
-        QStringRef textRef(&menuItem->text);
+        QStringView textRef(menuItem->text);
 
         painter->setBrush(Qt::NoBrush);
 
@@ -3068,7 +3116,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
             newMI.state = !enabled ? State_None : State_Enabled;
             if (selected)
-                newMI.palette.setColor(QPalette::Foreground,
+                newMI.palette.setColor(QPalette::WindowText,
                                        newMI.palette.highlightedText().color());
 
             QIcon markIcon = DStyle::standardIcon(SP_ArrowEnter, &newMI, widget);
@@ -3164,7 +3212,7 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         QRect re = DStyle::subElementRect(SE_CheckBoxIndicator, opt, widget);
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             int spacing = proxy()->pixelMetric(PM_CheckBoxLabelSpacing, opt, widget);
-            re.setWidth(re.width() + widget->fontMetrics().width(btn->text) + spacing * 2);
+            re.setWidth(re.width() + widget->fontMetrics().horizontalAdvance(btn->text) + spacing * 2);
         }
         return re;
     }
@@ -3410,7 +3458,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
 
             //绘画 刻度,绘画方式了参考qfusionstyle.cpp
             if ((opt->subControls & SC_SliderTickmarks) && slider->tickInterval) {                                   //需要绘画刻度
-                p->setPen(opt->palette.foreground().color());
+                p->setPen(opt->palette.windowText().color());
                 int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, w);  //可用空间
                 int interval = slider->tickInterval;                                       //标记间隔
 //                int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, opt, w);      //标记偏移
@@ -3877,7 +3925,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                 int left_margins = DStyle::pixelMetric(PM_ContentsMargins, opt, widget);
                 size.setWidth(size.width() + frame_margins + left_margins);
             } else {
-                size.setWidth(size.width() + opt->fontMetrics.width("...")); //设置宽度为最小省略号("...")的宽度
+                size.setWidth(size.width() + opt->fontMetrics.horizontalAdvance("...")); //设置宽度为最小省略号("...")的宽度
             }
         }
         Q_FALLTHROUGH();
@@ -3935,7 +3983,7 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
                 //加上Item自定义的margins
                 size = QRect(QPoint(0, 0), size).marginsAdded(item_margins).size();
             }
-            size.setWidth(size.width() + opt->fontMetrics.width("xxx"));
+            size.setWidth(size.width() + opt->fontMetrics.horizontalAdvance("xxx"));
 
             return size;
         }
@@ -3983,13 +4031,13 @@ QSize ChameleonStyle::sizeFromContents(QStyle::ContentsType ct, const QStyleOpti
             bool hideShortcutText = false;
 
             if (hideShortcutText) {
-                m_width -= menuItem->tabWidth;
+                m_width -= menuItemShortcutWidth(menuItem);
                 int tabIndex = menuItem->text.indexOf(QLatin1Char('\t'));
 
                 if (tabIndex != -1) {
-                    int textWidth = menuItem->fontMetrics.width(menuItem->text.mid(tabIndex + 1));
+                    int textWidth = menuItem->fontMetrics.horizontalAdvance(menuItem->text.mid(tabIndex + 1));
 
-                    if (menuItem->tabWidth == 0)
+                    if (menuItemShortcutWidth(menuItem) == 0)
                         m_width -= textWidth;
                 }
             }
@@ -4184,7 +4232,7 @@ int ChameleonStyle::styleHint(QStyle::StyleHint sh, const QStyleOption *opt,
     case SH_ComboBox_PopupFrameStyle:
         return QFrame::NoFrame | QFrame::Plain;
     case SH_Slider_AbsoluteSetButtons:
-        return Qt::LeftButton | Qt::MidButton;
+        return Qt::LeftButton | Qt::MiddleButton;
     case SH_ToolTipLabel_Opacity:
         return 255;
     default:
@@ -4306,7 +4354,8 @@ void ChameleonStyle::polish(QWidget *w)
         topWidget->setBackgroundRole(QPalette::Base);
 
         auto layout = qobject_cast<QLayout*>(topWidget->layout());
-        layout->setMargin(radius / 2);
+        int margin = radius / 2;
+        layout->setContentsMargins(margin, margin, margin, margin);
     }
 
     if (w && (w->objectName() == "qt_calendar_yearbutton"
@@ -4320,7 +4369,7 @@ void ChameleonStyle::polish(QWidget *w)
     if (w && w->objectName() == "qt_calendar_yearedit") {
         w->setProperty("_d_dtk_spinBox", true);
         //直接取用spinBox最大年限
-        int width = w->fontMetrics().width("9999");
+        int width = w->fontMetrics().horizontalAdvance("9999");
         w->setMaximumWidth(width * 3);
     }
 
@@ -4373,7 +4422,7 @@ void ChameleonStyle::polish(QWidget *w)
                 handle.setWindowRadius(DStyle::pixelMetric(PM_FrameRadius));
             }
             QLabel *label = qobject_cast<QLabel *>(w);
-            label->setTextFormat(DStyle::tooltipTextFormat());
+            label->setTextFormat(DToolTip::toolTipTextFormat());
         }
     }
 }
@@ -4553,7 +4602,8 @@ QColor ChameleonStyle::getColor(const QStyleOption *option, QPalette::ColorRole 
 
 QColor ChameleonStyle::getColor(const QStyleOption *option, DPalette::ColorType type, const QWidget *widget) const
 {
-    const DPalette &pa = DApplicationHelper::instance()->palette(widget, option->palette);
+
+    const DPalette &pa = DPaletteHelper::instance()->palette(widget, option->palette);
 
     return DStyle::generatedBrush(option, pa.brush(type), pa.currentColorGroup(), type).color();
 }
