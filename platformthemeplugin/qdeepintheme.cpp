@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017 - 2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include "qdeepintheme.h"
@@ -13,8 +13,6 @@
 
 #include <QGuiApplication>
 #include <QIconEnginePlugin>
-
-#include <XdgIcon>
 
 #include <private/qicon_p.h>
 #include <private/qiconloader_p.h>
@@ -32,12 +30,16 @@
 
 DGUI_USE_NAMESPACE
 
+#ifdef XDG_ICON_VERSION_MAR
+#include <XdgIcon>
+extern void updateXdgIconSystemTheme();
 #if XDG_ICON_VERSION_MAR >= 3
 namespace DEEPIN_QT_THEME {
 QThreadStorage<QString> colorScheme;
 void(*setFollowColorScheme)(bool);
 bool(*followColorScheme)();
 }
+#endif
 #endif
 
 #define DISABLE_UPDATE_WINDOW_GEOMETRY "D_DISABLE_UPDATE_WINDOW_GEOMETRY_FOR_SCALE"
@@ -53,8 +55,6 @@ const char *QDeepinTheme::name = "deepin";
 bool QDeepinTheme::m_usePlatformNativeDialog = true;
 QMimeDatabase QDeepinTheme::m_mimeDatabase;
 DThemeSettings *QDeepinTheme::m_settings = 0;
-
-extern void updateXdgIconSystemTheme();
 
 static bool isDBusTrayAvailable() {
     static bool dbusTrayAvailable = false;
@@ -72,8 +72,9 @@ static bool isDBusTrayAvailable() {
 static void onIconThemeSetCallback()
 {
     QIconLoader::instance()->updateSystemTheme();
+#ifdef XDG_ICON_VERSION_MAR
     updateXdgIconSystemTheme();
-
+#endif
     if (qApp->inherits("Dtk::Widget::DApplication")) {
         // emit the signal: DApplication::iconThemeChanged
         qApp->metaObject()->invokeMethod(qApp, QT_STRINGIFY(iconThemeChanged));
@@ -96,6 +97,8 @@ static void onFontChanged()
         delete QGuiApplicationPrivate::app_font;
     QGuiApplicationPrivate::app_font = nullptr;
 
+    QFont appFont = qGuiApp->font(); // Refresh the font
+
     QEvent event(QEvent::ApplicationFontChange);
     qApp->sendEvent(qApp, &event);
 
@@ -108,7 +111,11 @@ static void onFontChanged()
     }
 
     qApp->sendEvent(DGuiApplicationHelper::instance(), &event);
-    Q_EMIT qGuiApp->fontChanged(qGuiApp->font());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    Q_EMIT qGuiApp->fontChanged(appFont);
+#else
+    Q_UNUSED(appFont)
+#endif
 }
 
 static void updateWindowGeometry(QWindow *w)
@@ -347,8 +354,10 @@ static bool updateScaleLogcailDpi(const QPair<qreal, qreal> &dpi)
     } else if (qIsNull(dpi.second)) {
         QHighDpiScaling::m_logicalDpi.second = qGuiApp->primaryScreen()->handle()->logicalDpi().second;
     }
+#elif QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    QHighDpiScaling::m_usePixelDensity = false; // Do not use dpi from platform plugin
 #else
-    QHighDpiScaling::m_usePixelDensity = false;
+    QHighDpiScaling::m_usePlatformPluginDpi = false; // Do not use dpi from platform plugin
 #endif
     return ok;
 }
@@ -417,6 +426,7 @@ static void onScreenScaleFactorsChanged(const QByteArray &value)
 
 static bool enabledRTScreenScale()
 {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     // 应用中设置了和屏幕缩放相关的环境变量或启动相关属性后后不开启自动缩放功能
     static bool enable = !qEnvironmentVariableIsSet("D_DISABLE_RT_SCREEN_SCALE") &&
                             !qEnvironmentVariableIsSet("QT_DEVICE_PIXEL_RATIO") &&
@@ -426,6 +436,9 @@ static bool enabledRTScreenScale()
                             !QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling) &&
                             !QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling) &&
                             qGuiApp->platformName().endsWith("xcb");
+#else
+    static bool enable = false; // TODO What is the enable logic under Qt6 when Qt::AA_EnableHighDpiScaling is always true
+#endif
 
     return enable;
 }
@@ -531,14 +544,14 @@ QIcon QDeepinTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOpti
 {
     Q_UNUSED(iconOptions);
 
-    return XdgIcon::fromTheme(m_mimeDatabase.mimeTypeForFile(fileInfo).iconName());
+    return QIcon::fromTheme(m_mimeDatabase.mimeTypeForFile(fileInfo).iconName());
 }
 #else
 QPixmap QDeepinTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &size, QPlatformTheme::IconOptions iconOptions) const
 {
     Q_UNUSED(iconOptions);
 
-    return XdgIcon::fromTheme(m_mimeDatabase.mimeTypeForFile(fileInfo).iconName()).pixmap(size.toSize());
+    return QIcon::fromTheme(m_mimeDatabase.mimeTypeForFile(fileInfo).iconName()).pixmap(size.toSize());
 }
 #endif
 

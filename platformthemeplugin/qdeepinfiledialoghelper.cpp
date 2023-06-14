@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017 - 2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include "qdeepinfiledialoghelper.h"
@@ -13,7 +13,13 @@
 #include <QWindow>
 #include <QDBusObjectPath>
 #include <QFileDialog>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <qnativeinterface.h>
+#define DISPLAY qApp->nativeInterface<QNativeInterface::QX11Application>()->display()
+#else
 #include <QX11Info>
+#define DISPLAY QX11Info::display()
+#endif
 #include <QDebug>
 #include <QApplication>
 #include <QLoggingCategory>
@@ -105,7 +111,7 @@ static inline void setTransientForHint(WId wid, WId propWid)
 
     // set WM_TRANSIENT_FOR propWid for wid
     // to make sure filedialog window on the top of app window
-    XSetTransientForHint(QX11Info::display(), wid, propWid);
+    XSetTransientForHint(DISPLAY, wid, propWid);
 }
 
 void QDeepinFileDialogHelper::onWindowActiveChanged()
