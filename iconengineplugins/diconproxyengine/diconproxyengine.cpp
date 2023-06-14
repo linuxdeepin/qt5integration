@@ -166,7 +166,10 @@ bool DIconProxyEngine::write(QDataStream &out) const
     return m_iconEngine ? m_iconEngine->write(out) : false;
 }
 
-QString DIconProxyEngine::iconName() const
+QString DIconProxyEngine::iconName()
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+const
+#endif
 {
     return m_iconName;
 }
