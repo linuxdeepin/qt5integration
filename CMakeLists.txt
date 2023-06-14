@@ -85,3 +85,4 @@ set(PLUGIN_OUTPUT_BASE_DIR ${CMAKE_BINARY_DIR}/plugins CACHE STRING "Plugin outp
 set(PLUGIN_INSTALL_BASE_DIR ${CMAKE_INSTALL_LIBDIR}/qt${QT_VERSION_MAJOR}/plugins CACHE STRING "Plugin install base path")
 
 add_subdirectory(iconengineplugins)
+add_subdirectory(imageformatplugins)
