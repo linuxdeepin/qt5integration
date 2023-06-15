@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include <gtest/gtest.h>
@@ -53,12 +53,12 @@ void TestForStyleHintParam::TearDown()
     delete testWidget;
 }
 
-INSTANTIATE_TEST_CASE_P(ChameleonStyle, TestForStyleHintParam, ::testing::Range(int(ChameleonStyle::SH_EtchDisabledText), int(ChameleonStyle::SH_SpinBox_ButtonsInsideFrame)));
+INSTANTIATE_TEST_SUITE_P(ChameleonStyle, TestForStyleHintParam, ::testing::Range(int(ChameleonStyle::SH_EtchDisabledText), int(ChameleonStyle::SH_SpinBox_ButtonsInsideFrame)));
 
 TEST_P(TestForStyleHintParam, styleHint)
 {
     QStyleOption opt;
-    opt.init(testWidget);
+    opt.initFrom(testWidget);
 
     testWidget->setStyle(style);
 
@@ -91,12 +91,12 @@ void TestForPixelMetricParam::TearDown()
     delete testWidget;
 }
 
-INSTANTIATE_TEST_CASE_P(ChameleonStyle, TestForPixelMetricParam, ::testing::Range(quint64(ChameleonStyle::PM_FocusBorderWidth), quint64(ChameleonStyle::PM_ButtonMinimizedSize)));
+INSTANTIATE_TEST_SUITE_P(ChameleonStyle, TestForPixelMetricParam, ::testing::Range(quint64(ChameleonStyle::PM_FocusBorderWidth), quint64(ChameleonStyle::PM_ButtonMinimizedSize)));
 
 TEST_P(TestForPixelMetricParam, pixelMetric)
 {
     QStyleOption opt;
-    opt.init(testWidget);
+    opt.initFrom(testWidget);
 
     testWidget->setStyle(style);
 
@@ -117,12 +117,12 @@ protected:
     QWidget *testWidget;
 };
 
-INSTANTIATE_TEST_CASE_P(ChameleonStyle, TestForQtDrawControlParam, ::testing::Range(int(QStyle::CE_PushButton), int(QStyle::CE_ShapedFrame)));
+INSTANTIATE_TEST_SUITE_P(ChameleonStyle, TestForQtDrawControlParam, ::testing::Range(int(QStyle::CE_PushButton), int(QStyle::CE_ShapedFrame)));
 
 TEST_P(TestForQtDrawControlParam, drawControl)
 {
     QStyleOption opt;
-    opt.init(testWidget);
+    opt.initFrom(testWidget);
 
     // 测试Qt原生drawControl参数调用时是否有潜在崩溃风险
     QPixmap surface(QSize(200, 200));
@@ -188,7 +188,7 @@ protected:
     QWidget *testWidget;
 };
 
-INSTANTIATE_TEST_CASE_P(ChameleonStyle, TestForQtDrawComplexControlParam, ::testing::Values(DrawComplexControl_Param(QStyle::CC_SpinBox, new QStyleOptionSpinBox), DrawComplexControl_Param(QStyle::CC_ToolButton, new QStyleOptionToolButton), DrawComplexControl_Param(QStyle::CC_Slider, new QStyleOptionSlider), DrawComplexControl_Param(QStyle::CC_ComboBox, new QStyleOptionComboBox)));
+INSTANTIATE_TEST_SUITE_P(ChameleonStyle, TestForQtDrawComplexControlParam, ::testing::Values(DrawComplexControl_Param(QStyle::CC_SpinBox, new QStyleOptionSpinBox), DrawComplexControl_Param(QStyle::CC_ToolButton, new QStyleOptionToolButton), DrawComplexControl_Param(QStyle::CC_Slider, new QStyleOptionSlider), DrawComplexControl_Param(QStyle::CC_ComboBox, new QStyleOptionComboBox)));
 
 TEST_P(TestForQtDrawComplexControlParam, drawComplexControl)
 {
@@ -197,7 +197,7 @@ TEST_P(TestForQtDrawComplexControlParam, drawComplexControl)
     QPixmap surface(QSize(200, 200));
     QPainter p(&surface);
 
-    param.opt->init(testWidget);
+    param.opt->initFrom(testWidget);
     // 测试调用默认参数时函数是否会崩溃
     style->drawComplexControl(param.cc, param.opt, &p);
     param.releaseOption();
@@ -219,7 +219,7 @@ class TestForQtStandardPixmapParam : public ::testing::TestWithParam<int>
 {
 };
 
-INSTANTIATE_TEST_CASE_P(ChameleonStyle, TestForQtStandardPixmapParam, ::testing::Range(int(QStyle::SP_TitleBarMenuButton), int(QStyle::SP_LineEditClearButton)));
+INSTANTIATE_TEST_SUITE_P(ChameleonStyle, TestForQtStandardPixmapParam, ::testing::Range(int(QStyle::SP_TitleBarMenuButton), int(QStyle::SP_LineEditClearButton)));
 
 TEST_P(TestForQtStandardPixmapParam, StandardPixmap)
 {
@@ -323,7 +323,7 @@ bool TestForDrawUtil::testPixmapHasData()
 
     image.reinterpretAsFormat(QImage::Format_RGB32);
     const QRgb *bits = reinterpret_cast<const QRgb *>(image.constBits());
-    const QRgb *end = bits + image.byteCount() / sizeof(QRgb);
+    const QRgb *end = bits + image.sizeInBytes() / sizeof(QRgb);
     return !std::all_of(bits, end, [](QRgb r) { return r == QColor(Qt::green).rgb(); });
 }
 
@@ -340,7 +340,7 @@ TEST_F(TestForDrawUtil, drawBorder)
 {
     auto drawBorderFunc = [&]() {
         QStyleOption opt;
-        opt.init(testWidget);
+        opt.initFrom(testWidget);
 
         // 测试调用是否存在异常崩溃并且测试函数的绘制操作是否有效
         style->drawBorder(painter, &opt, testWidget);
@@ -435,7 +435,7 @@ TEST_F(TestForDrawUtil, drawButtonDownArrow)
 {
     auto drawButtonDownArrowFunc = [&]() {
         QStyleOptionButton opt;
-        opt.init(testWidget);
+        opt.initFrom(testWidget);
 
         style->drawButtonDownArrow(&opt, painter, testWidget);
     };
@@ -448,7 +448,7 @@ TEST_F(TestForDrawUtil, drawSpinBox)
 {
     auto drawSpinBoxPlusMinusFunc = [&]() {
         QStyleOptionSpinBox opt;
-        opt.init(testWidget);
+        opt.initFrom(testWidget);
         opt.buttonSymbols = QAbstractSpinBox::PlusMinus;
 
         style->drawSpinBox(&opt, painter, testWidget);
@@ -456,7 +456,7 @@ TEST_F(TestForDrawUtil, drawSpinBox)
 
     auto drawSpinBoxUpDownArrows = [&]() {
         QStyleOptionSpinBox opt;
-        opt.init(testWidget);
+        opt.initFrom(testWidget);
         opt.buttonSymbols = QAbstractSpinBox::UpDownArrows;
 
         style->drawSpinBox(&opt, painter, testWidget);
@@ -472,29 +472,36 @@ TEST_F(TestForDrawUtil, drawMenuBarItem)
 {
     auto drawMenuBarItemMarginAndExclusive = [&]() {
         QStyleOptionMenuItem opt;
-        opt.init(testWidget);
+        opt.initFrom(testWidget);
         opt.menuItemType = QStyleOptionMenuItem::Margin;
         opt.checkType = QStyleOptionMenuItem::Exclusive;
         opt.text = "测试1";
         opt.icon = style->standardIcon(QStyle::SP_DirIcon);
         opt.menuRect = QRect(20, 20, 60, 40);
         opt.maxIconWidth = 20;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        opt.reservedShortcutWidth = 2;
+#else
         opt.tabWidth = 2;
-
+#endif
         QRect ret;
         style->drawMenuBarItem(&opt, ret, painter, testWidget);
     };
 
     auto drawMenuBarItemNormalAndExclusive = [&]() {
         QStyleOptionMenuItem opt;
-        opt.init(testWidget);
+        opt.initFrom(testWidget);
         opt.menuItemType = QStyleOptionMenuItem::Normal;
         opt.checkType = QStyleOptionMenuItem::Exclusive;
         opt.text = "测试2";
         opt.icon = style->standardIcon(QStyle::SP_DirIcon);
         opt.menuRect = QRect(20, 20, 60, 40);
         opt.maxIconWidth = 20;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        opt.reservedShortcutWidth = 2;
+#else
         opt.tabWidth = 2;
+#endif
         opt.state |= QStyle::State_MouseOver;
 
         QRect ret;
@@ -515,7 +522,7 @@ TEST_F(TestForDrawUtil, drawMenuItemBackground)
         void testDrawNormalBackground()
         {
             QStyleOption opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.state |= QStyle::State_Selected;
 
             style()->drawMenuItemBackground(&opt, painter(), QStyleOptionMenuItem::Normal);
@@ -524,7 +531,7 @@ TEST_F(TestForDrawUtil, drawMenuItemBackground)
         void testDrawDefaultItemBackground()
         {
             QStyleOption opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.state |= QStyle::State_MouseOver;
 
             style()->drawMenuItemBackground(&opt, painter(), QStyleOptionMenuItem::DefaultItem);
@@ -533,7 +540,7 @@ TEST_F(TestForDrawUtil, drawMenuItemBackground)
         void testDrawSunMenuBackground()
         {
             QStyleOption opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.state |= QStyle::State_Sunken;
 
             style()->drawMenuItemBackground(&opt, painter(), QStyleOptionMenuItem::SubMenu);
@@ -556,7 +563,7 @@ TEST_F(TestForDrawUtil, drawMenuItem)
         void testDrawNorMenuItem()
         {
             QStyleOptionMenuItem opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.menuItemType = QStyleOptionMenuItem::Normal;
 
             style()->drawMenuItem(&opt, painter(), testWidget());
@@ -565,7 +572,7 @@ TEST_F(TestForDrawUtil, drawMenuItem)
         void testDrawSeparatorMenuItem()
         {
             QStyleOptionMenuItem opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.menuItemType = QStyleOptionMenuItem::Separator;
 
             style()->drawMenuItem(&opt, painter(), testWidget());
@@ -574,7 +581,7 @@ TEST_F(TestForDrawUtil, drawMenuItem)
         void testDrawSubMenuItem()
         {
             QStyleOptionMenuItem opt2;
-            opt2.init(testWidget());
+            opt2.initFrom(testWidget());
             opt2.menuItemType = QStyleOptionMenuItem::SubMenu;
 
             style()->drawMenuItem(&opt2, painter(), testWidget());
@@ -597,7 +604,7 @@ TEST_F(TestForDrawUtil, drawTabBar)
         void testDrawRoundedEstOnlyOneTab()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= (QStyle::State_Selected | QStyle::State_Enabled);
             tab.shape = QTabBar::RoundedEast;
             tab.position = QStyleOptionTab::OnlyOneTab;
@@ -611,7 +618,7 @@ TEST_F(TestForDrawUtil, drawTabBar)
         void testDrawTriangularNorthMiddleTab()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= QStyle::State_Enabled;
             tab.shape = QTabBar::TriangularNorth;
             tab.position = QStyleOptionTab::Middle;
@@ -627,7 +634,7 @@ TEST_F(TestForDrawUtil, drawTabBar)
         void testDrawRoundedWestBeginningTab()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= QStyle::State_Enabled;
             tab.shape = QTabBar::RoundedWest;
             tab.position = QStyleOptionTab::Beginning;
@@ -657,7 +664,7 @@ TEST_F(TestForDrawUtil, drawTabBarLabel)
         void testDrawRoundedEastOnlyOneTabLabel()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= (QStyle::State_Selected | QStyle::State_Enabled);
             tab.shape = QTabBar::RoundedEast;
             tab.position = QStyleOptionTab::OnlyOneTab;
@@ -671,7 +678,7 @@ TEST_F(TestForDrawUtil, drawTabBarLabel)
         void testDrawTriangularNorthTabLabel()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= QStyle::State_Enabled;
             tab.shape = QTabBar::TriangularNorth;
             tab.text = "test 2";
@@ -682,7 +689,7 @@ TEST_F(TestForDrawUtil, drawTabBarLabel)
         void testDrawTriangularNorthOnlyOneTabLabel()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= (QStyle::State_Selected | QStyle::State_Enabled);
             tab.shape = QTabBar::TriangularNorth;
             tab.position = QStyleOptionTab::OnlyOneTab;
@@ -696,7 +703,7 @@ TEST_F(TestForDrawUtil, drawTabBarLabel)
         void testDrawTriangularWestOnlyOneTabLabel()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= (QStyle::State_Selected | QStyle::State_Enabled);
             tab.shape = QTabBar::TriangularWest;
             tab.position = QStyleOptionTab::OnlyOneTab;
@@ -735,7 +742,7 @@ TEST_F(TestForDrawUtil, drawTabBarCloseButton)
         tabbar->setTabButton(0, QTabBar::LeftSide, btn1);
 
         QStyleOption opt;
-        opt.init(btn1);
+        opt.initFrom (btn1);
         opt.state = QStyle::State_Enabled | QStyle::State_Selected;
 
         style->drawTabBarCloseButton(painter, &opt, btn1);
@@ -747,7 +754,7 @@ TEST_F(TestForDrawUtil, drawTabBarCloseButton)
         tabbar->setTabButton(1, QTabBar::RightSide, btn2);
 
         QStyleOption opt;
-        opt.init(btn2);
+        opt.initFrom(btn2);
 
         style->drawTabBarCloseButton(painter, &opt, btn2);
     };
@@ -773,7 +780,7 @@ TEST_F(TestForDrawUtil, drawTabBarScrollButton)
             toolButton->setArrowType(Qt::DownArrow);
 
             QStyleOptionToolButton opt;
-            opt.init(toolButton);
+            opt.initFrom(toolButton);
             opt.text = "test 1";
             opt.arrowType = Qt::DownArrow;
 
@@ -785,7 +792,7 @@ TEST_F(TestForDrawUtil, drawTabBarScrollButton)
             toolButton->setArrowType(Qt::UpArrow);
 
             QStyleOptionToolButton opt;
-            opt.init(toolButton);
+            opt.initFrom(toolButton);
             opt.text = "test 2";
             opt.arrowType = Qt::UpArrow;
 
@@ -800,7 +807,7 @@ TEST_F(TestForDrawUtil, drawTabBarScrollButton)
             toolButton->setArrowType(Qt::LeftArrow);
 
             QStyleOptionToolButton opt;
-            opt.init(toolButton);
+            opt.initFrom(toolButton);
             opt.text = "test 3";
             opt.arrowType = Qt::LeftArrow;
 
@@ -814,7 +821,7 @@ TEST_F(TestForDrawUtil, drawTabBarScrollButton)
             toolButton->setArrowType(Qt::RightArrow);
 
             QStyleOptionToolButton opt;
-            opt.init(toolButton);
+            opt.initFrom(toolButton);
             opt.text = "test 4";
             opt.arrowType = Qt::RightArrow;
 
@@ -845,7 +852,7 @@ TEST_F(TestForDrawUtil, drawComboBox)
         void testDrawNormalComboBox()
         {
             QStyleOptionComboBox opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.editable = true;
             opt.popupRect = QRect(0, 0, 30, 30);
             opt.frame = true;
@@ -860,7 +867,7 @@ TEST_F(TestForDrawUtil, drawComboBox)
         void testDrawArrowFrameEditAndPopupComboBox()
         {
             QStyleOptionComboBox opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.editable = false;
             opt.frame = false;
             opt.currentText = "test 2";
@@ -874,7 +881,7 @@ TEST_F(TestForDrawUtil, drawComboBox)
         void testDrawArrowFrameComboBox()
         {
             QStyleOptionComboBox opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
 
             opt.editable = false;
             opt.frame = false;
@@ -889,7 +896,7 @@ TEST_F(TestForDrawUtil, drawComboBox)
         void testDrawEditPopupFocusComboBox()
         {
             QStyleOptionComboBox opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
 
             opt.currentText = "test 4";
             opt.currentIcon = style()->standardIcon(QStyle::SP_DirIcon);
@@ -919,7 +926,7 @@ TEST_F(TestForDrawUtil, drawComboBoxLabel)
         void testDrawEnableAndHoverComboBoxLabel()
         {
             QStyleOptionComboBox opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
 
             opt.editable = true;
             opt.popupRect = QRect(0, 0, 30, 30);
@@ -935,7 +942,7 @@ TEST_F(TestForDrawUtil, drawComboBoxLabel)
         void testDrawArrowFrameEditComboBoxLabel()
         {
             QStyleOptionComboBox opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
 
             opt.editable = false;
             opt.popupRect = QRect(0, 0, 30, 30);
@@ -951,7 +958,7 @@ TEST_F(TestForDrawUtil, drawComboBoxLabel)
         void testDrawArrowFrameSunkenComboBoxLabel()
         {
             QStyleOptionComboBox opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
 
             opt.rect = QRect(20, 20, 100, 50);
             opt.currentText = "test 3";
@@ -965,7 +972,7 @@ TEST_F(TestForDrawUtil, drawComboBoxLabel)
         void testDrawFocusAndSelectComboBoxLabel()
         {
             QStyleOptionComboBox opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
 
             opt.currentText = "测试3";
             opt.currentIcon = QIcon::fromTheme("icon_Layout");
@@ -996,7 +1003,7 @@ TEST_F(TestForDrawUtil, drawSliderHandle)
         void testDrawNoTicksSliderHandle()
         {
             QStyleOptionSlider slider;
-            slider.init(testWidget());
+            slider.initFrom(testWidget());
             slider.tickPosition = QSlider::NoTicks;
 
             style()->drawSliderHandle(&slider, defaultRect, painter(), testWidget());
@@ -1005,7 +1012,7 @@ TEST_F(TestForDrawUtil, drawSliderHandle)
         void testDrawHorizontalLeftTicksSliderHandle()
         {
             QStyleOptionSlider slider;
-            slider.init(testWidget());
+            slider.initFrom(testWidget());
             slider.orientation = Qt::Horizontal;
             slider.tickPosition = QSlider::TicksLeft;
 
@@ -1015,7 +1022,7 @@ TEST_F(TestForDrawUtil, drawSliderHandle)
         void testDrawHorizontalRightTicksSliderHandle()
         {
             QStyleOptionSlider slider;
-            slider.init(testWidget());
+            slider.initFrom(testWidget());
             slider.orientation = Qt::Horizontal;
             slider.tickPosition = QSlider::TicksRight;
 
@@ -1025,7 +1032,7 @@ TEST_F(TestForDrawUtil, drawSliderHandle)
         void testDrawVerticalLeftTicksSliderHandle()
         {
             QStyleOptionSlider slider;
-            slider.init(testWidget());
+            slider.initFrom(testWidget());
             slider.orientation = Qt::Vertical;
             slider.tickPosition = QSlider::TicksLeft;
 
@@ -1035,7 +1042,7 @@ TEST_F(TestForDrawUtil, drawSliderHandle)
         void testDrawVerticalRightTicksSliderHandle()
         {
             QStyleOptionSlider slider;
-            slider.init(testWidget());
+            slider.initFrom(testWidget());
             slider.orientation = Qt::Vertical;
             slider.tickPosition = QSlider::TicksRight;
 
@@ -1065,7 +1072,7 @@ TEST_F(TestForDrawUtil, drawSliderHandleFocus)
         void testDrawHorizontalNoticksSliderHandleFocus()
         {
             QStyleOptionSlider opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.orientation = Qt::Horizontal;
             opt.tickPosition = QSlider::NoTicks;
             opt.minimum = 0;
@@ -1077,7 +1084,7 @@ TEST_F(TestForDrawUtil, drawSliderHandleFocus)
         void testDrawHorizontalLeftTicksSliderHandleFocus()
         {
             QStyleOptionSlider opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.orientation = Qt::Horizontal;
             opt.tickPosition = QSlider::TicksLeft;
             opt.minimum = 0;
@@ -1089,7 +1096,7 @@ TEST_F(TestForDrawUtil, drawSliderHandleFocus)
         void testDrawHorizontalRightTicksSliderHandleFocus()
         {
             QStyleOptionSlider opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.orientation = Qt::Horizontal;
             opt.tickPosition = QSlider::TicksRight;
             opt.minimum = 0;
@@ -1101,7 +1108,7 @@ TEST_F(TestForDrawUtil, drawSliderHandleFocus)
         void testDrawVerticalLeftTicksSliderHandleFocus()
         {
             QStyleOptionSlider opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.orientation = Qt::Vertical;
             opt.tickPosition = QSlider::TicksLeft;
             opt.minimum = 0;
@@ -1113,7 +1120,7 @@ TEST_F(TestForDrawUtil, drawSliderHandleFocus)
         void testDrawVerticalRightTicksSliderHandleFocus()
         {
             QStyleOptionSlider opt;
-            opt.init(testWidget());
+            opt.initFrom(testWidget());
             opt.orientation = Qt::Vertical;
             opt.tickPosition = QSlider::TicksRight;
             opt.minimum = 0;
@@ -1155,7 +1162,7 @@ TEST_F(TestForDrawUtil, tabLayout)
     INIT_TESTWIDGET(QWidget);
 
     QStyleOptionTab tab;
-    tab.init(testWidget);
+    tab.initFrom(testWidget);
     tab.iconSize = QSize(32, 32);
     tab.shape = QTabBar::RoundedEast;
     tab.icon = QIcon::fromTheme("icon_Layout");
@@ -1170,7 +1177,7 @@ TEST_F(TestForDrawUtil, drawTableViewItem)
 {
     auto drawNormalTableViewItem = [&]() {
         QStyleOptionViewItem opt;
-        opt.init(testWidget);
+        opt.initFrom(testWidget);
         opt.backgroundBrush = Qt::darkCyan;
 
         style->drawTableViewItem(QStyle::PE_PanelItemViewItem, &opt, painter, testWidget);
@@ -1178,7 +1185,7 @@ TEST_F(TestForDrawUtil, drawTableViewItem)
 
     auto drawEnableItemRadiusTableView = [&]() {
         QStyleOptionViewItem opt;
-        opt.init(testWidget);
+        opt.initFrom(testWidget);
         opt.backgroundBrush = Qt::darkCyan;
         opt.state |= QStyle::State_Selected;
         opt.showDecorationSelected = true;
@@ -1205,7 +1212,7 @@ TEST_F(TestForDrawUtil, drawMenuItemRedPoint)
         menu->addAction(action);
 
         QStyleOptionMenuItem opt;
-        opt.init(menu);
+        opt.initFrom(menu);
         opt.menuItemType = QStyleOptionMenuItem::Normal;
         opt.rect = menu->actionGeometry(action);
 
@@ -1220,7 +1227,7 @@ TEST_F(TestForDrawUtil, drawMenuItemRedPoint)
         menu->addAction(actionMenu);
 
         QStyleOptionMenuItem opt;
-        opt.init(menu);
+        opt.initFrom(menu);
         opt.menuItemType = QStyleOptionMenuItem::Normal;
         opt.menuItemType = QStyleOptionMenuItem::SubMenu;
         opt.rect = menu->actionGeometry(actionMenu);
@@ -1548,7 +1555,7 @@ TEST_F(TestForDrawUtil, drawPrimitiveFrame)
 
         option.features |= QStyleOptionFrame::Rounded;
         option.lineWidth = 0;
-        painter->setBackground(option.palette.background());
+        painter->setBackground(option.palette.window());
 
         style->drawPrimitive(QStyle::PE_Frame, &option, painter, testWidget);
     };
@@ -1908,7 +1915,11 @@ TEST_F(TestForDrawUtil, drawControlMenuBarItem)
         option.icon = style->standardIcon(QStyle::SP_DirIcon);
         option.menuRect = QRect(20, 20, 60, 40);
         option.maxIconWidth = 20;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        option.reservedShortcutWidth = 2;
+#else
         option.tabWidth = 2;
+#endif
 
         style->drawControl(QStyle::CE_MenuBarItem, &option, painter, testWidget);
     };
@@ -1921,7 +1932,7 @@ TEST_F(TestForDrawUtil, drawControlMenuItem)
 {
     auto drawNormalMenuItemUtil = [&]() {
         QStyleOptionMenuItem opt;
-        opt.init(testWidget);
+        opt.initFrom(testWidget);
         opt.menuItemType = QStyleOptionMenuItem::Normal;
         style->drawControl(QStyle::CE_MenuItem, &opt, painter, testWidget);
     };
@@ -1983,7 +1994,7 @@ TEST_F(TestForDrawUtil, drawControlTabBarTab)
         void testDrawTabBarTabShapeUtil()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= (QStyle::State_Selected | QStyle::State_Enabled);
             tab.shape = QTabBar::RoundedEast;
             tab.position = QStyleOptionTab::OnlyOneTab;
@@ -1997,7 +2008,7 @@ TEST_F(TestForDrawUtil, drawControlTabBarTab)
         void testDrawTabBarTabLabelUtil()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= (QStyle::State_Selected | QStyle::State_Enabled);
             tab.shape = QTabBar::RoundedEast;
             tab.position = QStyleOptionTab::Beginning;
@@ -2011,7 +2022,7 @@ TEST_F(TestForDrawUtil, drawControlTabBarTab)
         void testDrawTabBarTabHorizontalSelectedUtil()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= (QStyle::State_Selected | QStyle::State_Enabled);
             tab.shape = QTabBar::RoundedNorth;
             tab.position = QStyleOptionTab::Middle;
@@ -2025,7 +2036,7 @@ TEST_F(TestForDrawUtil, drawControlTabBarTab)
         void testDrawTabBarTabVerticalCheckedUtil()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= (QStyle::State_Selected | QStyle::State_Enabled);
 
             tab.shape = QTabBar::TriangularWest;
@@ -2041,7 +2052,7 @@ TEST_F(TestForDrawUtil, drawControlTabBarTab)
         void testDrawTabBarTabVerticalCheckedAndOffStateUtil()
         {
             QStyleOptionTab tab;
-            tab.init(testWidget());
+            tab.initFrom(testWidget());
             tab.state |= QStyle::State_Enabled;
 
             tab.shape = QTabBar::RoundedSouth;
@@ -2309,7 +2320,7 @@ TEST_F(TestForDrawUtil, drawControlProgressBar)
             QStyleOptionProgressBar option;
             option.initFrom(testWidget());
 
-            option.orientation = Qt::Horizontal;
+            option.state |= QStyle::State_Horizontal;
             option.progress = 80;
             option.minimum = 0;
             option.maximum = 100;
@@ -2322,7 +2333,7 @@ TEST_F(TestForDrawUtil, drawControlProgressBar)
             QStyleOptionProgressBar option;
             option.initFrom(testWidget());
 
-            option.orientation = Qt::Vertical;
+            option.state &= ~QStyle::State_Horizontal;
             option.progress = 50;
             option.minimum = 0;
             option.maximum = 100;
@@ -2348,7 +2359,7 @@ TEST_F(TestForDrawUtil, drawControlProgressBarGroove)
             QStyleOptionProgressBar option;
             option.initFrom(testWidget());
 
-            option.orientation = Qt::Horizontal;
+            option.state |= QStyle::State_Horizontal;
             option.progress = 50;
             option.minimum = 0;
             option.maximum = 100;
@@ -2373,7 +2384,7 @@ TEST_F(TestForDrawUtil, drawControlProgressBarContents)
             QStyleOptionProgressBar option;
             option.initFrom(testWidget());
 
-            option.orientation = Qt::Horizontal;
+            option.state |= QStyle::State_Horizontal;
             option.progress = 50;
             option.minimum = 0;
             option.maximum = 100;
@@ -2388,7 +2399,7 @@ TEST_F(TestForDrawUtil, drawControlProgressBarContents)
             QStyleOptionProgressBar option;
             option.initFrom(testWidget());
 
-            option.orientation = Qt::Horizontal;
+            option.state |= QStyle::State_Horizontal;
             option.progress = 100;
             option.minimum = 0;
             option.maximum = 100;
@@ -2402,7 +2413,7 @@ TEST_F(TestForDrawUtil, drawControlProgressBarContents)
             QStyleOptionProgressBar option;
             option.initFrom(testWidget());
 
-            option.orientation = Qt::Horizontal;
+            option.state |= QStyle::State_Horizontal;
             option.progress = 50;
             option.minimum = 0;
             option.maximum = 100;
@@ -2419,7 +2430,7 @@ TEST_F(TestForDrawUtil, drawControlProgressBarContents)
             QStyleOptionProgressBar option;
             option.initFrom(testWidget());
 
-            option.orientation = Qt::Horizontal;
+            option.state |= QStyle::State_Horizontal;
             option.progress = 10;
             option.minimum = 0;
             option.maximum = 100;
@@ -2435,7 +2446,7 @@ TEST_F(TestForDrawUtil, drawControlProgressBarContents)
             QStyleOptionProgressBar option;
             option.initFrom(testWidget());
 
-            option.orientation = Qt::Horizontal;
+            option.state |= QStyle::State_Horizontal;
             option.progress = 90;
             option.minimum = 0;
             option.maximum = 100;
