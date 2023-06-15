@@ -7,6 +7,11 @@
 #include "norwegianwoodstyle.h"
 #include "widgetgallery.h"
 
+inline static void setUnifiedMargin(QLayout* layout, int margin)
+{
+    layout->setContentsMargins(margin, margin, margin, margin);
+}
+
 //! [0]
 WidgetGallery::WidgetGallery(QWidget *parent)
     : QMainWindow(parent)
@@ -36,9 +41,8 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 //! [0]
 
 //! [1]
-    connect(styleComboBox, SIGNAL(activated(QString)),
+    connect(styleComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated), this, static_cast<void (WidgetGallery::*)(int)>(&WidgetGallery::changeStyle));
 //! [1] //! [2]
-            this, SLOT(changeStyle(QString)));
     connect(useStylePaletteCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(changePalette()));
     connect(disableWidgetsCheckBox, SIGNAL(toggled(bool)),
@@ -115,8 +119,14 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 //! [4]
 
 //! [5]
-void WidgetGallery::changeStyle(const QString &styleName)
+void WidgetGallery::changeStyle(int index)
 //! [5] //! [6]
+{
+    changeStyle(styleComboBox->itemText(index));
+}
+//! [6]
+
+void WidgetGallery::changeStyle(const QString &styleName)
 {
     if (styleName == "NorwegianWood") {
         QApplication::setStyle(new NorwegianWoodStyle);
@@ -125,7 +135,6 @@ void WidgetGallery::changeStyle(const QString &styleName)
     }
     changePalette();
 }
-//! [6]
 
 //! [7]
 void WidgetGallery::changePalette()
@@ -223,7 +232,7 @@ void WidgetGallery::createBottomLeftTabWidget()
     tableWidget->setAlternatingRowColors(true);
 
     QHBoxLayout *tab1hbox = new QHBoxLayout;
-    tab1hbox->setMargin(5);
+    setUnifiedMargin(tab1hbox, 5);
     tab1hbox->addWidget(tableWidget);
     tab1->setLayout(tab1hbox);
 
@@ -238,7 +247,7 @@ void WidgetGallery::createBottomLeftTabWidget()
                               "How I wonder what you are!\n"));
 
     QHBoxLayout *tab2hbox = new QHBoxLayout;
-    tab2hbox->setMargin(5);
+    setUnifiedMargin(tab2hbox, 5);
     tab2hbox->addWidget(textEdit);
     tab2->setLayout(tab2hbox);
 
@@ -249,8 +258,7 @@ void WidgetGallery::createBottomLeftTabWidget()
     QFileSystemModel *model = new QFileSystemModel(this);
     model->setRootPath(QDir::currentPath());
     QHBoxLayout *pTabLayout = new QHBoxLayout;
-    pTabLayout->setMargin(0);
-    pTabLayout->setMargin(0);
+    setUnifiedMargin(pTabLayout, 0);
     pTreeViewWidget->setLayout(pTabLayout);
 
     QTreeView *tree = new QTreeView;
@@ -260,7 +268,7 @@ void WidgetGallery::createBottomLeftTabWidget()
     QWidget *pListViewWidget = new QWidget;
     QHBoxLayout *pListLayout = new QHBoxLayout;
     QStandardItemModel *listModel = new QStandardItemModel(this);
-    pListLayout->setMargin(0);
+    setUnifiedMargin(pListLayout, 0);
     pListViewWidget->setLayout(pListLayout);
 
     QListView *lv = new QListView;

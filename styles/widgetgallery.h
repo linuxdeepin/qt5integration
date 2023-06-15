@@ -34,6 +34,7 @@ public:
     WidgetGallery(QWidget *parent = 0);
 
 private slots:
+    void changeStyle(int index);
     void changeStyle(const QString &styleName);
     void changePalette();
     void advanceProgressBar();
