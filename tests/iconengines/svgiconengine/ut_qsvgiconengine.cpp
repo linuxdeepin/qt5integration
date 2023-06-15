@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include <gtest/gtest.h>
@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <DSvgRenderer>
 #include <QDebug>
+#include <QIODevice>
 
 #include "qsvgiconengine.h"
 
@@ -179,7 +180,7 @@ protected:
     QSvgIconEngine *engine;
 };
 
-INSTANTIATE_TEST_CASE_P(QSvgIconEngine, AddPixmapParamTest, ::testing::Values(TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Disabled, QIcon::On), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Active, QIcon::On), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Normal, QIcon::On), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Selected, QIcon::On), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Disabled, QIcon::Off), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Active, QIcon::Off), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Normal, QIcon::Off), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Selected, QIcon::Off)));
+INSTANTIATE_TEST_SUITE_P(QSvgIconEngine, AddPixmapParamTest, ::testing::Values(TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Disabled, QIcon::On), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Active, QIcon::On), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Normal, QIcon::On), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Selected, QIcon::On), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Disabled, QIcon::Off), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Active, QIcon::Off), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Normal, QIcon::Off), TestPixmapType_Param(QPixmap(ICONNAME), QIcon::Selected, QIcon::Off)));
 
 TEST_P(AddPixmapParamTest, addPixmap)
 {

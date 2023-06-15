@@ -8,6 +8,7 @@
 #include <DPlatformTheme>
 #include <QIcon>
 #include <QPainter>
+#include <QIODevice>
 
 #include "dciiconengine.h"
 

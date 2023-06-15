@@ -1,11 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 #include <gtest/gtest.h>
 #include <DGuiApplicationHelper>
 #include <QIcon>
 #include <QPainter>
+#include <QIODevice>
 
 #include "dbuiltiniconengine.h"
 
@@ -160,8 +161,10 @@ TEST_F(ut_DBuiltinIconEngine, hasIcon)
 
 TEST_F(ut_DBuiltinIconEngine, virtual_hook)
 {
+    void *arg;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QIconEngine::AvailableSizesArgument data;
-    void *arg = reinterpret_cast<void *>(&data);
+    arg = reinterpret_cast<void *>(&data);
     mIconEngine->virtual_hook(QIconEngine::AvailableSizesHook, arg);
     ASSERT_FALSE(data.sizes.isEmpty());
 
@@ -169,6 +172,7 @@ TEST_F(ut_DBuiltinIconEngine, virtual_hook)
     arg = reinterpret_cast<void *>(&icon_name);
     mIconEngine->virtual_hook(QIconEngine::IconNameHook, arg);
     ASSERT_EQ(icon_name, ICONNAME);
+#endif
 
     bool isNull = true;
     arg = reinterpret_cast<void *>(&isNull);
