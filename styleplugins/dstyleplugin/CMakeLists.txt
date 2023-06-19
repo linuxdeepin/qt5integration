@@ -5,8 +5,6 @@ dtk_add_plugin(
     NAME dstyleplugin
     OUTPUT_DIR
         ${PLUGIN_OUTPUT_BASE_DIR}/styles
-    INSTALL_DIR
-        ${PLUGIN_INSTALL_BASE_DIR}/styles
     SOURCES
         dstyleplugin.cpp
         style.cpp
