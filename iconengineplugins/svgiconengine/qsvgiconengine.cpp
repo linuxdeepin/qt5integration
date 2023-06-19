@@ -232,7 +232,7 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
         const QImage image = renderer.toImage(actualSize);
 
         if (Q_LIKELY(!image.isNull() && !cacheFile.isEmpty())) {
-            QtConcurrent::run(QThreadPool::globalInstance(), [image, cacheFile, svgFile] {
+            [[ maybe_unused ]] auto result = QtConcurrent::run(QThreadPool::globalInstance(), [image, cacheFile, svgFile] {
                 QSaveFile file(cacheFile);
                 // 增加cache文件能被成功保存的概率
                 file.setDirectWriteFallback(true);
