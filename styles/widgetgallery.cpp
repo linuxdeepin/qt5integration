@@ -22,6 +22,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     styleComboBox->addItem("NorwegianWood");
     styleComboBox->addItems(QStyleFactory::keys());
     styleComboBox->setToolTip("Hello");
+    styleComboBox->setCurrentIndex(0);
 
     styleLabel = new QLabel(tr("&Style:"));
     styleLabel->setBuddy(styleComboBox);
@@ -31,7 +32,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
 
     disableWidgetsCheckBox = new QCheckBox(tr("&Disable widgets"));
 
-    changeStyle("chameleon");
+    changeStyle(0);
 
     createTopLeftGroupBox();
     createTopRightGroupBox();
