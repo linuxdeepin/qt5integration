@@ -60,7 +60,12 @@ static QString generateServiceName()
 {
     const QCoreApplication *app = QCoreApplication::instance();
     const QString domain = app->organizationDomain();
-    const QStringList parts = domain.split(QLatin1Char('.'), QString::SkipEmptyParts);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    auto behavior = Qt::SkipEmptyParts;
+#else
+    auto behavior = QString::SkipEmptyParts;
+#endif
+    const QStringList parts = domain.split(QLatin1Char('.'), behavior);
 
     QString reversedDomain;
     if (parts.isEmpty()) {

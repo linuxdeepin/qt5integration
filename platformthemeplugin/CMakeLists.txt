@@ -39,13 +39,20 @@ dtk_add_plugin(
         dthemesettings.cpp
         qdeepinfiledialoghelper.cpp
         qdeepintheme.cpp
+        ${CMAKE_SOURCE_DIR}/3rdparty/qdbustrayicon.cpp
+        ${CMAKE_SOURCE_DIR}/3rdparty/qstatusnotifieritemadaptor.cpp
+        ${CMAKE_SOURCE_DIR}/3rdparty/qdbusmenuconnection.cpp
         main.cpp
         ${DBUS_INTERFACES}
     HEADERS
         dthemesettings.h
         qdeepinfiledialoghelper.h
         qdeepintheme.h
+        ${CMAKE_SOURCE_DIR}/3rdparty/qdbustrayicon_p.h
+        ${CMAKE_SOURCE_DIR}/3rdparty/qstatusnotifieritemadaptor_p.h
+        ${CMAKE_SOURCE_DIR}/3rdparty/qdbusmenuconnection_p.h
     RESOURCES
+        icons/deepin-theme-plugin-icons.qrc
         deepin-theme-plugin.qrc
     DEPENDENCIES
         Dtk${VERSION_SUFFIX}::Gui

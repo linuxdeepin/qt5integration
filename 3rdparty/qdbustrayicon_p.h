@@ -18,6 +18,7 @@
 #include "qdbusmenuconnection_p.h"
 #include "qstatusnotifieritemadaptor_p.h"
 #include <private/qtguiglobal_p.h>
+#include <private/qdbusmenubar_p.h>
 
 QT_REQUIRE_CONFIG(systemtrayicon);
 
@@ -27,8 +28,6 @@ QT_REQUIRE_CONFIG(systemtrayicon);
 #include <QLoggingCategory>
 #include <qpa/qplatformsystemtrayicon.h>
 
-class QDBusMenuAdaptor;
-class QDBusPlatformMenu;
 class QXdgNotificationInterface;
 
 namespace thirdparty {
