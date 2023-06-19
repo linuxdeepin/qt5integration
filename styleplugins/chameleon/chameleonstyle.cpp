@@ -323,7 +323,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                 const bool hasTransAttr = w->window()->testAttribute(Qt::WA_TranslucentBackground);
                 const bool isDialog = windowFlags.testFlag(Qt::Dialog);
                 const bool isPopup = windowFlags.testFlag(Qt::Popup);
-                isTransBg = hasTransAttr && isDialog && !isPopup;
+                // if we set palette to lineedit (e.g. DLineEdit::setAlert )
+                const bool isResolved = opt->palette.isBrushSet(QPalette::Current, QPalette::Button);
+                isTransBg = hasTransAttr && isDialog && !isPopup && !isResolved;
             }
         }
 
