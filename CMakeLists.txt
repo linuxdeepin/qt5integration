@@ -17,6 +17,8 @@ project(
   LANGUAGES CXX C
 )
 
+option(ENABLE_OLD_STYLE "Enable old style" OFF)
+
 if(PROJECT_VERSION_MAJOR EQUAL 6)
   set(VERSION_SUFFIX 6)
   find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core)
@@ -69,7 +71,9 @@ function(dtk_add_plugin)
                           PROPERTIES
                           LIBRARY_OUTPUT_DIRECTORY ${TARGET_OUTPUT_DIR})
   endif()
-  install(TARGETS ${TARGET_NAME} DESTINATION ${TARGET_INSTALL_DIR})
+  if(TARGET_INSTALL_DIR)
+    install(TARGETS ${TARGET_NAME} DESTINATION ${TARGET_INSTALL_DIR})
+  endif()
 endfunction()
 
 find_package(Dtk${VERSION_SUFFIX} REQUIRED COMPONENTS Widget)
