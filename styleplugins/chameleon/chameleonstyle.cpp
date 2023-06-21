@@ -2397,6 +2397,8 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
                 if (auto lineEdit = combobox->lineEdit()) {
                     if (lineEdit->testAttribute(Qt::WA_SetPalette)) {
                         brush = lineEdit->palette().button();
+                    } else {
+                        brush = getBrush(comboBox, QPalette::Button);
                     }
                 }
             }
