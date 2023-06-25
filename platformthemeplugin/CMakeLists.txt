@@ -13,6 +13,16 @@ if(QT_VERSION_MAJOR EQUAL 5)
     else()
         list(APPEND QT_LIBS Qt5::PlatformSupportPrivate) # TODO to be verified
     endif()
+    set(3RD_PARTY_SOURCES
+        ${CMAKE_SOURCE_DIR}/3rdparty/qdbustrayicon.cpp
+        ${CMAKE_SOURCE_DIR}/3rdparty/qstatusnotifieritemadaptor.cpp
+        ${CMAKE_SOURCE_DIR}/3rdparty/qdbusmenuconnection.cpp
+    )
+    set(3RD_PARTY_HEADERS
+        ${CMAKE_SOURCE_DIR}/3rdparty/qdbustrayicon_p.h
+        ${CMAKE_SOURCE_DIR}/3rdparty/qstatusnotifieritemadaptor_p.h
+        ${CMAKE_SOURCE_DIR}/3rdparty/qdbusmenuconnection_p.h
+    )
 else()
     list(APPEND QT_LIBS Qt6::GuiPrivate)
 endif()
@@ -39,18 +49,14 @@ dtk_add_plugin(
         dthemesettings.cpp
         qdeepinfiledialoghelper.cpp
         qdeepintheme.cpp
-        ${CMAKE_SOURCE_DIR}/3rdparty/qdbustrayicon.cpp
-        ${CMAKE_SOURCE_DIR}/3rdparty/qstatusnotifieritemadaptor.cpp
-        ${CMAKE_SOURCE_DIR}/3rdparty/qdbusmenuconnection.cpp
+        ${3RD_PARTY_SOURCES}
         main.cpp
         ${DBUS_INTERFACES}
     HEADERS
         dthemesettings.h
         qdeepinfiledialoghelper.h
         qdeepintheme.h
-        ${CMAKE_SOURCE_DIR}/3rdparty/qdbustrayicon_p.h
-        ${CMAKE_SOURCE_DIR}/3rdparty/qstatusnotifieritemadaptor_p.h
-        ${CMAKE_SOURCE_DIR}/3rdparty/qdbusmenuconnection_p.h
+        ${3RD_PARTY_HEADERS}
     RESOURCES
         icons/deepin-theme-plugin-icons.qrc
         deepin-theme-plugin.qrc
