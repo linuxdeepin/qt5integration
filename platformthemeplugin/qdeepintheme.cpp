@@ -6,7 +6,9 @@
 #include "qdeepinfiledialoghelper.h"
 #include "filedialogmanager_interface.h"
 #include "dthemesettings.h"
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include "../3rdparty/qdbustrayicon_p.h"
+#endif
 
 #include <DGuiApplicationHelper>
 #include <DPlatformTheme>
@@ -56,6 +58,7 @@ bool QDeepinTheme::m_usePlatformNativeDialog = true;
 QMimeDatabase QDeepinTheme::m_mimeDatabase;
 DThemeSettings *QDeepinTheme::m_settings = 0;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 static bool isDBusTrayAvailable() {
     static bool dbusTrayAvailable = false;
     static bool dbusTrayAvailableKnown = false;
@@ -68,6 +71,7 @@ static bool isDBusTrayAvailable() {
     }
     return dbusTrayAvailable;
 }
+#endif
 
 static void onIconThemeSetCallback()
 {
@@ -555,7 +559,7 @@ QPixmap QDeepinTheme::fileIconPixmap(const QFileInfo &fileInfo, const QSizeF &si
 }
 #endif
 
-#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QPlatformSystemTrayIcon *QDeepinTheme::createPlatformSystemTrayIcon() const
 {
     if (isDBusTrayAvailable())

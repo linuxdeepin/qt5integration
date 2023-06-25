@@ -31,7 +31,7 @@ public:
                            QPlatformTheme::IconOptions iconOptions = 0) const Q_DECL_OVERRIDE;
 #endif
 
-#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON)
+#if !defined(QT_NO_DBUS) && !defined(QT_NO_SYSTEMTRAYICON) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
 #endif
 
