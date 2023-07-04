@@ -10,24 +10,25 @@ arch=('x86_64' 'aarch64')
 url="https://github.com/linuxdeepin/qt5integration"
 license=('GPL3')
 depends=('dtkwidget-git' 'libqtxdg' 'deepin-qt5platform-plugins-git')
-makedepends=('git' 'qt5-tools' 'xcb-util-renderutil' 'gtest')
+makedepends=('git' 'qt5-tools' 'xcb-util-renderutil' 'gtest' 'gmock' 'cmake' 'ninja')
 conflicts=('deepin-qt5integration')
 provides=('deepin-qt5integration')
 groups=('deepin-git')
 source=("${sourcetars[@]}")
 sha512sums=('SKIP')
 
-prepare() {
-    cd $sourcedir
-}
 
 build() {
-  cd $sourcedir
-  qmake-qt5 PREFIX=/usr
-  make
+	cd $sourcedir
+	cmake . -GNinja \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_WITH_SYSTEMD=ON
+	ninja
 }
 
 package() {
   cd $sourcedir
-  make INSTALL_ROOT="$pkgdir" install
+  DESTDIR="$pkgdir" ninja install
 }
