@@ -10,10 +10,8 @@ dtk_add_plugin(
     INSTALL_DIR
       ${PLUGIN_INSTALL_BASE_DIR}/iconengines
     SOURCES
-      dbuiltiniconengine.cpp
       main.cpp
     HEADERS
-      dbuiltiniconengine.h
     DEPENDENCIES
       Qt${QT_VERSION_MAJOR}::GuiPrivate
       Dtk${VERSION_SUFFIX}::Gui

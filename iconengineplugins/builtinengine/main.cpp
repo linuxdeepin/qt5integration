@@ -4,15 +4,14 @@
  */
 #include <qiconengineplugin.h>
 #include <qstringlist.h>
-
-#include "dbuiltiniconengine.h"
-
 #include <qiodevice.h>
 #include <qbytearray.h>
 #include <qdebug.h>
 
-QT_BEGIN_NAMESPACE
+#include <DIconTheme>
 
+QT_BEGIN_NAMESPACE
+DGUI_USE_NAMESPACE
 class DBuiltinIconEnginePlugin : public QIconEnginePlugin
 {
     Q_OBJECT
@@ -30,8 +29,7 @@ QStringList DBuiltinIconEnginePlugin::keys() const
 
 QIconEngine *DBuiltinIconEnginePlugin::create(const QString &iconName)
 {
-    DBuiltinIconEngine *engine = new DBuiltinIconEngine(iconName);
-
+    QIconEngine *engine = DIconTheme::createIconEngine(iconName);
     return engine;
 }
 
