@@ -5,28 +5,30 @@
 #include <qiconengineplugin.h>
 #include <qstringlist.h>
 
-#include "diconproxyengine.h"
+#include <DIconTheme>
+
+DGUI_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-class DIconProxyEnginePlugin : public QIconEnginePlugin
+class DInonEnginePlugin : public QIconEnginePlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QIconEngineFactoryInterface" FILE "diconproxyengine.json")
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QIconEngineFactoryInterface" FILE "diconengine.json")
 
 public:
     QStringList keys() const;
     QIconEngine *create(const QString &iconName = QString());
 };
 
-QStringList DIconProxyEnginePlugin::keys() const
+QStringList DInonEnginePlugin::keys() const
 {
     return {"DIconProxyEngine"};
 }
 
-QIconEngine *DIconProxyEnginePlugin::create(const QString &iconName)
+QIconEngine *DInonEnginePlugin::create(const QString &iconName)
 {
-    return new DIconProxyEngine(iconName);
+    return DIconTheme::createIconEngine(iconName);
 }
 
 QT_END_NAMESPACE
