@@ -4,7 +4,7 @@
 
 dtk_add_plugin(
     NAME
-        svg
+        dsvg
     OUTPUT_DIR
         ${PLUGIN_OUTPUT_BASE_DIR}/imageformats
     INSTALL_DIR
