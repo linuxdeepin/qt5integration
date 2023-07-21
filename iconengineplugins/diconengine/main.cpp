@@ -11,7 +11,7 @@ DGUI_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
-class DInonEnginePlugin : public QIconEnginePlugin
+class DIconEnginePlugin : public QIconEnginePlugin
 {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QIconEngineFactoryInterface" FILE "diconengine.json")
@@ -21,12 +21,12 @@ public:
     QIconEngine *create(const QString &iconName = QString());
 };
 
-QStringList DInonEnginePlugin::keys() const
+QStringList DIconEnginePlugin::keys() const
 {
-    return {"DIconProxyEngine"};
+    return {"DIconEngine"};
 }
 
-QIconEngine *DInonEnginePlugin::create(const QString &iconName)
+QIconEngine *DIconEnginePlugin::create(const QString &iconName)
 {
     return DIconTheme::createIconEngine(iconName);
 }
