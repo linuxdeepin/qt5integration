@@ -20,6 +20,7 @@ add_executable(unit-tests
     imageformats/dci/dci_test_files.qrc
     imageformats/svg/ut_qsvgiohandler.cpp
     styleplugins/chameleon/ut_chameleonstyle.cpp
+    styleplugins/chameleon/icons/theme-icons.qrc
     main.cpp
 )
 find_package(GTest REQUIRED)
