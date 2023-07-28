@@ -534,7 +534,7 @@ static QIconEngine *createIconEngineWithKey(const QString &iconName, const QStri
 
 QIconEngine *QDeepinTheme::createIconEngine(const QString &iconName) const
 {
-    QIconEngine *engine = createIconEngineWithKey(iconName, "DIconEngine");
+    QIconEngine *engine = createIconEngineWithKey(iconName, "DIconProxyEngine");
     return engine ? engine : QGenericUnixTheme::createIconEngine(iconName);
 }
 
