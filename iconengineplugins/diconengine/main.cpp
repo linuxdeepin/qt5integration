@@ -23,7 +23,7 @@ public:
 
 QStringList DIconEnginePlugin::keys() const
 {
-    return {"DIconEngine"};
+    return {"DIconProxyEngine"};
 }
 
 QIconEngine *DIconEnginePlugin::create(const QString &iconName)
