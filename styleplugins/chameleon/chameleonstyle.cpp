@@ -1378,8 +1378,11 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int max = progBar->maximum;
             int val = progBar->progress;
             int drawWidth = 0;
-
-            if (progBar->state & State_Horizontal) {
+            bool horizontal = progBar->state & State_Horizontal;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            horizontal |= progBar->orientation == Qt::Horizontal;
+#endif
+            if (horizontal) {
                 drawWidth = (val * 1.0 / (max - min)) * rect.width();
                 rect = QRect(rect.left(), rect.top(), drawWidth, rect.height());
             } else {
@@ -1391,7 +1394,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             QStyleOptionProgressBar subopt = *progBar;
             proxy()->drawControl(CE_ProgressBarContents, &subopt, p, w);
 
-            if (progBar->textVisible && progBar->state & State_Horizontal) {
+            if (progBar->textVisible && horizontal) {
                 subopt.rect = proxy()->subElementRect(SE_ProgressBarLabel, progBar, w);
                 proxy()->drawControl(CE_ProgressBarLabel, &subopt, p, w);
             }
@@ -1401,7 +1404,11 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     case CE_ProgressBarGroove: {  //滑槽显示
         if (const QStyleOptionProgressBar *progBar = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
             int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-            int height = (progBar->state & State_Horizontal) ? opt->rect.height() : opt->rect.width();
+            bool horizontal = progBar->state & State_Horizontal;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            horizontal |= progBar->orientation == Qt::Horizontal;
+#endif
+            int height = horizontal ? opt->rect.height() : opt->rect.width();
             if (frameRadius * 2 >= height) {
                 frameRadius = qMin(height / 2, 4);
             }
@@ -1421,12 +1428,16 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int val = progBar->progress;
             int drawWidth = 0;
             int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-            int height = (progBar->state & State_Horizontal) ? rect.height() : rect.width();
+            bool horizontal = progBar->state & State_Horizontal;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            horizontal |= progBar->orientation == Qt::Horizontal;
+#endif
+            int height = horizontal ? rect.height() : rect.width();
             if (frameRadius * 2 >= height) {
                 frameRadius = qMin(height / 2, 4);
             }
 
-            if (progBar->state & State_Horizontal) {
+            if (horizontal) {
                 drawWidth = (val * 1.0 / (max - min)) * rect.width();
                 rect = QRect(rect.left(), rect.top(), drawWidth, rect.height());
             } else {
@@ -3140,7 +3151,6 @@ QRect ChameleonStyle::subElementRect(QStyle::SubElement r, const QStyleOption *o
         int x = opt->rect.x();
         int y = opt->rect.y();
         int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, opt, widget);
-
         if (opt->state & State_Horizontal) {
             // designer: whatever how big the QHeaderView it is, the arrow size is fixed.
             // size the same as the arrow in combobox. PM_MenuButtonIndicator
