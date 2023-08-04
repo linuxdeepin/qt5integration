@@ -2,6 +2,3 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 add_subdirectory(chameleon)
-if(ENABLE_OLD_STYLE)
-    add_subdirectory(dstyleplugin)
-endif()

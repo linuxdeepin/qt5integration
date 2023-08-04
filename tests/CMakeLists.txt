@@ -8,12 +8,12 @@ add_executable(unit-tests
     ${CMAKE_SOURCE_DIR}/imageformatplugins/dci/qdciiohandler.h
     ${CMAKE_SOURCE_DIR}/styleplugins/chameleon/chameleonstyle.h
     ${CMAKE_SOURCE_DIR}/styleplugins/chameleon/common.h
-    ${CMAKE_SOURCE_DIR}/styleplugins/dstyleplugin/dstyleanimation.h
+    ${CMAKE_SOURCE_DIR}/styleplugins/chameleon/dstyleanimation.h
     ${CMAKE_SOURCE_DIR}/iconengineplugins/svgiconengine/qsvgiconengine.cpp
     ${CMAKE_SOURCE_DIR}/imageformatplugins/svg/qsvgiohandler.cpp
     ${CMAKE_SOURCE_DIR}/imageformatplugins/dci/qdciiohandler.cpp
     ${CMAKE_SOURCE_DIR}/styleplugins/chameleon/chameleonstyle.cpp
-    ${CMAKE_SOURCE_DIR}/styleplugins/dstyleplugin/dstyleanimation.cpp
+    ${CMAKE_SOURCE_DIR}/styleplugins/chameleon/dstyleanimation.cpp
     iconengines/svgiconengine/ut_qsvgiconengine.cpp
     iconengines/svgiconengine/icons.qrc
     imageformats/dci/ut_qdciiohandler.cpp

@@ -10,11 +10,11 @@ dtk_add_plugin(
     SOURCES
         main.cpp
         chameleonstyle.cpp
-        ${CMAKE_SOURCE_DIR}/styleplugins/dstyleplugin/dstyleanimation.cpp
+        dstyleanimation.cpp
     HEADERS
         chameleonstyle.h
         common.h
-        ${CMAKE_SOURCE_DIR}/styleplugins/dstyleplugin/dstyleanimation.h
+        dstyleanimation.h
     RESOURCES
         resources.qrc
     DEPENDENCIES
