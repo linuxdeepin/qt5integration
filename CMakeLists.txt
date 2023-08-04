@@ -17,7 +17,6 @@ project(
   LANGUAGES CXX C
 )
 
-option(ENABLE_OLD_STYLE "Enable old style" OFF)
 option(BUILD_TESTS "Build tests" ON)
 
 if(PROJECT_VERSION_MAJOR EQUAL 6)

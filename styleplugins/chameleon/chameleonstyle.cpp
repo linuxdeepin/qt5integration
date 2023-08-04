@@ -58,7 +58,7 @@
 #include <qdrawutil.h>
 #include <qpa/qplatformwindow.h>
 
-#include "../dstyleplugin/dstyleanimation.h"
+#include "dstyleanimation.h"
 
 DGUI_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
