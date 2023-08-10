@@ -57,6 +57,7 @@ QStringList urlList2StringList(const QList<QUrl> &list)
 }
 
 DFileDialogManager *QDeepinFileDialogHelper::manager = Q_NULLPTR;
+QString QDeepinFileDialogHelper::dialogService = QStringLiteral();
 
 QDeepinFileDialogHelper::QDeepinFileDialogHelper()
 {
@@ -354,9 +355,14 @@ void QDeepinFileDialogHelper::initDBusFileDialogManager()
     if (manager)
         return;
 
-    if (QDBusConnection::sessionBus().interface()->isServiceRegistered(DIALOG_SERVICE).value()
+    if (qEnvironmentVariableIsSet("_d_fileDialogServiceName")) {
+        dialogService = qgetenv("_d_fileDialogServiceName");
+    } else {
+        dialogService = DIALOG_SERVICE;
+    }
+    if (QDBusConnection::sessionBus().interface()->isServiceRegistered(dialogService).value()
         || !QStandardPaths::findExecutable("dde-desktop").isEmpty()) {
-        manager = new DFileDialogManager(DIALOG_SERVICE, "/com/deepin/filemanager/filedialogmanager", QDBusConnection::sessionBus());
+        manager = new DFileDialogManager(dialogService, "/com/deepin/filemanager/filedialogmanager", QDBusConnection::sessionBus());
     }
 }
 
@@ -380,7 +386,7 @@ void QDeepinFileDialogHelper::ensureDialog() const
         if (path.isEmpty()) {
             qCWarning(fileDialogHelper) << "Can not create native dialog, Will be use QFileDialog";
         } else {
-            filedlgInterface = new DFileDialogHandle(DIALOG_SERVICE, path, QDBusConnection::sessionBus());
+            filedlgInterface = new DFileDialogHandle(dialogService, path, QDBusConnection::sessionBus());
             auxiliaryWindow = new QWindow();
             auxiliaryWindow->setObjectName("QDeepinFileDialogHelper_auxiliaryWindow");
 

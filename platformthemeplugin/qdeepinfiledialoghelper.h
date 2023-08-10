@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017-2022 UnionTech Software Technology Co., Ltd.  
+ * SPDX-FileCopyrightText: 2017 - 2023 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #ifndef QDEEPINFILEDIALOGHELPER_H
@@ -52,6 +52,7 @@ private:
     QPointer<QObject> sourceDialog;
     QPointer<QEventLoop> execLoop;
     static DFileDialogManager *manager;
+    static QString dialogService;
 
     void ensureDialog() const;
     void applyOptions();
