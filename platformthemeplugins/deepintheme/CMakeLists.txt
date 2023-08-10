@@ -31,13 +31,9 @@ pkg_check_modules(Deps REQUIRED IMPORTED_TARGET mtdev)
 if(ENABLE_QT_XDG_ICON_LOADER)
     set(DEFS -DXDG_ICON_VERSION_MAR=${XDG_ICON_VERSION_MAJOR})
 endif()
-if(QT_VERSION_MAJOR EQUAL 5)
-    qt5_add_dbus_interface(DBUS_INTERFACES ${CMAKE_CURRENT_LIST_DIR}/xmls/com.deepin.filemanager.filedialog.xml filedialog_interface)
-    qt5_add_dbus_interface(DBUS_INTERFACES ${CMAKE_CURRENT_LIST_DIR}/xmls/com.deepin.filemanager.filedialogmanager.xml filedialogmanager_interface)
-else()
-    qt6_add_dbus_interface(DBUS_INTERFACES ${CMAKE_CURRENT_LIST_DIR}/xmls/com.deepin.filemanager.filedialog.xml filedialog_interface)
-    qt6_add_dbus_interface(DBUS_INTERFACES ${CMAKE_CURRENT_LIST_DIR}/xmls/com.deepin.filemanager.filedialogmanager.xml filedialogmanager_interface)
-endif()
+
+include(../filedialog/filedialog.cmake)
+
 dtk_add_plugin(
     NAME
         qdeepin
@@ -45,16 +41,18 @@ dtk_add_plugin(
         ${PLUGIN_OUTPUT_BASE_DIR}/platformthemes
     INSTALL_DIR
         ${PLUGIN_INSTALL_BASE_DIR}/platformthemes
+    INCLUDE_DIRS
+        ${CMAKE_CURRENT_LIST_DIR}/../filedialog
     SOURCES
         dthemesettings.cpp
-        qdeepinfiledialoghelper.cpp
+        ${DFM_DLG_SOURCES}
         qdeepintheme.cpp
         ${3RD_PARTY_SOURCES}
         main.cpp
         ${DBUS_INTERFACES}
     HEADERS
         dthemesettings.h
-        qdeepinfiledialoghelper.h
+        ${DFM_DLG_HEADERS}
         qdeepintheme.h
         ${3RD_PARTY_HEADERS}
     RESOURCES

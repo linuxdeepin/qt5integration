@@ -62,5 +62,5 @@ target_include_directories(unit-tests PRIVATE
     ${CMAKE_SOURCE_DIR}/imageformatplugins/svg
     ${CMAKE_SOURCE_DIR}/imageformatplugins/dci
     ${CMAKE_SOURCE_DIR}/styleplugins/chameleon
-    ${CMAKE_SOURCE_DIR}/platformthemeplugin
+    ${CMAKE_SOURCE_DIR}/platformthemeplugins/deepintheme
 )
