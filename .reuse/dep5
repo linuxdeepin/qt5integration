@@ -8,11 +8,6 @@ Files: *.md CHANGELOG.md
 Copyright: None
 License: CC0-1.0
 
-# assets
-Files: styleplugins/dstyleplugin/assets/*
-Copyright: UnionTech Software Technology Co., Ltd.
-License: GPL-3.0-or-later
-
 # Project file
 Files: *.pro *.prf *.pri
 Copyright: None
