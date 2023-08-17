@@ -3,22 +3,22 @@
 # SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
+SCRIPT_PATH=$(dirname $0)
+cd $SCRIPT_PATH && cd ..
 
-BUILD_DIR=`pwd`/../build/tests/
+BUILD_DIR=$PWD/build
 HTML_DIR=${BUILD_DIR}/html
 XML_DIR=${BUILD_DIR}/report
 
 export ASAN_OPTIONS="halt_on_error=0"
 
-cd ..
+cmake -B${BUILD_DIR} -DCMAKE_BUILD_TYPE=Debug -DENABLE_COV=ON
 
-cmake -Bbuild -DCMAKE_BUILD_TYPE=Debug
-
-cmake --build build --target unit-tests -j$(nproc)
+cmake --build ${BUILD_DIR} --target unit-tests -j$(nproc)
 
 cd $BUILD_DIR
 
-./unit-tests --gtest_output=xml:${XML_DIR}/report_qtintegration.xml
+tests/unit-tests --gtest_output=xml:${XML_DIR}/report_qtintegration.xml
 
 lcov -d ./ -c -o coverage_all.info
 lcov --remove coverage_all.info "*/tests/*" "*/usr/include*" "*build/*" --output-file coverage.info
