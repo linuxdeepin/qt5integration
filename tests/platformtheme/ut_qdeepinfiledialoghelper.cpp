@@ -16,11 +16,13 @@ class TestQDeepinFileDialogHelper : public testing::Test
 public:
     static void SetUpTestSuite()
     {
+        qputenv("_d_fileDialogServiceName", DIALOG_SERVICE);
         manager = new FileDialogManagerService(DIALOG_SERVICE, "/com/deepin/filemanager/filedialogmanager");
         QDeepinFileDialogHelper::initDBusFileDialogManager();
     }
     static void TearDownTestSuite()
     {
+        qunsetenv("_d_fileDialogServiceName");
         delete manager;
     }
 

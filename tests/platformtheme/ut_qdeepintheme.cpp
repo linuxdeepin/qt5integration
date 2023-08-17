@@ -30,12 +30,14 @@ class TestQDeepinTheme : public testing::Test
 public:
     static void SetUpTestSuite()
     {
+        qputenv("_d_fileDialogServiceName", DIALOG_SERVICE);
         theme = new QDeepinTheme;
         managerService = new FileDialogManagerService(DIALOG_SERVICE, "/com/deepin/filemanager/filedialogmanager");
     }
 
     static void TearDownTestSuite()
     {
+        qunsetenv("_d_fileDialogServiceName");
         delete theme;
         delete managerService;
     }

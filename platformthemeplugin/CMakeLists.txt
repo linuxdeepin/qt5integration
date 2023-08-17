@@ -66,4 +66,6 @@ dtk_add_plugin(
         PkgConfig::Deps
     DEFINITIONS
         ${DEFS}
+    INCLUDE_DIRS
+        ${CMAKE_CURRENT_BINARY_DIR}
 )
