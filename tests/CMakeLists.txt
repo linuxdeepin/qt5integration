@@ -52,8 +52,7 @@ target_link_options(unit-tests PRIVATE
 target_compile_definitions(unit-tests PRIVATE
     DIALOG_SERVICE="org.deepin.fakefilemanager.filedialog"
     META_FILE_BASE_DIR="${CMAKE_SOURCE_DIR}"
-    PLUGIN_OUTPUT_BASE_DIR="${PLUGIN_OUTPUT_BASE_DIR}"
-    UT_PLATFORMPLUGIN_PATH="${CMAKE_BINARY_DIR}/plugins"
+    UT_PLATFORMPLUGIN_PATH="${PLUGIN_OUTPUT_BASE_DIR}"
 )
 
 target_include_directories(unit-tests PRIVATE
