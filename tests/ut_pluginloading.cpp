@@ -20,8 +20,8 @@ public:
     static void SetUpTestSuite()
     {
         // Assume build directory is in project root directory
-#ifdef PLUGIN_OUTPUT_BASE_DIR
-        pluginBaseDir = PLUGIN_OUTPUT_BASE_DIR;
+#ifdef UT_PLATFORMPLUGIN_PATH
+        pluginBaseDir = UT_PLATFORMPLUGIN_PATH;
 #else
         pluginBaseDir = "../plugins";
 #endif
