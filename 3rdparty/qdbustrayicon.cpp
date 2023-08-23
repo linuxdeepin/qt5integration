@@ -75,7 +75,7 @@ static QString generateServiceName()
     return reversedDomain + app->applicationName();
 }
 
-static const QString KDEItemFormat = QStringLiteral("%2.kdbus-%1")
+static const QString KDEItemFormat = QStringLiteral("%2.kdbus-%1-%3")
                                          .arg(QDBusConnection::sessionBus().baseService().replace(
                                              QRegularExpression(QStringLiteral("[\\.:]")), QStringLiteral("_")));
 
@@ -102,7 +102,7 @@ QDBusTrayIcon::QDBusTrayIcon()
     , m_menuAdaptor(nullptr)
     , m_menu(nullptr)
     , m_notifier(nullptr)
-    , m_instanceId(KDEItemFormat.arg(generateServiceName()))
+    , m_instanceId(KDEItemFormat.arg(generateServiceName()).arg(instanceCount))
     , m_category(QStringLiteral("ApplicationStatus"))
     , m_defaultStatus(QStringLiteral("Active")) // be visible all the time.  QSystemTrayIcon has no API to control this.
     , m_status(m_defaultStatus)
