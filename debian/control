@@ -13,7 +13,7 @@ Build-Depends:
  pkg-config,
  libqt5x11extras5-dev,
  libfontconfig1-dev,
- libfreetype6-dev,
+ libfreetype-dev,
  libglib2.0-dev,
  libqt5svg5-dev,
  libqt5xdgiconloader-dev,
