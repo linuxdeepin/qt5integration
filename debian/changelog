@@ -1,3 +1,44 @@
+qt5integration (5.6.16) unstable; urgency=medium
+
+  * chore: Sync by https://github.com/linuxdeepin/.github/commit/2e5e092ba3f86b16d1aabbabcf0bfd2ae65b19c8(Influence: none)
+  * chore(CI): Update obs tag build workflow
+  * chore: always use qmake
+  * fix: compatibility with libqtxdg2
+  * feat: support cmake and Qt6
+  * feat: imageformatplugins support cmake and Qt6
+  * feat: platformthemeplugin supports cmake and Qt6
+  * feat: styleplugins support cmake and Qt6
+  * feat: styles support cmake and Qt6
+  * fix: DLineEdit setAlert not work on DDialog(Issue: #91)
+  * fix: missing 3rdparty sources and resources
+  * chore: fix nodiscard warning
+  * fix: do not compile and install dstyleplugin
+  * fix: redirect styles output
+  * feat: tests support cmake and Qt6
+  * Revert "fix(style): the list view item select rect subtraction the frame margins"
+  * fix: dbusmenu related symbols are hidden in Qt6
+  * chore: delete deprecated project files
+  * fix: dci icon cache key miss theme name(Issue: https://github.com/linuxdeepin/developer-center/issues/4517)
+  * fix: Combobox's background is wrong when hover(Issue: #61)
+  * fix: svg imageformat plugin not load
+  * chore: Sync by https://github.com/linuxdeepin/.github/commit/559e91167d4919644f37bbcf123eb0651c1528ea(Influence: none)
+  * chore: delete deprecated interface about iconengine
+  * fix: diconengine load failed
+  * tests: fix unit tests resource lacking
+  * fix: file manage crash
+  * fix: compatibility with orientation
+  * refactor: remove unused old style
+  * feat: add test coverage script
+  * tests: add some unit tests
+  * chore: add additional runtime control
+  * chore: correct source file license
+  * refactor: ut sources to linked form
+  * chore: remove redundant macro
+  * chore: use libfreetype-dev instead of libfreetype6-dev
+  * fix: App failed to create multiple system trays
+
+ -- Deepin Packages Builder <packages@deepin.org>  Thu, 24 Aug 2023 15:36:34 +0800
+
 qt5integration (5.6.11) unstable; urgency=medium
 
   * Release 5.6.11
