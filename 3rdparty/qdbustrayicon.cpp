@@ -56,31 +56,7 @@ static QString iconTempPath()
     return QDir::tempPath();
 }
 
-static QString generateServiceName()
-{
-    const QCoreApplication *app = QCoreApplication::instance();
-    const QString domain = app->organizationDomain();
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    auto behavior = Qt::SkipEmptyParts;
-#else
-    auto behavior = QString::SkipEmptyParts;
-#endif
-    const QStringList parts = domain.split(QLatin1Char('.'), behavior);
-
-    QString reversedDomain;
-    if (parts.isEmpty()) {
-        reversedDomain = QStringLiteral("local.");
-    } else {
-        for (const QString &part : parts) {
-            reversedDomain.prepend(QLatin1Char('.'));
-            reversedDomain.prepend(part);
-        }
-    }
-
-    return reversedDomain + app->applicationName();
-}
-
-static const QString KDEItemFormat = QStringLiteral("%2.kdbus-%1-%3")
+static const QString KDEItemFormat = QStringLiteral("org.kde.StatusNotifierItem-%1-%2")
                                          .arg(QDBusConnection::sessionBus().baseService().replace(
                                              QRegularExpression(QStringLiteral("[\\.:]")), QStringLiteral("_")));
 
@@ -107,7 +83,7 @@ QDBusTrayIcon::QDBusTrayIcon()
     , m_menuAdaptor(nullptr)
     , m_menu(nullptr)
     , m_notifier(nullptr)
-    , m_instanceId(KDEItemFormat.arg(generateServiceName()).arg(instanceCount))
+    , m_instanceId(KDEItemFormat.arg(instanceCount))
     , m_category(QStringLiteral("ApplicationStatus"))
     , m_defaultStatus(QStringLiteral("Active")) // be visible all the time.  QSystemTrayIcon has no API to control this.
     , m_status(m_defaultStatus)
