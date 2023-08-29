@@ -97,6 +97,12 @@ static QWidget *getSbarParentWidget(QScrollBar *sbar)
     return isContainer ? pw->parentWidget() : pw;
 }
 
+static inline bool hoveredOrPressed(const QStyleOption *opt)
+{
+    return opt->state.testFlag(QStyle::State_MouseOver) ||
+            opt->state.testFlag(QStyle::State_Sunken);
+}
+
 // Calculating indicator's size for spinbox.
 static QRect spinboxIndicatorRect(const QRect &r)
 {
@@ -701,10 +707,17 @@ bool ChameleonStyle::hideScrollBarByAnimation(const QStyleOptionSlider *scrollBa
         return false;
 
     QAbstractAnimation::State st = styleAnimation->state();
-    bool isHoveredOrPressed = scrollBar->state & (QStyle::State_MouseOver | QStyle::State_Sunken);
+    // underMouse ==> State_MouseOver sometimes not work well ?
+    // underMouse true but State_MouseOver false...
+    bool isHoveredOrPressed = hoveredOrPressed(scrollBar) || sbar->underMouse();
+    if (isHoveredOrPressed) {
+        // 标记一下，鼠标移开时需要重新开启隐藏动画
+        sbar->setProperty("_d_dtk_scrollbar_visible", true);
+        return false;
+    }
 
-    // 隐藏动画中鼠标hover上去或者按下时重启动画(计算时间)
-    if (isHoveredOrPressed && st == QAbstractAnimation::Running) {
+    if (sbar->property("_d_dtk_scrollbar_visible").toBool()) {
+        sbar->setProperty("_d_dtk_scrollbar_visible", false);
         styleAnimation->restart(true);
         return false;
     }
@@ -715,77 +728,6 @@ bool ChameleonStyle::hideScrollBarByAnimation(const QStyleOptionSlider *scrollBa
 
     // 动画停止时不再绘制滚动条
     return st == QAbstractAnimation::Stopped;
-}
-
-// 当scrollbar透明时不关心鼠标消息。
-void ChameleonStyle::transScrollbarMouseEvents(QObject *obj, bool on /*= true*/) const
-{
-    QScrollBar *sbar = qobject_cast<QScrollBar *>(obj);
-    if (!sbar)
-        return;
-
-    sbar->setProperty("_d_dtk_slider_visible", on);
-}
-
-bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
-{
-    QScrollBar *sbar = qobject_cast<QScrollBar *>(watched);
-    if (!sbar)
-        return false;
-
-    QContextMenuEvent *cme = dynamic_cast<QContextMenuEvent *>(event);
-    QMouseEvent *me = dynamic_cast<QMouseEvent *>(event);
-    if (!cme && !me)
-        return false;
-
-    bool on = sbar->property("_d_dtk_slider_visible").toBool();
-    // 有的应用会设置滚动条的 parent
-    QWidget *pp = getSbarParentWidget(sbar);
-    // 对于 QAbstractScrollArea 来说 item 一般在 viewport 上
-    QAbstractScrollArea *itemView = qobject_cast<QAbstractScrollArea *>(pp);
-    pp = itemView ? itemView->viewport() : pp;
-    if (!pp)
-        return false;
-
-    // (`(!cme && !me)` is True) && (`cme` is False) ==> `me` is True, `me` can't be False.
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    const QPoint viewportPos = pp->mapFromGlobal(cme ? cme->globalPos() : me->globalPosition().toPoint());
-#else
-    const QPoint viewportPos = pp->mapFromGlobal(cme ? cme->globalPos() : me->globalPos());
-#endif
-    QWidget *target = pp;
-    QPoint localPos = viewportPos;
-    if (qobject_cast<QScrollArea *>(itemView)) {
-        if ((target = pp->childAt(viewportPos))) {
-            localPos = target->mapFrom(pp, viewportPos);
-        }
-    }
-
-    // scrollbar right click
-    if (cme) {
-        if (target) {
-            QContextMenuEvent menuEvent(cme->reason(), localPos, cme->globalPos(), cme->modifiers());
-            return !on ? false : QApplication::sendEvent(target, &menuEvent);
-        }
-    } else {
-        // 仅仅在滚动条显示时过滤鼠标(点击)事件
-        if (!me || !on)
-            return false;
-
-        if (target) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-            QScopedPointer<QMutableSinglePointEvent> mevent(QMutableSinglePointEvent::from(me->clone()));
-            mevent->mutablePoint().setPosition(localPos);
-            // 传递鼠标事件到后面的 widget
-            return QApplication::sendEvent(target, mevent.data());
-#else
-            QMouseEvent mevent = *me;
-            mevent.setLocalPos(localPos);
-            return QApplication::sendEvent(target, &mevent);
-#endif
-        }
-    }
-    return false;
 }
 
 void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOption *opt,
@@ -848,15 +790,11 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
         if (const QStyleOptionSlider* scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             // 非特效不需要动画，只有显示和隐藏
             if (!DGuiApplicationHelper::isSpecialEffectsEnvironment()) {
-                bool isHoveredOrPressed = scrollBar->state & (QStyle::State_MouseOver | QStyle::State_Sunken);
-                transScrollbarMouseEvents(scrollBar->styleObject, !isHoveredOrPressed);
-                if (!isHoveredOrPressed)
+                if (!hoveredOrPressed(scrollBar))
                     return;
             }
 
             bool hidden = hideScrollBarByAnimation(scrollBar, p);
-            // 不绘制则将鼠标消息转发到 parentwidget
-            transScrollbarMouseEvents(scrollBar->styleObject, hidden);
             if (hidden)
                 return;
 
@@ -4283,11 +4221,8 @@ void ChameleonStyle::resetAttribute(QWidget *w, bool polish)
     w->setAttribute(Qt::WA_Hover, enableHover);
 
     if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
-        if (polish) {
-            scrollbar->installEventFilter(this);
-        } else {
-            scrollbar->removeEventFilter(this);
-        }
+        // 默认初始显示滚动条，然后启动隐藏动画
+        scrollbar->setProperty("_d_dtk_scrollbar_visible", true);
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, !polish);
     }
 }
