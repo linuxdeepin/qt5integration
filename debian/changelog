@@ -1,3 +1,11 @@
+qt5integration (5.6.17) unstable; urgency=medium
+
+  * release 5.6.17
+  * feat: scrollbar show policy tweak
+  * fix: some apps failed to create system tray
+
+ -- Deepin Packages Builder <packages@deepin.org>  Wed, 30 Aug 2023 13:42:26 +0800
+
 qt5integration (5.6.16) unstable; urgency=medium
 
   * chore: Sync by https://github.com/linuxdeepin/.github/commit/2e5e092ba3f86b16d1aabbabcf0bfd2ae65b19c8(Influence: none)
