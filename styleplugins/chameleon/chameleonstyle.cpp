@@ -2826,7 +2826,7 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
 
         if (shadow_color != option->palette.color(QPalette::Active, QPalette::Highlight)) {
             shadow_color = option->palette.color(QPalette::Active, QPalette::Highlight);
-            QImage image(":/chameleon/menu_shadow.svg");
+            QImage image(":/chameleonstyle/menu_shadow.svg");
             QPainter pa(&image);
             pa.setCompositionMode(QPainter::CompositionMode_SourceIn);
             pa.fillRect(image.rect(), shadow_color);
