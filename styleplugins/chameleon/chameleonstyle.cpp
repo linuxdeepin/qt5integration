@@ -192,7 +192,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         //QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
             //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
-            if (typeid(*qobject_cast<const QTreeView *>(w)->itemDelegate()) != typeid(QStyledItemDelegate)) {
+            if (!qobject_cast<QStyledItemDelegate *>(qobject_cast<const QTreeView *>(w)->itemDelegate())) {
                 break;
             }
 
@@ -559,7 +559,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         //这里QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
             //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
-            if (typeid(*qobject_cast<const QTreeView *>(w)->itemDelegate()) != typeid(QStyledItemDelegate)) {
+            if (!qobject_cast<QStyledItemDelegate *>(qobject_cast<const QTreeView *>(w)->itemDelegate())) {
                 break;
             }
 
