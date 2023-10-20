@@ -94,8 +94,33 @@ static void onIconThemeSetCallback()
     }
 }
 
+static inline uint resolveMask(const QFont &f)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return f.resolve();
+#else
+    return f.resolveMask();
+#endif
+}
+
+static inline void setResolveMask(QFont &f, uint mask)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return f.resolve(mask);
+#else
+    return f.setResolveMask(mask);
+#endif
+}
+
 static void onFontChanged()
 {
+    // 插件中初始化 appFont 时会 resolve(0) 即清空 resolve_mask
+    // 如果用户再主动设置字体会改变 resolve_mask 即 app_font->resolve() > 0
+    // qApp->setFont(resolvedFont) 将不再响应 xsettings 字体变化
+    if (QGuiApplicationPrivate::app_font &&
+        resolveMask(*QGuiApplicationPrivate::app_font))
+        return;
+
     // 先清理旧的font对象
     if (QGuiApplicationPrivate::app_font)
         delete QGuiApplicationPrivate::app_font;
@@ -661,6 +686,7 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
             sysFont.reset(new QFont(QString()));
             sysFont->setFamily(font_name);
             sysFont->setPointSizeF(font_size);
+            setResolveMask(*sysFont, QFont::NoPropertiesResolved);
 
             return sysFont.data();
         }
@@ -686,6 +712,7 @@ const QFont *QDeepinTheme::font(QPlatformTheme::Font type) const
             fixedFont.reset(new QFont(QString()));
             fixedFont->setFamily(font_name);
             fixedFont->setPointSizeF(font_size);
+            setResolveMask(*fixedFont, QFont::NoPropertiesResolved);
 
             return fixedFont.data();
         }
