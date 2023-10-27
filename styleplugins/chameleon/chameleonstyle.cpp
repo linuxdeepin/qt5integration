@@ -9,7 +9,6 @@
 #include <DStyleOption>
 #include <DApplication>
 #include <DPlatformWindowHandle>
-#include <DApplicationHelper>
 #include <DWindowManagerHelper>
 #include <DPlatformTheme>
 #include <DSlider>
