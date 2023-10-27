@@ -36,7 +36,7 @@ Copyright: None
 License: CC0-1.0
 
 # ignore git
-Files: .git*
+Files: .git* .syncexclude
 Copyright: None
 License: CC0-1.0
 
