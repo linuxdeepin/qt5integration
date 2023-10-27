@@ -48,8 +48,9 @@ bool QDciIOHandlerPrivate::load(QIODevice *device)
 
     if (loaded)
         return current;
-    if (q->format().isEmpty())
+    if (q->format().isEmpty() && !q->canRead())
         return false;
+
     loaded = true;
 
     QBuffer *buf = qobject_cast<QBuffer *>(device);
@@ -95,7 +96,6 @@ QDciIOHandler::QDciIOHandler()
 
 }
 
-
 QDciIOHandler::~QDciIOHandler()
 {
     delete d;
@@ -110,6 +110,10 @@ bool QDciIOHandler::canRead() const
 
     QByteArray buf = device()->peek(4);
     if (buf.startsWith(QByteArrayLiteral("DCI"))) {
+        // Decide format from content..
+        if (format().isEmpty())
+            setFormat("dci");
+
         return true;
     }
     return false;
