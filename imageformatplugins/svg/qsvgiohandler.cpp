@@ -10,6 +10,7 @@
 #include "qvariant.h"
 #include "qbuffer.h"
 #include "qdebug.h"
+#include <QGuiApplication>
 
 #include <DSvgRenderer>
 
@@ -71,19 +72,16 @@ bool QSvgIOHandlerPrivate::load(QIODevice *device)
     return loaded;
 }
 
-
 QSvgIOHandler::QSvgIOHandler()
     : d(new QSvgIOHandlerPrivate(this))
 {
 
 }
 
-
 QSvgIOHandler::~QSvgIOHandler()
 {
     delete d;
 }
-
 
 bool QSvgIOHandler::canRead() const
 {
@@ -103,12 +101,21 @@ bool QSvgIOHandler::canRead() const
     return false;
 }
 
-
 QByteArray QSvgIOHandler::name() const
 {
     return "svg";
 }
 
+static inline qreal devicePixelRatio()
+{
+    qreal ratio = 1.0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    if (qApp->testAttribute(Qt::AA_UseHighDpiPixmaps))
+#endif
+        ratio = qApp->devicePixelRatio();
+
+    return ratio;
+}
 
 bool QSvgIOHandler::read(QImage *image)
 {
@@ -140,6 +147,8 @@ bool QSvgIOHandler::read(QImage *image)
             bounds = t.mapRect(bounds);
         }
         if (!finalSize.isEmpty()) {
+            qreal ratio = devicePixelRatio();
+            finalSize *= ratio;
             if (bounds.isEmpty() && d->backColor.alpha() == 0) {
                 *image = d->r.toImage(finalSize);
             } else {
@@ -150,6 +159,7 @@ bool QSvgIOHandler::read(QImage *image)
                 d->r.render(&p, bounds);
                 p.end();
             }
+            image->setDevicePixelRatio(ratio);
         }
         d->readDone = true;
         return true;
@@ -157,7 +167,6 @@ bool QSvgIOHandler::read(QImage *image)
 
     return false;
 }
-
 
 QVariant QSvgIOHandler::option(ImageOption option) const
 {
@@ -187,7 +196,6 @@ QVariant QSvgIOHandler::option(ImageOption option) const
     return QVariant();
 }
 
-
 void QSvgIOHandler::setOption(ImageOption option, const QVariant & value)
 {
     switch(option) {
@@ -208,7 +216,6 @@ void QSvgIOHandler::setOption(ImageOption option, const QVariant & value)
     }
 }
 
-
 bool QSvgIOHandler::supportsOption(ImageOption option) const
 {
     switch(option)
@@ -225,7 +232,6 @@ bool QSvgIOHandler::supportsOption(ImageOption option) const
     }
     return false;
 }
-
 
 bool QSvgIOHandler::canRead(QIODevice *device)
 {

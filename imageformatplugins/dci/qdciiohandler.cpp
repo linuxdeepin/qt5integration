@@ -11,6 +11,7 @@
 #include "qvariant.h"
 #include "qbuffer.h"
 #include "qdebug.h"
+#include <QGuiApplication>
 
 #include <DDciIcon>
 
@@ -95,7 +96,6 @@ QDciIOHandler::QDciIOHandler()
 
 }
 
-
 QDciIOHandler::~QDciIOHandler()
 {
     delete d;
@@ -120,6 +120,17 @@ QByteArray QDciIOHandler::name() const
     return "dci";
 }
 
+static inline qreal devicePixelRatio()
+{
+    qreal ratio = 1.0;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    if (qApp->testAttribute(Qt::AA_UseHighDpiPixmaps))
+#endif
+        ratio = qApp->devicePixelRatio();
+
+    return ratio;
+}
+
 bool QDciIOHandler::read(QImage *image)
 {
     if (d->readDone || d->load(device())) {
@@ -128,7 +139,7 @@ bool QDciIOHandler::read(QImage *image)
 
         if (finalSize > 0) {
             DDciIconPalette palette(QColor::Invalid, d->backColor);
-            *image = d->icon.pixmap(1.0, finalSize, d->current, palette).toImage();
+            *image = d->icon.pixmap(devicePixelRatio(), finalSize, d->current, palette).toImage();
         }
         d->readDone = true;
         return true;
