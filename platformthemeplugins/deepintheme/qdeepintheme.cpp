@@ -7,7 +7,7 @@
 #include "filedialogmanager_interface.h"
 #include "dthemesettings.h"
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#include "../3rdparty/qdbustrayicon_p.h"
+#include "../../3rdparty/qdbustrayicon_p.h"
 #endif
 
 #include <DGuiApplicationHelper>

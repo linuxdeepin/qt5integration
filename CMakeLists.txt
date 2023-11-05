@@ -116,7 +116,7 @@ set(PLUGIN_INSTALL_BASE_DIR ${CMAKE_INSTALL_LIBDIR}/qt${QT_VERSION_MAJOR}/plugin
 
 add_subdirectory(iconengineplugins)
 add_subdirectory(imageformatplugins)
-add_subdirectory(platformthemeplugin)
+add_subdirectory(platformthemeplugins)
 add_subdirectory(styleplugins)
 if(CMAKE_BUILD_TYPE_LOWER STREQUAL debug)
   add_subdirectory(styles)

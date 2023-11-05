@@ -27,8 +27,6 @@
 
 #include <X11/Xlib.h>
 
-#include <DPlatformHandle>
-DGUI_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 #ifndef DIALOG_SERVICE
@@ -117,6 +115,20 @@ static inline void setTransientForHint(WId wid, WId propWid)
     XSetTransientForHint(DISPLAY, wid, propWid);
 }
 
+static inline bool isDXcbPlatform()
+{
+    if (!qApp)
+        return false;
+
+#define DXCB_PLUGIN_KEY "dxcb"
+#define DXCB_PLUGIN_SYMBOLIC_PROPERTY "_d_isDxcb"
+
+    static bool _is_dxcb = qApp->platformName() == DXCB_PLUGIN_KEY ||
+            qApp->property(DXCB_PLUGIN_SYMBOLIC_PROPERTY).toBool();
+
+    return _is_dxcb;
+}
+
 void QDeepinFileDialogHelper::onWindowActiveChanged()
 {
     if (!filedlgInterface)
@@ -131,7 +143,7 @@ void QDeepinFileDialogHelper::onWindowActiveChanged()
         setTransientForHint(fileDlgWId, parentWId);
     }
 
-    if (DPlatformHandle::isDXcbPlatform()) {
+    if (isDXcbPlatform()) {
         QWindow *focus_window = qApp->focusWindow();
         if (!focus_window)
             return;

@@ -24,7 +24,7 @@ Copyright: None
 License: CC0-1.0
 
 # png svg dci
-Files: platformthemeplugin/icons/* styleplugins/chameleon/*.svg styles/images/*.png
+Files: platformthemeplugins/deepintheme/icons/* styleplugins/chameleon/*.svg styles/images/*.png
     tests/*/icons/*/*.svg tests/*/*.svg tests/*/icons/*/*.dci
     tests/imageformats/dci/*.dci tests/platformtheme/qt-theme.ini
 Copyright: None
