@@ -269,7 +269,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                p->setPen(Qt::NoPen);
                p->setBrush(getColor(opt, QPalette::Highlight));
                p->setRenderHint(QPainter::Antialiasing);
-               p->drawRoundedRect(select_rect, frame_radius, frame_radius);
+               p->drawRoundedRect(select_rect.adjusted(1, 1, -1, -1), frame_radius, frame_radius);
                return;
             } else {
                 if (vopt->backgroundBrush.style() != Qt::NoBrush) {
@@ -277,7 +277,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
                     p->setPen(Qt::NoPen);
                     p->setBrush(vopt->backgroundBrush);
                     p->setRenderHint(QPainter::Antialiasing);
-                    p->drawRoundedRect(opt->rect, frame_radius, frame_radius);
+                    p->drawRoundedRect(opt->rect.adjusted(1, 1, -1, -1), frame_radius, frame_radius);
                     p->restore();
                     return;
                 }
