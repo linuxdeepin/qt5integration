@@ -36,6 +36,25 @@ static QThreadStorage<PALETTE_MAP> colorScheme; // <type, color>
 static const QString STYLE = QStringLiteral(".ColorScheme-Text, .ColorScheme-NeutralText{color:%1;}\
 \n.ColorScheme-Highlight{color:%2;}");
 
+static inline QString rgba(const QColor &c)
+{
+    // Hex-r-g-b-a
+    return c.name(QColor::HexRgb).append(QString::number(c.alpha(), 16));
+}
+
+static inline QPalette palette(QPaintDevice *paintDevice)
+{
+    QPalette pa;
+
+    if (QObject *obj = dynamic_cast<QObject *>(paintDevice)) {
+        pa = qvariant_cast<QPalette>(obj->property("palette"));
+    } else {
+        pa = qApp->palette();
+    }
+
+    return pa;
+}
+
 QT_BEGIN_NAMESPACE
 XdgIconProxyEngine::XdgIconProxyEngine(XdgIconLoaderEngine *proxy)
     : engine(proxy)
@@ -176,10 +195,10 @@ QPixmap XdgIconProxyEngine::pixmapByEntry(QIconLoaderEngineEntry *entry, const Q
 
     if (type_name == QByteArrayLiteral("ScalableFollowsColorEntry")) {
         if (DEEPIN_XDG_THEME::colorScheme.localData().isEmpty()) {
-            const QPalette &pal = qApp->palette();
+            const QPalette &pal = palette(&pixmap);
             DEEPIN_XDG_THEME::colorScheme.setLocalData(DEEPIN_XDG_THEME::PALETTE_MAP({
-                { DEEPIN_XDG_THEME::Text, mode == QIcon::Selected ? pal.highlightedText().color().name() : pal.windowText().color().name() },
-                { DEEPIN_XDG_THEME::Highlight, pal.highlight().color().name() }
+                { DEEPIN_XDG_THEME::Text, mode == QIcon::Selected ? rgba(pal.highlightedText().color()) : rgba(pal.windowText().color()) },
+                { DEEPIN_XDG_THEME::Highlight, rgba(pal.highlight().color()) }
             }));
         }
 
@@ -199,10 +218,10 @@ void XdgIconProxyEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode
     if (painter->device()->devType() == QInternal::Widget
         && XdgIcon::followColorScheme()
         && DEEPIN_XDG_THEME::colorScheme.localData().isEmpty()) {
-        const QPalette &pal = qvariant_cast<QPalette>(dynamic_cast<QObject *>(painter->device())->property("palette"));
+        const QPalette &pal = palette(painter->device());
         DEEPIN_XDG_THEME::colorScheme.setLocalData(DEEPIN_XDG_THEME::PALETTE_MAP({
-            { DEEPIN_XDG_THEME::Text, mode == QIcon::Selected ? pal.highlightedText().color().name() : pal.windowText().color().name() },
-            { DEEPIN_XDG_THEME::Highlight, pal.highlight().color().name() }
+            { DEEPIN_XDG_THEME::Text, mode == QIcon::Selected ? rgba(pal.highlightedText().color()) : rgba(pal.windowText().color()) },
+            { DEEPIN_XDG_THEME::Highlight, rgba(pal.highlight().color()) }
         }));
     }
 
