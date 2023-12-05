@@ -82,7 +82,7 @@ public:
     QImageReader reader;
 };
 
-static QPixmap actionedPixmap(QIcon::Mode mode, QPixmap pm, QIconLoaderEngineEntry *entry, QPainter *painter = nullptr) {
+static QPixmap compositedPixmap(QIcon::Mode mode, QPixmap pm, QIconLoaderEngineEntry *entry, QPainter *painter = nullptr) {
     ImageEntry::Type type = static_cast<ImageEntry *>(entry)->type;
     if (type == ImageEntry::TextType || (type == ImageEntry::ActionType && mode != QIcon::Normal)) {
         QPainter pa(&pm);
@@ -209,7 +209,7 @@ QPixmap DBuiltinIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
     QIconLoaderEngineEntry *entry = QIconLoaderEngine::entryForSize(m_info, size);
     if (entry){
         auto pm = entry->pixmap(size, mode, state);
-        return actionedPixmap(mode, pm, entry);
+        return compositedPixmap(mode, pm, entry);
     }
 
     return QPixmap();
@@ -238,8 +238,7 @@ void DBuiltinIconEngine::paint(QPainter *painter, const QRect &rect,
     }
 
     QPixmap pm = entry->pixmap(pixmapSize, mode, state);
-    pm = actionedPixmap(mode, pm, entry);
-
+    pm = compositedPixmap(mode, pm, entry, painter);
     pm.setDevicePixelRatio(scale);
     painter->drawPixmap(rect, pm);
 }
@@ -388,7 +387,7 @@ void DBuiltinIconEngine::virtual_hook(int id, void *data)
             const int integerScale = qCeil(arg.scale);
             QIconLoaderEngineEntry *entry = QIconLoaderEngine::entryForSize(m_info, arg.size / integerScale, integerScale);
             auto pm = entry->pixmap(arg.size, arg.mode, arg.state);
-            arg.pixmap = entry ? actionedPixmap(arg.mode, pm, entry) : QPixmap();
+            arg.pixmap = entry ? compositedPixmap(arg.mode, pm, entry) : QPixmap();
         }
         break;
     default:
