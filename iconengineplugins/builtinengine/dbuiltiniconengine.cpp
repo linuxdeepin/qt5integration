@@ -82,6 +82,23 @@ public:
     QImageReader reader;
 };
 
+static QPixmap actionedPixmap(QIcon::Mode mode, QPixmap pm, QIconLoaderEngineEntry *entry, QPainter *painter = nullptr) {
+    ImageEntry::Type type = static_cast<ImageEntry *>(entry)->type;
+    if (type == ImageEntry::TextType || (type == ImageEntry::ActionType && mode != QIcon::Normal)) {
+        QPainter pa(&pm);
+        QColor color;
+        pa.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        if (painter) {
+            color = painter->pen().brush().color();
+        } else {
+            auto palette = qApp->palette();
+            color = (mode == QIcon::Selected) ? palette.highlightedText().color() : palette.windowText().color();
+        }
+        pa.fillRect(pm.rect(), color);
+    }
+    return pm;
+}
+
 class DirImageEntry : public ImageEntry
 {
 public:
@@ -190,8 +207,10 @@ QPixmap DBuiltinIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
     ensureLoaded();
 
     QIconLoaderEngineEntry *entry = QIconLoaderEngine::entryForSize(m_info, size);
-    if (entry)
-        return entry->pixmap(size, mode, state);
+    if (entry){
+        auto pm = entry->pixmap(size, mode, state);
+        return actionedPixmap(mode, pm, entry);
+    }
 
     return QPixmap();
 }
@@ -219,12 +238,7 @@ void DBuiltinIconEngine::paint(QPainter *painter, const QRect &rect,
     }
 
     QPixmap pm = entry->pixmap(pixmapSize, mode, state);
-    ImageEntry::Type type = static_cast<ImageEntry *>(entry)->type;
-    if (type == ImageEntry::TextType || (type == ImageEntry::ActionType && mode != QIcon::Normal)) {
-        QPainter pa(&pm);
-        pa.setCompositionMode(QPainter::CompositionMode_SourceIn);
-        pa.fillRect(pm.rect(), painter->pen().brush());
-    }
+    pm = actionedPixmap(mode, pm, entry);
 
     pm.setDevicePixelRatio(scale);
     painter->drawPixmap(rect, pm);
@@ -373,7 +387,8 @@ void DBuiltinIconEngine::virtual_hook(int id, void *data)
             // QIcon::pixmap() multiplies size by the device pixel ratio.
             const int integerScale = qCeil(arg.scale);
             QIconLoaderEngineEntry *entry = QIconLoaderEngine::entryForSize(m_info, arg.size / integerScale, integerScale);
-            arg.pixmap = entry ? entry->pixmap(arg.size, arg.mode, arg.state) : QPixmap();
+            auto pm = entry->pixmap(arg.size, arg.mode, arg.state);
+            arg.pixmap = entry ? actionedPixmap(arg.mode, pm, entry) : QPixmap();
         }
         break;
     default:
