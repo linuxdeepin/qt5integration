@@ -4720,11 +4720,6 @@ void ChameleonStyle::unpolish(QWidget *w)
     DStyle::unpolish(w);
 
     resetAttribute(w, false);
-
-    if (w && qobject_cast<QLineEdit *>(w)) {
-        w->setProperty("_d_dtk_lineeditActionWidth", QVariant());
-        w->setProperty("_d_dtk_lineeditActionMargin", QVariant());
-    }
 }
 
 void ChameleonStyle::unpolish(QApplication *application)
