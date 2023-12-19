@@ -82,7 +82,7 @@ public:
     QImageReader reader;
 };
 
-static QPixmap compositedPixmap(QIcon::Mode mode, QPixmap pm, QIconLoaderEngineEntry *entry, QPainter *painter = nullptr) {
+static QPixmap compositedPixmap(QIcon::Mode mode, QPixmap &pm, QIconLoaderEngineEntry *entry, QPainter *painter = nullptr) {
     ImageEntry::Type type = static_cast<ImageEntry *>(entry)->type;
     if (type == ImageEntry::TextType || (type == ImageEntry::ActionType && mode != QIcon::Normal)) {
         QPainter pa(&pm);
