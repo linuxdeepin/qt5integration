@@ -215,6 +215,18 @@ QPixmap DBuiltinIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
     return QPixmap();
 }
 
+static QIconLoaderEngineEntry *perfectEntryForSize(const QThemeIconInfo &info, const QSize &size, qreal scale = 1)
+{
+    const int numEntries = info.entries.size();
+    const int iconsize = qMin(size.width(), size.height());
+    for (int i = 0; i < numEntries; ++i) {
+        QIconLoaderEngineEntry *entry = info.entries.at(i);
+        if (static_cast<int>(entry->dir.size * scale) == iconsize)
+            return entry;
+    }
+    return nullptr;
+}
+
 void DBuiltinIconEngine::paint(QPainter *painter, const QRect &rect,
                            QIcon::Mode mode, QIcon::State state)
 {
@@ -225,10 +237,13 @@ void DBuiltinIconEngine::paint(QPainter *painter, const QRect &rect,
         scale = painter->device() ? painter->device()->devicePixelRatioF() : qApp->devicePixelRatio();
 
     QSize pixmapSize = rect.size() * scale;
-
-    QIconLoaderEngineEntry *entry = QIconLoaderEngine::entryForSize(m_info, pixmapSize);
-    if (!entry)
-        return;
+    // Search perfect entry first
+    QIconLoaderEngineEntry *entry = perfectEntryForSize(m_info, pixmapSize, scale);
+    if (!entry) {
+         entry = QIconLoaderEngine::entryForSize(m_info, pixmapSize);
+         if (!entry)
+             return;
+    }
 
     // 如果有 background 则绘制背景图先
     QString bgFileName = entry->filename + QStringLiteral(".background");
