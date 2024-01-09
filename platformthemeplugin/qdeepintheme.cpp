@@ -633,8 +633,10 @@ QVariant QDeepinTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return true;
     case ShowShortcutsInContextMenus:
         return false;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     case ButtonPressKeys:
         return QVariant::fromValue(QList<Qt::Key>({ Qt::Key_Enter, Qt::Key_Return, Qt::Key_Space, Qt::Key_Select } ));
+#endif
     default:
         break;
     }
