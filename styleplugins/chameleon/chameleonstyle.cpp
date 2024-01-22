@@ -2412,7 +2412,11 @@ bool ChameleonStyle::drawComboBox(QPainter *painter, const QStyleOptionComboBox 
             arrowOpt.rect.setSize(QSize(qRound(arrowOpt.rect.height() / 2.4), qRound(arrowOpt.rect.height() / 2.4)));
             arrowOpt.rect.moveCenter(center);
             int radius = DStyle::pixelMetric(PM_FrameRadius);
-            arrowOpt.rect = arrowOpt.rect.adjusted(-radius, 0, -radius, 0);
+            if (comboBox->direction == Qt::RightToLeft) {
+                arrowOpt.rect = arrowOpt.rect.adjusted(radius, 0, radius, 0);
+            } else {
+                arrowOpt.rect = arrowOpt.rect.adjusted(-radius , 0, -radius, 0);
+            }
         }
 
         painter->setPen(getColor(comboBox, DPalette::ButtonText));
@@ -2439,7 +2443,7 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
 
     QRect contentsRect(cb->rect);
     if (sunken && !flat) contentsRect.translate(1, 1);
-    contentsRect.adjust(Metrics::Layout_ChildMarginWidth, 0, -Metrics::Layout_ChildMarginWidth - DStyle::pixelMetric(PM_FrameRadius), 0);
+    contentsRect.adjust(Metrics::Layout_ChildMarginWidth, 0, -Metrics::Layout_ChildMarginWidth - DStyle::pixelMetric(PM_FrameRadius) * 2, 0);
     QSize iconSize;
     if (hasIcon) {
         iconSize = cb->iconSize;
@@ -2478,8 +2482,8 @@ bool ChameleonStyle::drawComboBoxLabel(QPainter *painter, const QStyleOptionComb
     }
 
     // handle right to left
-    if (iconRect.isValid()) iconRect = visualRect(cb->direction, cb->rect, iconRect);
-    if (textRect.isValid()) textRect = visualRect(cb->direction, cb->rect, textRect);
+    if (iconRect.isValid()) iconRect = visualRect(cb->direction, contentsRect, iconRect);
+    if (textRect.isValid()) textRect = visualRect(cb->direction, contentsRect, textRect);
 
     // render icon
     if (hasIcon && iconRect.isValid()) {
