@@ -4358,7 +4358,8 @@ void ChameleonStyle::polish(QWidget *w)
                 handle.setEnableBlurWindow(true);
 
                 DPlatformTheme *theme = DGuiApplicationHelper::instance()->applicationTheme();
-                setWindowRadius(w, qMax(0, qMin(theme->windowRadius(), 18)));
+                if (theme->isValid())
+                    setWindowRadius(w, qMax(0, qMin(theme->windowRadius(), 18)));
 
                 connect(theme, &DPlatformTheme::windowRadiusChanged, w, [w](int r){
                    setWindowRadius(w, qMax(0, qMin(r, 18)));
