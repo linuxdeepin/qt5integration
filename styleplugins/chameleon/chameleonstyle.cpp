@@ -2952,8 +2952,8 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
             if (checkable) {
                 checkRect.setLeft(frameRadius);
-                checkRect.setWidth(smallIconSize);
-                checkRect.setHeight(smallIconSize);
+                checkRect.setWidth(smallIconSize - 2);
+                checkRect.setHeight(smallIconSize - 4); // 设计师要求对钩所在的方框应是矩形而不是正方形，而且对钩改小，现为14*12
                 checkRect.moveCenter(QPoint(checkRect.left() + smallIconSize / 2, menuItem->rect.center().y()));
                 painter->setRenderHint(QPainter::Antialiasing);
 
