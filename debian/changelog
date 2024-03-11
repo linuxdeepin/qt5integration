@@ -1,3 +1,14 @@
+qt5integration (5.6.25) unstable; urgency=medium
+
+  * fix: Button can't reponse Return/Enter key(Issue: https://github.com/linuxdeepin/developer-center/issues/5852)
+  * chore: ButtonPressKeys is only supported in Qt6
+  * fix: wrong style for ComboBox in RightToLeft layout(Issue: https://github.com/linuxdeepin/developer-center/issues/1765)
+  * fix: Need link x11
+    Thanks to Hillwood Yang
+  * chore: check platformtheme is valid when set menu windowradius
+
+ -- Deepin Packages Builder <packages@deepin.org>  Mon, 11 Mar 2024 01:16:27 +0000
+
 qt5integration (5.6.20) unstable; urgency=medium
 
   * release 5.6.20
