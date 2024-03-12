@@ -2954,8 +2954,8 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
             if (checkable) {
                 checkRect.setLeft(frameRadius);
-                checkRect.setWidth(smallIconSize);
-                checkRect.setHeight(smallIconSize);
+                checkRect.setWidth(smallIconSize - 2);
+                checkRect.setHeight(smallIconSize - 4);
                 checkRect.moveCenter(QPoint(checkRect.left() + smallIconSize / 2, menuItem->rect.center().y()));
                 painter->setRenderHint(QPainter::Antialiasing);
 
