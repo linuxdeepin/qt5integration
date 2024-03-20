@@ -899,41 +899,50 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 scrollBarRectCenter.setX((scrollBar->rect.x() + scrollBar->rect.width()) / 2);
                 scrollBarRectCenter.setY(scrollBar->rect.y() + scrollBar->rect.height() / 2);
                 rect.moveCenter(scrollBarRectCenter);
-                rect.moveRight(scrollBar->rect.right() - 2);
+                rect.moveRight(scrollBar->rect.right() - 1);
             }
 
             QColor lineColor(opt->palette.color(QPalette::Base));
             if (DGuiApplicationHelper::toColorType(lineColor) == DGuiApplicationHelper::LightType) {
-                // 内侧绘制一个像素的inside border
-                p->setPen(QPen(QColor(0, 0, 0, 0.05 * 255), Metrics::Painter_PenWidth));
-                // normal状态
-                p->setBrush(QColor(0, 0, 0, 0.3 * 255));
-
-                if (scrollBar->state & QStyle::State_MouseOver)
-                    // hover 状态
-                    p->setBrush(QColor(0, 0, 0, 0.6 * 255));
-                if (scrollBar->state & QStyle::State_Sunken)
-                    // active状态
-                    p->setBrush(QColor(0, 0, 0, 0.5 * 255));
-            } else {
                 // 外侧拓展一个像素的outside border
-                p->setPen(QPen(QColor(0, 0, 0, 0.2 * 255), Metrics::Painter_PenWidth));
+                p->setPen(QPen(QColor(255, 255, 255, 0.1 * 255), Metrics::Painter_PenWidth));
                 p->setBrush(Qt::NoBrush);
                 p->drawRoundedRect(rect.adjusted(-1, -1, 1, 1),
                                    realRadius, realRadius);
                 // 内侧绘制一个像素的inside border
-                p->setPen(QPen(QColor(255, 255, 255, 0.05 * 255), Metrics::Painter_PenWidth));
+                p->setPen(QPen(QColor(0, 0, 0, 0.1 * 255), Metrics::Painter_PenWidth));
+                p->drawRoundedRect(rect.adjusted(1, 1, -1, -1),
+                                   realRadius, realRadius);
                 // normal状态
-                p->setBrush(QColor(96, 96, 96, 0.7 * 255));
+                p->setBrush(QColor(0, 0, 0, 0.5 * 255));
 
                 if (scrollBar->state & QStyle::State_MouseOver)
                     // hover 状态
-                    p->setBrush(QColor(96, 96, 96, 0.8 * 255));
+                    p->setBrush(QColor(0, 0, 0, 0.7 * 255));
                 if (scrollBar->state & QStyle::State_Sunken)
                     // active状态
-                    p->setBrush(QColor(112, 112, 112, 0.8 * 255));
-            }
+                    p->setBrush(QColor(0, 0, 0, 0.6 * 255));
+            } else {
+                // 外侧拓展一个像素的outside border
+                p->setPen(QPen(QColor(0, 0, 0, 0.1 * 255), Metrics::Painter_PenWidth));
+                p->setBrush(Qt::NoBrush);
+                p->drawRoundedRect(rect.adjusted(-1, -1, 1, 1),
+                                   realRadius, realRadius);
+                // 内侧绘制一个像素的inside border
+                p->setPen(QPen(QColor(255, 255, 255, 0.1 * 255), Metrics::Painter_PenWidth));
+                p->drawRoundedRect(rect.adjusted(1, 1, -1, -1),
+                                   realRadius, realRadius);
+                // normal状态
+                p->setBrush(QColor(255, 255, 255, 0.2 * 255));
 
+                if (scrollBar->state & QStyle::State_MouseOver)
+                    // hover 状态
+                    p->setBrush(QColor(255, 255, 255, 0.5 * 255));
+                if (scrollBar->state & QStyle::State_Sunken)
+                    // active状态
+                    p->setBrush(QColor(255, 255, 255, 0.4 * 255));
+            }
+            p->setPen(Qt::NoPen);
             p->drawRoundedRect(rect, realRadius, realRadius);
             p->restore();
         }
