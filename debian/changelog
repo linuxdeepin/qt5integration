@@ -1,3 +1,10 @@
+qt5integration (5.6.26) unstable; urgency=medium
+
+  * fix: icon size of the selected item in context menu(Issue: https://github.com/linuxdeepin/developer-center/issues/7446)
+  * chore: scrollerbar tweak(Task: 331783)
+
+ -- Deepin Packages Builder <packages@deepin.org>  Tue, 26 Mar 2024 05:47:34 +0000
+
 qt5integration (5.6.25) unstable; urgency=medium
 
   * fix: Button can't reponse Return/Enter key(Issue: https://github.com/linuxdeepin/developer-center/issues/5852)
