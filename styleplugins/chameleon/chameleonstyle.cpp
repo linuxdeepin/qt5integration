@@ -19,6 +19,7 @@
 #include <DDciIcon>
 #include <DDciIconPalette>
 #include <DSizeMode>
+#include <dtkgui_config.h>
 
 #include <QLabel>
 #include <QCalendarWidget>
@@ -4260,6 +4261,16 @@ static inline void setWindowRadius(QWidget *w, int radius)
     handle.setWindowRadius(radius);
 }
 
+static inline void setWindowNoEffect(QWidget *w)
+{
+    DPlatformWindowHandle handle(w);
+#ifdef DTKGUI_VERSION_STR
+    #if (DTK_VERSION_CHECK(DTKGUI_VERSION_MAJOR, DTKGUI_VERSION_MINOR, DTKGUI_VERSION_PATCH, DTKGUI_VERSION_BUILD) > DTK_VERSION_CHECK(5, 6, 9, 4))
+        handle.setWindowEffect(DPlatformWindowHandle::EffectNoStart);
+    #endif
+#endif
+}
+
 void ChameleonStyle::polish(QWidget *w)
 {
     DStyle::polish(w);
@@ -4281,16 +4292,20 @@ void ChameleonStyle::polish(QWidget *w)
     }
 
     if (auto listview = qobject_cast<QListView *>(w)) {
-        if (listview->parentWidget() == nullptr)
+        if (listview->parentWidget() == nullptr) {
             setWindowRadius(listview, DStyle::pixelMetric(PM_FrameRadius));
+
+            setWindowNoEffect(w);
+         }
     }
 
     if (auto container = qobject_cast<QComboBoxPrivateContainer *>(w)) {
         if (DWindowManagerHelper::instance()->hasComposite())
             setWindowRadius(container, DStyle::pixelMetric(PM_FrameRadius));
-
         if (!DGuiApplicationHelper::isTabletEnvironment())
             container->setFrameStyle(QFrame::NoFrame);
+
+        setWindowNoEffect(w);
     }
 
     if (auto calendar = qobject_cast<QCalendarWidget* >(w)) {
