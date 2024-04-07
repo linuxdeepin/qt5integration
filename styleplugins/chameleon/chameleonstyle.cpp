@@ -1271,7 +1271,33 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     }
                 }
             } else {
-                DStyle::drawControl(CE_PushButtonBevel, &btn, p, w);
+                const QMargins &margins = frameExtentMargins();
+                QColor brushColor;
+                const auto themeType = DGuiApplicationHelper::instance()->themeType();
+                if (themeType == DGuiApplicationHelper::DarkType) {
+                    brushColor = Qt::white;
+                } else {
+                    brushColor = Qt::black;
+                }
+
+                if (btn.state & State_On) {
+                    p->setBrush(getColor(&btn, QPalette::Highlight));
+                } else if (btn.state & State_MouseOver) {
+                    brushColor.setAlphaF(0.1);
+                    p->setBrush(brushColor);
+                } else {
+                    if (themeType == DGuiApplicationHelper::DarkType) {
+                        brushColor.setAlphaF(0.05);
+                    } else {
+                        brushColor.setAlphaF(0.03);
+                    }
+                    p->setBrush(brushColor);
+                }
+
+                p->setPen(Qt::NoPen);
+                p->setRenderHint(QPainter::Antialiasing);
+                const int frame_radius = DStyle::pixelMetric(PM_FrameRadius, &btn, w);
+                p->drawRoundedRect(btn.rect - margins, frame_radius, frame_radius);
             }
 
             QStyleOptionTab* newTab = const_cast<QStyleOptionTab *>(tab);
