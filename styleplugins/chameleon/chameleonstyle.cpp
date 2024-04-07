@@ -1479,6 +1479,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             p->setRenderHint(QPainter::Antialiasing);
             p->setPen(Qt::NoPen);
             p->setBrush(Qt::NoBrush);
+            int menuButtonIndicatorMargin = 4;
 
             if (toolbutton->state & (State_MouseOver | State_Sunken))  //hover状态 、press状态
                 p->setBrush(getBrush(toolbutton, DPalette::Button));
@@ -1489,7 +1490,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     (toolbutton->state & (QStyle::State_MouseOver | QStyle::State_Sunken))) {
 
                     // 绘制外层背景色
-                    int menuButtonIndicatorMargin = 4;
+
                     auto btn = *toolbutton;
                     if (btn.state & (QStyle::State_MouseOver))
                         btn.state &= ~ QStyle::State_MouseOver;
@@ -1532,7 +1533,19 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setPen(getColor(toolbutton, DPalette::ButtonText));
                 }
 
-                p->drawText(rect, alignment, toolbutton->text);
+                // 只显示文字且为PopupDelay模式且有菜单则文字和箭头整体居中显示（日历中的选择月份和年份的toolButton也遵循这个规则）
+                if ((toolbutton->features & QStyleOptionToolButton::HasMenu && toolbutton->features & QStyleOptionToolButton::PopupDelay && toolbutton->toolButtonStyle == Qt::ToolButtonTextOnly) 
+                    || w->property("_d_calendarToolBtn").toBool()) {
+                    QFontMetrics metrics(toolbutton->font);
+                    int fontWidth = metrics.horizontalAdvance(toolbutton->text);
+                    int indicatorWidth = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, w);
+                    int subRectWidth = fontWidth  + indicatorWidth + menuButtonIndicatorMargin;
+                    QRect subRect = QRect(rect.left() + (rect.width() - subRectWidth) / 2, rect.top(), subRectWidth, rect.height());
+                    QRect textRect = QRect(subRect.topLeft(), QSize(fontWidth, rect.height()));
+                    p->drawText(textRect, alignment, toolbutton->text);
+                } else {
+                    p->drawText(rect, alignment, toolbutton->text);
+                }
             } else { //只显示文字的情景 的 补集
                 QIcon icon;
                 QSize pmSize = toolbutton->iconSize;
@@ -1569,8 +1582,6 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 if (w && (w->objectName() == "qt_calendar_prevmonth" || w->objectName() == "qt_calendar_nextmonth")) {
                     p->setBrush(getColor(toolbutton, DPalette::Button));
                 }
-
-
 
                 // pr为图标的大小
                 QRect pr = rect;
@@ -3316,23 +3327,30 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 newBtn.rect = QRect(ir.right() - mbi - menuButtonIndicatorMargin, (ir.height() - mbi) / 2, mbi, mbi);
                 newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
 
-                //DelayedPopup 模式，箭头右居中, 加一个日历 月按钮箭头居中
-                if (w && w->objectName() == "qt_calendar_monthbutton") {
-                    newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() / 2, mbi - 4, mbi - 4);
-                    newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
+                //仅文字，DelayedPopup 模式，文字和箭头整体居中
+                if (toolbutton->features & QStyleOptionToolButton::PopupDelay && toolbutton->toolButtonStyle == Qt::ToolButtonTextOnly) {
+                    QFontMetrics metrics(toolbutton->font);
+                    int fontWidth = metrics.horizontalAdvance(toolbutton->text);
+                    int subRectWidth = fontWidth  + mbi + menuButtonIndicatorMargin;
+                    QRect subRect = QRect(tool.rect.left() + (tool.rect.width() - subRectWidth) / 2, tool.rect.top(), subRectWidth, tool.rect.height());
+                    QRect indicatorRect = QRect(subRect.topLeft() + QPoint(fontWidth  + menuButtonIndicatorMargin, (tool.rect.height() - mbi) / 2), QSize(mbi, mbi));
+                    newBtn.rect = indicatorRect;
                 }
+
                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, w);
             }
 
-            //日历　年按钮 特制
+            //日历　年按钮 特制 文字和箭头整体居中
             if (w && w->objectName() == "qt_calendar_yearbutton") {
-                 QStyleOptionToolButton newBtn = *toolbutton;
-                 int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, w);
-                 QRect ir = toolbutton->rect;
-
-                 newBtn.rect = QRect(ir.right() + 5 - mbi, ir.y() + ir.height() / 2, mbi - 4, mbi - 4);
-                 newBtn.rect = visualRect(toolbutton->direction, button, newBtn.rect);
-                 proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, w);
+                QStyleOptionToolButton newBtn = *toolbutton;
+                int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, w);
+                QFontMetrics metrics(toolbutton->font);
+                int fontWidth = metrics.horizontalAdvance(toolbutton->text);
+                int subRectWidth = fontWidth  + mbi + menuButtonIndicatorMargin;
+                QRect subRect = QRect(tool.rect.left() + (tool.rect.width() - subRectWidth) / 2, tool.rect.top(), subRectWidth, tool.rect.height());
+                QRect indicatorRect = QRect(subRect.topLeft() + QPoint(fontWidth  + menuButtonIndicatorMargin, (tool.rect.height() - mbi) / 2), QSize(mbi, mbi));
+                newBtn.rect = indicatorRect;
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, w);
             }
         }
         return;
