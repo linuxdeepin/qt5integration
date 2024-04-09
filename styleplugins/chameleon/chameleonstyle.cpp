@@ -4613,6 +4613,12 @@ static inline void setWindowRadius(QWidget *w, int radius)
     handle.setWindowRadius(radius);
 }
 
+static inline void setBorderColor(QWidget *w, QColor color)
+{
+    DPlatformWindowHandle handle(w);
+    handle.setBorderColor(color);
+}
+
 static inline void setWindowNoEffect(QWidget *w)
 {
     DPlatformWindowHandle handle(w);
@@ -4734,6 +4740,16 @@ void ChameleonStyle::polish(QWidget *w)
                 DPlatformTheme *theme = DGuiApplicationHelper::instance()->applicationTheme();
                 if (theme->isValid())
                     setWindowRadius(w, qMax(0, qMin(theme->windowRadius(), 18)));
+
+                QColor color = (DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType) ? Qt::white : Qt::black;
+                DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType ? color.setAlphaF(0.07) : color.setAlphaF(0.05);
+                setBorderColor(w, color);
+
+                connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [w](DGuiApplicationHelper::ColorType themeType) {
+                    QColor color = (themeType == DGuiApplicationHelper::DarkType) ? Qt::white : Qt::black;
+                    themeType == DGuiApplicationHelper::DarkType ? color.setAlphaF(0.07) : color.setAlphaF(0.05);
+                    setBorderColor(w, color);
+                });
 
                 connect(theme, &DPlatformTheme::windowRadiusChanged, w, [w](int r){
                    setWindowRadius(w, qMax(0, qMin(r, 18)));
