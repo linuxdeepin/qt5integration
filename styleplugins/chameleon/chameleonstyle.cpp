@@ -4417,7 +4417,7 @@ void ChameleonStyle::polish(QWidget *w)
                 DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType ? color.setAlphaF(0.07) : color.setAlphaF(0.05);
                 setBorderColor(w, color);
 
-                connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [w](DGuiApplicationHelper::ColorType themeType) {
+                connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, w, [w](DGuiApplicationHelper::ColorType themeType) {
                     QColor color = (themeType == DGuiApplicationHelper::DarkType) ? Qt::white : Qt::black;
                     themeType == DGuiApplicationHelper::DarkType ? color.setAlphaF(0.07) : color.setAlphaF(0.05);
                     setBorderColor(w, color);
