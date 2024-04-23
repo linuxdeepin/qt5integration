@@ -241,9 +241,13 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->setRenderHint(QPainter::Antialiasing);
 
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-        // 条件后面或的部分为兼容日历自绘的combobox
-        bool isComBoBox = qobject_cast<const QComboBox *>(w) || (w->accessibleName().contains("Schedule") && w->accessibleName().contains("Edit"));
-        if (isComBoBox)
+
+        bool hasPopDateTimeEdit = false;
+        if (auto dateTimeEdit = qobject_cast<const QDateTimeEdit *>(w))
+            hasPopDateTimeEdit = dateTimeEdit->calendarPopup();
+
+        bool isBoxButton = qobject_cast<const QComboBox *>(w) || hasPopDateTimeEdit;
+        if (isBoxButton)
             frame_radius -= 1; // combobox内按钮圆角应比外圈编辑框少一个像素，保证贴合
 
         p->drawRoundedRect(opt->rect - margins, frame_radius, frame_radius);
@@ -253,7 +257,7 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         p->setBrush(Qt::NoBrush);
         const QMarginsF border_margins(Metrics::Painter_PenWidth, Metrics::Painter_PenWidth, Metrics::Painter_PenWidth, Metrics::Painter_PenWidth);
 
-        if (isComBoBox)
+        if (isBoxButton)
             p->drawRoundedRect(QRectF(opt->rect) - border_margins / 2.0, frame_radius, frame_radius);
         else
             p->drawRoundedRect(QRectF(opt->rect) - margins - border_margins / 2.0, frame_radius, frame_radius);
