@@ -1706,10 +1706,10 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                         p->setBrush(Qt::NoBrush);
                         p->setClipping(true);
                         p->drawRoundedRect(rect, frameRadius, frameRadius);
-                        p->setClipping(false);
                     } else {
                         p->drawRoundedRect(rect, frameRadius, frameRadius);
                     }
+                    p->setClipping(false);
                 }
             }
 
