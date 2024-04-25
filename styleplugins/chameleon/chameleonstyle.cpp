@@ -1501,6 +1501,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setClipPath(clipPath);
                     p->setClipping(true);
                     p->drawRoundedRect(rect, frameRadius, frameRadius);
+                    p->setClipping(false);
                 }
             }
         }
