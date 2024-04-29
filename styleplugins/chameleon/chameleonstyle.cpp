@@ -1011,13 +1011,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int spacUp = 0;
             int spacDown = 0;
 
-            if (opt->styleObject->property("_d_slider_spaceLeft").isValid())
+            if (opt->styleObject && opt->styleObject->property("_d_slider_spaceLeft").isValid())
                 spacLeft = opt->styleObject->property("_d_slider_spaceLeft").toInt(&okLeft);
-            if (opt->styleObject->property("_d_slider_spaceRight").isValid())
+            if (opt->styleObject && opt->styleObject->property("_d_slider_spaceRight").isValid())
                 spacRight = opt->styleObject->property("_d_slider_spaceRight").toInt(&okRight);
-            if (opt->styleObject->property("_d_slider_spaceUp").isValid())
+            if (opt->styleObject && opt->styleObject->property("_d_slider_spaceUp").isValid())
                 spacUp = opt->styleObject->property("_d_slider_spaceUp").toInt(&okUp);
-            if (opt->styleObject->property("_d_slider_spaceDown").isValid())
+            if (opt->styleObject && opt->styleObject->property("_d_slider_spaceDown").isValid())
                 spacDown = opt->styleObject->property("_d_slider_spaceDown").toInt(&okDown);
 
             if (opt->state & QStyle::State_Horizontal) {
