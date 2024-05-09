@@ -360,9 +360,18 @@ void QDeepinFileDialogHelper::initDBusFileDialogManager()
     } else {
         dialogService = DIALOG_SERVICE;
     }
+
+    const auto *managerObjectPath = "/com/deepin/filemanager/filedialogmanager";
+    auto conn = QDBusConnection::sessionBus();
+    auto reply = conn.call(QDBusMessage::createMethodCall(dialogService, managerObjectPath , "org.freedesktop.DBus.Peer", "Ping"));
+
+    if(reply.type() != QDBusMessage::ReplyMessage) {
+        qCWarning(fileDialogHelper) << reply.errorMessage();
+    }
+
     if (QDBusConnection::sessionBus().interface()->isServiceRegistered(dialogService).value()
         || !QStandardPaths::findExecutable("dde-desktop").isEmpty()) {
-        manager = new DFileDialogManager(dialogService, "/com/deepin/filemanager/filedialogmanager", QDBusConnection::sessionBus());
+        manager = new DFileDialogManager(dialogService, managerObjectPath, QDBusConnection::sessionBus());
     }
 }
 
