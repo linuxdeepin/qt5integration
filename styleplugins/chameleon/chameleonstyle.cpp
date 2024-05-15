@@ -4300,11 +4300,6 @@ void ChameleonStyle::polish(QWidget *w)
             setWindowRadius(listview, DStyle::pixelMetric(PM_FrameRadius));
     }
 
-    if (w && qobject_cast<QLineEdit *>(w) && !(qobject_cast<DSearchEdit *>(w->parentWidget()))) {
-        w->setProperty("_d_dtk_lineeditActionWidth", -6);
-        w->setProperty("_d_dtk_lineeditActionMargin", 6);
-    }
-
     if (auto container = qobject_cast<QComboBoxPrivateContainer *>(w)) {
         if (DWindowManagerHelper::instance()->hasComposite())
             setWindowRadius(container, DStyle::pixelMetric(PM_FrameRadius));
