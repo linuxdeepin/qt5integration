@@ -111,6 +111,17 @@ static QRect spinboxIndicatorRect(const QRect &r)
     return QRect(xOffset, yOffset, size, size);
 }
 
+// the object is the class's instance.
+template<class T>
+inline static bool isTheClassObject(QObject *object)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return object->metaObject()->className() == T::staticMetaObject.className();
+#else
+    return object->metaObject()->metaType() == T::staticMetaObject.metaType();
+#endif
+}
+
 ChameleonStyle::ChameleonStyle()
     : DStyle()
 {
@@ -208,9 +219,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         //QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
-            const auto &delegate = *qobject_cast<const QTreeView *>(w)->itemDelegate();
+            const auto delegate = qobject_cast<const QTreeView *>(w)->itemDelegate();
             //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
-            if (typeid(delegate) != typeid(QStyledItemDelegate)) {
+            if (!isTheClassObject<QStyledItemDelegate>(delegate)) {
                 break;
             }
 
@@ -576,9 +587,9 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         }
         //这里QTreeView的绘制复制了QCommonStyle的代码，添加了圆角的处理,hover的处理
         if (qobject_cast<const QTreeView *>(w)) {
-            const auto &delegate = *qobject_cast<const QTreeView *>(w)->itemDelegate();
+            const auto delegate = qobject_cast<const QTreeView *>(w)->itemDelegate();
             //如果QTreeView使用的不是默认代理 QStyledItemDelegate,则采取DStyle的默认绘制(备注:这里的QtCreator不会有hover效果和圆角)
-            if (typeid(delegate) != typeid(QStyledItemDelegate)) {
+            if (!isTheClassObject<QStyledItemDelegate>(delegate)) {
                 break;
             }
 
