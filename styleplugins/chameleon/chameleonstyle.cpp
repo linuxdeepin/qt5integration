@@ -2948,71 +2948,94 @@ void ChameleonStyle::drawSliderHandleFocus(const QStyleOptionComplex *opt, QRect
         const DSlider *dslider = qobject_cast<const DSlider *>(w);
         QSlider::TickPosition tickPosition = slider->tickPosition;
 
-        int lineOffset = DStyle::pixelMetric(PM_FocusBorderWidth) / 2;
-        int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
-        int marginRect = DStyle::pixelMetric(PM_FocusBorderSpacing) + lineOffset;
+        int innerHighLightWith = DStyle::pixelMetric(PM_FocusBorderWidth);
+        int innerHighLightOffect = DStyle::pixelMetric(PM_FocusBorderSpacing);
+        int outerRectOffect = DStyle::pixelMetric(PM_FocusBorderSpacing) - 1; // focus外圈在内高亮圈外一个像素
 
         if (dslider)
             tickPosition = dslider->tickPosition();
 
         if (tickPosition == QSlider::NoTicks) {
-            p->drawRoundedRect(rectHandle.adjusted(-marginRect, -marginRect, marginRect, marginRect),
-                               DStyle::pixelMetric(DStyle::PM_FrameRadius) + marginRect,
-                               DStyle::pixelMetric(DStyle::PM_FrameRadius) + marginRect);
-        } else {
-            qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
-            QPainterPath focusPath;
+            // 绘制focus的外圈
+            p->drawRoundedRect(rectHandle.adjusted(outerRectOffect, outerRectOffect, -outerRectOffect, -outerRectOffect),
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) - outerRectOffect,
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) - outerRectOffect);
 
-            if (slider->orientation == Qt::Horizontal) {
-                if (tickPosition == QSlider::TicksAbove) {  //尖角朝上
-                    focusPath.moveTo(QPointF(rectHandle.left() - marginRect, rectHandle.bottom() - radius));
-                    focusPath.lineTo(QPointF(rectHandle.left() - marginRect, rectHandle.top() + radius - lineOffset));
-                    focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.top() - margin));
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.top() + radius - lineOffset));
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.bottom() - radius));
-                    focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - marginRect, rectHandle.bottom() - radius - radius -marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
-                                    -0, -90);
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + marginRect));
-                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.bottom() - radius -radius -marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
-                                    -90, -90);
-                } else { //尖角朝下
-                    focusPath.moveTo(QPointF(rectHandle.left() - marginRect, rectHandle.top() + radius));
-                    focusPath.lineTo(QPointF(rectHandle.left() - marginRect, rectHandle.bottom() - radius + lineOffset));
-                    focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.bottom() + margin));
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.bottom() - radius + lineOffset));
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.top() + radius));
-                    focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - marginRect, rectHandle.top() - marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
-                                    0, 90);
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.top() - marginRect));
-                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.top() - marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
-                                    90, 90);
+            // 绘制focus的内高亮圈
+            auto pen = p->pen();
+            pen.setColor(getThemTypeColor(QColor("#F7F7F7"), QColor("#323232")));
+            pen.setWidth(innerHighLightWith);
+            p->setPen(pen);
+            p->drawRoundedRect(rectHandle.adjusted(innerHighLightOffect, innerHighLightOffect, -innerHighLightOffect, -innerHighLightOffect),
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) - innerHighLightOffect,
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) - innerHighLightOffect);
+        } else {
+            // 创建绘制路径的匿名函数
+            auto createPath = [=](int offset) {
+                qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
+                QPainterPath focusPath;
+                if (slider->orientation == Qt::Horizontal) {
+                    if (tickPosition == QSlider::TicksAbove) {  //尖角朝上
+                        focusPath.moveTo(QPointF(rectHandle.left() - offset, rectHandle.bottom() - radius));
+                        focusPath.lineTo(QPointF(rectHandle.left() - offset, rectHandle.top() + radius - offset));
+                        focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.top() + radius - offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.bottom() - radius));
+                        focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - offset, rectHandle.bottom() - radius - radius -offset, 2 *(radius + offset), 2 * (radius + offset)),
+                                        -0, -90);
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + offset));
+                        focusPath.arcTo(QRectF(rectHandle.left() - offset, rectHandle.bottom() - radius -radius -offset, 2 * (radius + offset), 2 * (radius + offset)),
+                                        -90, -90);
+                    } else { //尖角朝下
+                        focusPath.moveTo(QPointF(rectHandle.left() - offset, rectHandle.top() + radius));
+                        focusPath.lineTo(QPointF(rectHandle.left() - offset, rectHandle.bottom() - radius + offset));
+                        focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.bottom() + offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.bottom() - radius + offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.top() + radius));
+                        focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - offset, rectHandle.top() - offset, 2 *(radius + offset), 2 * (radius + offset)),
+                                        0, 90);
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.top() - offset));
+                        focusPath.arcTo(QRectF(rectHandle.left() - offset, rectHandle.top() - offset, 2 * (radius + offset), 2 * (radius + offset)),
+                                        90, 90);
+                    }
+                } else {
+                    if (tickPosition == QSlider::TicksLeft) {  //尖角朝左
+                        focusPath.moveTo(QPointF(rectHandle.right() - radius, rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius - offset, rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.left() - offset, rectHandle.center().y()));
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius - offset, rectHandle.bottom() + offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() - radius, rectHandle.bottom() + offset));
+                        focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - offset, rectHandle.bottom() - radius - radius - offset, 2 *(radius + offset), 2 * (radius + offset)),
+                                        -90, 90);
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.top() + radius));
+                        focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - offset, rectHandle.top() - offset, 2 * (radius + offset), 2 * (radius + offset)),
+                                        0, 90);
+                    } else { //尖角朝右
+                        focusPath.moveTo(QPointF(rectHandle.left() + radius, rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() - radius + offset, rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.center().y()));
+                        focusPath.lineTo(QPointF(rectHandle.right() - radius + offset, rectHandle.bottom() + offset));
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + offset));
+                        focusPath.arcTo(QRectF(rectHandle.left() - offset, rectHandle.bottom() - radius - radius - offset, 2 *(radius + offset), 2 * (radius + offset)),
+                                        -90, -90);
+                        focusPath.lineTo(QPointF(rectHandle.left() - offset, rectHandle.top() + radius));
+                        focusPath.arcTo(QRectF(rectHandle.left() - offset, rectHandle.top() - offset, 2 * (radius + offset), 2 * (radius + offset)),
+                                        180, -90);
+                    }
                 }
-            } else {
-                if (tickPosition == QSlider::TicksLeft) {  //尖角朝左
-                    focusPath.moveTo(QPointF(rectHandle.right() - radius, rectHandle.top() - marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius - lineOffset, rectHandle.top() - marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.left() - margin, rectHandle.center().y()));
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius - lineOffset, rectHandle.bottom() + marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.right() - radius, rectHandle.bottom() + marginRect));
-                    focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - marginRect, rectHandle.bottom() - radius - radius - marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
-                                    -90, 90);
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.top() + radius));
-                    focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - marginRect, rectHandle.top() - marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
-                                    0, 90);
-                } else { //尖角朝右
-                    focusPath.moveTo(QPointF(rectHandle.left() + radius, rectHandle.top() - marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.right() - radius + lineOffset, rectHandle.top() - marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.right() + margin, rectHandle.center().y()));
-                    focusPath.lineTo(QPointF(rectHandle.right() - radius + lineOffset, rectHandle.bottom() + marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + marginRect));
-                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.bottom() - radius - radius - marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
-                                    -90, -90);
-                    focusPath.lineTo(QPointF(rectHandle.left() - marginRect, rectHandle.top() + radius));
-                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.top() - marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
-                                    180, -90);
-                }
-            }
-            p->drawPath(focusPath);
+                return focusPath;
+            };
+            // 绘制focus的外圈
+            QPen pen = p->pen();
+            pen.setJoinStyle(Qt::PenJoinStyle::MiterJoin);
+            p->setPen(pen);
+            p->drawPath(createPath(-outerRectOffect));
+
+            // 绘制focus的内高亮圈
+            pen.setColor(getThemTypeColor(QColor("#F7F7F7"), QColor("#323232")));
+            pen.setWidth(innerHighLightWith);
+            p->setPen(pen);
+            p->drawPath(createPath(-innerHighLightOffect));
         }
     }
 }
@@ -3780,7 +3803,8 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 // 绘画 滑块焦点
                 if (slider->state & State_HasFocus) {
                     pen.setColor(getColor(opt, DPalette::Highlight));
-                    pen.setWidth(DStyle::pixelMetric(PM_FocusBorderWidth));
+                    // focus要盖住slider的handle并且往外延展一个像素
+                    pen.setWidth(DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing));
                     p->setPen(pen);
                     p->setBrush(Qt::NoBrush);
                     drawSliderHandleFocus(opt, rectHandle, p, w);
