@@ -103,12 +103,23 @@ function(dtk_add_plugin)
 endfunction()
 
 find_package(Dtk${VERSION_SUFFIX} REQUIRED COMPONENTS Widget)
-cmake_dependent_option(ENABLE_QT_XDG_ICON_LOADER "Enable QtXdgIconLoader" ON "QT_VERSION_MAJOR EQUAL 5" OFF)
+
+option(ENABLE_QT_XDG_ICON_LOADER "Enable QtXdgIconLoader" ON)
+find_package(Qt${QT_VERSION_MAJOR}XdgIconLoader)
+find_package(Qt${QT_VERSION_MAJOR}Xdg REQUIRED)
+if (NOT Qt${QT_VERSION_MAJOR}XdgIconLoader_FOUND)
+    message(WARNING " Qt${QT_VERSION_MAJOR}XdgIconLoader Not Found, DISABLE QtXdgIconLoader !")
+    set (ENABLE_QT_XDG_ICON_LOADER OFF)
+endif()
+
 if(ENABLE_QT_XDG_ICON_LOADER)
-  find_package(Qt5XdgIconLoader REQUIRED)
-  find_package(Qt5Xdg REQUIRED)
-  set(QT_XDG_ICON_DEPS Qt5XdgIconLoader Qt5Xdg)
-  set(XDG_ICON_VERSION_MAJOR ${Qt5XdgIconLoader_VERSION_MAJOR})
+  set(QT_XDG_ICON_DEPS Qt${QT_VERSION_MAJOR}XdgIconLoader Qt${QT_VERSION_MAJOR}Xdg)
+
+  if("${QT_VERSION_MAJOR}" STREQUAL "5")
+      set(XDG_ICON_VERSION_MAJOR ${Qt5XdgIconLoader_VERSION_MAJOR})
+  elseif("${QT_VERSION_MAJOR}" STREQUAL "6")
+      set(XDG_ICON_VERSION_MAJOR ${Qt6XdgIconLoader_VERSION_MAJOR})
+  endif()
 endif()
 
 set(PLUGIN_OUTPUT_BASE_DIR ${CMAKE_BINARY_DIR}/plugins CACHE STRING "Plugin output base path")
