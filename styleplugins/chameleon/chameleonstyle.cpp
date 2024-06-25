@@ -250,17 +250,14 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         if (isBoxButton)
             frame_radius -= 1; // combobox内按钮圆角应比外圈编辑框少一个像素，保证贴合
 
-        p->drawRoundedRect(opt->rect - margins, frame_radius, frame_radius);
+        p->drawRoundedRect(opt->rect, frame_radius, frame_radius);
 
         // draw border，border应该是完全叠加到按钮的背景上
         p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
         p->setBrush(Qt::NoBrush);
         const QMarginsF border_margins(Metrics::Painter_PenWidth, Metrics::Painter_PenWidth, Metrics::Painter_PenWidth, Metrics::Painter_PenWidth);
 
-        if (isBoxButton)
-            p->drawRoundedRect(QRectF(opt->rect) - border_margins / 2.0, frame_radius, frame_radius);
-        else
-            p->drawRoundedRect(QRectF(opt->rect) - margins - border_margins / 2.0, frame_radius, frame_radius);
+        p->drawRoundedRect(QRectF(opt->rect) - border_margins / 2.0, frame_radius, frame_radius);
 
         return;
     }
