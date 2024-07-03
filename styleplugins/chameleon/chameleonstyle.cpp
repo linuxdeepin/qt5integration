@@ -2812,7 +2812,7 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
     } else {
         color = option->palette.window().color();
 
-        if (color.color().isValid()) {
+        if (color.color().isValid() && color.color().alpha() != 0) {
             QColor c = color.color();
 
             // 未开启窗口混成时不应该设置背景色的alpha通道，应当显示纯色背景(设置StyleSheet时，不加载此设置，防止alpha通道等对其造成影响)
