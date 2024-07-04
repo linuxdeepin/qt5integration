@@ -40,6 +40,7 @@
 #include <QBitmap>
 #include <QTableView>
 #include <QStyledItemDelegate>
+#include <QVariantAnimation>
 #include <DSpinBox>
 #include <DTreeView>
 #include <DIconButton>
@@ -120,6 +121,57 @@ inline static bool isTheClassObject(QObject *object)
 #else
     return object->metaObject()->metaType() == T::staticMetaObject.metaType();
 #endif
+}
+
+ChameleonMovementAnimation::ChameleonMovementAnimation(QWidget *targetWidget)
+    : QVariantAnimation(targetWidget)
+{
+    setDuration(150);
+
+    connect(this, &QVariantAnimation::valueChanged, targetWidget, [this] (const QVariant &value) {
+        if (!isRuning())
+            return;
+
+        const auto rect = value.toRect();
+        Q_ASSERT(!m_currentRect.isEmpty());
+        this->targetWidget()->update(m_currentRect.united(rect));
+        m_currentRect = rect;
+    });
+    connect(this, &QVariantAnimation::finished, targetWidget, [this] {
+        Q_ASSERT(m_currentRect == m_targetRect);
+        // 确保动画结束后有一帧的刷新，因为在菜单的动画过程中会修改菜单文字的 opacity
+        // 对opacity的修改会根据是否处于动画状态进行判断，因此要确保动画结束后刷新它
+        this->targetWidget()->update(m_currentRect);
+    });
+}
+
+QWidget *ChameleonMovementAnimation::targetWidget() const
+{
+    return qobject_cast<QWidget*>(parent());
+}
+
+void ChameleonMovementAnimation::setTargetRect(const QRect &rect)
+{
+    if (m_targetRect == rect)
+        return;
+
+    m_lastTargetRect = m_targetRect;
+    m_targetRect = rect;
+
+    if (m_currentRect.isEmpty())
+        m_currentRect = m_lastTargetRect;
+
+    // 当目标绘制区域改变时，说明当前正在进行的动画过期了，应该重新开始动画
+    stop();
+    setStartValue(m_currentRect);
+    setEndValue(rect);
+
+    if (!m_currentRect.isEmpty()) {
+        start();
+    } else {
+        // 这种情况说明不需要进行动画，往往发生在首次显示，这时候应该直接绘制到目标区域
+        m_currentRect = rect;
+    }
 }
 
 ChameleonStyle::ChameleonStyle()
@@ -2757,7 +2809,7 @@ bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &
     return true;
 }
 
-void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter *painter, QStyleOptionMenuItem::MenuItemType type) const
+ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter *painter, QStyleOptionMenuItem::MenuItemType type) const
 {
     QBrush color;
     bool selected = (option->state & QStyle::State_Enabled) && option->state & QStyle::State_Selected;
@@ -2766,7 +2818,7 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
         painter->setPen(Qt::NoPen);
         painter->setBrush(getColor(option, QPalette::Highlight));
         painter->drawRect(option->rect);
-        return;
+        return nullptr;
      }
 
     // 清理旧的阴影
@@ -2791,8 +2843,6 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
     }
 
     if (selected) {
-        color = option->palette.highlight();
-
         // draw shadow
         if (type == QStyleOptionMenuItem::Normal) {
             if (option->styleObject) {
@@ -2855,14 +2905,14 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
         }
 
         if (!option->styleObject)
-            return;
+            break;
 
         // 为上一个item绘制阴影
         const QRect shadow = option->styleObject->property("_d_menu_shadow_rect").toRect();
 
         // 判断阴影rect是否在自己的区域
         if (!option->rect.contains(shadow.center()))
-            return;
+            break;
 
         static QColor shadow_color;
         static QPixmap shadow_pixmap;
@@ -2879,11 +2929,47 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
         if (!shadow_pixmap.isNull()) {
             if (QMenu *menu = qobject_cast<QMenu *>(option->styleObject)) {
                 if (!menu->geometry().contains(QCursor::pos()))
-                    return;
+                    break;
             }
             painter->drawPixmap(shadow, shadow_pixmap);
         }
+    } while (false);
+
+    { // 无论如何都尝试绘制，因为可能有动画存在
+        color = option->palette.highlight();
+
+        QWidget *animationTargetWidget = qobject_cast<QWidget*>(option->styleObject);
+        if (!option->styleObject)
+            animationTargetWidget = dynamic_cast<QWidget*>(painter->device());
+
+        ChameleonMovementAnimation *animation = nullptr;
+
+        if (animationTargetWidget) {
+            animation = animationTargetWidget->findChild<ChameleonMovementAnimation*>("_d_menu_select_animation",
+                                                                              Qt::FindDirectChildrenOnly);
+            if (!animation) {
+                animation = new ChameleonMovementAnimation(animationTargetWidget);
+                animation->setObjectName("_d_menu_select_animation");
+            }
+
+            if (selected)
+                animation->setTargetRect(option->rect);
+        }
+
+        if (animation && animation->isRuning()) {
+            auto opacity = painter->opacity();
+            // 一些状态为 disable 的 menu item 在绘制时会修改不透明度，这里暂时改回1.0。
+            painter->setOpacity(1.0);
+            painter->fillRect(animation->currentRect(), color);
+            painter->setOpacity(opacity);
+
+            return animation;
+        } else if (selected) {
+            painter->fillRect(option->rect, color);
+        }
     }
+
+    return nullptr;
 }
 
 void ChameleonStyle::drawMenuItemRedPoint(const QStyleOptionMenuItem *option, QPainter *painter, const QWidget *widget) const
@@ -2964,7 +3050,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
         bool sunken = menuItem->state & State_Sunken;
 
         //绘制背景
-        drawMenuItemBackground(option, painter, menuItem->menuItemType);
+        auto animation = drawMenuItemBackground(option, painter, menuItem->menuItemType);
 
         //绘制分段
         if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
@@ -2979,6 +3065,13 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
             }
 
             return true;
+        }
+
+        const bool useHighlightedText = selected && !animation;
+        if (!useHighlightedText && selected) {
+            // 在动画中时，selected item 的文字颜色不会使用 HighlightedText，当动画结束后会立即
+            // 变为 HighlightedText，会显得比较突然，因此使用不透明度对文本等内容进行过渡
+            painter->setOpacity(1.0 - animation->progress());
         }
 
         //绘制选择框
@@ -2999,7 +3092,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
                 checkRect.moveCenter(QPoint(checkRect.left() + smallIconSize / 2, menuItem->rect.center().y()));
                 painter->setRenderHint(QPainter::Antialiasing);
 
-                if (selected)
+                if (useHighlightedText)
                     painter->setPen(getColor(option, QPalette::HighlightedText));
                 else
                     painter->setPen(getColor(option, QPalette::BrightText));
@@ -3019,7 +3112,7 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
 
         }
 
-        if (selected) {
+        if (useHighlightedText) {
             painter->setPen(getColor(option, QPalette::HighlightedText));
         } else {
             if ((option->state & QStyle::State_Enabled)) {
