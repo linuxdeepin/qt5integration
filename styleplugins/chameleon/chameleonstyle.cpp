@@ -2959,56 +2959,8 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
         return nullptr;
      }
 
-    // 清理旧的阴影
-    if (option->styleObject) {
-        const QRect shadow = option->styleObject->property("_d_menu_shadow_rect").toRect();
-        const QRect shadow_base = option->styleObject->property("_d_menu_shadow_base_rect").toRect();
-
-        // 如果当前菜单项时已选中的，并且shadow_base不等于当前区域，此时应当清理阴影区域
-        // 如果当前要绘制的item是触发阴影绘制的那一项，那么，此时应当清空阴影区域
-        if ((selected && shadow_base != option->rect)
-            || (!selected && shadow_base == option->rect)
-            || (!selected && shadow_base.width() != option->rect.width())) {
-            // 清空阴影区域
-            option->styleObject->setProperty("_d_menu_shadow_rect", QVariant());
-            option->styleObject->setProperty("_d_menu_shadow_base_rect", QVariant());
-
-            // 确保阴影区域能重绘
-            if (QWidget *w = qobject_cast<QWidget*>(option->styleObject)) {
-                w->update(shadow);
-            }
-        }
-    }
-
-    if (selected) {
-        // draw shadow
-        if (type == QStyleOptionMenuItem::Normal) {
-            if (option->styleObject) {
-                QRect shadow(0, 0, option->rect.width(), 7);
-                shadow.moveTop(option->rect.bottom() + 1);
-                option->styleObject->setProperty("_d_menu_shadow_rect", shadow);
-                option->styleObject->setProperty("_d_menu_shadow_base_rect", option->rect);
-
-                // 确保阴影区域能重绘
-                if (QWidget *w = qobject_cast<QWidget*>(option->styleObject)) {
-                    w->update(shadow);
-                }
-            }
-        }
-
-        painter->setBrush(color);
-        painter->setPen(Qt::NoPen);
-        painter->setRenderHint(QPainter::Antialiasing);
-
-        const int radius = DStyle::pixelMetric(PM_FrameRadius);
-        constexpr int margin = 6;
-
-        if (qobject_cast<QMenu *>(option->styleObject)) 
-            painter->drawRoundedRect(option->rect, radius, radius);
-        else
-            painter->drawRoundedRect(option->rect.marginsRemoved(QMargins(margin, 0, margin, 0)), radius, radius);
-
-    } else {
+    if (!selected) {
+        do {
         color = option->palette.window().color();
 
         if (color.color().isValid() && color.color().alpha() != 0) {
@@ -3045,34 +2997,8 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
         if (!option->styleObject)
             break;
 
-        // 为上一个item绘制阴影
-        const QRect shadow = option->styleObject->property("_d_menu_shadow_rect").toRect();
-
-        // 判断阴影rect是否在自己的区域
-        if (!option->rect.contains(shadow.center()))
-            break;
-
-        static QColor shadow_color;
-        static QPixmap shadow_pixmap;
-
-        if (shadow_color != option->palette.color(QPalette::Active, QPalette::Highlight)) {
-            shadow_color = option->palette.color(QPalette::Active, QPalette::Highlight);
-            QImage image(":/chameleonstyle/menu_shadow.svg");
-            QPainter pa(&image);
-            pa.setCompositionMode(QPainter::CompositionMode_SourceIn);
-            pa.fillRect(image.rect(), shadow_color);
-            shadow_pixmap = QPixmap::fromImage(image);
-        }
-
-        if (!shadow_pixmap.isNull()) {
-            if (QMenu *menu = qobject_cast<QMenu *>(option->styleObject)) {
-                if (!menu->geometry().contains(QCursor::pos()))
-                    break;
-            }
-            painter->drawPixmap(shadow, shadow_pixmap);
-        }
-    } while (false);
-
+        } while (false);
+    }
     { // 无论如何都尝试绘制，因为可能有动画存在
         color = option->palette.highlight();
 
@@ -3093,17 +3019,25 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
             if (selected)
                 animation->setTargetRect(option->rect);
         }
-
+        const int round = 6;
         if (animation && animation->isRuning()) {
+            painter->save();
             auto opacity = painter->opacity();
             // 一些状态为 disable 的 menu item 在绘制时会修改不透明度，这里暂时改回1.0。
             painter->setOpacity(1.0);
-            painter->fillRect(animation->currentRect(), color);
+            painter->setBrush(color);
+            painter->setPen(Qt::NoPen);
+            painter->drawRoundedRect(animation->currentRect(), round, round);
             painter->setOpacity(opacity);
+            painter->restore();
 
             return animation;
         } else if (selected) {
-            painter->fillRect(option->rect, color);
+            painter->save();
+            painter->setBrush(color);
+            painter->setPen(Qt::NoPen);
+            painter->drawRoundedRect(option->rect, round, round);
+            painter->restore();
         }
     }
 
@@ -4436,7 +4370,7 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_MenuVMargin:
         return 8;
     case PM_MenuHMargin:
-        return 8;
+        return 6;
     default:
         break;
     }
