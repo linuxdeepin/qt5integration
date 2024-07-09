@@ -15,8 +15,6 @@ dtk_add_plugin(
         chameleonstyle.h
         common.h
         dstyleanimation.h
-    RESOURCES
-        resources.qrc
     DEPENDENCIES
         Dtk${VERSION_SUFFIX}::Widget
         Qt${QT_VERSION_MAJOR}::CorePrivate
