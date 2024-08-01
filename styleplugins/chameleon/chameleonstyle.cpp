@@ -41,6 +41,8 @@
 #include <QTableView>
 #include <QStyledItemDelegate>
 #include <QVariantAnimation>
+#include <QProgressBar>
+#include <QTimer>
 #include <DSpinBox>
 #include <DTreeView>
 #include <DIconButton>
@@ -172,6 +174,15 @@ void ChameleonMovementAnimation::setTargetRect(const QRect &rect)
         // 这种情况说明不需要进行动画，往往发生在首次显示，这时候应该直接绘制到目标区域
         m_currentRect = rect;
     }
+}
+
+void ChameleonMovementAnimation::setCurrentRect(const QRect &rect)
+{
+    if (m_currentRect == rect)
+        return;
+
+    m_currentRect = rect;
+    m_targetRect = QRect();
 }
 
 ChameleonStyle::ChameleonStyle()
@@ -1422,7 +1433,17 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 frameRadius = qMin(height / 2, 4);
             }
             p->setBrush(getColor(opt, DPalette::ObviousBackground, w));
+            p->setPen(Qt::NoPen);
             p->drawRoundedRect(opt->rect, frameRadius, frameRadius);
+
+            QPen pen;
+            pen.setColor(DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
+                         ? QColor(255, 255, 255, 0.15 * 255)
+                         : QColor(0, 0, 0, 0.15 * 255));
+            pen.setWidth(1);
+            p->setPen(pen);
+            p->setBrush(Qt::NoBrush);
+            p->drawRoundedRect(opt->rect.marginsRemoved(QMargins(1, 1, 1, 1)), frameRadius, frameRadius);
         }
         return;
     }
@@ -1462,7 +1483,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             linear.setColorAt(0, startColor);
             linear.setColorAt(1, endColor);
             linear.setSpread(QGradient::PadSpread);
-            p->setBrush(QBrush(linear));
+            p->setBrush(startColor);
 
             if (progBar->textVisible) {
                 QPainterPath pathRect;
@@ -1470,7 +1491,23 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 QPainterPath pathRoundRect;
                 pathRoundRect.addRoundedRect(opt->rect, frameRadius, frameRadius);
                 QPainterPath inter = pathRoundRect.intersected(pathRect);
+
+                QPainterPath clipPath;
+                clipPath.addRoundedRect(rect, frameRadius, frameRadius);
+                p->setClipPath(clipPath);
+                p->setClipping(true);
                 p->drawPath(inter);
+                p->setClipping(false);
+
+                QPen pen;
+                pen.setColor(DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
+                             ? QColor(255, 255, 255, 0.3 * 255)
+                             : QColor(0, 0, 0, 0.3 * 255));
+                pen.setWidth(1);
+                p->setPen(pen);
+                p->setBrush(Qt::NoBrush);
+                p->drawRoundedRect(rect.marginsRemoved(QMargins(1, 1, 1, 1)), frameRadius, frameRadius);
+
             } else {
                 //进度条高度 <= 8px && 进度条宽度 <= 8px && value有效
                 if (rect.height() <= ProgressBar_MinimumStyleHeight &&
@@ -1496,8 +1533,109 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                         path2.arcTo(endRect, 90, -180);
                         p->drawPath(path2);
                     }
-                } else
+                } else {
+                    QPainterPath clipPath;
+                    clipPath.addRoundedRect(opt->rect, frameRadius, frameRadius);
+                    p->setClipPath(clipPath);
+                    p->setClipping(true);
                     p->drawRoundedRect(rect, frameRadius, frameRadius);
+                    p->setClipping(false);
+
+                    QPen pen;
+                    pen.setColor(QColor(0, 0, 0, 0.3 * 255));
+                    pen.setWidth(1);
+                    p->setPen(pen);
+                    p->setBrush(Qt::NoBrush);
+                    p->setClipping(true);
+                    p->drawRoundedRect(rect.marginsRemoved(QMargins(1, 1, 1, 1)), frameRadius, frameRadius);
+                    p->setClipping(false);
+                }
+            }
+
+            // 进度条光斑
+            auto progressbar = qobject_cast<QProgressBar *>(opt->styleObject);
+            if (!progressbar)
+                progressbar = dynamic_cast<QProgressBar *>(p->device());
+
+            if (!progressbar)
+                return;
+
+            bool isHorizontal = (progressbar->orientation() == Qt::Horizontal);
+
+            constexpr int spotWidth = 200;
+            if (isHorizontal ? rect.width() >= spotWidth : rect.height() >= spotWidth) {
+                p->setPen(Qt::NoPen);
+
+                ChameleonMovementAnimation *progressAnimation = nullptr;
+
+                progressAnimation = progressbar->findChild<ChameleonMovementAnimation *>("_d_progress_spot_animation",
+                                                                                  Qt::FindDirectChildrenOnly);
+                if (!progressAnimation) {
+                    progressAnimation = new ChameleonMovementAnimation(progressbar);
+                    progressAnimation->setObjectName("_d_progress_spot_animation");
+                }
+
+                QColor shadowColor(0, 0, 0, int(0.15 * 255));
+                QColor spotColor(255, 255, 255, int(0.5 * 255));
+                QColor highLightColor(getColor(opt, DPalette::Highlight));
+
+                QPointF pointStart, pointEnd;
+                if (isHorizontal) {
+                    pointStart = QPointF(progressAnimation->currentValue().toRect().left(), progressAnimation->currentValue().toRect().center().y());
+                    pointEnd = QPointF(progressAnimation->currentValue().toRect().right(), progressAnimation->currentValue().toRect().center().y());
+                } else {
+                    pointStart = QPointF(progressAnimation->currentValue().toRect().center().x(), progressAnimation->currentValue().toRect().bottom());
+                    pointEnd = QPointF(progressAnimation->currentValue().toRect().center().x(), progressAnimation->currentValue().toRect().top());
+                }
+                QLinearGradient linear(pointStart, pointEnd);
+                linear.setColorAt(0, highLightColor);
+                linear.setColorAt(0.35, shadowColor);
+                linear.setColorAt(0.5, spotColor);
+                linear.setColorAt(0.65, shadowColor);
+                linear.setColorAt(1, highLightColor);
+                linear.setSpread(QGradient::PadSpread);
+                linear.setInterpolationMode(QLinearGradient::InterpolationMode::ColorInterpolation);
+                p->setBrush(linear);
+
+                QPainterPath clipPath;
+                clipPath.addRoundedRect(rect, frameRadius, frameRadius);
+                p->setClipping(true);
+                p->drawRect(progressAnimation->currentValue().toRect().marginsRemoved(QMargins(1, 1, 1, 1)));
+                p->setClipping(false);
+
+                if (progressAnimation->state() == QVariantAnimation::Running) {
+                    QRect startRect, endRect;
+                    if (isHorizontal) {
+                        startRect = QRect(rect.x() - spotWidth, rect.y(), spotWidth, rect.height());
+                        endRect = startRect;
+                        endRect.moveRight(rect.width() + spotWidth);
+                    } else {
+                        endRect = QRect(rect.x(), rect.y() - spotWidth, rect.width(), spotWidth);
+                        startRect = endRect;
+                        startRect.moveTop(rect.bottom());
+                    }
+                    progressAnimation->setTargetRect(endRect);
+                    return;
+                }
+
+                // 动画之间需要间隔1s
+                QTimer::singleShot(1000, progressAnimation, [progressAnimation, isHorizontal, rect]() {
+                    QRect startRect, endRect;
+                    if (isHorizontal) {
+                        startRect = QRect(rect.x() - spotWidth, rect.y(), spotWidth, rect.height());
+                        endRect = startRect;
+                        endRect.moveRight(rect.width() + spotWidth);
+                    } else {
+                        endRect = QRect(rect.x(), rect.y() - spotWidth, rect.width(), spotWidth);
+                        startRect = endRect;
+                        startRect.moveTop(rect.bottom());
+                    }
+
+                    progressAnimation->setDuration(2500);
+                    progressAnimation->setEasingCurve(QEasingCurve::InQuad);
+                    progressAnimation->setCurrentRect(startRect);
+                    progressAnimation->setTargetRect(endRect);
+                });
             }
         }
         return;

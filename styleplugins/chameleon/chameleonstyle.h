@@ -40,6 +40,7 @@ public:
 
     QWidget *targetWidget() const;
     void setTargetRect(const QRect &rect);
+    void setCurrentRect(const QRect &rect);
 
 private:
     QRect m_currentRect;
