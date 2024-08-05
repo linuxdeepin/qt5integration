@@ -1,11 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.
+ * SPDX-FileCopyrightText: 2017 - 2024 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #ifndef CHAMELEONSTYLE_H
 #define CHAMELEONSTYLE_H
 
 #include <DStyle>
+#include <DDciIconPlayer>
 #include <QVariantAnimation>
 
 DWIDGET_USE_NAMESPACE
@@ -125,6 +126,9 @@ protected:
 
 private:
     mutable QHash<const QObject*, dstyle::DStyleAnimation*> animations;
+    mutable QHash<const QObject*, DDciIconPlayer* > dciIconPlayers;
+
+    bool eventFilter(QObject *watched, QEvent *event) override;
 };
 } // namespace chameleon
 
