@@ -1402,12 +1402,12 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
             QPen pen;
             pen.setColor(DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
-                         ? QColor(255, 255, 255, 0.15 * 255)
-                         : QColor(0, 0, 0, 0.15 * 255));
+                         ? QColor(255, 255, 255, 0.1 * 255)
+                         : QColor(0, 0, 0, 0.1 * 255));
             pen.setWidth(1);
             p->setPen(pen);
             p->setBrush(Qt::NoBrush);
-            p->drawRoundedRect(opt->rect.marginsRemoved(QMargins(1, 1, 1, 1)), frameRadius, frameRadius);
+            p->drawRoundedRect(opt->rect, frameRadius, frameRadius);
         }
         return;
     }
@@ -1449,6 +1449,9 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             linear.setSpread(QGradient::PadSpread);
             p->setBrush(startColor);
 
+            QColor borderColor = DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
+                                 ? DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Highlight), 0, 0, +10, 0, 0, 0, 0)
+                                 : DGuiApplicationHelper::adjustColor(getColor(opt, QPalette::Highlight), 0, 0, -20, 0, 0, 0, -20);
             if (progBar->textVisible) {
                 QPainterPath pathRect;
                 pathRect.addRect(rect);
@@ -1464,13 +1467,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 p->setClipping(false);
 
                 QPen pen;
-                pen.setColor(DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
-                             ? QColor(255, 255, 255, 0.3 * 255)
-                             : QColor(0, 0, 0, 0.3 * 255));
+                pen.setColor(borderColor);
                 pen.setWidth(1);
                 p->setPen(pen);
                 p->setBrush(Qt::NoBrush);
-                p->drawRoundedRect(rect.marginsRemoved(QMargins(1, 1, 1, 1)), frameRadius, frameRadius);
+                p->setClipping(true);
+                p->drawRoundedRect(rect, frameRadius, frameRadius);
+                p->setClipping(false);
 
             } else {
                 //进度条高度 <= 8px && 进度条宽度 <= 8px && value有效
@@ -1506,12 +1509,12 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     p->setClipping(false);
 
                     QPen pen;
-                    pen.setColor(QColor(0, 0, 0, 0.3 * 255));
+                    pen.setColor(borderColor);
                     pen.setWidth(1);
                     p->setPen(pen);
                     p->setBrush(Qt::NoBrush);
                     p->setClipping(true);
-                    p->drawRoundedRect(rect.marginsRemoved(QMargins(1, 1, 1, 1)), frameRadius, frameRadius);
+                    p->drawRoundedRect(rect, frameRadius, frameRadius);
                     p->setClipping(false);
                 }
             }
@@ -1526,7 +1529,7 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
 
             bool isHorizontal = (progressbar->orientation() == Qt::Horizontal);
 
-            constexpr int spotWidth = 200;
+            constexpr int spotWidth = 100;
             if (isHorizontal ? rect.width() >= spotWidth : rect.height() >= spotWidth) {
                 p->setPen(Qt::NoPen);
 
@@ -1539,9 +1542,8 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     progressAnimation->setObjectName("_d_progress_spot_animation");
                 }
 
-                QColor shadowColor(0, 0, 0, int(0.15 * 255));
-                QColor spotColor(255, 255, 255, int(0.5 * 255));
                 QColor highLightColor(getColor(opt, DPalette::Highlight));
+                QColor spotColor = DGuiApplicationHelper::adjustColor(highLightColor, 0, +30, +30, 0, 0, 0, 0);
 
                 QPointF pointStart, pointEnd;
                 if (isHorizontal) {
@@ -1553,18 +1555,17 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                 }
                 QLinearGradient linear(pointStart, pointEnd);
                 linear.setColorAt(0, highLightColor);
-                linear.setColorAt(0.35, shadowColor);
                 linear.setColorAt(0.5, spotColor);
-                linear.setColorAt(0.65, shadowColor);
                 linear.setColorAt(1, highLightColor);
                 linear.setSpread(QGradient::PadSpread);
                 linear.setInterpolationMode(QLinearGradient::InterpolationMode::ColorInterpolation);
                 p->setBrush(linear);
 
                 QPainterPath clipPath;
-                clipPath.addRoundedRect(rect, frameRadius, frameRadius);
+                clipPath.addRoundedRect(rect.marginsRemoved(QMargins(1, 1, 1, 1)), frameRadius - 1, frameRadius - 1);
+                p->setClipPath(clipPath);
                 p->setClipping(true);
-                p->drawRect(progressAnimation->currentValue().toRect().marginsRemoved(QMargins(1, 1, 1, 1)));
+                p->drawRect(progressAnimation->currentValue().toRect());
                 p->setClipping(false);
 
                 if (progressAnimation->state() == QVariantAnimation::Running) {
