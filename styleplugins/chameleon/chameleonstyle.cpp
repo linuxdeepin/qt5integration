@@ -209,6 +209,11 @@ static DDciIconPalette makeIconPalette(const QPalette &pal)
     return iconPalette;
 }
 
+static void playDci(DDciIconPlayer *player, const DDciIcon &icon, DDciIcon::Mode mode) {
+    player->setIcon(icon);
+    player->play(mode);
+}
+
 void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOption *opt,
                                    QPainter *p, const QWidget *w) const
 {
@@ -446,10 +451,46 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         if (!radioButton)
             return;
 
-        auto dciIconPlayer = dciIconPlayers.value(radioButton);
+        DDciIconPlayer *dciIconPlayer = nullptr;
+
+        dciIconPlayer = radioButton->findChild<DDciIconPlayer *>("_d_radio_dciplayer", Qt::FindDirectChildrenOnly);
+        DDciIcon icon = radioButton->isChecked() ? DDciIcon::fromTheme("radio_checked") : DDciIcon::fromTheme("radio_unchecked");
+
+        if (!dciIconPlayer) {
+            dciIconPlayer = new DDciIconPlayer(radioButton);
+            dciIconPlayer->setObjectName("_d_radio_dciplayer");
+            dciIconPlayer->setDevicePixelRatio(qApp->devicePixelRatio());
+            dciIconPlayer->setIcon(icon);
+            dciIconPlayer->setMode(DDciIcon::Normal);
+            connect(dciIconPlayer, &DDciIconPlayer::updated, radioButton, [radioButton]() {
+                radioButton->update();
+            });
+        }
+
+        auto pa = DDciIconPalette::fromQPalette(radioButton->palette());
+        dciIconPlayer->setPalette(pa);
+        dciIconPlayer->setTheme(DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
+                                ? DDciIcon::Theme::Dark
+                                : DDciIcon::Theme::Light);
 
         p->setRenderHint(QPainter::SmoothPixmapTransform);
         p->drawImage(opt->rect.adjusted(-1, -1, 1, 1), dciIconPlayer->currentImage());
+
+        static bool onceFlag = false; // 保证动画只触发一次
+        if (opt->state & QStyle::StateFlag::State_Sunken) {
+            DDciIcon icon = !radioButton->isChecked() ? DDciIcon::fromTheme("radio_checked") : DDciIcon::fromTheme("radio_unchecked");
+            playDci(dciIconPlayer, icon, DDciIcon::Pressed);
+        } else if (opt->state & QStyle::StateFlag::State_MouseOver) {
+            if (!onceFlag) {
+                playDci(dciIconPlayer, icon, DDciIcon::Hover);
+                onceFlag = true;
+            }
+        } else {
+            if (onceFlag) {
+                playDci(dciIconPlayer, icon, DDciIcon::Normal);
+                onceFlag = false;
+            }
+        }
         return;
     }
     case PE_IndicatorCheckBox: {
@@ -460,10 +501,47 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
         if (!checkBox)
             return;
 
-        auto dciIconPlayer = dciIconPlayers.value(checkBox);
+        DDciIconPlayer *dciIconPlayer = nullptr;
+
+        dciIconPlayer = checkBox->findChild<DDciIconPlayer *>("_d_checkbox_dciplayer", Qt::FindDirectChildrenOnly);
+        DDciIcon icon = checkBox->isChecked() ? DDciIcon::fromTheme("checkbox_checked") : DDciIcon::fromTheme("checkbox_unchecked");
+
+        if (!dciIconPlayer) {
+            dciIconPlayer = new DDciIconPlayer(checkBox);
+            dciIconPlayer->setObjectName("_d_checkbox_dciplayer");
+            dciIconPlayer->setDevicePixelRatio(qApp->devicePixelRatio());
+            dciIconPlayer->setIcon(icon);
+            dciIconPlayer->setMode(DDciIcon::Normal);
+            connect(dciIconPlayer, &DDciIconPlayer::updated, checkBox, [checkBox]() {
+                checkBox->update();
+            });
+        }
+
+        auto pa = DDciIconPalette::fromQPalette(checkBox->palette());
+        dciIconPlayer->setPalette(pa);
+        dciIconPlayer->setTheme(DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
+                                ? DDciIcon::Theme::Dark
+                                : DDciIcon::Theme::Light);
 
         p->setRenderHint(QPainter::SmoothPixmapTransform);
         p->drawImage(opt->rect.adjusted(-1, -1, 1, 1), dciIconPlayer->currentImage());
+
+        static bool onceFlag = false; // 保证动画只触发一次
+        if (opt->state & QStyle::StateFlag::State_Sunken) {
+            DDciIcon icon = !checkBox->isChecked() ? DDciIcon::fromTheme("checkbox_checked") : DDciIcon::fromTheme("checkbox_unchecked");
+            auto pa = DDciIconPalette::fromQPalette(checkBox->palette());
+            playDci(dciIconPlayer, icon, DDciIcon::Pressed);
+        } else if (opt->state & QStyle::StateFlag::State_MouseOver) {
+            if (!onceFlag) {
+                playDci(dciIconPlayer, icon, DDciIcon::Hover);
+                onceFlag = true;
+            }
+        } else {
+            if (onceFlag) {
+                playDci(dciIconPlayer, icon, DDciIcon::Normal);
+                onceFlag = false;
+            }
+        }
         return;
     }
     case PE_IndicatorTabClose: {
@@ -4405,145 +4483,6 @@ void ChameleonStyle::resetAttribute(QWidget *w, bool polish)
         scrollbar->setProperty("_d_dtk_scrollbar_visible", true);
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, !polish);
     }
-
-    if (auto radioButton = qobject_cast<QRadioButton *>(w)) {
-        if (polish) {
-            radioButton->installEventFilter(this);
-        } else {
-            radioButton->removeEventFilter(this);
-        }
-        auto dciIconPlayer = new DDciIconPlayer(radioButton);
-        connect(dciIconPlayer, &DDciIconPlayer::updated, radioButton, [radioButton]() {
-            radioButton->update();
-        });
-        dciIconPlayers.insert(radioButton, dciIconPlayer);
-    }
-
-    if (auto checkBox = qobject_cast<QCheckBox *>(w)) {
-        if (polish) {
-            checkBox->installEventFilter(this);
-        } else {
-            checkBox->removeEventFilter(this);
-        }
-        auto dciIconPlayer = new DDciIconPlayer(checkBox);
-        connect(dciIconPlayer, &DDciIconPlayer::updated, checkBox, [checkBox]() {
-            checkBox->update();
-        });
-        dciIconPlayers.insert(checkBox, dciIconPlayer);
-    }
-}
-
-static void playDci(DDciIconPlayer *player, const DDciIcon &icon, DDciIcon::Mode mode)
-{
-    player->setIcon(icon);
-    player->play(mode);
-}
-
-bool ChameleonStyle::eventFilter(QObject *watched, QEvent *event)
-{
-    if (auto radioButton = qobject_cast<QRadioButton *>(watched)) {
-
-        auto player = dciIconPlayers.value(radioButton);
-        if (!player)
-            return DStyle::eventFilter(watched, event);
-
-        DDciIcon icon = radioButton->isChecked() ? DDciIcon::fromTheme("radio_checked") : DDciIcon::fromTheme("radio_unchecked");
-        auto pa = DDciIconPalette::fromQPalette(radioButton->palette());
-
-        switch (event->type()) {
-        case QEvent::Paint:
-            player->setPalette(pa);
-            player->setDevicePixelRatio(qApp->devicePixelRatio());
-            player->setTheme(DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
-                          ? DDciIcon::Theme::Dark
-                          : DDciIcon::Theme::Light);
-            break;
-        case QEvent::WindowActivate:
-            player->setIcon(icon);
-            player->setMode(DDciIcon::Normal);
-            break;
-        case QEvent::MouseButtonPress:
-            playDci(player, icon, DDciIcon::Pressed);
-            break;
-        case QEvent::HoverEnter:
-            playDci(player, icon, DDciIcon::Hover);
-            break;
-        case QEvent::MouseButtonRelease:
-            icon = !radioButton->isChecked() ? DDciIcon::fromTheme("radio_checked") : DDciIcon::fromTheme("radio_unchecked");
-            playDci(player, icon, DDciIcon::Hover);
-            break;
-        case QEvent::HoverLeave:
-            playDci(player, icon, DDciIcon::Normal);
-            break;
-        case QEvent::KeyPress:
-            if (auto key = dynamic_cast<QKeyEvent *>(event)) {
-                if (key->key() == Qt::Key_Space) {
-                    playDci(player, icon, DDciIcon::Pressed);
-                }
-            }
-            break;
-        case QEvent::KeyRelease:
-            if (auto key = dynamic_cast<QKeyEvent *>(event)) {
-                if (key->key() == Qt::Key_Space) {
-                    icon = !radioButton->isChecked() ? DDciIcon::fromTheme("radio_checked") : DDciIcon::fromTheme("radio_checked");
-                    playDci(player, icon, DDciIcon::Normal);
-                }
-            }
-            break;
-        }
-    }
-    if (auto checkBox = qobject_cast<QCheckBox *>(watched)) {
-
-        auto player = dciIconPlayers.value(checkBox);
-        if (!player)
-            return DStyle::eventFilter(watched, event);
-
-        DDciIcon icon = checkBox->isChecked() ? DDciIcon::fromTheme("checkbox_checked") : DDciIcon::fromTheme("checkbox_unchecked");
-        auto pa = DDciIconPalette::fromQPalette(checkBox->palette());
-
-        switch (event->type()) {
-        case QEvent::Paint:
-            player->setPalette(pa);
-            player->setDevicePixelRatio(qApp->devicePixelRatio());
-            player->setTheme(DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType
-                          ? DDciIcon::Theme::Dark
-                          : DDciIcon::Theme::Light);
-            break;
-        case QEvent::WindowActivate:
-            player->setIcon(icon);
-            player->setMode(DDciIcon::Normal);
-            break;
-        case QEvent::MouseButtonPress:
-            playDci(player, icon, DDciIcon::Pressed);
-            break;
-        case QEvent::HoverEnter:
-            playDci(player, icon, DDciIcon::Hover);
-            break;
-        case QEvent::MouseButtonRelease:
-            icon = !checkBox->isChecked() ? DDciIcon::fromTheme("checkbox_checked") : DDciIcon::fromTheme("checkbox_unchecked");
-            playDci(player, icon, DDciIcon::Hover);
-            break;
-        case QEvent::HoverLeave:
-            playDci(player, icon, DDciIcon::Normal);
-            break;
-        case QEvent::KeyPress:
-            if (auto key = dynamic_cast<QKeyEvent *>(event)) {
-                if (key->key() == Qt::Key_Space) {
-                    playDci(player, icon, DDciIcon::Pressed);
-                }
-            }
-            break;
-        case QEvent::KeyRelease:
-            if (auto key = dynamic_cast<QKeyEvent *>(event)) {
-                if (key->key() == Qt::Key_Space) {
-                    icon = !checkBox->isChecked() ? DDciIcon::fromTheme("checkbox_checked") : DDciIcon::fromTheme("checkbox_checked");
-                    playDci(player, icon, DDciIcon::Normal);
-                }
-            }
-            break;
-        }
-    }
-    return DStyle::eventFilter(watched, event);
 }
 
 static void updateWeekendTextFormat(QCalendarWidget *calendar, QColor)

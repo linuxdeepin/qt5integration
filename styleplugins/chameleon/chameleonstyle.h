@@ -126,9 +126,6 @@ protected:
 
 private:
     mutable QHash<const QObject*, dstyle::DStyleAnimation*> animations;
-    mutable QHash<const QObject*, DDciIconPlayer* > dciIconPlayers;
-
-    bool eventFilter(QObject *watched, QEvent *event) override;
 };
 } // namespace chameleon
 
