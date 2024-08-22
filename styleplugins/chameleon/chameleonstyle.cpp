@@ -128,7 +128,7 @@ inline static bool isTheClassObject(QObject *object)
 ChameleonMovementAnimation::ChameleonMovementAnimation(QWidget *targetWidget)
     : QVariantAnimation(targetWidget)
 {
-    setDuration(150);
+    setDuration(50);
 
     connect(this, &QVariantAnimation::valueChanged, targetWidget, [this] (const QVariant &value) {
         if (!isRuning())
@@ -3064,6 +3064,12 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
             if (selected)
                 animation->setTargetRect(option->rect);
         }
+
+        if (type == QStyleOptionMenuItem::SubMenu) {
+            color = DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::LightType ?
+                    QColor(0, 0, 0, 255 * 0.15): QColor(255, 255, 255, 255 * 0.2);
+        }
+
         const int round = 6;
         if (animation && animation->isRuning()) {
             painter->save();
@@ -3072,15 +3078,19 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
             painter->setOpacity(1.0);
             painter->setBrush(color);
             painter->setPen(Qt::NoPen);
+            painter->setRenderHint(QPainter::Antialiasing);
             painter->drawRoundedRect(animation->currentRect(), round, round);
             painter->setOpacity(opacity);
             painter->restore();
 
             return animation;
         } else if (selected) {
+            const QMargins &margins = frameExtentMargins();
+            drawShadow(painter, option->rect - margins, getColor(option, QPalette::Shadow));
             painter->save();
             painter->setBrush(color);
             painter->setPen(Qt::NoPen);
+            painter->setRenderHint(QPainter::Antialiasing);
             painter->drawRoundedRect(option->rect, round, round);
             painter->restore();
         }
