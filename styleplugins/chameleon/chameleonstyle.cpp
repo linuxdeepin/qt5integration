@@ -3396,7 +3396,7 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 p->setPen(pen);
                 p->setRenderHint(QPainter::Antialiasing);
 
-                QColor color = getColor(opt, DPalette::ObviousBackground, w); //绘画的右侧/上侧的滑槽颜色一定是灰
+                QColor color = adjustColor(getColor(opt, DPalette::ObviousBackground, w), 0, 0, 0, 0, 0, 0, +15); //绘画的右侧/上侧的滑槽颜色一定是灰
 
                 // 属性启用灰色滑槽
                 QVariant prop = dslider ? const_cast<DSlider *>(dslider)->slider()->property("_d_dtk_sldier_across") : QVariant();
