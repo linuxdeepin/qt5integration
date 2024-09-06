@@ -2808,7 +2808,18 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
             }
         }
 
-        painter->fillRect(option->rect, color);
+        painter->setBrush(color);
+        painter->setPen(Qt::NoPen);
+        painter->setRenderHint(QPainter::Antialiasing);
+
+        const int radius = DStyle::pixelMetric(PM_FrameRadius);
+        constexpr int margin = 6;
+
+        if (qobject_cast<QMenu *>(option->styleObject)) 
+            painter->drawRoundedRect(option->rect, radius, radius);
+        else
+            painter->drawRoundedRect(option->rect.marginsRemoved(QMargins(margin, 0, margin, 0)), radius, radius);
+
     } else {
         color = option->palette.window().color();
 
@@ -2832,8 +2843,6 @@ void ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter
 
             color = c;
         }
-
-        painter->fillRect(option->rect, color);
 
         if (type == QStyleOptionMenuItem::Separator) {
             QColor colorSeparator;
@@ -4196,7 +4205,7 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_MenuVMargin:
         return 8;
     case PM_MenuHMargin:
-        return 0;
+        return 8;
     default:
         break;
     }
