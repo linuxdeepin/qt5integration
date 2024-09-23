@@ -1,11 +1,13 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2022 UnionTech Software Technology Co., Ltd.
+ * SPDX-FileCopyrightText: 2017 - 2024 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #ifndef CHAMELEONSTYLE_H
 #define CHAMELEONSTYLE_H
 
 #include <DStyle>
+#include <DDciIconPlayer>
+#include <QVariantAnimation>
 
 DWIDGET_USE_NAMESPACE
 
@@ -18,6 +20,34 @@ class DStyleOptionButtonBoxButton;
 DWIDGET_END_NAMESPACE
 
 namespace chameleon {
+class ChameleonMovementAnimation : public QVariantAnimation
+{
+    Q_OBJECT
+
+public:
+    explicit ChameleonMovementAnimation(QWidget *targetWidget);
+
+    inline QRect currentRect() const {
+        return m_currentRect;
+    }
+
+    inline bool isRuning() const {
+        return state() == QVariantAnimation::Running;
+    }
+
+    inline float progress() const {
+        return float(currentLoopTime()) / duration();
+    }
+
+    QWidget *targetWidget() const;
+    void setTargetRect(const QRect &rect);
+    void setCurrentRect(const QRect &rect);
+
+private:
+    QRect m_currentRect;
+    QRect m_targetRect;
+    QRect m_lastTargetRect;
+};
 
 class ChameleonStyle : public DStyle
 {
@@ -67,7 +97,7 @@ private:
     bool drawSpinBox(const QStyleOptionSpinBox *opt, QPainter *p, const QWidget *w) const;
     void updateSpinBoxButtonState(const QStyleOptionSpinBox *opt, QStyleOptionButton& button, bool isActive, bool isEnabled) const;
     bool drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &rect, QPainter *painter, const QWidget *widget) const;
-    void drawMenuItemBackground(const QStyleOption *option, QPainter *painter, QStyleOptionMenuItem::MenuItemType type) const;
+    ChameleonMovementAnimation *drawMenuItemBackground(const QStyleOption *option, QPainter *painter, QStyleOptionMenuItem::MenuItemType type) const;
     bool drawMenuItem(const QStyleOptionMenuItem *option, QPainter *painter, const QWidget *widget) const;
     bool drawTabBar(QPainter *painter ,const QStyleOptionTab *tab, const QWidget *widget) const;
     bool drawTabBarLabel(QPainter *painter ,const QStyleOptionTab *tab, const QWidget *widget) const;
