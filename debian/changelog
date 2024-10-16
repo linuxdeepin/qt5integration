@@ -1,3 +1,13 @@
+qt5integration (5.7.1) unstable; urgency=medium
+
+  * fix: loongarch64 disable compile unit test binaries
+  * menu item and slider style tweak (#242)
+    Thanks to Whale107(Bug: 254295)(Task: 362001)(Influence: 调整滑动条横条和刻度颜色)
+  * merge dev/animation to master (#243)
+    Thanks to Whale107
+
+ -- Deepin Packages Builder <packages@deepin.org>  Wed, 16 Oct 2024 03:30:44 +0000
+
 qt5integration (5.6.34) unstable; urgency=medium
 
   * fix(build): failed when qt6xdg not found
