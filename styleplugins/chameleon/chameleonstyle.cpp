@@ -3051,7 +3051,7 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
 
         ChameleonMovementAnimation *animation = nullptr;
 
-        if (animationTargetWidget) {
+        if (DGuiApplicationHelper::testAttribute(DGuiApplicationHelper::HasAnimations) && animationTargetWidget) {
             animation = animationTargetWidget->findChild<ChameleonMovementAnimation*>("_d_menu_select_animation",
                                                                               Qt::FindDirectChildrenOnly);
             if (!animation) {
