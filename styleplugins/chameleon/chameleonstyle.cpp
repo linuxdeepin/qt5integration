@@ -3076,12 +3076,14 @@ bool ChameleonStyle::drawMenuBarItem(const QStyleOptionMenuItem *option, QRect &
 ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleOption *option, QPainter *painter, QStyleOptionMenuItem::MenuItemType type) const
 {
     QBrush color;
+    constexpr int margin = 6; // margin of MenuItem's bounding.
+    const auto rect = option->rect.marginsRemoved(QMargins(margin, 0, margin, 0));
     bool selected = (option->state & QStyle::State_Enabled) && option->state & QStyle::State_Selected;
     if (selected && (DGuiApplicationHelper::isTabletEnvironment() ||
                      !DGuiApplicationHelper::isSpecialEffectsEnvironment())) {
         painter->setPen(Qt::NoPen);
         painter->setBrush(getColor(option, QPalette::Highlight));
-        painter->drawRect(option->rect);
+        painter->drawRect(rect);
         return nullptr;
      }
 
@@ -3117,7 +3119,7 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
                 colorSeparator = QColor(255, 255, 255, 255 * 0.05);
             else
                 colorSeparator = QColor(0, 0, 0, 255 * 0.1);
-            painter->fillRect(option->rect, colorSeparator);
+            painter->fillRect(rect, colorSeparator);
         }
 
         if (!option->styleObject)
@@ -3143,7 +3145,7 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
             }
 
             if (selected)
-                animation->setTargetRect(option->rect);
+                animation->setTargetRect(rect);
         }
         const int round = 6;
         if (animation && animation->isRuning()) {
@@ -3153,6 +3155,7 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
             painter->setOpacity(1.0);
             painter->setBrush(color);
             painter->setPen(Qt::NoPen);
+            painter->setRenderHint(QPainter::Antialiasing);
             painter->drawRoundedRect(animation->currentRect(), round, round);
             painter->setOpacity(opacity);
             painter->restore();
@@ -3162,7 +3165,8 @@ ChameleonMovementAnimation *ChameleonStyle::drawMenuItemBackground(const QStyleO
             painter->save();
             painter->setBrush(color);
             painter->setPen(Qt::NoPen);
-            painter->drawRoundedRect(option->rect, round, round);
+            painter->setRenderHint(QPainter::Antialiasing);
+            painter->drawRoundedRect(rect, round, round);
             painter->restore();
         }
     }
@@ -4496,7 +4500,7 @@ int ChameleonStyle::pixelMetric(QStyle::PixelMetric m, const QStyleOption *opt,
     case PM_MenuVMargin:
         return 8;
     case PM_MenuHMargin:
-        return 6;
+        return 0;
     default:
         break;
     }
