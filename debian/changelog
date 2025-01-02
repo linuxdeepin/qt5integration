@@ -1,3 +1,9 @@
+qt5integration (5.7.6) unstable; urgency=medium
+
+  * fix: missing antialiased for menuItem
+
+ -- Deepin Packages Builder <packages@deepin.org>  Thu, 02 Jan 2025 05:43:53 +0000
+
 qt5integration (5.7.5) unstable; urgency=medium
 
   [ root ]
