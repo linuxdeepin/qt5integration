@@ -56,10 +56,14 @@ static QString iconTempPath()
     return QDir::tempPath();
 }
 
-static const QString KDEItemFormat = QStringLiteral("org.kde.StatusNotifierItem-%1-%2")
-                                         .arg(QDBusConnection::sessionBus().baseService().replace(
-                                             QRegularExpression(QStringLiteral("[\\.:]")), QStringLiteral("_")));
-
+// delay to access dbus.
+static QString KDEItemFormat()
+{
+    static const QString KDEItemFormat = QStringLiteral("org.kde.StatusNotifierItem-%1-%2")
+                                             .arg(QDBusConnection::sessionBus().baseService().replace(
+                                                 QRegularExpression(QStringLiteral("[\\.:]")), QStringLiteral("_")));
+    return KDEItemFormat;
+}
 static const QString KDEWatcherService = QStringLiteral("org.kde.StatusNotifierWatcher");
 static const QString XdgNotificationService = QStringLiteral("org.freedesktop.Notifications");
 static const QString XdgNotificationPath = QStringLiteral("/org/freedesktop/Notifications");
@@ -83,7 +87,7 @@ QDBusTrayIcon::QDBusTrayIcon()
     , m_menuAdaptor(nullptr)
     , m_menu(nullptr)
     , m_notifier(nullptr)
-    , m_instanceId(KDEItemFormat.arg(instanceCount))
+    , m_instanceId(KDEItemFormat().arg(instanceCount))
     , m_category(QStringLiteral("ApplicationStatus"))
     , m_defaultStatus(QStringLiteral("Active")) // be visible all the time.  QSystemTrayIcon has no API to control this.
     , m_status(m_defaultStatus)
