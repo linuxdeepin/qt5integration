@@ -17,7 +17,6 @@ project(
   LANGUAGES CXX C
 )
 
-option(BUILD_TESTS "Build tests" ON)
 option(ENABLE_COV "Enable code coverage" OFF)
 
 if(PROJECT_VERSION_MAJOR EQUAL 6)
@@ -49,6 +48,7 @@ string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_LOWER)
 if(CMAKE_BUILD_TYPE_LOWER STREQUAL release)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 elseif(CMAKE_BUILD_TYPE_LOWER STREQUAL debug)
+  set(BUILD_TESTING ON)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
 endif()
 
@@ -131,6 +131,6 @@ add_subdirectory(styleplugins)
 if(CMAKE_BUILD_TYPE_LOWER STREQUAL debug)
   add_subdirectory(styles)
 endif()
-if(BUILD_TESTS AND NOT ${CMAKE_SYSTEM_PROCESSOR} MATCHES "loongarch")
+if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
