@@ -3438,7 +3438,6 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
             }
 
             QFont font = menuItem->font;
-            font.setPointSizeF(QFontInfo(menuItem->font).pointSizeF());
             painter->setFont(font);
             const QString textToDraw = textRef.left(tabIndex).toString();
 
