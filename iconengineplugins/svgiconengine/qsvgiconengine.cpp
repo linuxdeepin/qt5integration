@@ -175,7 +175,9 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
 
     QString cacheFile;
 
-    if (Q_LIKELY(!svgFile.startsWith(":/") && QFile::exists(svgFile))) {
+    const QFileInfo svgFileInfo(svgFile);
+    // ostree管理的源文件 lastModified 被重置为1970-01-01，qt认为是无效时间，无法设置到缓存文件中
+    if (Q_LIKELY(!svgFile.startsWith(":/") && svgFileInfo.exists() && svgFileInfo.lastModified().isValid())) {
         static const QString &cachePath = getIconCachePath();
 
         if (Q_LIKELY(!cachePath.isEmpty())) {
@@ -192,8 +194,6 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
 
     const QFileInfo cacheFileInfo(cacheFile);
     if (Q_LIKELY(cacheFileInfo.exists())) {
-        const QFileInfo svgFileInfo(svgFile);
-
         if (Q_UNLIKELY(svgFileInfo.lastModified() != cacheFileInfo.lastModified())) {
             // clear invalid cache file
             QFile::remove(cacheFile);
