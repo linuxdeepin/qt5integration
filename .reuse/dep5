@@ -9,7 +9,7 @@ Copyright: None
 License: CC0-1.0
 
 # Project file
-Files: *.pro *.prf *.pri
+Files: *.pro *.prf *.pri VERSION
 Copyright: None
 License: CC0-1.0
 
