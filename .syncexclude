@@ -9,3 +9,4 @@
 # are always ignored
 conanfile.py
 VERSION
+CHANGELOG.md
