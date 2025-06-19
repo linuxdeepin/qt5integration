@@ -1,3 +1,26 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [5.7.17] - 2025-06-19
+
+### Changed
+
+- Support VERSION file
+- Add auto release workflow
+- Update .syncexclude
+
+### Fixed
+
+- Improve SVG icon cache validation
+
+### Removed
+
+- Remove unused linglong.yaml
+
 <a name="0.3.11"></a>
 ## 0.3.11 (2019-04-17)
 
