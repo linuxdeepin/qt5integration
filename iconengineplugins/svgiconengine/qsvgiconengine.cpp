@@ -232,7 +232,7 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
         const QImage image = renderer.toImage(actualSize);
 
         if (Q_LIKELY(!image.isNull() && !cacheFile.isEmpty())) {
-            [[ maybe_unused ]] auto result = QtConcurrent::run(QThreadPool::globalInstance(), [image, cacheFile, svgFile] {
+            auto result = QtConcurrent::run(QThreadPool::globalInstance(), [image, cacheFile, svgFile] {
                 QSaveFile file(cacheFile);
                 // 增加cache文件能被成功保存的概率
                 file.setDirectWriteFallback(true);
@@ -254,6 +254,7 @@ QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
                                         << ", cache file:" << cacheFile << ", svg file:" << svgFile;
                 }
             });
+            Q_UNUSED(result)
         }
 
         // 缩放图标到目标大小
