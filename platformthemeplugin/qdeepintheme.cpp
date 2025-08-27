@@ -23,6 +23,7 @@
 #undef private
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
+#include <private/qfactoryloader_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformcursor.h>
