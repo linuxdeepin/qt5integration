@@ -26,6 +26,7 @@
 #include <private/qguiapplication_p.h>
 
 #include <X11/Xlib.h>
+#include <unistd.h>
 
 #include <DPlatformHandle>
 DGUI_USE_NAMESPACE
