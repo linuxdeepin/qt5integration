@@ -887,7 +887,7 @@ bool ChameleonStyle::hideScrollBarByAnimation(const QStyleOptionSlider *scrollBa
     // underMouse ==> State_MouseOver sometimes not work well ?
     // underMouse true but State_MouseOver false...
     bool isHoveredOrPressed = hoveredOrPressed(scrollBar) || sbar->underMouse();
-    if (isHoveredOrPressed) {
+    if (isHoveredOrPressed && st == QAbstractAnimation::Running) {
         // 标记一下，鼠标移开时需要重新开启隐藏动画
         sbar->setProperty("_d_dtk_scrollbar_visible", true);
         return false;
