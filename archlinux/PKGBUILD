@@ -1,6 +1,6 @@
 # Maintainer: justforlxz <justforlxz@gmail.com>
 pkgname=deepin-qt5integration-git
-pkgver=5.7.24
+pkgver=5.7.25
 pkgrel=1
 sourcename=qt5integration
 sourcetars=("$sourcename"_"$pkgver".tar.xz)
