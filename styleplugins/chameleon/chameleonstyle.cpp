@@ -18,6 +18,7 @@
 #include <DDciIcon>
 #include <DDciIconPalette>
 #include <DSizeMode>
+#include <dtkgui_config.h>
 
 #include <QLabel>
 #include <QCalendarWidget>
@@ -238,14 +239,25 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
 
         p->setPen(Qt::NoPen);
         p->setRenderHint(QPainter::Antialiasing);
+
         int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
-        p->drawRoundedRect(opt->rect - margins, frame_radius, frame_radius);
+
+        bool hasPopDateTimeEdit = false;
+        if (auto dateTimeEdit = qobject_cast<const QDateTimeEdit *>(w))
+            hasPopDateTimeEdit = dateTimeEdit->calendarPopup();
+
+        bool isBoxButton = qobject_cast<const QComboBox *>(w) || hasPopDateTimeEdit;
+        if (isBoxButton)
+            frame_radius -= 1; // combobox内按钮圆角应比外圈编辑框少一个像素，保证贴合
+
+        p->drawRoundedRect(opt->rect, frame_radius, frame_radius);
 
         // draw border，border应该是完全叠加到按钮的背景上
         p->setPen(QPen(getColor(opt, DPalette::FrameBorder, w), Metrics::Painter_PenWidth));
         p->setBrush(Qt::NoBrush);
         const QMarginsF border_margins(Metrics::Painter_PenWidth, Metrics::Painter_PenWidth, Metrics::Painter_PenWidth, Metrics::Painter_PenWidth);
-        p->drawRoundedRect(QRectF(opt->rect) - margins - border_margins / 2.0, frame_radius, frame_radius);
+
+        p->drawRoundedRect(QRectF(opt->rect) - border_margins / 2.0, frame_radius, frame_radius);
 
         return;
     }
@@ -996,13 +1008,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int spacUp = 0;
             int spacDown = 0;
 
-            if (opt->styleObject->property("_d_slider_spaceLeft").isValid())
+            if (opt->styleObject && opt->styleObject->property("_d_slider_spaceLeft").isValid())
                 spacLeft = opt->styleObject->property("_d_slider_spaceLeft").toInt(&okLeft);
-            if (opt->styleObject->property("_d_slider_spaceRight").isValid())
+            if (opt->styleObject && opt->styleObject->property("_d_slider_spaceRight").isValid())
                 spacRight = opt->styleObject->property("_d_slider_spaceRight").toInt(&okRight);
-            if (opt->styleObject->property("_d_slider_spaceUp").isValid())
+            if (opt->styleObject && opt->styleObject->property("_d_slider_spaceUp").isValid())
                 spacUp = opt->styleObject->property("_d_slider_spaceUp").toInt(&okUp);
-            if (opt->styleObject->property("_d_slider_spaceDown").isValid())
+            if (opt->styleObject && opt->styleObject->property("_d_slider_spaceDown").isValid())
                 spacDown = opt->styleObject->property("_d_slider_spaceDown").toInt(&okDown);
 
             if (opt->state & QStyle::State_Horizontal) {
@@ -1270,7 +1282,33 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                     }
                 }
             } else {
-                DStyle::drawControl(CE_PushButtonBevel, &btn, p, w);
+                const QMargins &margins = frameExtentMargins();
+                QColor brushColor;
+                const auto themeType = DGuiApplicationHelper::instance()->themeType();
+                if (themeType == DGuiApplicationHelper::DarkType) {
+                    brushColor = Qt::white;
+                } else {
+                    brushColor = Qt::black;
+                }
+
+                if (btn.state & State_On) {
+                    p->setBrush(getColor(&btn, QPalette::Highlight));
+                } else if (btn.state & State_MouseOver) {
+                    brushColor.setAlphaF(0.1);
+                    p->setBrush(brushColor);
+                } else {
+                    if (themeType == DGuiApplicationHelper::DarkType) {
+                        brushColor.setAlphaF(0.05);
+                    } else {
+                        brushColor.setAlphaF(0.03);
+                    }
+                    p->setBrush(brushColor);
+                }
+
+                p->setPen(Qt::NoPen);
+                p->setRenderHint(QPainter::Antialiasing);
+                const int frame_radius = DStyle::pixelMetric(PM_FrameRadius, &btn, w);
+                p->drawRoundedRect(btn.rect - margins, frame_radius, frame_radius);
             }
 
             QStyleOptionTab* newTab = const_cast<QStyleOptionTab *>(tab);
@@ -1527,15 +1565,13 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
     }
     case CE_ProgressBarGroove: {  //滑槽显示
         if (const QStyleOptionProgressBar *progBar = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
-            int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
             bool horizontal = progBar->state & State_Horizontal;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             horizontal |= progBar->orientation == Qt::Horizontal;
 #endif
             int height = horizontal ? opt->rect.height() : opt->rect.width();
-            if (frameRadius * 2 >= height) {
-                frameRadius = qMin(height / 2, 4);
-            }
+            int frameRadius = height / 2;
+
             p->setBrush(getColor(opt, DPalette::ObviousBackground, w));
 
             if (ENABLE_ANIMATIONS && ENABLE_ANIMATION_PROGRESSBAR) {
@@ -1564,15 +1600,12 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
             int max = progBar->maximum;
             int val = progBar->progress;
             int drawWidth = 0;
-            int frameRadius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
             bool horizontal = progBar->state & State_Horizontal;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             horizontal |= progBar->orientation == Qt::Horizontal;
 #endif
             int height = horizontal ? rect.height() : rect.width();
-            if (frameRadius * 2 >= height) {
-                frameRadius = qMin(height / 2, 4);
-            }
+            int frameRadius = height / 2;
 
             if (horizontal) {
                 drawWidth = (val * 1.0 / (max - min)) * rect.width();
@@ -1652,11 +1685,11 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                         p->drawPath(path2);
                     }
                 } else {
+                    QPainterPath clipPath;
+                    clipPath.addRoundedRect(opt->rect, frameRadius, frameRadius);
+                    p->setClipPath(clipPath);
+                    p->setClipping(true);
                     if (ENABLE_ANIMATIONS && ENABLE_ANIMATION_PROGRESSBAR) {
-                        QPainterPath clipPath;
-                        clipPath.addRoundedRect(opt->rect, frameRadius, frameRadius);
-                        p->setClipPath(clipPath);
-                        p->setClipping(true);
                         p->drawRoundedRect(rect, frameRadius, frameRadius);
                         p->setClipping(false);
 
@@ -1670,10 +1703,10 @@ void ChameleonStyle::drawControl(QStyle::ControlElement element, const QStyleOpt
                         p->setBrush(Qt::NoBrush);
                         p->setClipping(true);
                         p->drawRoundedRect(rect, frameRadius, frameRadius);
-                        p->setClipping(false);
                     } else {
                         p->drawRoundedRect(rect, frameRadius, frameRadius);
                     }
+                    p->setClipping(false);
                 }
             }
 
@@ -2912,71 +2945,94 @@ void ChameleonStyle::drawSliderHandleFocus(const QStyleOptionComplex *opt, QRect
         const DSlider *dslider = qobject_cast<const DSlider *>(w);
         QSlider::TickPosition tickPosition = slider->tickPosition;
 
-        int lineOffset = DStyle::pixelMetric(PM_FocusBorderWidth) / 2;
-        int margin = DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing);
-        int marginRect = DStyle::pixelMetric(PM_FocusBorderSpacing) + lineOffset;
+        int innerHighLightWith = DStyle::pixelMetric(PM_FocusBorderWidth);
+        int innerHighLightOffect = DStyle::pixelMetric(PM_FocusBorderSpacing);
+        int outerRectOffect = DStyle::pixelMetric(PM_FocusBorderSpacing) - 1; // focus外圈在内高亮圈外一个像素
 
         if (dslider)
             tickPosition = dslider->tickPosition();
 
         if (tickPosition == QSlider::NoTicks) {
-            p->drawRoundedRect(rectHandle.adjusted(-marginRect, -marginRect, marginRect, marginRect),
-                               DStyle::pixelMetric(DStyle::PM_FrameRadius) + marginRect,
-                               DStyle::pixelMetric(DStyle::PM_FrameRadius) + marginRect);
-        } else {
-            qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
-            QPainterPath focusPath;
+            // 绘制focus的外圈
+            p->drawRoundedRect(rectHandle.adjusted(outerRectOffect, outerRectOffect, -outerRectOffect, -outerRectOffect),
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) - outerRectOffect,
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) - outerRectOffect);
 
-            if (slider->orientation == Qt::Horizontal) {
-                if (tickPosition == QSlider::TicksAbove) {  //尖角朝上
-                    focusPath.moveTo(QPointF(rectHandle.left() - marginRect, rectHandle.bottom() - radius));
-                    focusPath.lineTo(QPointF(rectHandle.left() - marginRect, rectHandle.top() + radius - lineOffset));
-                    focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.top() - margin));
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.top() + radius - lineOffset));
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.bottom() - radius));
-                    focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - marginRect, rectHandle.bottom() - radius - radius -marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
-                                    -0, -90);
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + marginRect));
-                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.bottom() - radius -radius -marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
-                                    -90, -90);
-                } else { //尖角朝下
-                    focusPath.moveTo(QPointF(rectHandle.left() - marginRect, rectHandle.top() + radius));
-                    focusPath.lineTo(QPointF(rectHandle.left() - marginRect, rectHandle.bottom() - radius + lineOffset));
-                    focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.bottom() + margin));
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.bottom() - radius + lineOffset));
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.top() + radius));
-                    focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - marginRect, rectHandle.top() - marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
-                                    0, 90);
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.top() - marginRect));
-                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.top() - marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
-                                    90, 90);
+            // 绘制focus的内高亮圈
+            auto pen = p->pen();
+            pen.setColor(getThemTypeColor(QColor("#F7F7F7"), QColor("#323232")));
+            pen.setWidth(innerHighLightWith);
+            p->setPen(pen);
+            p->drawRoundedRect(rectHandle.adjusted(innerHighLightOffect, innerHighLightOffect, -innerHighLightOffect, -innerHighLightOffect),
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) - innerHighLightOffect,
+                               DStyle::pixelMetric(DStyle::PM_FrameRadius) - innerHighLightOffect);
+        } else {
+            // 创建绘制路径的匿名函数
+            auto createPath = [=](int offset) {
+                qreal radius = DStyle::pixelMetric(DStyle::PM_FrameRadius);
+                QPainterPath focusPath;
+                if (slider->orientation == Qt::Horizontal) {
+                    if (tickPosition == QSlider::TicksAbove) {  //尖角朝上
+                        focusPath.moveTo(QPointF(rectHandle.left() - offset, rectHandle.bottom() - radius));
+                        focusPath.lineTo(QPointF(rectHandle.left() - offset, rectHandle.top() + radius - offset));
+                        focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.top() + radius - offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.bottom() - radius));
+                        focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - offset, rectHandle.bottom() - radius - radius -offset, 2 *(radius + offset), 2 * (radius + offset)),
+                                        -0, -90);
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + offset));
+                        focusPath.arcTo(QRectF(rectHandle.left() - offset, rectHandle.bottom() - radius -radius -offset, 2 * (radius + offset), 2 * (radius + offset)),
+                                        -90, -90);
+                    } else { //尖角朝下
+                        focusPath.moveTo(QPointF(rectHandle.left() - offset, rectHandle.top() + radius));
+                        focusPath.lineTo(QPointF(rectHandle.left() - offset, rectHandle.bottom() - radius + offset));
+                        focusPath.lineTo(QPointF(rectHandle.center().x(), rectHandle.bottom() + offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.bottom() - radius + offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.top() + radius));
+                        focusPath.arcTo(QRectF(rectHandle.right() - radius -radius - offset, rectHandle.top() - offset, 2 *(radius + offset), 2 * (radius + offset)),
+                                        0, 90);
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.top() - offset));
+                        focusPath.arcTo(QRectF(rectHandle.left() - offset, rectHandle.top() - offset, 2 * (radius + offset), 2 * (radius + offset)),
+                                        90, 90);
+                    }
+                } else {
+                    if (tickPosition == QSlider::TicksLeft) {  //尖角朝左
+                        focusPath.moveTo(QPointF(rectHandle.right() - radius, rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius - offset, rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.left() - offset, rectHandle.center().y()));
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius - offset, rectHandle.bottom() + offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() - radius, rectHandle.bottom() + offset));
+                        focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - offset, rectHandle.bottom() - radius - radius - offset, 2 *(radius + offset), 2 * (radius + offset)),
+                                        -90, 90);
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.top() + radius));
+                        focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - offset, rectHandle.top() - offset, 2 * (radius + offset), 2 * (radius + offset)),
+                                        0, 90);
+                    } else { //尖角朝右
+                        focusPath.moveTo(QPointF(rectHandle.left() + radius, rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() - radius + offset, rectHandle.top() - offset));
+                        focusPath.lineTo(QPointF(rectHandle.right() + offset, rectHandle.center().y()));
+                        focusPath.lineTo(QPointF(rectHandle.right() - radius + offset, rectHandle.bottom() + offset));
+                        focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + offset));
+                        focusPath.arcTo(QRectF(rectHandle.left() - offset, rectHandle.bottom() - radius - radius - offset, 2 *(radius + offset), 2 * (radius + offset)),
+                                        -90, -90);
+                        focusPath.lineTo(QPointF(rectHandle.left() - offset, rectHandle.top() + radius));
+                        focusPath.arcTo(QRectF(rectHandle.left() - offset, rectHandle.top() - offset, 2 * (radius + offset), 2 * (radius + offset)),
+                                        180, -90);
+                    }
                 }
-            } else {
-                if (tickPosition == QSlider::TicksLeft) {  //尖角朝左
-                    focusPath.moveTo(QPointF(rectHandle.right() - radius, rectHandle.top() - marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius - lineOffset, rectHandle.top() - marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.left() - margin, rectHandle.center().y()));
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius - lineOffset, rectHandle.bottom() + marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.right() - radius, rectHandle.bottom() + marginRect));
-                    focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - marginRect, rectHandle.bottom() - radius - radius - marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
-                                    -90, 90);
-                    focusPath.lineTo(QPointF(rectHandle.right() + marginRect, rectHandle.top() + radius));
-                    focusPath.arcTo(QRectF(rectHandle.right() - radius - radius - marginRect, rectHandle.top() - marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
-                                    0, 90);
-                } else { //尖角朝右
-                    focusPath.moveTo(QPointF(rectHandle.left() + radius, rectHandle.top() - marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.right() - radius + lineOffset, rectHandle.top() - marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.right() + margin, rectHandle.center().y()));
-                    focusPath.lineTo(QPointF(rectHandle.right() - radius + lineOffset, rectHandle.bottom() + marginRect));
-                    focusPath.lineTo(QPointF(rectHandle.left() + radius, rectHandle.bottom() + marginRect));
-                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.bottom() - radius - radius - marginRect, 2 *(radius + marginRect), 2 * (radius + marginRect)),
-                                    -90, -90);
-                    focusPath.lineTo(QPointF(rectHandle.left() - marginRect, rectHandle.top() + radius));
-                    focusPath.arcTo(QRectF(rectHandle.left() - marginRect, rectHandle.top() - marginRect, 2 * (radius + marginRect), 2 * (radius + marginRect)),
-                                    180, -90);
-                }
-            }
-            p->drawPath(focusPath);
+                return focusPath;
+            };
+            // 绘制focus的外圈
+            QPen pen = p->pen();
+            pen.setJoinStyle(Qt::PenJoinStyle::MiterJoin);
+            p->setPen(pen);
+            p->drawPath(createPath(-outerRectOffect));
+
+            // 绘制focus的内高亮圈
+            pen.setColor(getThemTypeColor(QColor("#F7F7F7"), QColor("#323232")));
+            pen.setWidth(innerHighLightWith);
+            p->setPen(pen);
+            p->drawPath(createPath(-innerHighLightOffect));
         }
     }
 }
@@ -3382,7 +3438,6 @@ bool ChameleonStyle::drawMenuItem(const QStyleOptionMenuItem *option, QPainter *
             }
 
             QFont font = menuItem->font;
-            font.setPointSizeF(QFontInfo(menuItem->font).pointSizeF());
             painter->setFont(font);
             const QString textToDraw = textRef.left(tabIndex).toString();
 
@@ -3744,7 +3799,8 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 // 绘画 滑块焦点
                 if (slider->state & State_HasFocus) {
                     pen.setColor(getColor(opt, DPalette::Highlight));
-                    pen.setWidth(DStyle::pixelMetric(PM_FocusBorderWidth));
+                    // focus要盖住slider的handle并且往外延展一个像素
+                    pen.setWidth(DStyle::pixelMetric(PM_FocusBorderWidth) + DStyle::pixelMetric(PM_FocusBorderSpacing));
                     p->setPen(pen);
                     p->setBrush(Qt::NoBrush);
                     drawSliderHandleFocus(opt, rectHandle, p, w);
@@ -4149,13 +4205,14 @@ QRect ChameleonStyle::subControlRect(QStyle::ComplexControl cc, const QStyleOpti
 
                 if (w && qobject_cast<const QComboBox *>(w) && !qobject_cast<const QComboBox *>(w)->isEditable())
                     break;
+
+                int buttonRectSize = boxHeight;
+                rect.setSize(QSize(buttonRectSize, buttonRectSize));
+
                 if (opt->direction == Qt::LeftToRight)
                     rect.moveRight(opt->rect.right());
                 else
                     rect.moveLeft(opt->rect.left());
-
-                int buttonRectSize = boxHeight;
-                rect.setSize(QSize(buttonRectSize, buttonRectSize));
 
                 return rect;
             }
@@ -4590,6 +4647,22 @@ static inline void setWindowRadius(QWidget *w, int radius)
     handle.setWindowRadius(radius);
 }
 
+static inline void setBorderColor(QWidget *w, QColor color)
+{
+    DPlatformWindowHandle handle(w);
+    handle.setBorderColor(color);
+}
+
+static inline void setWindowNoEffect(QWidget *w)
+{
+    DPlatformWindowHandle handle(w);
+#ifdef DTKGUI_VERSION_STR
+    #if (DTK_VERSION_CHECK(DTKGUI_VERSION_MAJOR, DTKGUI_VERSION_MINOR, DTKGUI_VERSION_PATCH, DTKGUI_VERSION_BUILD) > DTK_VERSION_CHECK(5, 6, 9, 4))
+        handle.setWindowEffect(DPlatformWindowHandle::EffectNoStart);
+    #endif
+#endif
+}
+
 void ChameleonStyle::polish(QWidget *w)
 {
     DStyle::polish(w);
@@ -4611,16 +4684,20 @@ void ChameleonStyle::polish(QWidget *w)
     }
 
     if (auto listview = qobject_cast<QListView *>(w)) {
-        if (listview->parentWidget() == nullptr)
+        if (listview->parentWidget() == nullptr) {
             setWindowRadius(listview, DStyle::pixelMetric(PM_FrameRadius));
+
+            setWindowNoEffect(w);
+         }
     }
 
     if (auto container = qobject_cast<QComboBoxPrivateContainer *>(w)) {
         if (DWindowManagerHelper::instance()->hasComposite())
             setWindowRadius(container, DStyle::pixelMetric(PM_FrameRadius));
-
         if (!DGuiApplicationHelper::isTabletEnvironment())
             container->setFrameStyle(QFrame::NoFrame);
+
+        setWindowNoEffect(w);
     }
 
     if (auto calendar = qobject_cast<QCalendarWidget* >(w)) {
@@ -4698,6 +4775,16 @@ void ChameleonStyle::polish(QWidget *w)
                 if (theme->isValid())
                     setWindowRadius(w, qMax(0, qMin(theme->windowRadius(), 18)));
 
+                QColor color = (DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType) ? Qt::white : Qt::black;
+                DGuiApplicationHelper::instance()->themeType() == DGuiApplicationHelper::DarkType ? color.setAlphaF(0.07) : color.setAlphaF(0.05);
+                setBorderColor(w, color);
+
+                connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, w, [w](DGuiApplicationHelper::ColorType themeType) {
+                    QColor color = (themeType == DGuiApplicationHelper::DarkType) ? Qt::white : Qt::black;
+                    themeType == DGuiApplicationHelper::DarkType ? color.setAlphaF(0.07) : color.setAlphaF(0.05);
+                    setBorderColor(w, color);
+                });
+
                 connect(theme, &DPlatformTheme::windowRadiusChanged, w, [w](int r){
                    setWindowRadius(w, qMax(0, qMin(r, 18)));
                 });
@@ -4720,11 +4807,6 @@ void ChameleonStyle::unpolish(QWidget *w)
     DStyle::unpolish(w);
 
     resetAttribute(w, false);
-
-    if (w && qobject_cast<QLineEdit *>(w)) {
-        w->setProperty("_d_dtk_lineeditActionWidth", QVariant());
-        w->setProperty("_d_dtk_lineeditActionMargin", QVariant());
-    }
 }
 
 void ChameleonStyle::unpolish(QApplication *application)
