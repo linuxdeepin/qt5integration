@@ -1,7 +1,7 @@
 # qt5integration
 
 qt5integration is the Qt platform theme integration plugins for Deepin Desktop Environment. It includes multiple Qt5 plugins
-to make make DDE more Qt5 Apps friendly.
+to make DDE more Qt5 Apps friendly.
 
 ## Dependencies
 
