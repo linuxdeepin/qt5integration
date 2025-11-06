@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.7.26] - 2025-11-06
+
+### Changed
+
+- Chore: New release 5.7.25
+- 重绘滑动条滑块的焦点效果
+
+### Fixed
+
+- (cmake) Fix Qt version check variable name
+- 配合Qt删除_d_dtk_lineedit**属性
+- 修复combobox下拉按钮宽高不等, 还有按钮与编辑框不贴合的问题
+- 进度条圆角问题以及当进度为1时进度滑块未在进度槽中的问题
+- 修复搜索和combobox下拉框动效问题
+- 修复DTabBar边界和悬浮样式
+- 修复窗口菜单和窗口内容混为一体
+- 修复主窗口多次切换主题时偶发性崩溃
+- 调整按钮圆角,区分普通状态和在编辑框中的状态
+- 优化判断是否为combobox内按钮的方式
+- 修复live系统恢复页面文管对话框盘符显示不完整
+- 修复【notepadqq】顶部工具栏点击设置-首选项应用崩溃
+- 密码框与显示密码按钮高度不一致
+- 重启任务栏右键菜单概率不显示文字内容
+
 ## [5.7.25] - 2025-10-30
 
 ### Fixed
