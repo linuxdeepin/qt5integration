@@ -10,5 +10,5 @@ add_executable(gallery
     styles.qrc
 )
 
-target_link_libraries(gallery PRIVATE Dtk${VERSION_SUFFIX}::Widget)
+target_link_libraries(gallery PRIVATE Dtk${DTK_NAME_SUFFIX}::Widget)
 set_target_properties(gallery PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
