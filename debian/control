@@ -1,27 +1,32 @@
 Source: qt5integration
 Section: devel
 Priority: optional
-Maintainer: Deepin Packages Builder <packages@deepin.com>
+Maintainer: Shanshan Ye <yeshanshan@uniontech.com>
 Build-Depends:
- debhelper (>=9),
+ debhelper-compat (= 12),
  cmake,
- qtbase5-dev,
- qtbase5-private-dev,
- libqt5xdg-dev,
- libdtkgui-dev (>=5.6.13),
- libdtkwidget-dev,
  pkg-config,
- libqt5x11extras5-dev,
  libfontconfig1-dev,
  libfreetype-dev,
  libglib2.0-dev,
- libqt5svg5-dev,
- libqt5xdgiconloader-dev,
  libmtdev-dev,
  libegl1-mesa-dev,
  libxrender-dev,
  libgtest-dev,
- libgmock-dev
+ libgmock-dev,
+ qtbase5-dev <!nodtk5>,
+ qtbase5-private-dev <!nodtk5>,
+ libqt5xdg-dev <!nodtk5>,
+ libdtkgui-dev (>=5.6.13) <!nodtk5>,
+ libdtkwidget-dev <!nodtk5>,
+ libqt5x11extras5-dev <!nodtk5>,
+ libqt5svg5-dev <!nodtk5>,
+ libqt5xdgiconloader-dev <!nodtk5>,
+ qt6-base-dev <!nodtk6>,
+ qt6-base-private-dev <!nodtk6>,
+ libdtk6gui-dev <!nodtk6>,
+ libdtk6widget-dev <!nodtk6>,
+ qt6-svg-dev <!nodtk6>
 Standards-Version: 3.9.8
 
 Package: dde-qt5integration
@@ -29,5 +34,13 @@ Architecture: any
 Provides: libqt5deepintheme-plugin
 Conflicts: libqt5deepintheme-plugin
 Depends: ${shlibs:Depends}, ${misc:Depends}, dde-qt5xcb-plugin
-Description: Qt platform theme integration plugins for DDE
+Build-Profiles: <!nodtk5>
+Description: Qt platform theme integration plugins for DDE (DTK5 with Qt5)
  Multiple Qt plugins to provide better Qt5 integration for DDE is included.
+
+Package: dde-qt6integration
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Build-Profiles: <!nodtk6>
+Description: Qt platform theme integration plugins for DDE (DTK6 with Qt6)
+ Multiple Qt plugins to provide better Qt6 integration for DDE is included.

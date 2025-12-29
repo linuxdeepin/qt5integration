@@ -63,7 +63,7 @@ dtk_add_plugin(
         icons/deepin-theme-plugin-icons.qrc
         deepin-theme-plugin.qrc
     DEPENDENCIES
-        Dtk${VERSION_SUFFIX}::Gui
+        Dtk${DTK_NAME_SUFFIX}::Gui
         ${QT_LIBS}
         PkgConfig::Deps
     DEFINITIONS

@@ -14,5 +14,5 @@ dtk_add_plugin(
     HEADERS
     DEPENDENCIES
       Qt${QT_VERSION_MAJOR}::GuiPrivate
-      Dtk${VERSION_SUFFIX}::Gui
+      Dtk${DTK_NAME_SUFFIX}::Gui
 )

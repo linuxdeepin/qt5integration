@@ -27,15 +27,18 @@ target_compile_options(unit-tests PRIVATE
     -g
     -fno-access-control
     -Wall
-    -fsanitize=address
     -fsanitize-recover=address
     -O0
 )
 
 target_link_options(unit-tests PRIVATE
-    -fsanitize=address
     -fsanitize-recover=address
 )
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(unit-tests PRIVATE -fsanitize=address)
+    target_link_options(unit-tests PRIVATE -fsanitize=address)
+endif()
 
  target_link_libraries(unit-tests PRIVATE
     GTest::GTest
@@ -46,7 +49,6 @@ target_link_options(unit-tests PRIVATE
     dsvg
     qdeepin
     chameleon
-    asan
 )
 
 target_compile_definitions(unit-tests PRIVATE
@@ -64,3 +66,5 @@ target_include_directories(unit-tests PRIVATE
     ${CMAKE_SOURCE_DIR}/styleplugins/chameleon
     ${CMAKE_SOURCE_DIR}/platformthemeplugin
 )
+
+add_test(NAME unit-tests COMMAND unit-tests)
