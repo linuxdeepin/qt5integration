@@ -15,5 +15,5 @@ dtk_add_plugin(
     HEADERS
         qdciiohandler.h
     DEPENDENCIES
-        Dtk${VERSION_SUFFIX}::Gui
+        Dtk${DTK_NAME_SUFFIX}::Gui
 )
