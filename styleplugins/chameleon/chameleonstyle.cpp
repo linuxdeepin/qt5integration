@@ -901,12 +901,12 @@ bool ChameleonStyle::hideScrollBarByAnimation(const QStyleOptionSlider *scrollBa
     bool isHoveredOrPressed = hoveredOrPressed(scrollBar) || sbar->underMouse();
     if (isHoveredOrPressed && st == QAbstractAnimation::Running) {
         // 标记一下，鼠标移开时需要重新开启隐藏动画
-        sbar->setProperty("_d_dtk_scrollbar_visible", true);
+        sbar->setProperty("_d_dtk_scrollbar_hide_ani", true);
         return false;
     }
 
-    if (sbar->property("_d_dtk_scrollbar_visible").toBool()) {
-        sbar->setProperty("_d_dtk_scrollbar_visible", false);
+    if (sbar->property("_d_dtk_scrollbar_hide_ani").toBool()) {
+        sbar->setProperty("_d_dtk_scrollbar_hide_ani", false);
         styleAnimation->restart(true);
         return false;
     }
@@ -4623,8 +4623,8 @@ void ChameleonStyle::resetAttribute(QWidget *w, bool polish)
     w->setAttribute(Qt::WA_Hover, enableHover);
 
     if (auto scrollbar = qobject_cast<QScrollBar *>(w)) {
-        // 默认初始显示滚动条，然后启动隐藏动画
-        scrollbar->setProperty("_d_dtk_scrollbar_visible", true);
+        // 默认情况下不执行隐藏动画
+        scrollbar->setProperty("_d_dtk_scrollbar_hide_ani", false);
         scrollbar->setAttribute(Qt::WA_OpaquePaintEvent, !polish);
     }
 }
