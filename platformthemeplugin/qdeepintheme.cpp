@@ -93,6 +93,14 @@ static void onIconThemeSetCallback()
 
         qApp->sendEvent(window, &update);
     }
+
+    // 刷新窗口图标
+    const QWindowList list = QGuiApplication::topLevelWindows();
+    for (int i = 0; i < list.size(); ++i) {
+        if (QWindow *window = list.at(i)) {
+           window->setIcon(window->icon());
+        }
+    }
 }
 
 static inline uint resolveMask(const QFont &f)
