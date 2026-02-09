@@ -3772,20 +3772,24 @@ void ChameleonStyle::drawComplexControl(QStyle::ComplexControl cc, const QStyleO
                 if (slider->orientation == Qt::Horizontal) {
                     // 绘制最左边到滑块的位置的滑槽
                     qreal rectWidth = rectHandle.width() / 2.0;
-                    p->drawLine(QPointF(rectGroove.left() + rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
+                    // 只有当不绘制刻度线的时候，就不要给滑槽两边弄缩进
+                    qreal offset = (slider->tickPosition == QSlider::NoTicks) ? 0 : rectWidth;
+                    p->drawLine(QPointF(rectGroove.left() + offset, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
                     // 绘制滑块到最右的位置的滑槽
                     pen.setColor(color);
                     p->setPen(pen);
-                    p->drawLine(QPointF(rectGroove.right() - rectWidth, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
+                    p->drawLine(QPointF(rectGroove.right() - offset, rectHandle.center().y()), QPointF(rectHandle.center().x(), rectHandle.center().y()));
 
                 } else {
                     // 绘制最上边到滑块的位置的滑槽
                     qreal rectWidth = rectHandle.height() / 2.0;
-                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - rectWidth), QPointF(rectGroove.center().x(), rectHandle.center().y()));
+                    // 只有当不绘制刻度线的时候，就不要给滑槽两边弄缩进
+                    qreal offset = (slider->tickPosition == QSlider::NoTicks) ? 0 : rectWidth;
+                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.bottom() - offset), QPointF(rectGroove.center().x(), rectHandle.center().y()));
                     // 绘制滑块到最下的位置的滑槽
                     pen.setColor(color);
                     p->setPen(pen);
-                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.top() + rectWidth), QPointF(rectGroove.center().x(), rectHandle.center().y()));
+                    p->drawLine(QPointF(rectGroove.center().x(), rectGroove.top() + offset), QPointF(rectGroove.center().x(), rectHandle.center().y()));
                 }
             }
 
