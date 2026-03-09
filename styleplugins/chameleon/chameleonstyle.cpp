@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2024 UnionTech Software Technology Co., Ltd.
+ * SPDX-FileCopyrightText: 2017 - 2026 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include "chameleonstyle.h"
@@ -352,17 +352,20 @@ void ChameleonStyle::drawPrimitive(QStyle::PrimitiveElement pe, const QStyleOpti
             int frame_radius = DStyle::pixelMetric(PM_FrameRadius, opt, w);
 
             if (vopt->state & QStyle::State_Selected) {
-               QRect select_rect = opt->rect;
+                QRect select_rect = opt->rect;
 
-               if (!vopt->showDecorationSelected) {
-                   select_rect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
-               }
+                if (!vopt->showDecorationSelected) {
+                    select_rect = proxy()->subElementRect(QStyle::SE_ItemViewItemText,  opt, w);
+                }
 
-               p->setPen(Qt::NoPen);
-               p->setBrush(getColor(opt, QPalette::Highlight));
-               p->setRenderHint(QPainter::Antialiasing);
-               p->drawRoundedRect(select_rect, frame_radius, frame_radius);
-               return;
+                p->save();
+                p->setPen(Qt::NoPen);
+                p->setClipRect(opt->rect);
+                p->setBrush(getColor(opt, QPalette::Highlight));
+                p->setRenderHint(QPainter::Antialiasing);
+                p->drawRoundedRect(select_rect, frame_radius, frame_radius);
+                p->restore();
+                return;
             } else {
                 if (vopt->backgroundBrush.style() != Qt::NoBrush) {
                     p->save();
