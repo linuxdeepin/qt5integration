@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.7.38] - 2026-03-31
+
+### Changed
+
+- Chore: New release 6.7.33
+- Chore: New release 6.7.34
+- Chore: New release 6.7.35
+- Chore: New release 6.7.36
+- Chore: New release 6.7.37
+
+### Fixed
+
+- Adjust scrollbar visibility based on system theme policy
+- Refresh window icons on icon theme change
+- Adjust slider groove offset when no ticks are displayed
+- Fix visual artifacts after deselecting list items at high DPI
+
 ## [6.7.37] - 2026-03-25
 
 ### Changed
