@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+# SPDX-FileCopyrightText: 2023 - 2026 UnionTech Software Technology Co., Ltd.
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
@@ -55,6 +55,7 @@ dtk_add_plugin(
         main.cpp
         ${DBUS_INTERFACES}
     HEADERS
+        dprivateaccessor_p.h
         dthemesettings.h
         qdeepinfiledialoghelper.h
         qdeepintheme.h
