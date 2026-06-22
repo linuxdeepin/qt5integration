@@ -1,0 +1,73 @@
+# SPDX-FileCopyrightText: 2026 UnionTech Software Technology Co., Ltd.
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+name: Build qt5integration on Arch Linux
+
+on:
+  push:
+
+  pull_request:
+
+jobs:
+  container:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Initialize pacman and system update
+        run: |
+          pacman-key --init
+          pacman --noconfirm --noprogressbar -Syu
+
+      - name: Install base build tools
+        run: |
+          pacman -S --noconfirm --noprogressbar base-devel git cmake ninja pkgconf
+
+      - name: Install qt5integration system dependencies
+        run: |
+          pacman -S --noconfirm --noprogressbar \
+            qt5-base qt5-tools qt5-svg qt5-x11extras \
+            qt5-wayland qt5-imageformats \
+            extra-cmake-modules \
+            gtest \
+            libqtxdg xcb-util-renderutil \
+            fontconfig libglvnd mtdev libxrender \
+            icu uchardet dbus spdlog gsettings-qt \
+            libxext libxi cups startup-notification systemd xcb-util \
+            librsvg libraw kwayland \
+            dtkcommon dtklog \
+            treeland-protocols dtkcore dtkgui dtkwidget
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure and build qt5integration
+        run: |
+          cmake -B build \
+            -GNinja \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_INSTALL_LIBDIR=lib \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DDTK5=ON
+          cmake --build build -j$(nproc)
+          echo "✅ qt5integration built successfully!"
+
+      - name: Install qt5integration to staging directory
+        run: |
+          DESTDIR=/tmp/qt5integration-install cmake --install build
+          echo "Total: $(find /tmp/qt5integration-install -type f | wc -l) files"
+
+      - name: Create installation package
+        run: |
+          tar -czf /tmp/qt5integration-archlinux-$(date +%Y%m%d-%H%M%S).tar.gz -C /tmp/qt5integration-install .
+          ls -la /tmp/qt5integration-archlinux-*.tar.gz
+
+      - name: Upload qt5integration Arch Linux build artifacts
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt5integration-archlinux-build
+          path: "/tmp/qt5integration-archlinux-*.tar.gz"
+          if-no-files-found: error
+          retention-days: 30
