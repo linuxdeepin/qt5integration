@@ -18,7 +18,7 @@
 #include <DDciIcon>
 #include <DDciIconPalette>
 #include <DSizeMode>
-#include <dtkgui_config.h>
+#include <DGuiApplicationHelper>
 
 #include <QLabel>
 #include <QCalendarWidget>
@@ -4755,7 +4755,7 @@ void ChameleonStyle::polish(QWidget *w)
         view->setItemDelegate(new QStyledItemDelegate);
     }
 
-    if (DApplication::isDXcbPlatform() || (qApp->platformName() == "dwayland" || qApp->property("_d_isDwayland").toBool())) {
+    if (DApplication::isDXcbPlatform() || DGuiApplicationHelper::testAttribute(DGuiApplicationHelper::IsWaylandPlatform)) {
         bool is_menu = qobject_cast<QMenu *>(w);
         bool is_tip = w->inherits("QTipLabel");
 
