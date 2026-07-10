@@ -669,6 +669,24 @@ const QPalette *QDeepinTheme::palette(QPlatformTheme::Palette type) const
     return &palette;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+Qt::ColorScheme QDeepinTheme::colorScheme() const
+{
+    auto *helper = DGuiApplicationHelper::instance();
+    if (!helper)
+        return QGenericUnixTheme::colorScheme();
+
+    switch (helper->themeType()) {
+    case DGuiApplicationHelper::DarkType:
+        return Qt::ColorScheme::Dark;
+    case DGuiApplicationHelper::LightType:
+        return Qt::ColorScheme::Light;
+    default:
+        return Qt::ColorScheme::Unknown;
+    }
+}
+#endif
+
 static QFont *createUnresolveFont(const QString &family, qreal pointSize)
 {
     auto font = new QFont(family);
