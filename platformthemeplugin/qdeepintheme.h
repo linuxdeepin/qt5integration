@@ -41,6 +41,9 @@ public:
 
     QVariant themeHint(ThemeHint hint) const Q_DECL_OVERRIDE;
     const QPalette *palette(Palette type) const override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    Qt::ColorScheme colorScheme() const override;
+#endif
     const QFont *font(Font type) const Q_DECL_OVERRIDE;
     DThemeSettings *settings() const;
     static DThemeSettings *getSettings();
