@@ -672,19 +672,67 @@ const QPalette *QDeepinTheme::palette(QPlatformTheme::Palette type) const
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 Qt::ColorScheme QDeepinTheme::colorScheme() const
 {
+    if (m_requestedColorScheme != Qt::ColorScheme::Unknown)
+        return m_requestedColorScheme;
+
     auto *helper = DGuiApplicationHelper::instance();
     if (!helper)
         return QGenericUnixTheme::colorScheme();
 
-    switch (helper->themeType()) {
-    case DGuiApplicationHelper::DarkType:
-        return Qt::ColorScheme::Dark;
-    case DGuiApplicationHelper::LightType:
-        return Qt::ColorScheme::Light;
-    default:
-        return Qt::ColorScheme::Unknown;
+    // Check DTK's explicit palette type first. This value may be set by
+    // setPaletteType() or restored from DConfig persistence across sessions.
+    if (helper->paletteType() != DGuiApplicationHelper::UnknownType) {
+        switch (helper->paletteType()) {
+        case DGuiApplicationHelper::DarkType:
+            return Qt::ColorScheme::Dark;
+        case DGuiApplicationHelper::LightType:
+            return Qt::ColorScheme::Light;
+        default:
+            break;
+        }
+    }
+
+    // Fall back to DPlatformTheme::themeName() for system theme detection,
+    // consistent with DTK's fetchPalette(). Don't use themeType() here
+    // because it falls back to palette luminance via toColorType(), and
+    // during QGuiApplicationPrivate::handleThemeChanged() the palette
+    // hasn't been updated yet when colorScheme() is called.
+    DPlatformTheme *theme = helper->applicationTheme();
+    if (theme) {
+        const QByteArray themeName = theme->themeName();
+        if (themeName.endsWith("dark"))
+            return Qt::ColorScheme::Dark;
+    }
+
+    return Qt::ColorScheme::Light;
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+void QDeepinTheme::requestColorScheme(Qt::ColorScheme scheme)
+{
+    // Don't skip Unknown requests: they need to reset the DTK palette type
+    // even when m_requestedColorScheme is already Unknown (e.g. DConfig
+    // persisted a non-Unknown palette type from a previous session).
+    if (m_requestedColorScheme == scheme && scheme != Qt::ColorScheme::Unknown)
+        return;
+    m_requestedColorScheme = scheme;
+    QPlatformTheme::requestColorScheme(scheme);
+
+    if (auto *helper = DGuiApplicationHelper::instance()) {
+        switch (scheme) {
+        case Qt::ColorScheme::Dark:
+            helper->setPaletteType(DGuiApplicationHelper::DarkType);
+            break;
+        case Qt::ColorScheme::Light:
+            helper->setPaletteType(DGuiApplicationHelper::LightType);
+            break;
+        case Qt::ColorScheme::Unknown:
+            helper->setPaletteType(DGuiApplicationHelper::UnknownType);
+            break;
+        }
     }
 }
+#endif
 #endif
 
 static QFont *createUnresolveFont(const QString &family, qreal pointSize)

@@ -44,6 +44,9 @@ public:
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
     Qt::ColorScheme colorScheme() const override;
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    void requestColorScheme(Qt::ColorScheme scheme) override;
+#endif
     const QFont *font(Font type) const Q_DECL_OVERRIDE;
     DThemeSettings *settings() const;
     static DThemeSettings *getSettings();
@@ -54,6 +57,9 @@ private:
     static bool m_usePlatformNativeDialog;
     static QMimeDatabase m_mimeDatabase;
     static DThemeSettings *m_settings;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    Qt::ColorScheme m_requestedColorScheme = Qt::ColorScheme::Unknown;
+#endif
 
     friend class QDeepinFileDialogHelper;
     friend class QDeepinPlatformMenu;
