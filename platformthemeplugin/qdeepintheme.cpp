@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2017 - 2023 UnionTech Software Technology Co., Ltd.
+ * SPDX-FileCopyrightText: 2017 - 2026 UnionTech Software Technology Co., Ltd.
  * SPDX-License-Identifier: LGPL-3.0-or-later
  */
 #include "qdeepintheme.h"
@@ -18,20 +18,30 @@
 
 #include <private/qicon_p.h>
 #include <private/qiconloader_p.h>
-#define private public
 #include <private/qhighdpiscaling_p.h>
-#undef private
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qfactoryloader_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformcursor.h>
+#include "dprivateaccessor_p.h"
 
 #undef signals
 #include <X11/Xlib.h>
 
 DGUI_USE_NAMESPACE
+
+#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
+using QHighDpiScaling_m_logicalDpi_type = QPair<qreal, qreal>;
+D_DECLARE_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_logicalDpi_tag, QHighDpiScaling, m_logicalDpi, QHighDpiScaling_m_logicalDpi_type);
+#elif QT_VERSION < QT_VERSION_CHECK(6,0,0)
+D_DECLARE_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_usePixelDensity_tag, QHighDpiScaling, m_usePixelDensity, bool);
+#else
+D_DECLARE_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_usePlatformPluginDpi_tag, QHighDpiScaling, m_usePlatformPluginDpi, bool);
+#endif
+D_DECLARE_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_factor_tag, QHighDpiScaling, m_factor, qreal);
+D_DECLARE_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_screenFactorSet_tag, QHighDpiScaling, m_screenFactorSet, bool);
 
 #ifdef XDG_ICON_VERSION_MAR
 #include <XdgIcon>
@@ -275,7 +285,7 @@ static bool updateScaleFactor(qreal value)
         value = 1.0;
     }
 
-    if (qFuzzyCompare(QHighDpiScaling::m_factor, value)) {
+    if (qFuzzyCompare(D_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_factor_tag{}), value)) {
         return false;
     }
 
@@ -386,20 +396,20 @@ static bool updateScaleLogcailDpi(const QPair<qreal, qreal> &dpi)
     bool ok = dpi.first >= 0 && dpi.second >= 0;
 #if QT_VERSION < QT_VERSION_CHECK(5,14,0)
     if (dpi.first > 0) {
-        QHighDpiScaling::m_logicalDpi.first = dpi.first;
+        D_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_logicalDpi_tag{}).first = dpi.first;
     } else if (qIsNull(dpi.first)) {
-        QHighDpiScaling::m_logicalDpi.first = qGuiApp->primaryScreen()->handle()->logicalDpi().first;
+        D_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_logicalDpi_tag{}).first = qGuiApp->primaryScreen()->handle()->logicalDpi().first;
     }
 
     if (dpi.second > 0) {
-        QHighDpiScaling::m_logicalDpi.second = dpi.second;
+        D_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_logicalDpi_tag{}).second = dpi.second;
     } else if (qIsNull(dpi.second)) {
-        QHighDpiScaling::m_logicalDpi.second = qGuiApp->primaryScreen()->handle()->logicalDpi().second;
+        D_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_logicalDpi_tag{}).second = qGuiApp->primaryScreen()->handle()->logicalDpi().second;
     }
 #elif QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QHighDpiScaling::m_usePixelDensity = false; // Do not use dpi from platform plugin
+    D_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_usePixelDensity_tag{}) = false; // Do not use dpi from platform plugin
 #else
-    QHighDpiScaling::m_usePlatformPluginDpi = false; // Do not use dpi from platform plugin
+    D_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_usePlatformPluginDpi_tag{}) = false; // Do not use dpi from platform plugin
 #endif
     return ok;
 }
@@ -819,7 +829,7 @@ static void compelledUpdateScaleLogcailDpi() {
 }
 
 static void onScreenAdded(QScreen *s) {
-    if (QHighDpiScaling::m_screenFactorSet) {
+    if (D_PRIVATE_STATIC_MEMBER(QHighDpiScaling_m_screenFactorSet_tag{})) {
         auto setting = QDeepinTheme::getSettings();
         auto value = setting->screenScaleFactors();
 
